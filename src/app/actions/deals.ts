@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { recalculateAndPersistDealRisk } from "@/server/dealRiskEngine";
 
 export async function createDeal(formData: FormData) {
   const userId = await getAuthenticatedUserId();
@@ -28,8 +29,15 @@ export async function createDeal(formData: FormData) {
     },
   });
 
+  await recalculateAndPersistDealRisk(deal.id);
+
   revalidatePath("/dashboard");
-  return deal;
+
+  const updatedDeal = await prisma.deal.findUnique({
+    where: { id: deal.id },
+  });
+
+  return updatedDeal!;
 }
 
 export async function getAllDeals() {

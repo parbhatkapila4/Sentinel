@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getDealById } from "@/app/actions/deals";
-import { createDealEvent } from "@/app/actions/events";
+import { formatRiskLevel } from "@/lib/risk";
 import { formatDistanceToNow } from "date-fns";
 import { notFound } from "next/navigation";
 import { AddEventButtons } from "./add-event-buttons";
@@ -15,7 +15,7 @@ export default async function DealDetailPage({
   let deal;
   try {
     deal = await getDealById(id);
-  } catch (error) {
+  } catch {
     notFound();
   }
 
@@ -64,6 +64,35 @@ export default async function DealDetailPage({
                   addSuffix: true,
                 })}
               </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="mb-4 text-xl font-semibold text-black dark:text-zinc-50">
+            Risk Assessment
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Risk Score
+              </p>
+              <div className="mt-1 flex items-center gap-3">
+                <p className="text-2xl font-semibold text-black dark:text-zinc-50">
+                  {(deal.riskScore * 100).toFixed(0)}%
+                </p>
+                <span
+                  className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
+                    formatRiskLevel(deal.riskScore) === "High"
+                      ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                      : formatRiskLevel(deal.riskScore) === "Medium"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                      : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                  }`}
+                >
+                  {formatRiskLevel(deal.riskScore)}
+                </span>
+              </div>
             </div>
           </div>
         </div>

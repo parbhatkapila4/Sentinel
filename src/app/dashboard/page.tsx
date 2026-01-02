@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllDeals } from "@/app/actions/deals";
+import { formatRiskLevel } from "@/lib/risk";
 import { formatDistanceToNow } from "date-fns";
 
 export default async function DashboardPage() {
@@ -44,6 +45,9 @@ export default async function DashboardPage() {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Risk
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Last Activity
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -69,6 +73,19 @@ export default async function DashboardPage() {
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
                       <span className="inline-flex rounded-full px-2 py-1 text-xs font-medium bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
                         {deal.status}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
+                      <span
+                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                          formatRiskLevel(deal.riskScore) === "High"
+                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                            : formatRiskLevel(deal.riskScore) === "Medium"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                            : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        }`}
+                      >
+                        {formatRiskLevel(deal.riskScore)}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">

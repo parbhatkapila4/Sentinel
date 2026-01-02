@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { recalculateAndPersistDealRisk } from "@/server/dealRiskEngine";
 
 type EventType = "email_received" | "email_sent" | "meeting_held";
 
@@ -27,19 +28,22 @@ export async function createDealEvent(
 
   const now = new Date();
 
-  await prisma.$transaction([
-    prisma.dealEvent.create({
-      data: {
-        dealId,
-        type,
-        payload: payload as Prisma.InputJsonValue,
-      },
-    }),
-    prisma.deal.update({
-      where: { id: dealId },
-      data: { lastActivityAt: now },
-    }),
-  ]);
+  await prisma.dealEvent.create({
+    data: {
+      dealId,
+      type,
+      payload: payload as Prisma.InputJsonValue,
+    },
+  });
+
+  await prisma.deal.update({
+    where: { id: dealId },
+    data: {
+      lastActivityAt: now,
+    },
+  });
+
+  await recalculateAndPersistDealRisk(dealId);
 
   revalidatePath(`/deals/${dealId}`);
   revalidatePath("/dashboard");
