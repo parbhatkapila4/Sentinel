@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  createdAt DateTime @default(now())
+  deals     Deal[]
+}
+
+model Deal {
+  id             String   @id @default(cuid())
+  userId         String
+  name           String
+  stage          String
+  value          Int
+  lastActivityAt DateTime
+  riskScore      Float    @default(0)
+  status         String   // active | at_risk | saved | lost
+  createdAt      DateTime @default(now())
+
+  user    User        @relation(fields: [userId], references: [id])
+  events  DealEvent[]
+  actions Action[]
+}
+
+model DealEvent {
+  id        String   @id @default(cuid())
+  dealId    String
+  type      String   // email_received | email_sent | meeting_held
+  payload   Json
+  createdAt DateTime @default(now())
+
+  deal Deal @relation(fields: [dealId], references: [id])
+}
+
+model Action {
+  id        String   @id @default(cuid())
+  dealId    String
+  type      String   // follow_up_email | schedule_meeting
+  status    String   // pending | executed | failed
+  reason    String
+  createdAt DateTime @default(now())
+
+  deal Deal @relation(fields: [dealId], references: [id])
+}
+
