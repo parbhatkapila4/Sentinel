@@ -18,19 +18,24 @@ model User {
 }
 
 model Deal {
-  id             String   @id @default(cuid())
-  userId         String
-  name           String
-  stage          String
-  value          Int
-  lastActivityAt DateTime
-  riskScore      Float    @default(0)
-  status         String   // active | at_risk | saved | lost
-  createdAt      DateTime @default(now())
+  id               String    @id @default(cuid())
+  userId           String
+  name             String
+  stage            String
+  value            Int
+  lastActivityAt   DateTime
+  riskScore        Float     @default(0)
+  riskLevel        String?
+  status           String    // active | at_risk | saved | lost
+  nextAction       String?
+  nextActionReason String?
+  riskEvaluatedAt  DateTime?
+  createdAt        DateTime @default(now())
 
-  user    User        @relation(fields: [userId], references: [id])
-  events  DealEvent[]
-  actions Action[]
+  user      User          @relation(fields: [userId], references: [id])
+  events    DealEvent[]
+  actions   Action[]
+  timeline  DealTimeline[]
 }
 
 model DealEvent {
@@ -52,5 +57,17 @@ model Action {
   createdAt DateTime @default(now())
 
   deal Deal @relation(fields: [dealId], references: [id])
+}
+
+model DealTimeline {
+  id        String   @id @default(uuid())
+  dealId    String   @map("deal_id")
+  eventType String   @map("event_type")
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  deal Deal @relation(fields: [dealId], references: [id])
+
+  @@map("DealTimeline")
 }
 
