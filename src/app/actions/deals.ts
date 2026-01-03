@@ -1,10 +1,11 @@
 "use server";
 
+import { unstable_noStore as noStore } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth";
+import { calculateDealSignals, formatRiskLevel } from "@/lib/dealRisk";
 import { prisma } from "@/lib/prisma";
 import { appendDealTimeline } from "@/lib/timeline";
-import { calculateDealRiskFromTimeline } from "@/server/dealRiskEngine";
 
 export async function createDeal(formData: FormData) {
   const userId = await getAuthenticatedUserId();
@@ -36,61 +37,41 @@ export async function createDeal(formData: FormData) {
 
   revalidatePath("/dashboard");
 
-  const dealResult = await prisma.$queryRaw<
-    Array<{
-      id: string;
-      userId: string;
-      name: string;
-      stage: string;
-      value: number;
-      lastActivityAt: Date;
-      riskScore: number;
-      riskLevel: string | null;
-      status: string;
-      nextAction: string | null;
-      nextActionReason: string | null;
-      riskEvaluatedAt: Date | null;
-      createdAt: Date;
-    }>
-  >`
-    SELECT 
-      d.id,
-      d."userId",
-      d.name,
-      d.stage,
-      d.value,
-      COALESCE(MAX(dt.created_at), d."createdAt") as "lastActivityAt",
-      d."riskScore",
-      d."riskLevel",
-      d.status,
-      d."nextAction",
-      d."nextActionReason",
-      d."riskEvaluatedAt",
-      d."createdAt"
-    FROM "Deal" d
-    LEFT JOIN "DealTimeline" dt ON d.id = dt.deal_id
-    WHERE d.id = ${deal.id}
-    GROUP BY d.id, d."userId", d.name, d.stage, d.value, d."createdAt", 
-             d."riskScore", d."riskLevel", d.status, d."nextAction", 
-             d."nextActionReason", d."riskEvaluatedAt"
-  `;
+  const timeline = await prisma.dealTimeline.findMany({
+    where: { dealId: deal.id },
+    orderBy: { createdAt: "desc" },
+  });
 
-  const updatedDeal = dealResult[0];
-  if (!updatedDeal) {
-    throw new Error("Deal not found after creation");
-  }
+  const timelineEventsInput = timeline.map((e) => ({
+    eventType: e.eventType,
+    createdAt: e.createdAt,
+    metadata:
+      e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
+        ? (e.metadata as Record<string, unknown>)
+        : null,
+  }));
+
+  const signals = calculateDealSignals(deal, timelineEventsInput);
 
   return {
-    ...updatedDeal,
-    lastActivityAt: new Date(updatedDeal.lastActivityAt),
-    createdAt: new Date(updatedDeal.createdAt),
-    riskEvaluatedAt: updatedDeal.riskEvaluatedAt
-      ? new Date(updatedDeal.riskEvaluatedAt)
-      : null,
+    id: deal.id,
+    userId: deal.userId,
+    name: deal.name,
+    stage: deal.stage,
+    value: deal.value,
+    lastActivityAt: signals.lastActivityAt,
+    riskScore: signals.riskScore,
+    riskLevel: formatRiskLevel(signals.riskScore),
+    status: signals.status,
+    nextAction: signals.nextAction,
+    nextActionReason: null,
+    riskEvaluatedAt: deal.riskEvaluatedAt,
+    createdAt: deal.createdAt,
   };
 }
 
 export async function getAllDeals() {
+  noStore();
   const userId = await getAuthenticatedUserId();
 
   const deals = await prisma.deal.findMany({
@@ -98,127 +79,103 @@ export async function getAllDeals() {
     orderBy: { createdAt: "desc" },
   });
 
-  await Promise.all(
-    deals.map((deal) => calculateDealRiskFromTimeline(deal.id))
-  );
+  const dealIds = deals.map((d) => d.id);
+  const allTimelineEvents = await prisma.dealTimeline.findMany({
+    where: { dealId: { in: dealIds } },
+    orderBy: { createdAt: "desc" },
+  });
 
-  const updatedDeals = await prisma.$queryRaw<
-    Array<{
-      id: string;
-      userId: string;
-      name: string;
-      stage: string;
-      value: number;
-      lastActivityAt: Date;
-      riskScore: number;
-      riskLevel: string | null;
-      status: string;
-      nextAction: string | null;
-      nextActionReason: string | null;
-      riskEvaluatedAt: Date | null;
-      createdAt: Date;
-    }>
-  >`
-    SELECT 
-      d.id,
-      d."userId",
-      d.name,
-      d.stage,
-      d.value,
-      COALESCE(MAX(dt.created_at), d."createdAt") as "lastActivityAt",
-      d."riskScore",
-      d."riskLevel",
-      d.status,
-      d."nextAction",
-      d."nextActionReason",
-      d."riskEvaluatedAt",
-      d."createdAt"
-    FROM "Deal" d
-    LEFT JOIN "DealTimeline" dt ON d.id = dt.deal_id
-    WHERE d."userId" = ${userId}
-    GROUP BY d.id, d."userId", d.name, d.stage, d.value, d."createdAt", 
-             d."riskScore", d."riskLevel", d.status, d."nextAction", 
-             d."nextActionReason", d."riskEvaluatedAt"
-    ORDER BY d."createdAt" DESC
-  `;
+  const timelineByDealId = new Map<string, typeof allTimelineEvents>();
+  for (const event of allTimelineEvents) {
+    if (!timelineByDealId.has(event.dealId)) {
+      timelineByDealId.set(event.dealId, []);
+    }
+    timelineByDealId.get(event.dealId)!.push(event);
+  }
 
-  return updatedDeals.map((deal) => ({
-    ...deal,
-    lastActivityAt: new Date(deal.lastActivityAt),
-    createdAt: new Date(deal.createdAt),
-    riskEvaluatedAt: deal.riskEvaluatedAt
-      ? new Date(deal.riskEvaluatedAt)
-      : null,
-  }));
+  return deals.map((deal) => {
+    const dealTimeline = timelineByDealId.get(deal.id) ?? [];
+
+    const timelineEvents = dealTimeline.map((e) => ({
+      eventType: e.eventType,
+      createdAt: e.createdAt,
+      metadata:
+        e.metadata &&
+        typeof e.metadata === "object" &&
+        !Array.isArray(e.metadata)
+          ? (e.metadata as Record<string, unknown>)
+          : null,
+    }));
+
+    const signals = calculateDealSignals(deal, timelineEvents);
+
+    return {
+      id: deal.id,
+      userId: deal.userId,
+      name: deal.name,
+      stage: deal.stage,
+      value: deal.value,
+      lastActivityAt: signals.lastActivityAt,
+      riskScore: signals.riskScore,
+      riskLevel: formatRiskLevel(signals.riskScore),
+      status: signals.status,
+      nextAction: signals.nextAction,
+      nextActionReason: null,
+      riskEvaluatedAt: deal.riskEvaluatedAt,
+      createdAt: deal.createdAt,
+    };
+  });
 }
 
 export async function getDealById(dealId: string) {
   const userId = await getAuthenticatedUserId();
 
-  await calculateDealRiskFromTimeline(dealId);
+  const deal = await prisma.deal.findFirst({
+    where: {
+      id: dealId,
+      userId,
+    },
+  });
 
-  const dealResult = await prisma.$queryRaw<
-    Array<{
-      id: string;
-      userId: string;
-      name: string;
-      stage: string;
-      value: number;
-      lastActivityAt: Date;
-      riskScore: number;
-      riskLevel: string | null;
-      status: string;
-      nextAction: string | null;
-      nextActionReason: string | null;
-      riskEvaluatedAt: Date | null;
-      createdAt: Date;
-    }>
-  >`
-    SELECT 
-      d.id,
-      d."userId",
-      d.name,
-      d.stage,
-      d.value,
-      COALESCE(MAX(dt.created_at), d."createdAt") as "lastActivityAt",
-      d."riskScore",
-      d."riskLevel",
-      d.status,
-      d."nextAction",
-      d."nextActionReason",
-      d."riskEvaluatedAt",
-      d."createdAt"
-    FROM "Deal" d
-    LEFT JOIN "DealTimeline" dt ON d.id = dt.deal_id
-    WHERE d.id = ${dealId} AND d."userId" = ${userId}
-    GROUP BY d.id, d."userId", d.name, d.stage, d.value, d."createdAt", 
-             d."riskScore", d."riskLevel", d.status, d."nextAction", 
-             d."nextActionReason", d."riskEvaluatedAt"
-  `;
-
-  if (dealResult.length === 0) {
+  if (!deal) {
     throw new Error("Deal not found");
   }
-
-  const deal = dealResult[0];
-
-  const events = await prisma.dealEvent.findMany({
-    where: { dealId: deal.id },
-    orderBy: { createdAt: "desc" },
-  });
 
   const timeline = await prisma.dealTimeline.findMany({
     where: { dealId: deal.id },
     orderBy: { createdAt: "desc" },
   });
 
+  const timelineEventsInput = timeline.map((e) => ({
+    eventType: e.eventType,
+    createdAt: e.createdAt,
+    metadata:
+      e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
+        ? (e.metadata as Record<string, unknown>)
+        : null,
+  }));
+
+  const signals = calculateDealSignals(deal, timelineEventsInput);
+
+  const events = await prisma.dealEvent.findMany({
+    where: { dealId: deal.id },
+    orderBy: { createdAt: "desc" },
+  });
+
   return {
-    ...deal,
-    lastActivityAt: new Date(deal.lastActivityAt),
-    createdAt: new Date(deal.createdAt),
-    riskEvaluatedAt: deal.riskEvaluatedAt
-      ? new Date(deal.riskEvaluatedAt)
-      : null,
+    id: deal.id,
+    userId: deal.userId,
+    name: deal.name,
+    stage: deal.stage,
+    value: deal.value,
+    lastActivityAt: signals.lastActivityAt,
+    riskScore: signals.riskScore,
+    riskLevel: formatRiskLevel(signals.riskScore),
+    status: signals.status,
+    nextAction: signals.nextAction,
+    nextActionReason: null,
+    riskEvaluatedAt: deal.riskEvaluatedAt,
+    createdAt: deal.createdAt,
     events,
     timeline,
   };

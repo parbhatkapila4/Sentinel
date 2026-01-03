@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,56 +15,45 @@ model User {
 }
 
 model Deal {
-  id               String    @id @default(cuid())
-  userId           String
-  name             String
-  stage            String
-  value            Int
-  lastActivityAt   DateTime
-  riskScore        Float     @default(0)
-  riskLevel        String?
-  status           String    // active | at_risk | saved | lost
-  nextAction       String?
-  nextActionReason String?
-  riskEvaluatedAt  DateTime?
-  createdAt        DateTime @default(now())
-
-  user      User          @relation(fields: [userId], references: [id])
-  events    DealEvent[]
-  actions   Action[]
-  timeline  DealTimeline[]
+  id              String         @id @default(cuid())
+  userId          String
+  name            String
+  stage           String
+  value           Int
+  createdAt       DateTime       @default(now())
+  riskEvaluatedAt DateTime?      @db.Timestamptz(6)
+  actions         Action[]
+  user            User           @relation(fields: [userId], references: [id])
+  events          DealEvent[]
+  timeline        DealTimeline[]
 }
 
 model DealEvent {
   id        String   @id @default(cuid())
   dealId    String
-  type      String   // email_received | email_sent | meeting_held
+  type      String
   payload   Json
   createdAt DateTime @default(now())
-
-  deal Deal @relation(fields: [dealId], references: [id])
+  deal      Deal     @relation(fields: [dealId], references: [id])
 }
 
 model Action {
   id        String   @id @default(cuid())
   dealId    String
-  type      String   // follow_up_email | schedule_meeting
-  status    String   // pending | executed | failed
+  type      String
+  status    String
   reason    String
   createdAt DateTime @default(now())
-
-  deal Deal @relation(fields: [dealId], references: [id])
+  deal      Deal     @relation(fields: [dealId], references: [id])
 }
 
 model DealTimeline {
-  id        String   @id @default(uuid())
-  dealId    String   @map("deal_id")
-  eventType String   @map("event_type")
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dealId    String    @map("deal_id")
+  eventType String    @map("event_type")
   metadata  Json?
-  createdAt DateTime @default(now()) @map("created_at")
-
-  deal Deal @relation(fields: [dealId], references: [id])
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  deal      Deal      @relation(fields: [dealId], references: [id])
 
   @@map("DealTimeline")
 }
-
