@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { calculateDealRiskFromTimeline } from "@/server/dealRiskEngine";
 
 export async function appendDealTimeline(
   dealId: string,
@@ -16,5 +15,4 @@ export async function appendDealTimeline(
         : Prisma.JsonNull,
     },
   });
-  await calculateDealRiskFromTimeline(dealId);
 }

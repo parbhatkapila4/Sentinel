@@ -64,14 +64,10 @@ export function calculateDealRisk(deal: Deal, timelineEvents: TimelineEvent[]) {
   const status =
     score >= 0.6 && deal.status === "active" ? "at_risk" : deal.status;
 
-  const nextAction =
-    score >= 0.6 ? "Email" : deal.stage === "discover" ? "Wait" : null;
-
   return {
     score,
     riskLevel,
     status,
-    nextAction,
     reasons,
   };
 }
