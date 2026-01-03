@@ -1,17 +1,21 @@
 "use client";
 
 import { createDealEvent } from "@/app/actions/events";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type EventType = "email_received" | "email_sent" | "meeting_held";
 
 export function AddEventButtons({ dealId }: { dealId: string }) {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   async function handleAddEvent(type: EventType) {
     setIsLoading(true);
     try {
       await createDealEvent(dealId, type, {});
+
+      router.refresh();
     } catch (error) {
       console.error("Failed to create event:", error);
     } finally {

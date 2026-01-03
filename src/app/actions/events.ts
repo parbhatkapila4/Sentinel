@@ -26,7 +26,9 @@ export async function createDealEvent(
     throw new Error("Deal not found");
   }
 
-  const now = new Date();
+  await appendDealTimeline(dealId, "event_created", {
+    eventType: type,
+  });
 
   await prisma.dealEvent.create({
     data: {
@@ -36,10 +38,8 @@ export async function createDealEvent(
     },
   });
 
-  await appendDealTimeline(dealId, "event_created", {
-    eventType: type,
-  });
-
   revalidatePath(`/deals/${dealId}`);
   revalidatePath("/dashboard");
+
+  return { success: true };
 }
