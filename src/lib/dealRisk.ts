@@ -24,6 +24,9 @@ export type DealSignals = {
   } | null;
   riskStartedAt: Date | null;
   riskAgeInDays: number | null;
+  actionDueAt: Date | null;
+  actionOverdueByDays: number | null;
+  isActionOverdue: boolean;
 };
 
 export function formatRiskLevel(score: number): "Low" | "Medium" | "High" {
@@ -269,6 +272,30 @@ export function calculateDealSignals(
     );
   }
 
+  let actionDueAt: Date | null = null;
+  let actionOverdueByDays: number | null = null;
+  let isActionOverdue = false;
+
+  if (recommendedAction && riskStartedAt) {
+    const urgencyDays = {
+      high: 1,
+      medium: 3,
+      low: 7,
+    };
+
+    const dueDays = urgencyDays[recommendedAction.urgency];
+    actionDueAt = new Date(
+      riskStartedAt.getTime() + dueDays * 24 * 60 * 60 * 1000
+    );
+
+    if (now > actionDueAt) {
+      actionOverdueByDays = Math.floor(
+        (now.getTime() - actionDueAt.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      isActionOverdue = actionOverdueByDays > 0;
+    }
+  }
+
   return {
     riskScore,
     riskLevel: formatRiskLevel(riskScore),
@@ -279,5 +306,8 @@ export function calculateDealSignals(
     recommendedAction,
     riskStartedAt,
     riskAgeInDays,
+    actionDueAt,
+    actionOverdueByDays,
+    isActionOverdue,
   };
 }
