@@ -22,16 +22,12 @@ export async function createDeal(formData: FormData) {
     throw new Error("Missing required fields");
   }
 
-  const now = new Date();
-
   const deal = await prisma.deal.create({
     data: {
       userId,
       name,
       stage,
       value,
-      status: "active",
-      lastActivityAt: now,
     },
   });
 
@@ -48,14 +44,22 @@ export async function createDeal(formData: FormData) {
 
   const timelineEventsInput = timeline.map((e) => ({
     eventType: e.eventType,
-    createdAt: e.createdAt,
+    createdAt: e.createdAt || new Date(),
     metadata:
       e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
         ? (e.metadata as Record<string, unknown>)
         : null,
   }));
 
-  const signals = calculateDealSignals(deal, timelineEventsInput);
+  const signals = calculateDealSignals(
+    {
+      stage: deal.stage,
+      value: deal.value,
+      status: "active",
+      createdAt: deal.createdAt,
+    },
+    timelineEventsInput
+  );
 
   return {
     id: deal.id,
@@ -72,6 +76,8 @@ export async function createDeal(formData: FormData) {
     riskReasons: signals.reasons,
     primaryRiskReason: getPrimaryRiskReason(signals.reasons),
     recommendedAction: signals.recommendedAction,
+    riskStartedAt: signals.riskStartedAt,
+    riskAgeInDays: signals.riskAgeInDays,
     riskEvaluatedAt: deal.riskEvaluatedAt,
     createdAt: deal.createdAt,
   };
@@ -105,7 +111,7 @@ export async function getAllDeals() {
 
     const timelineEvents = dealTimeline.map((e) => ({
       eventType: e.eventType,
-      createdAt: new Date(e.createdAt),
+      createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
       metadata:
         e.metadata &&
         typeof e.metadata === "object" &&
@@ -118,7 +124,7 @@ export async function getAllDeals() {
       {
         stage: deal.stage,
         value: deal.value,
-        status: deal.status,
+        status: "active",
         createdAt: deal.createdAt,
       },
       timelineEvents
@@ -139,6 +145,8 @@ export async function getAllDeals() {
       riskReasons: signals.reasons,
       primaryRiskReason: getPrimaryRiskReason(signals.reasons),
       recommendedAction: signals.recommendedAction,
+      riskStartedAt: signals.riskStartedAt,
+      riskAgeInDays: signals.riskAgeInDays,
       riskEvaluatedAt: deal.riskEvaluatedAt,
       createdAt: deal.createdAt,
     };
@@ -166,14 +174,22 @@ export async function getDealById(dealId: string) {
 
   const timelineEventsInput = timeline.map((e) => ({
     eventType: e.eventType,
-    createdAt: e.createdAt,
+    createdAt: e.createdAt || new Date(),
     metadata:
       e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
         ? (e.metadata as Record<string, unknown>)
         : null,
   }));
 
-  const signals = calculateDealSignals(deal, timelineEventsInput);
+  const signals = calculateDealSignals(
+    {
+      stage: deal.stage,
+      value: deal.value,
+      status: "active",
+      createdAt: deal.createdAt,
+    },
+    timelineEventsInput
+  );
 
   const events = await prisma.dealEvent.findMany({
     where: { dealId: deal.id },
@@ -195,6 +211,8 @@ export async function getDealById(dealId: string) {
     riskReasons: signals.reasons,
     primaryRiskReason: getPrimaryRiskReason(signals.reasons),
     recommendedAction: signals.recommendedAction,
+    riskStartedAt: signals.riskStartedAt,
+    riskAgeInDays: signals.riskAgeInDays,
     riskEvaluatedAt: deal.riskEvaluatedAt,
     createdAt: deal.createdAt,
     events,

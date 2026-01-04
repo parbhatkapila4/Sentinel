@@ -22,6 +22,8 @@ export type DealSignals = {
     label: string;
     urgency: "low" | "medium" | "high";
   } | null;
+  riskStartedAt: Date | null;
+  riskAgeInDays: number | null;
 };
 
 export function formatRiskLevel(score: number): "Low" | "Medium" | "High" {
@@ -173,6 +175,100 @@ export function calculateDealSignals(
     };
   }
 
+  let riskStartedAt: Date | null = null;
+  let riskAgeInDays: number | null = null;
+
+  if (newStatus === "at_risk") {
+    const sortedEvents = [...timelineEvents].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
+
+    for (let i = 0; i <= sortedEvents.length; i++) {
+      const pointInTime =
+        i < sortedEvents.length ? sortedEvents[i].createdAt : now;
+
+      const eventsAtPoint = humanEvents.filter(
+        (e) => e.createdAt <= pointInTime
+      );
+
+      const lastActivityAtPoint =
+        eventsAtPoint.length > 0 ? eventsAtPoint[0].createdAt : deal.createdAt;
+
+      const daysSinceActivityAtPoint = Math.floor(
+        (pointInTime.getTime() - lastActivityAtPoint.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      let scoreAtPoint = 0;
+      if (deal.stage === "negotiation") {
+        scoreAtPoint = 0.3;
+      } else if (deal.stage === "discover") {
+        scoreAtPoint = 0.1;
+      }
+
+      const hasEmailSentAtPoint = eventsAtPoint.some((e) => {
+        const metadata = e.metadata as Record<string, unknown> | null;
+        if (!metadata || metadata.eventType !== "email_sent") return false;
+        const daysAgo =
+          (pointInTime.getTime() - e.createdAt.getTime()) /
+          (1000 * 60 * 60 * 24);
+        return daysAgo <= 5;
+      });
+
+      const hasEmailReceivedAtPoint = eventsAtPoint.some((e) => {
+        const metadata = e.metadata as Record<string, unknown> | null;
+        if (!metadata || metadata.eventType !== "email_received") return false;
+        const daysAgo =
+          (pointInTime.getTime() - e.createdAt.getTime()) /
+          (1000 * 60 * 60 * 24);
+        return daysAgo <= 5;
+      });
+
+      const hasMeetingAtPoint = eventsAtPoint.some((e) => {
+        const metadata = e.metadata as Record<string, unknown> | null;
+        if (!metadata || metadata.eventType !== "meeting_held") return false;
+        const daysAgo =
+          (pointInTime.getTime() - e.createdAt.getTime()) /
+          (1000 * 60 * 60 * 24);
+        return daysAgo <= 7;
+      });
+
+      if (hasEmailSentAtPoint) scoreAtPoint -= 0.2;
+      if (hasEmailReceivedAtPoint) scoreAtPoint -= 0.3;
+      if (hasMeetingAtPoint) scoreAtPoint -= 0.4;
+
+      if (daysSinceActivityAtPoint > 7) {
+        scoreAtPoint += 0.4;
+      }
+
+      if (deal.stage === "negotiation") {
+        const hasEmailActivity = hasEmailSentAtPoint || hasEmailReceivedAtPoint;
+        if (!hasEmailActivity) {
+          scoreAtPoint += 0.4;
+        }
+      }
+
+      if (deal.value > 5000) {
+        scoreAtPoint += 0.2;
+      }
+
+      scoreAtPoint = Math.max(0, Math.min(scoreAtPoint, 1));
+
+      if (scoreAtPoint >= 0.6) {
+        riskStartedAt = pointInTime;
+        break;
+      }
+    }
+
+    if (!riskStartedAt) {
+      riskStartedAt = now;
+    }
+
+    riskAgeInDays = Math.floor(
+      (now.getTime() - riskStartedAt.getTime()) / (1000 * 60 * 60 * 24)
+    );
+  }
+
   return {
     riskScore,
     riskLevel: formatRiskLevel(riskScore),
@@ -181,5 +277,7 @@ export function calculateDealSignals(
     lastActivityAt,
     reasons,
     recommendedAction,
+    riskStartedAt,
+    riskAgeInDays,
   };
 }

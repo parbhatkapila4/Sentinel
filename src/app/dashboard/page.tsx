@@ -126,7 +126,7 @@ export default async function DashboardPage() {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-zinc-400">—</span>
+                        <span className="text-zinc-400">No action needed</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
