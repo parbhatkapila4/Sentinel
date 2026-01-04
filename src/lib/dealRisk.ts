@@ -18,12 +18,34 @@ export type DealSignals = {
   nextAction: string | null;
   lastActivityAt: Date;
   reasons: string[];
+  recommendedAction: {
+    label: string;
+    urgency: "low" | "medium" | "high";
+  } | null;
 };
 
 export function formatRiskLevel(score: number): "Low" | "Medium" | "High" {
   if (score < 0.4) return "Low";
   if (score < 0.6) return "Medium";
   return "High";
+}
+
+export function getPrimaryRiskReason(reasons: string[]): string | null {
+  if (reasons.length === 0) return null;
+
+  if (reasons.includes("No activity in last 7 days")) {
+    return "No activity in last 7 days";
+  }
+
+  if (reasons.includes("Negotiation stalled without response")) {
+    return "Negotiation stalled without response";
+  }
+
+  if (reasons.includes("High value deal requires attention")) {
+    return "High value deal requires attention";
+  }
+
+  return reasons[0] || null;
 }
 
 export function calculateDealSignals(
@@ -128,6 +150,29 @@ export function calculateDealSignals(
 
   const nextAction = newStatus === "at_risk" ? "Follow up" : null;
 
+  const primaryRiskReason = getPrimaryRiskReason(reasons);
+  let recommendedAction: {
+    label: string;
+    urgency: "low" | "medium" | "high";
+  } | null = null;
+
+  if (primaryRiskReason === "No activity in last 7 days") {
+    recommendedAction = {
+      label: "Send follow-up email",
+      urgency: "high",
+    };
+  } else if (primaryRiskReason === "Negotiation stalled without response") {
+    recommendedAction = {
+      label: "Nudge for response",
+      urgency: "high",
+    };
+  } else if (primaryRiskReason === "High value deal requires attention") {
+    recommendedAction = {
+      label: "Review deal details",
+      urgency: "medium",
+    };
+  }
+
   return {
     riskScore,
     riskLevel: formatRiskLevel(riskScore),
@@ -135,5 +180,6 @@ export function calculateDealSignals(
     nextAction,
     lastActivityAt,
     reasons,
+    recommendedAction,
   };
 }

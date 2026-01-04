@@ -3,7 +3,11 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { calculateDealSignals, formatRiskLevel } from "@/lib/dealRisk";
+import {
+  calculateDealSignals,
+  formatRiskLevel,
+  getPrimaryRiskReason,
+} from "@/lib/dealRisk";
 import { prisma } from "@/lib/prisma";
 import { appendDealTimeline } from "@/lib/timeline";
 
@@ -65,6 +69,9 @@ export async function createDeal(formData: FormData) {
     status: signals.status,
     nextAction: signals.nextAction,
     nextActionReason: null,
+    riskReasons: signals.reasons,
+    primaryRiskReason: getPrimaryRiskReason(signals.reasons),
+    recommendedAction: signals.recommendedAction,
     riskEvaluatedAt: deal.riskEvaluatedAt,
     createdAt: deal.createdAt,
   };
@@ -129,6 +136,9 @@ export async function getAllDeals() {
       status: signals.status,
       nextAction: signals.nextAction,
       nextActionReason: null,
+      riskReasons: signals.reasons,
+      primaryRiskReason: getPrimaryRiskReason(signals.reasons),
+      recommendedAction: signals.recommendedAction,
       riskEvaluatedAt: deal.riskEvaluatedAt,
       createdAt: deal.createdAt,
     };
@@ -182,6 +192,9 @@ export async function getDealById(dealId: string) {
     status: signals.status,
     nextAction: signals.nextAction,
     nextActionReason: null,
+    riskReasons: signals.reasons,
+    primaryRiskReason: getPrimaryRiskReason(signals.reasons),
+    recommendedAction: signals.recommendedAction,
     riskEvaluatedAt: deal.riskEvaluatedAt,
     createdAt: deal.createdAt,
     events,
