@@ -10,6 +10,15 @@ export default async function DashboardPage() {
   noStore();
   const deals = await getAllDeals();
 
+  const urgencyOrder = { high: 0, medium: 1, low: 2, none: 3 };
+  const sortedDeals = [...deals].sort((a, b) => {
+    const aUrgency = a.recommendedAction?.urgency || "none";
+    const bUrgency = b.recommendedAction?.urgency || "none";
+    const urgencyDiff = urgencyOrder[aUrgency] - urgencyOrder[bUrgency];
+    if (urgencyDiff !== 0) return urgencyDiff;
+    return b.riskScore - a.riskScore;
+  });
+
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -63,7 +72,7 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
-                {deals.map((deal) => (
+                {sortedDeals.map((deal) => (
                   <tr
                     key={deal.id}
                     className="hover:bg-zinc-50 dark:hover:bg-zinc-800"
@@ -101,8 +110,21 @@ export default async function DashboardPage() {
                       })()}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
-                      {deal.nextAction ? (
-                        <span>{deal.nextAction}</span>
+                      {deal.recommendedAction ? (
+                        <div className="flex items-center gap-2">
+                          <span>{deal.recommendedAction.label}</span>
+                          <span
+                            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                              deal.recommendedAction.urgency === "high"
+                                ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                : deal.recommendedAction.urgency === "medium"
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
+                            }`}
+                          >
+                            {deal.recommendedAction.urgency}
+                          </span>
+                        </div>
                       ) : (
                         <span className="text-zinc-400">—</span>
                       )}

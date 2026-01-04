@@ -70,7 +70,7 @@ export default async function DealDetailPage({
 
         <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-6 shadow dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="mb-4 text-xl font-semibold text-black dark:text-zinc-50">
-            Risk Assessment
+            Risk & Action
           </h2>
           <div className="space-y-4">
             <div>
@@ -99,6 +99,39 @@ export default async function DealDetailPage({
                 })()}
               </div>
             </div>
+            {deal.primaryRiskReason && (
+              <div>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Primary Risk Reason
+                </p>
+                <p className="mt-1 text-sm font-medium text-black dark:text-zinc-50">
+                  {deal.primaryRiskReason}
+                </p>
+              </div>
+            )}
+            {deal.recommendedAction && (
+              <div>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Recommended Action
+                </p>
+                <div className="mt-1 flex items-center gap-2">
+                  <p className="text-sm font-medium text-black dark:text-zinc-50">
+                    {deal.recommendedAction.label}
+                  </p>
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                      deal.recommendedAction.urgency === "high"
+                        ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        : deal.recommendedAction.urgency === "medium"
+                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                        : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
+                    }`}
+                  >
+                    {deal.recommendedAction.urgency}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -195,9 +228,11 @@ export default async function DealDetailPage({
                       : entry.eventType}
                   </p>
                   <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    {formatDistanceToNow(new Date(entry.createdAt), {
-                      addSuffix: true,
-                    })}
+                    {entry.createdAt
+                      ? formatDistanceToNow(new Date(entry.createdAt), {
+                          addSuffix: true,
+                        })
+                      : "—"}
                   </p>
                 </div>
               ))}
