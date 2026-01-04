@@ -98,16 +98,24 @@ export async function getAllDeals() {
 
     const timelineEvents = dealTimeline.map((e) => ({
       eventType: e.eventType,
-      createdAt: e.createdAt,
+      createdAt: new Date(e.createdAt),
       metadata:
         e.metadata &&
         typeof e.metadata === "object" &&
         !Array.isArray(e.metadata)
-          ? (e.metadata as Record<string, unknown>)
+          ? ({ ...e.metadata } as Record<string, unknown>)
           : null,
     }));
 
-    const signals = calculateDealSignals(deal, timelineEvents);
+    const signals = calculateDealSignals(
+      {
+        stage: deal.stage,
+        value: deal.value,
+        status: deal.status,
+        createdAt: deal.createdAt,
+      },
+      timelineEvents
+    );
 
     return {
       id: deal.id,

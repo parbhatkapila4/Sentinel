@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getDealById } from "@/app/actions/deals";
+import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatDistanceToNow } from "date-fns";
 import { notFound } from "next/navigation";
 import { AddEventButtons } from "./add-event-buttons";
@@ -80,19 +81,22 @@ export default async function DealDetailPage({
                 <p className="text-2xl font-semibold text-black dark:text-zinc-50">
                   {(deal.riskScore * 100).toFixed(0)}%
                 </p>
-                {deal.riskLevel && (
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-                      deal.riskLevel === "High"
-                        ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                        : deal.riskLevel === "Medium"
-                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                        : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                    }`}
-                  >
-                    {deal.riskLevel}
-                  </span>
-                )}
+                {(() => {
+                  const riskLevel = formatRiskLevel(deal.riskScore);
+                  return (
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
+                        riskLevel === "High"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          : riskLevel === "Medium"
+                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                          : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      }`}
+                    >
+                      {riskLevel}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
           </div>

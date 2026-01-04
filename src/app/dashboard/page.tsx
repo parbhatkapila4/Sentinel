@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { getAllDeals } from "@/app/actions/deals";
+import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatDistanceToNow } from "date-fns";
 
 export const dynamic = "force-dynamic";
@@ -82,21 +83,22 @@ export default async function DashboardPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
-                      {deal.riskLevel ? (
-                        <span
-                          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                            deal.riskLevel === "High"
-                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                              : deal.riskLevel === "Medium"
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                              : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          }`}
-                        >
-                          {deal.riskLevel}
-                        </span>
-                      ) : (
-                        <span className="text-zinc-400">—</span>
-                      )}
+                      {(() => {
+                        const riskLevel = formatRiskLevel(deal.riskScore);
+                        return (
+                          <span
+                            className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                              riskLevel === "High"
+                                ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                : riskLevel === "Medium"
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            }`}
+                          >
+                            {riskLevel}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
                       {deal.nextAction ? (
