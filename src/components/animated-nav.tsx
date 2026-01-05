@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { SignInButtonWrapper } from "@/components/sign-in-button";
-import { UserButtonWrapper } from "@/components/user-button";
 
 export function AnimatedNav() {
   const { isSignedIn } = useUser();
@@ -23,42 +22,72 @@ export function AnimatedNav() {
     <nav
       className={`fixed top-0 z-50 w-full border-b transition-all duration-300 ${
         scrolled
-          ? "border-zinc-300/50 bg-white/98 backdrop-blur-xl shadow-sm dark:border-zinc-700/50 dark:bg-zinc-900/98"
-          : "border-zinc-200/50 bg-white/95 backdrop-blur-xl dark:border-zinc-800/50 dark:bg-zinc-900/95"
+          ? "border-white/10 bg-black/95 backdrop-blur-xl"
+          : "border-white/10 bg-black/80 backdrop-blur-xl"
       }`}
     >
       <div className="mx-auto max-w-7xl px-6 py-4 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-black via-zinc-800 to-black shadow-lg transition-transform duration-300 hover:scale-110 dark:from-white dark:via-zinc-200 dark:to-white"></div>
+            <div className="h-10 w-10 bg-blue-500 rounded shrink-0"></div>
             <div>
-              <span className="text-xl font-bold text-black dark:text-zinc-50">
-                Revenue Sentinel
+              <span className="text-xl font-bold text-white">
+                REVENUE SENTINEL
               </span>
-              <div className="text-xs text-zinc-500 dark:text-zinc-500">
-                Deal Risk Intelligence
-              </div>
             </div>
           </div>
           <div className="flex items-center gap-6">
+            <Link
+              href="#features"
+              className="text-sm font-medium text-white hover:text-white/80 transition-colors"
+            >
+              SOLUTIONS
+            </Link>
+            <Link
+              href="#how-it-works"
+              className="text-sm font-medium text-white hover:text-white/80 transition-colors"
+            >
+              INTEGRATIONS
+            </Link>
+            <Link
+              href="#"
+              className="text-sm font-medium text-white hover:text-white/80 transition-colors"
+            >
+              PRICING
+            </Link>
             {isSignedIn ? (
               <>
                 <Link
-                  href="/founder"
-                  className="text-sm font-medium text-zinc-600 transition-all duration-300 hover:text-black hover:scale-105 dark:text-zinc-400 dark:hover:text-zinc-50"
+                  href="/dashboard"
+                  className="text-sm font-medium text-white hover:text-white/80 transition-colors"
                 >
-                  Overview
+                  SIGN IN
                 </Link>
                 <Link
                   href="/dashboard"
-                  className="text-sm font-medium text-zinc-600 transition-all duration-300 hover:text-black hover:scale-105 dark:text-zinc-400 dark:hover:text-zinc-50"
+                  className="px-6 py-2 bg-blue-500 rounded-lg text-white font-semibold flex items-center gap-2 hover:bg-blue-600 transition-colors"
                 >
-                  Dashboard
+                  OPEN DASHBOARD
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
-                <UserButtonWrapper />
               </>
             ) : (
-              <SignInButtonWrapper />
+              <>
+                <Link
+                  href="#"
+                  className="text-sm font-medium text-white hover:text-white/80 transition-colors"
+                >
+                  SIGN IN
+                </Link>
+                <div className="px-6 py-2 bg-blue-500 rounded-lg text-white font-semibold flex items-center gap-2 hover:bg-blue-600 transition-colors cursor-pointer">
+                  <SignInButtonWrapper />
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -66,4 +95,5 @@ export function AnimatedNav() {
     </nav>
   );
 }
+
 

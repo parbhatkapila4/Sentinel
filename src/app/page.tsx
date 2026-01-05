@@ -1,1021 +1,530 @@
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { SignInButtonWrapper } from "@/components/sign-in-button";
-import { AnimatedSection } from "@/components/animated-section";
-import { AnimatedNav } from "@/components/animated-nav";
 
 export default async function Home() {
   const user = await currentUser();
 
-  return (
-    <div className="min-h-screen bg-white font-sans dark:bg-black">
-      <AnimatedNav />
-
-      <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-32">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-zinc-50 via-white to-white dark:from-zinc-950 dark:via-black dark:to-black"></div>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
-              </span>
-              Real-time risk detection • Zero database triggers • 100%
-              deterministic
+    return (
+    <div className="min-h-screen bg-black text-white antialiased">
+      {/* Navigation */}
+      <nav className="fixed top-0 z-50 w-full bg-black/95 backdrop-blur-xl border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <button className="px-4 py-2 bg-white rounded-full hover:bg-gray-100 transition-colors">
+                <span className="text-black font-semibold text-sm">Revenue Sentinel</span>
+              </button>
+              <div className="hidden md:flex items-center gap-6">
+                <Link href="#features" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
+                  Features
+                </Link>
+                <Link href="#pricing" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
+                  Pricing
+                </Link>
+                <Link href="#blog" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
+                  Blog
+                </Link>
+                <Link href="#faq" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
+                  FAQ
+                </Link>
+              </div>
             </div>
-            <h1 className="text-6xl font-bold tracking-tight text-black dark:text-zinc-50 sm:text-7xl lg:text-8xl">
-              Never Lose a Deal to
-              <span className="block bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-clip-text text-transparent">
-                Silent Decay
-              </span>
-            </h1>
-            <p className="mt-8 text-xl leading-8 text-zinc-600 dark:text-zinc-400 sm:text-2xl">
-              Real-time risk detection that tells you exactly which deals are
-              dying—and what to do about it. Before it&apos;s too late.
-            </p>
-            <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="flex items-center gap-4">
+              <Link href="#" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
+                Login
+              </Link>
               {user ? (
                 <Link
                   href="/dashboard"
-                  className="group relative overflow-hidden rounded-xl bg-black px-8 py-4 text-base font-semibold text-white shadow-2xl transition-all hover:scale-105 hover:shadow-black/50 dark:bg-white dark:text-black dark:hover:bg-zinc-100"
+                  className="px-5 py-2.5 bg-blue-500 text-white rounded-lg font-semibold text-sm hover:bg-blue-600 transition-colors flex items-center gap-2"
                 >
-                  <span className="relative z-10">Open Dashboard</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-zinc-800 to-black opacity-0 transition-opacity group-hover:opacity-100 dark:from-zinc-200 dark:to-white"></div>
+                  Get started
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
               ) : (
-                <SignInButtonWrapper />
+                <div className="px-5 py-2.5 bg-blue-500 text-white rounded-lg font-semibold text-sm hover:bg-blue-600 transition-colors flex items-center gap-2 cursor-pointer">
+            <SignInButtonWrapper />
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               )}
-              <Link
-                href="#how-it-works"
-                className="rounded-xl border-2 border-zinc-300 bg-white px-8 py-4 text-base font-semibold text-zinc-900 transition-all duration-300 hover:border-zinc-400 hover:bg-zinc-50 hover:scale-105 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800"
-              >
-                See How It Works
-              </Link>
+            </div>
+          </div>
+      </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center pt-32 pb-20 px-6 lg:px-8 overflow-hidden">
+        {/* Abstract Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Curved yellow orbital lines */}
+          <svg className="absolute top-32 right-32 w-[500px] h-[500px] opacity-40" viewBox="0 0 500 500" fill="none">
+            <path d="M 50 250 Q 250 50 450 250 T 50 250" stroke="#fbbf24" strokeWidth="2" fill="none" opacity="0.6" />
+            <path d="M 100 250 Q 250 100 400 250 T 100 250" stroke="#f59e0b" strokeWidth="2" fill="none" opacity="0.5" />
+          </svg>
+          
+          {/* Glossy colored spheres */}
+          <div className="absolute top-48 left-24 w-40 h-40 bg-red-500 rounded-full opacity-25 blur-2xl"></div>
+          <div className="absolute top-64 left-48 w-32 h-32 bg-yellow-400 rounded-full opacity-25 blur-2xl"></div>
+          <div className="absolute bottom-48 right-48 w-48 h-48 bg-blue-500 rounded-full opacity-25 blur-2xl"></div>
+          
+          {/* Blue chevron stack on right */}
+          <div className="absolute right-24 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-30">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <svg key={i} className="w-10 h-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto w-full">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            {/* Left: Text Content */}
+            <div className="space-y-8">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1]">
+                Never Lose a Deal to
+                <br />
+                <span className="text-blue-400">Silent Decay.</span>
+          </h1>
+              <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl">
+                Real-time risk detection that tells you exactly which deals are dying—and what to do about it. 
+                See why the most innovative sales teams add automated risk alerts, deal-specific action recommendations 
+                and intelligent activity tracking on top of conventional CRM systems. You won&apos;t go back.
+              </p>
+              
+              {/* CTA Section */}
+              <div className="flex flex-col sm:flex-row gap-4 max-w-2xl pt-4">
+                {user ? (
+                  <Link
+                    href="/dashboard"
+                    className="px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                  >
+                    Open Dashboard
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                ) : (
+                  <div className="px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
+                    <SignInButtonWrapper />
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right: 3D Illustration with Chat Bubbles */}
+            <div className="relative lg:min-h-[600px]">
+              {/* Abstract 3D Illustration Container */}
+              <div className="relative w-full h-full">
+                {/* 3D Pipes, Tracks, and Structures */}
+                <svg viewBox="0 0 500 600" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                  <defs>
+                    {/* Glossy gradients for 3D effect */}
+                    <linearGradient id="blueGloss" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.9" />
+                      <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#1e40af" stopOpacity="0.7" />
+                    </linearGradient>
+                    <linearGradient id="orangeGloss" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fb923c" stopOpacity="0.9" />
+                      <stop offset="50%" stopColor="#f97316" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#ea580c" stopOpacity="0.7" />
+                    </linearGradient>
+                    <linearGradient id="yellowGloss" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fcd34d" stopOpacity="0.9" />
+                      <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.7" />
+                    </linearGradient>
+                    <radialGradient id="sphereBlue" cx="50%" cy="30%">
+                      <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#1e40af" stopOpacity="0.6" />
+                    </radialGradient>
+                    <radialGradient id="sphereOrange" cx="50%" cy="30%">
+                      <stop offset="0%" stopColor="#fdba74" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#ea580c" stopOpacity="0.6" />
+                    </radialGradient>
+                    <radialGradient id="sphereYellow" cx="50%" cy="30%">
+                      <stop offset="0%" stopColor="#fde047" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.6" />
+                    </radialGradient>
+                    <radialGradient id="sphereRed" cx="50%" cy="30%">
+                      <stop offset="0%" stopColor="#fca5a5" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#dc2626" stopOpacity="0.6" />
+                    </radialGradient>
+                  </defs>
+
+                  {/* Complex network of blue pipes */}
+                  <path d="M 50 100 Q 150 40 250 100 T 450 100" stroke="url(#blueGloss)" strokeWidth="12" fill="none" opacity="0.8" />
+                  <path d="M 80 180 Q 200 120 320 180 T 480 180" stroke="url(#blueGloss)" strokeWidth="10" fill="none" opacity="0.75" />
+                  <path d="M 100 260 Q 220 200 340 260" stroke="url(#blueGloss)" strokeWidth="9" fill="none" opacity="0.7" />
+                  <path d="M 120 340 Q 240 280 360 340" stroke="url(#blueGloss)" strokeWidth="8" fill="none" opacity="0.65" />
+                  
+                  {/* Orange tracks intersecting */}
+                  <path d="M 70 140 L 430 200" stroke="url(#orangeGloss)" strokeWidth="10" fill="none" opacity="0.8" />
+                  <path d="M 90 220 L 410 280" stroke="url(#orangeGloss)" strokeWidth="9" fill="none" opacity="0.75" />
+                  <path d="M 110 300 Q 250 240 390 300" stroke="url(#orangeGloss)" strokeWidth="8" fill="none" opacity="0.7" />
+                  <path d="M 130 380 Q 270 320 410 380" stroke="url(#orangeGloss)" strokeWidth="7" fill="none" opacity="0.65" />
+                  
+                  {/* Yellow connecting tracks */}
+                  <path d="M 60 160 Q 180 100 300 160" stroke="url(#yellowGloss)" strokeWidth="8" fill="none" opacity="0.75" />
+                  <path d="M 140 240 L 360 300" stroke="url(#yellowGloss)" strokeWidth="7" fill="none" opacity="0.7" />
+                  <path d="M 160 320 Q 280 260 400 320" stroke="url(#yellowGloss)" strokeWidth="6" fill="none" opacity="0.65" />
+                  
+                  {/* Prominent gear structure in upper center */}
+                  <g transform="translate(250, 200)">
+                    {/* Outer gear ring */}
+                    <circle r="45" fill="none" stroke="url(#blueGloss)" strokeWidth="5" opacity="0.7" />
+                    <circle r="35" fill="none" stroke="url(#blueGloss)" strokeWidth="4" opacity="0.75" />
+                    <circle r="25" fill="url(#blueGloss)" opacity="0.6" />
+                    {/* Gear teeth */}
+                    {Array.from({ length: 8 }).map((_, i) => {
+                      const angle = (i * 45) * Math.PI / 180;
+                      const x1 = Math.cos(angle) * 40;
+                      const y1 = Math.sin(angle) * 40;
+                      const x2 = Math.cos(angle) * 50;
+                      const y2 = Math.sin(angle) * 50;
+                      return (
+                        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="url(#blueGloss)" strokeWidth="4" opacity="0.7" />
+                      );
+                    })}
+                  </g>
+                  
+                  {/* Secondary gear structure */}
+                  <g transform="translate(150, 350)">
+                    <circle r="35" fill="none" stroke="url(#orangeGloss)" strokeWidth="4" opacity="0.7" />
+                    <circle r="25" fill="none" stroke="url(#orangeGloss)" strokeWidth="3" opacity="0.75" />
+                    <circle r="18" fill="url(#orangeGloss)" opacity="0.6" />
+                    {Array.from({ length: 6 }).map((_, i) => {
+                      const angle = (i * 60) * Math.PI / 180;
+                      const x1 = Math.cos(angle) * 30;
+                      const y1 = Math.sin(angle) * 30;
+                      const x2 = Math.cos(angle) * 38;
+                      const y2 = Math.sin(angle) * 38;
+                      return (
+                        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="url(#orangeGloss)" strokeWidth="3" opacity="0.7" />
+                      );
+                    })}
+                  </g>
+                  
+                  {/* Glossy spheres embedded in tracks */}
+                  <circle cx="120" cy="100" r="30" fill="url(#sphereBlue)" opacity="0.9" />
+                  <circle cx="280" cy="100" r="28" fill="url(#sphereBlue)" opacity="0.85" />
+                  <circle cx="380" cy="180" r="32" fill="url(#sphereBlue)" opacity="0.9" />
+                  
+                  <circle cx="150" cy="200" r="25" fill="url(#sphereOrange)" opacity="0.9" />
+                  <circle cx="320" cy="260" r="30" fill="url(#sphereOrange)" opacity="0.85" />
+                  <circle cx="400" cy="300" r="28" fill="url(#sphereOrange)" opacity="0.9" />
+                  
+                  <circle cx="180" cy="160" r="22" fill="url(#sphereYellow)" opacity="0.9" />
+                  <circle cx="340" cy="240" r="24" fill="url(#sphereYellow)" opacity="0.85" />
+                  <circle cx="250" cy="320" r="26" fill="url(#sphereYellow)" opacity="0.9" />
+                  
+                  {/* Red sphere */}
+                  <circle cx="200" cy="280" r="28" fill="url(#sphereRed)" opacity="0.9" />
+                  
+                  {/* Additional connecting pipes for complexity */}
+                  <path d="M 180 120 L 220 180" stroke="url(#blueGloss)" strokeWidth="6" fill="none" opacity="0.6" />
+                  <path d="M 300 140 L 340 200" stroke="url(#orangeGloss)" strokeWidth="6" fill="none" opacity="0.6" />
+                  <path d="M 240 220 L 280 280" stroke="url(#yellowGloss)" strokeWidth="5" fill="none" opacity="0.6" />
+                  <path d="M 160 300 L 200 360" stroke="url(#blueGloss)" strokeWidth="5" fill="none" opacity="0.6" />
+                  
+                  {/* More intersecting tracks */}
+                  <path d="M 100 180 Q 200 140 300 180" stroke="url(#yellowGloss)" strokeWidth="6" fill="none" opacity="0.65" />
+                  <path d="M 200 240 L 300 300" stroke="url(#blueGloss)" strokeWidth="6" fill="none" opacity="0.6" />
+                </svg>
+
+                {/* Chat Bubbles Overlay */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {/* Bubble 1 - Top Left (Purple) */}
+                  <div className="absolute top-24 left-12 bg-purple-500 rounded-2xl rounded-bl-none p-4 max-w-[220px] shadow-2xl">
+                    <p className="text-white text-sm font-medium leading-snug">Deal at risk: No activity in 7 days</p>
+                  </div>
+                  
+                  {/* Bubble 2 - Top Right (Blue) */}
+                  <div className="absolute top-40 right-20 bg-blue-500 rounded-2xl rounded-br-none p-4 max-w-[180px] shadow-2xl">
+                    <p className="text-white text-sm font-medium leading-snug">Send follow-up email</p>
+                  </div>
+                  
+                  {/* Bubble 3 - Middle Left (Purple) */}
+                  <div className="absolute top-56 left-10 bg-purple-500 rounded-2xl rounded-bl-none p-4 max-w-[240px] shadow-2xl">
+                    <p className="text-white text-sm font-medium leading-snug">Negotiation stalled without response</p>
+                  </div>
+                  
+                  {/* Bubble 4 - Middle Right (Blue) */}
+                  <div className="absolute top-72 right-16 bg-blue-500 rounded-2xl rounded-br-none p-4 max-w-[200px] shadow-2xl">
+                    <p className="text-white text-sm font-medium leading-snug">Nudge for response</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <AnimatedSection>
-        <section className="border-y border-zinc-200 bg-gradient-to-b from-zinc-50 to-white py-20 dark:border-zinc-800 dark:from-zinc-950 dark:to-black">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-              <div className="group text-center transition-all duration-500 hover:scale-105">
-                <div className="text-5xl font-bold text-black transition-colors duration-300 group-hover:text-red-600 dark:text-zinc-50 dark:group-hover:text-red-400">
-                  100%
-                </div>
-                <div className="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  Real-Time
-                </div>
-                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
-                  Risk calculated on every request
-                </div>
+      {/* Testimonial and Partner Logos Section */}
+      <section className="py-16 px-6 lg:px-8 bg-gray-900/60 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+            {/* Testimonial */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gray-700 rounded-full shrink-0 flex items-center justify-center">
+                <span className="text-white/60 text-xs">RS</span>
               </div>
-              <div className="group text-center transition-all duration-500 hover:scale-105">
-                <div className="text-5xl font-bold text-black transition-colors duration-300 group-hover:text-blue-600 dark:text-zinc-50 dark:group-hover:text-blue-400">
-                  &lt;1s
-                </div>
-                <div className="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  Computation
-                </div>
-                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
-                  Instant risk score calculation
-                </div>
+              <div>
+                <p className="text-2xl font-bold text-white mb-1">&quot;Game Changer&quot;</p>
+                <p className="text-white/60 text-sm">Sales Leader, Enterprise Team</p>
               </div>
-              <div className="group text-center transition-all duration-500 hover:scale-105">
-                <div className="text-5xl font-bold text-black transition-colors duration-300 group-hover:text-green-600 dark:text-zinc-50 dark:group-hover:text-green-400">
-                  0
-                </div>
-                <div className="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  DB Triggers
-                </div>
-                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
-                  Pure application logic
-                </div>
-              </div>
-              <div className="group text-center transition-all duration-500 hover:scale-105">
-                <div className="text-5xl font-bold text-black transition-colors duration-300 group-hover:text-purple-600 dark:text-zinc-50 dark:group-hover:text-purple-400">
-                  100%
-                </div>
-                <div className="mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  Deterministic
-                </div>
-                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
-                  No AI, no randomness
-                </div>
-              </div>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap items-center justify-center gap-8 opacity-70">
+              <div className="text-white/80 font-semibold text-sm">Real-Time Alerts</div>
+              <div className="text-white/80 font-semibold text-sm">Action Recommendations</div>
+              <div className="text-white/80 font-semibold text-sm">Risk Detection</div>
             </div>
           </div>
-        </section>
-      </AnimatedSection>
+        </div>
+      </section>
 
-      <AnimatedSection delay={100}>
-        <section className="py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl">
-              <h2 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-                The Problem: Silent Deal Decay
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                Revenue teams lose deals to silent decay. Deals stall without
-                visible warning signs, and by the time a CRM shows
-                &quot;stale,&quot; the opportunity is often unrecoverable.
-                Traditional CRMs track status changes but miss the absence of
-                activity.
-              </p>
-              <div className="mt-10 rounded-2xl border-2 border-red-200 bg-red-50 p-8 transition-all duration-500 hover:border-red-300 hover:shadow-xl dark:border-red-900/50 dark:bg-red-950/20 dark:hover:border-red-800/50">
-                <h3 className="text-xl font-semibold text-red-900 dark:text-red-400">
-                  What Happens Without Risk Detection
-                </h3>
-                <ul className="mt-4 space-y-3 text-sm text-red-800 dark:text-red-300">
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-600"></span>
-                    <span>
-                      Deals go silent for weeks without anyone noticing
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-600"></span>
-                    <span>
-                      By the time you realize a deal is dead, it&apos;s too late
-                      to save it
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-600"></span>
-                    <span>
-                      No visibility into which deals need immediate attention
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-600"></span>
-                    <span>
-                      Revenue leaks away silently, quarter after quarter
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
+      {/* Features Section - "Still Using Big SMS?" style */}
+      <section id="features" className="py-32 px-6 lg:px-8 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-20 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <p className="text-sm text-blue-400 mb-4 uppercase tracking-wider font-semibold">Features</p>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              Still Using Basic CRMs? You&apos;re Missing Out
+            </h2>
+            <p className="text-xl text-white/70 max-w-3xl mx-auto">
+              Everything You Need. Everything You Didn&apos;t Know You Needed.
+            </p>
           </div>
-        </section>
-      </AnimatedSection>
 
-      <AnimatedSection delay={200}>
-        <section className="border-t border-zinc-200 bg-zinc-50 py-24 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-                The Solution: Real-Time Risk Intelligence
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                Revenue Sentinel detects deal risk before it becomes revenue
-                loss. Track activity, calculate risk in real-time, and get
-                actionable recommendations to save at-risk deals.
-              </p>
-            </div>
-            <div className="mt-16 rounded-2xl border-2 border-green-200 bg-green-50 p-8 dark:border-green-900/50 dark:bg-green-950/20">
-              <h3 className="text-xl font-semibold text-green-900 dark:text-green-400">
-                How Revenue Sentinel Solves This
-              </h3>
-              <div className="mt-6 grid gap-6 sm:grid-cols-2">
-                <div>
-                  <h4 className="font-semibold text-green-900 dark:text-green-400">
-                    Real-Time Risk Detection
-                  </h4>
-                  <p className="mt-2 text-sm text-green-800 dark:text-green-300">
-                    Risk scores calculated on every request from deal activity.
-                    No stale data, always accurate.
-                  </p>
+          {/* Floating Feature Cards */}
+          <div className="relative">
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Card 1 - Real-time Alerts */}
+              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
+                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mb-6">
+                  <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-green-900 dark:text-green-400">
-                    Actionable Recommendations
-                  </h4>
-                  <p className="mt-2 text-sm text-green-800 dark:text-green-300">
-                    Get specific actions for each deal with urgency levels. Know
-                    exactly what to do next.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-green-900 dark:text-green-400">
-                    Automatic Escalation
-                  </h4>
-                  <p className="mt-2 text-sm text-green-800 dark:text-green-300">
-                    When actions become overdue, urgency escalates and risk
-                    increases. Neglected deals become impossible to ignore.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-green-900 dark:text-green-400">
-                    Founder-Level Visibility
-                  </h4>
-                  <p className="mt-2 text-sm text-green-800 dark:text-green-300">
-                    Executive dashboard showing total risk, overdue deals, and
-                    top 3 most critical deals requiring immediate attention.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
-
-      <AnimatedSection delay={300}>
-        <section id="features" className="py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-                Complete Deal Risk Management
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                Everything you need to track deals, detect risk, and take action
-                before it&apos;s too late.
-              </p>
-            </div>
-
-            <div className="mt-20 grid gap-8 lg:grid-cols-3">
-              <div className="group relative overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                <div className="absolute right-0 top-0 h-40 w-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-red-100 opacity-30 blur-3xl transition-opacity group-hover:opacity-50 dark:bg-red-900/30"></div>
-                <div className="relative">
-                  <div className="mb-6 inline-flex rounded-xl bg-red-100 p-4 transition-transform duration-300 group-hover:scale-110 dark:bg-red-900/20">
-                    <svg
-                      className="h-7 w-7 text-red-600 transition-colors duration-300 group-hover:text-red-700 dark:text-red-400 dark:group-hover:text-red-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-black dark:text-zinc-50">
-                    Real-Time Risk Detection
-                  </h3>
-                  <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-                    Risk scores calculated on every request from deal activity.
-                    Action-based model rewards engagement and penalizes silence.
-                  </p>
-                  <div className="mt-6 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Risk Scores:
-                        </strong>{" "}
-                        0.0 (safe) to 1.0 (critical) with Low/Medium/High
-                        classification
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Status:
-                        </strong>{" "}
-                        &quot;active&quot; or &quot;at_risk&quot; automatically
-                        derived from score
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Risk Aging:
-                        </strong>{" "}
-                        Track when deals first became at-risk and days since
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Deterministic:
-                        </strong>{" "}
-                        No AI, no randomness—pure calculation from activity
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="group relative overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                <div className="absolute right-0 top-0 h-40 w-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-yellow-100 opacity-30 blur-3xl transition-opacity group-hover:opacity-50 dark:bg-yellow-900/30"></div>
-                <div className="relative">
-                  <div className="mb-6 inline-flex rounded-xl bg-yellow-100 p-4 transition-transform duration-300 group-hover:scale-110 dark:bg-yellow-900/20">
-                    <svg
-                      className="h-7 w-7 text-yellow-600 transition-colors duration-300 group-hover:text-yellow-700 dark:text-yellow-400 dark:group-hover:text-yellow-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-black dark:text-zinc-50">
-                    Actionable Recommendations
-                  </h3>
-                  <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-                    Get specific actions for each deal with urgency levels. Know
-                    exactly what to do next, prioritized by risk.
-                  </p>
-                  <div className="mt-6 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Automatic:
-                        </strong>{" "}
-                        Recommendations generated from primary risk reason
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Urgency Levels:
-                        </strong>{" "}
-                        High (1 day SLA), Medium (3 days), Low (7 days)
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Actions:
-                        </strong>{" "}
-                        &quot;Send follow-up email&quot;, &quot;Nudge for
-                        response&quot;, &quot;Review deal details&quot;
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Primary Reason:
-                        </strong>{" "}
-                        Clear explanation of why each deal is at risk
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="group relative overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                <div className="absolute right-0 top-0 h-40 w-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-100 opacity-30 blur-3xl transition-opacity group-hover:opacity-50 dark:bg-blue-900/30"></div>
-                <div className="relative">
-                  <div className="mb-6 inline-flex rounded-xl bg-blue-100 p-4 transition-transform duration-300 group-hover:scale-110 dark:bg-blue-900/20">
-                    <svg
-                      className="h-7 w-7 text-blue-600 transition-colors duration-300 group-hover:text-blue-700 dark:text-blue-400 dark:group-hover:text-blue-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-black dark:text-zinc-50">
-                    Action SLA & Escalation
-                  </h3>
-                  <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-                    Track when actions become overdue. Automatic escalation
-                    ensures critical deals never fall through cracks.
-                  </p>
-                  <div className="mt-6 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          SLA Deadlines:
-                        </strong>{" "}
-                        High (1 day), Medium (3 days), Low (7 days) from risk
-                        start
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Overdue Tracking:
-                        </strong>{" "}
-                        Days overdue calculated automatically
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Urgency Escalation:
-                        </strong>{" "}
-                        Medium→High, Low→Medium when overdue
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Risk Escalation:
-                        </strong>{" "}
-                        +0.1 risk per 2 days overdue (capped at 1.0)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="group relative overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                <div className="absolute right-0 top-0 h-40 w-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-purple-100 opacity-30 blur-3xl transition-opacity group-hover:opacity-50 dark:bg-purple-900/30"></div>
-                <div className="relative">
-                  <div className="mb-6 inline-flex rounded-xl bg-purple-100 p-4 transition-transform duration-300 group-hover:scale-110 dark:bg-purple-900/20">
-                    <svg
-                      className="h-7 w-7 text-purple-600 transition-colors duration-300 group-hover:text-purple-700 dark:text-purple-400 dark:group-hover:text-purple-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-3.75v3.75m-3-3.75h3.75"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-black dark:text-zinc-50">
-                    Founder Dashboard
-                  </h3>
-                  <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-                    Executive overview of deal risk across your entire pipeline.
-                    See the big picture at a glance.
-                  </p>
-                  <div className="mt-6 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Metrics:
-                        </strong>{" "}
-                        Total deals, at-risk count, overdue count, high urgency
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Critical Deals:
-                        </strong>{" "}
-                        Top 3 most urgent (sorted by overdue, risk score)
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Overdue Tracking:
-                        </strong>{" "}
-                        Deals overdue more than 3 days highlighted
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          One Screen:
-                        </strong>{" "}
-                        Know if things are bad in 5 seconds
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="group relative overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                <div className="absolute right-0 top-0 h-40 w-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-green-100 opacity-30 blur-3xl transition-opacity group-hover:opacity-50 dark:bg-green-900/30"></div>
-                <div className="relative">
-                  <div className="mb-6 inline-flex rounded-xl bg-green-100 p-4 transition-transform duration-300 group-hover:scale-110 dark:bg-green-900/20">
-                    <svg
-                      className="h-7 w-7 text-green-600 transition-colors duration-300 group-hover:text-green-700 dark:text-green-400 dark:group-hover:text-green-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h4.125M8.25 8.25l2.25-2.25m0 0l2.25 2.25M10.5 6.75v3.75"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-black dark:text-zinc-50">
-                    Daily Action Queue
-                  </h3>
-                  <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-                    Prioritized list organized by urgency. Know exactly what to
-                    focus on today.
-                  </p>
-                  <div className="mt-6 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Urgent:
-                        </strong>{" "}
-                        At-risk + (overdue OR high urgency) - max 5 deals
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Important:
-                        </strong>{" "}
-                        At-risk but not overdue - max 5 deals
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Safe:
-                        </strong>{" "}
-                        Active deals sorted by stage priority - max 5
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Sorted:
-                        </strong>{" "}
-                        By urgency, overdue days, then risk score
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="group relative overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                <div className="absolute right-0 top-0 h-40 w-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-indigo-100 opacity-30 blur-3xl transition-opacity group-hover:opacity-50 dark:bg-indigo-900/30"></div>
-                <div className="relative">
-                  <div className="mb-6 inline-flex rounded-xl bg-indigo-100 p-4 transition-transform duration-300 group-hover:scale-110 dark:bg-indigo-900/20">
-                    <svg
-                      className="h-7 w-7 text-indigo-600 transition-colors duration-300 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-black dark:text-zinc-50">
-                    Activity Timeline
-                  </h3>
-                  <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-                    Complete audit trail of all deal activity. Track emails,
-                    meetings, and stage changes in chronological order.
-                  </p>
-                  <div className="mt-6 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Event Types:
-                        </strong>{" "}
-                        Email sent, email received, meeting held, stage changes
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Immutable:
-                        </strong>{" "}
-                        Complete chronological history of all activity
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Last Activity:
-                        </strong>{" "}
-                        Automatically calculated from human engagement events
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"></span>
-                      <span>
-                        <strong className="text-black dark:text-zinc-50">
-                          Metadata:
-                        </strong>{" "}
-                        JSON payload for extensibility and custom event data
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
-
-      <AnimatedSection delay={400}>
-        <section
-          id="how-it-works"
-          className="border-t border-zinc-200 bg-zinc-50 py-24 dark:border-zinc-800 dark:bg-zinc-900"
-        >
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-4xl">
-              <div className="text-center">
-                <h2 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-                  How Risk Calculation Works
-                </h2>
-                <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                  Deterministic, action-based model. No AI, no black boxes.
-                  Every score is calculated from your deal activity data.
+                <p className="text-white/90 text-lg leading-relaxed">
+                  Real-time risk alerts tell you exactly which deals need attention—before it&apos;s too late.
                 </p>
               </div>
 
-              <div className="mt-16 space-y-8">
-                <div className="rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <div className="flex items-start gap-6">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black text-lg font-bold text-white dark:bg-white dark:text-black">
-                      1
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-black dark:text-zinc-50">
-                        Track Deal Activity
-                      </h3>
-                      <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-                        Record every interaction: emails sent, emails received,
-                        meetings held. Each event is timestamped and stored in
-                        an immutable timeline. Only human engagement events
-                        (email_sent, email_received, meeting_held) count toward
-                        activity.
-                      </p>
-                    </div>
+              {/* Card 2 - Action Recommendations */}
+              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
+                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mb-6">
+                  <svg className="w-8 h-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <p className="text-white/90 text-lg leading-relaxed">
+                  Intelligent action recommendations tell you what to do next—no guessing, no missed opportunities.
+                </p>
+              </div>
+
+              {/* Card 3 - Activity Tracking */}
+              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
+                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mb-6">
+                  <svg className="w-8 h-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <p className="text-white/90 text-lg leading-relaxed">
+                  Automated activity tracking detects silence and inactivity—so you never lose a deal to decay.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section - "Text to Buy Means More Money" style */}
+      <section id="pricing" className="py-32 px-6 lg:px-8 bg-gray-900/30 relative overflow-hidden">
+        {/* Background visualization */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]">
+            <svg viewBox="0 0 400 400" className="w-full h-full opacity-20">
+              <circle cx="200" cy="200" r="150" fill="none" stroke="#3b82f6" strokeWidth="2" opacity="0.3" />
+              <circle cx="200" cy="200" r="100" fill="none" stroke="#f97316" strokeWidth="2" opacity="0.3" />
+              <circle cx="200" cy="200" r="50" fill="#fbbf24" opacity="0.2" />
+              <circle cx="120" cy="120" r="30" fill="#3b82f6" opacity="0.3" />
+              <circle cx="280" cy="280" r="30" fill="#f97316" opacity="0.3" />
+            </svg>
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <p className="text-sm text-blue-400 mb-4 uppercase tracking-wider font-semibold">Why Revenue Sentinel</p>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              Real-Time Risk Detection Means More Deals Closed
+            </h2>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Stat Card 1 */}
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 relative hover:bg-white/10 transition-all">
+              <div className="absolute top-4 right-4 w-3 h-3 bg-white rounded-full"></div>
+              <div className="text-6xl font-bold text-white mb-4">0</div>
+              <p className="text-white/70 text-lg leading-relaxed">
+                Deals lost to silent decay when you catch risk early
+              </p>
+            </div>
+
+            {/* Stat Card 2 */}
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 relative hover:bg-white/10 transition-all">
+              <div className="absolute top-4 right-4 w-3 h-3 bg-yellow-400 rounded-full"></div>
+              <div className="text-6xl font-bold text-white mb-4">24/7</div>
+              <p className="text-white/70 text-lg leading-relaxed">
+                Continuous monitoring of deal health and activity status
+              </p>
+            </div>
+
+            {/* Stat Card 3 */}
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 relative hover:bg-white/10 transition-all">
+              <div className="absolute top-4 right-4 w-3 h-3 bg-red-500 rounded-full"></div>
+              <div className="text-6xl font-bold text-white mb-4">100%</div>
+              <p className="text-white/70 text-lg leading-relaxed">
+                Actionable recommendations for every at-risk deal
+              </p>
+            </div>
+          </div>
+
+          {/* CTA Button */}
+          <div className="text-center mt-16">
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors"
+              >
+                Open Dashboard
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors cursor-pointer">
+                <SignInButtonWrapper />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-32 px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-sm text-blue-400 mb-4 uppercase tracking-wider font-semibold">How It Works</p>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              Action-First Deal Management
+            </h2>
+            <p className="text-xl text-white/70 max-w-3xl mx-auto">
+              See exactly which deals need attention and what to do about them—before it&apos;s too late
+            </p>
+          </div>
+
+          {/* Process Card */}
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-blue-500/20 backdrop-blur-xl rounded-2xl p-12 border border-blue-500/30">
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
+                    <span className="text-white font-bold text-lg">1</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">Track Deal Activity</h3>
+                    <p className="text-white/80">Monitor emails, meetings, calls, and notes in real-time</p>
                   </div>
                 </div>
-
-                <div className="rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <div className="flex items-start gap-6">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black text-lg font-bold text-white dark:bg-white dark:text-black">
-                      2
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-black dark:text-zinc-50">
-                        Calculate Baseline Risk
-                      </h3>
-                      <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-                        Each deal starts with baseline risk based on stage:
-                        Negotiation (+0.3), Discovery (+0.1), or other stages
-                        (0.0). This reflects the inherent risk of each stage in
-                        the sales process.
-                      </p>
-                    </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
+                    <span className="text-white font-bold text-lg">2</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">Detect Risk Automatically</h3>
+                    <p className="text-white/80">Get instant alerts when deals show signs of stalling or inactivity</p>
                   </div>
                 </div>
-
-                <div className="rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <div className="flex items-start gap-6">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black text-lg font-bold text-white dark:bg-white dark:text-black">
-                      3
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-black dark:text-zinc-50">
-                        Apply Risk Reducers (Rewards)
-                      </h3>
-                      <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-                        Recent activity reduces risk: Email sent within 5 days
-                        (-0.2), Email received within 5 days (-0.3), Meeting
-                        held within 7 days (-0.4). This rewards active
-                        engagement and reduces risk for deals with recent
-                        communication.
-                      </p>
-                    </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
+                    <span className="text-white font-bold text-lg">3</span>
                   </div>
-                </div>
-
-                <div className="rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <div className="flex items-start gap-6">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black text-lg font-bold text-white dark:bg-white dark:text-black">
-                      4
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-black dark:text-zinc-50">
-                        Apply Risk Increases (Penalties)
-                      </h3>
-                      <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-                        Penalties apply for: No activity in 7+ days (+0.4),
-                        Negotiation stage without email activity (+0.4), High
-                        value deals &gt;$5,000 (+0.2). These reflect warning
-                        signs that require attention.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <div className="flex items-start gap-6">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black text-lg font-bold text-white dark:bg-white dark:text-black">
-                      5
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-black dark:text-zinc-50">
-                        Calculate Final Score & Status
-                      </h3>
-                      <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-                        Risk score is clamped to 0.0-1.0. Status is
-                        &quot;at_risk&quot; if score ≥ 0.6, else
-                        &quot;active&quot;. Risk level: Low (&lt;0.4), Medium
-                        (0.4-0.6), High (≥0.6). All calculations happen in
-                        real-time on every request.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border-2 border-zinc-200 bg-white p-8 transition-all duration-500 hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <div className="flex items-start gap-6">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black text-lg font-bold text-white dark:bg-white dark:text-black">
-                      6
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-black dark:text-zinc-50">
-                        Generate Recommendations & Track SLA
-                      </h3>
-                      <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-                        Based on primary risk reason, generate recommended
-                        action with urgency. Calculate action due date (1/3/7
-                        days from risk start). Track overdue status and escalate
-                        urgency/risk when overdue. All derived from timeline
-                        events—nothing persisted.
-                      </p>
-                    </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">Take Action</h3>
+                    <p className="text-white/80">Follow recommended actions to save deals and close more revenue</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-      </AnimatedSection>
+        </div>
+      </section>
 
-      <AnimatedSection delay={500}>
-        <section className="py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-4xl">
-              <h2 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-                Risk Calculation Model
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                Complete breakdown of how risk scores are calculated.
-              </p>
-
-              <div className="mt-12 grid gap-6 sm:grid-cols-2">
-                <div className="rounded-xl border-2 border-zinc-200 bg-white p-6 transition-all duration-500 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                    Baseline Risk (by Stage)
-                  </h3>
-                  <div className="mt-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex justify-between">
-                      <span>Negotiation:</span>
-                      <span className="font-mono font-semibold text-red-600 dark:text-red-400">
-                        +0.3
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Discovery:</span>
-                      <span className="font-mono font-semibold text-yellow-600 dark:text-yellow-400">
-                        +0.1
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Other stages:</span>
-                      <span className="font-mono font-semibold text-green-600 dark:text-green-400">
-                        0.0
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border-2 border-zinc-200 bg-white p-6 transition-all duration-500 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                    Risk Reducers (Recent Activity)
-                  </h3>
-                  <div className="mt-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex justify-between">
-                      <span>Email sent (≤5 days):</span>
-                      <span className="font-mono font-semibold text-green-600 dark:text-green-400">
-                        -0.2
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Email received (≤5 days):</span>
-                      <span className="font-mono font-semibold text-green-600 dark:text-green-400">
-                        -0.3
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Meeting held (≤7 days):</span>
-                      <span className="font-mono font-semibold text-green-600 dark:text-green-400">
-                        -0.4
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border-2 border-zinc-200 bg-white p-6 transition-all duration-500 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                    Risk Increases (Penalties)
-                  </h3>
-                  <div className="mt-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex justify-between">
-                      <span>No activity (7+ days):</span>
-                      <span className="font-mono font-semibold text-red-600 dark:text-red-400">
-                        +0.4
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Negotiation stalled:</span>
-                      <span className="font-mono font-semibold text-red-600 dark:text-red-400">
-                        +0.4
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>High value (&gt;$5k):</span>
-                      <span className="font-mono font-semibold text-yellow-600 dark:text-yellow-400">
-                        +0.2
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border-2 border-zinc-200 bg-white p-6 transition-all duration-500 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                    Final Calculation
-                  </h3>
-                  <div className="mt-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <div className="flex justify-between">
-                      <span>Score range:</span>
-                      <span className="font-mono font-semibold">0.0 - 1.0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>At-risk threshold:</span>
-                      <span className="font-mono font-semibold text-red-600 dark:text-red-400">
-                        ≥ 0.6
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Risk levels:</span>
-                      <span className="font-mono font-semibold">
-                        Low/Med/High
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      {/* Getting Started Section */}
+      <section className="py-32 px-6 lg:px-8 bg-gray-900/30">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            Getting Started is Easy and Fast
+          </h2>
+          <p className="text-xl text-white/70 mb-10 max-w-2xl mx-auto">
+            See why the most innovative revenue teams choose Revenue Sentinel for deal risk detection.
+          </p>
+          {user ? (
+          <Link
+            href="/dashboard"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors"
+          >
+              Open Dashboard
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+          </Link>
+          ) : (
+            <div className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors cursor-pointer">
+              <SignInButtonWrapper />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </div>
-          </div>
-        </section>
-      </AnimatedSection>
+          )}
+        </div>
+      </section>
 
-      <AnimatedSection delay={600}>
-        <section className="border-t border-zinc-200 bg-zinc-50 py-24 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-4xl">
-              <h2 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-                Technical Architecture
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                Built for reliability, performance, and maintainability.
-              </p>
-
-              <div className="mt-12 space-y-6">
-                <div className="rounded-xl border-2 border-zinc-200 bg-white p-6 transition-all duration-500 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                    Stack
-                  </h3>
-                  <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                    Next.js 14 (App Router), TypeScript, Prisma ORM, PostgreSQL,
-                    Clerk Authentication, Tailwind CSS
-                  </p>
-                </div>
-
-                <div className="rounded-xl border-2 border-zinc-200 bg-white p-6 transition-all duration-500 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                    Risk Calculation
-                  </h3>
-                  <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                    Single source of truth in{" "}
-                    <code className="rounded bg-zinc-100 px-2 py-1 text-sm font-mono dark:bg-zinc-800">
-                      calculateDealSignals()
-                    </code>
-                    . No database persistence—all risk fields derived on every
-                    request. Uses{" "}
-                    <code className="rounded bg-zinc-100 px-2 py-1 text-sm font-mono dark:bg-zinc-800">
-                      noStore()
-                    </code>{" "}
-                    to prevent caching.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border-2 border-zinc-200 bg-white p-6 transition-all duration-500 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                    Data Model
-                  </h3>
-                  <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                    Deals, DealEvents, DealTimeline—all user-scoped with
-                    multi-tenant isolation. DealTimeline is the single source of
-                    truth for activity. No triggers, no functions—pure
-                    application logic.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border-2 border-zinc-200 bg-white p-6 transition-all duration-500 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                    Security
-                  </h3>
-                  <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                    All database queries scoped by authenticated user ID. Server
-                    actions verify authentication before any database access.
-                    Cross-tenant data access architecturally impossible.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
-
-      <AnimatedSection delay={700}>
-        <section className="py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-                Ready to Stop Losing Deals?
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                Start detecting risk before it becomes revenue loss. Get
-                actionable recommendations and never let a deal die in silence
-                again.
-              </p>
-              <div className="mt-10">
-                {user ? (
-                  <Link
-                    href="/dashboard"
-                    className="group relative overflow-hidden rounded-xl bg-black px-8 py-4 text-base font-semibold text-white shadow-2xl transition-all hover:scale-105 hover:shadow-black/50 dark:bg-white dark:text-black dark:hover:bg-zinc-100"
-                  >
-                    <span className="relative z-10">Open Dashboard</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-zinc-800 to-black opacity-0 transition-opacity group-hover:opacity-100 dark:from-zinc-200 dark:to-white"></div>
-                  </Link>
-                ) : (
-                  <SignInButtonWrapper />
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
-
-      <footer className="border-t border-zinc-200 bg-white py-16 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-8 sm:flex-row">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-black dark:bg-white"></div>
-              <div>
-                <div className="font-semibold text-black dark:text-zinc-50">
-                  Revenue Sentinel
-                </div>
-                <div className="text-xs text-zinc-500 dark:text-zinc-500">
-                  Deal Risk Intelligence Platform
-                </div>
-              </div>
-            </div>
-            <div className="text-center text-sm text-zinc-500 dark:text-zinc-500 sm:text-left">
-              <p>Built for founders who refuse to lose deals to silence.</p>
-              <p className="mt-1">
-                Real-time risk detection • Actionable insights • Zero database
-                triggers
-              </p>
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-12 px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <button className="px-4 py-2 bg-white rounded-full hover:bg-gray-100 transition-colors">
+              <span className="text-black font-semibold text-sm">Revenue Sentinel</span>
+            </button>
+            <div className="flex gap-8 text-white/60 text-sm">
+              <Link href="#features" className="hover:text-white transition-colors">Features</Link>
+              <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
+              <Link href="#blog" className="hover:text-white transition-colors">Blog</Link>
+              <Link href="#faq" className="hover:text-white transition-colors">FAQ</Link>
             </div>
           </div>
         </div>
