@@ -8,6 +8,7 @@ import {
   formatRiskLevel,
   getPrimaryRiskReason,
 } from "@/lib/dealRisk";
+import { assertRiskFieldIntegrity } from "@/lib/riskAssertions";
 import { prisma } from "@/lib/prisma";
 import { appendDealTimeline } from "@/lib/timeline";
 
@@ -81,7 +82,6 @@ export async function createDeal(formData: FormData) {
     actionDueAt: signals.actionDueAt,
     actionOverdueByDays: signals.actionOverdueByDays,
     isActionOverdue: signals.isActionOverdue,
-    riskEvaluatedAt: deal.riskEvaluatedAt,
     createdAt: deal.createdAt,
   };
 }
@@ -110,6 +110,8 @@ export async function getAllDeals() {
   }
 
   return deals.map((deal) => {
+    assertRiskFieldIntegrity(deal);
+
     const dealTimeline = timelineByDealId.get(deal.id) ?? [];
 
     const timelineEvents = dealTimeline.map((e) => ({
@@ -153,7 +155,6 @@ export async function getAllDeals() {
       actionDueAt: signals.actionDueAt,
       actionOverdueByDays: signals.actionOverdueByDays,
       isActionOverdue: signals.isActionOverdue,
-      riskEvaluatedAt: deal.riskEvaluatedAt,
       createdAt: deal.createdAt,
     };
   });
@@ -222,7 +223,6 @@ export async function getDealById(dealId: string) {
     actionDueAt: signals.actionDueAt,
     actionOverdueByDays: signals.actionOverdueByDays,
     isActionOverdue: signals.isActionOverdue,
-    riskEvaluatedAt: deal.riskEvaluatedAt,
     createdAt: deal.createdAt,
     events,
     timeline,
@@ -300,5 +300,91 @@ export async function getFounderRiskOverview() {
     highUrgencyDealsCount,
     dealsOverdueMoreThan3Days,
     top3MostCriticalDeals: criticalDeals,
+  };
+}
+
+export async function getFounderActionQueue() {
+  noStore();
+  const deals = await getAllDeals();
+
+  const urgent: typeof deals = [];
+  const important: typeof deals = [];
+  const safe: typeof deals = [];
+
+  for (const deal of deals) {
+    if (
+      deal.status === "at_risk" &&
+      (deal.isActionOverdue || deal.recommendedAction?.urgency === "high")
+    ) {
+      urgent.push(deal);
+    } else if (deal.status === "at_risk") {
+      important.push(deal);
+    } else if (deal.status === "active") {
+      safe.push(deal);
+    }
+  }
+
+  urgent.sort((a, b) => {
+    if (a.isActionOverdue !== b.isActionOverdue) {
+      return a.isActionOverdue ? -1 : 1;
+    }
+    const aOverdue = a.actionOverdueByDays ?? 0;
+    const bOverdue = b.actionOverdueByDays ?? 0;
+    if (aOverdue !== bOverdue) {
+      return bOverdue - aOverdue;
+    }
+    return b.riskScore - a.riskScore;
+  });
+
+  important.sort((a, b) => b.riskScore - a.riskScore);
+
+  const stagePriority: Record<string, number> = {
+    negotiation: 2,
+    discover: 1,
+  };
+
+  safe.sort((a, b) => {
+    const aPriority = stagePriority[a.stage] ?? 0;
+    const bPriority = stagePriority[b.stage] ?? 0;
+    if (aPriority !== bPriority) {
+      return bPriority - aPriority;
+    }
+    return (
+      new Date(b.lastActivityAt).getTime() -
+      new Date(a.lastActivityAt).getTime()
+    );
+  });
+
+  return {
+    urgent: urgent.slice(0, 5).map((deal) => ({
+      id: deal.id,
+      name: deal.name,
+      stage: deal.stage,
+      riskLevel: deal.riskLevel,
+      primaryRiskReason: deal.primaryRiskReason,
+      recommendedAction: deal.recommendedAction,
+      isActionOverdue: deal.isActionOverdue,
+      actionOverdueByDays: deal.actionOverdueByDays,
+    })),
+    important: important.slice(0, 5).map((deal) => ({
+      id: deal.id,
+      name: deal.name,
+      stage: deal.stage,
+      riskLevel: deal.riskLevel,
+      primaryRiskReason: deal.primaryRiskReason,
+      recommendedAction: deal.recommendedAction,
+      isActionOverdue: deal.isActionOverdue,
+      actionOverdueByDays: deal.actionOverdueByDays,
+    })),
+    safe: safe.slice(0, 5).map((deal) => ({
+      id: deal.id,
+      name: deal.name,
+      stage: deal.stage,
+      riskLevel: deal.riskLevel,
+      primaryRiskReason: deal.primaryRiskReason,
+      recommendedAction: deal.recommendedAction,
+      isActionOverdue: deal.isActionOverdue,
+      actionOverdueByDays: deal.actionOverdueByDays,
+    })),
   };
 }

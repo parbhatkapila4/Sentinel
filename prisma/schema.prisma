@@ -15,17 +15,16 @@ model User {
 }
 
 model Deal {
-  id              String         @id @default(cuid())
-  userId          String
-  name            String
-  stage           String
-  value           Int
-  createdAt       DateTime       @default(now())
-  riskEvaluatedAt DateTime?      @db.Timestamptz(6)
-  actions         Action[]
-  user            User           @relation(fields: [userId], references: [id])
-  events          DealEvent[]
-  timeline        DealTimeline[]
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  stage     String
+  value     Int
+  createdAt DateTime @default(now())
+  actions   Action[]
+  user      User     @relation(fields: [userId], references: [id])
+  events    DealEvent[]
+  timeline  DealTimeline[]
 }
 
 model DealEvent {
