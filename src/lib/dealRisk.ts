@@ -153,8 +153,6 @@ export function calculateDealSignals(
     newStatus = riskScore >= 0.6 ? "at_risk" : "active";
   }
 
-  const nextAction = newStatus === "at_risk" ? "Follow up" : null;
-
   const primaryRiskReason = getPrimaryRiskReason(reasons);
   let recommendedAction: {
     label: string;
@@ -296,14 +294,56 @@ export function calculateDealSignals(
     }
   }
 
+  let escalatedRecommendedAction = recommendedAction;
+  let escalatedRiskScore = riskScore;
+  const escalatedReasons = [...reasons];
+
+  if (isActionOverdue && newStatus === "at_risk" && recommendedAction) {
+    const originalUrgency = recommendedAction.urgency;
+    let escalatedUrgency: "low" | "medium" | "high" = originalUrgency;
+
+    if (originalUrgency === "medium") {
+      escalatedUrgency = "high";
+    } else if (originalUrgency === "low") {
+      escalatedUrgency = "medium";
+    }
+
+    escalatedRecommendedAction = {
+      label: recommendedAction.label,
+      urgency: escalatedUrgency,
+    };
+
+    if (actionOverdueByDays !== null && actionOverdueByDays > 0) {
+      const overduePeriods = Math.floor(actionOverdueByDays / 2);
+      const escalationDelta = overduePeriods * 0.1;
+      escalatedRiskScore = Math.min(riskScore + escalationDelta, 1.0);
+
+      escalatedReasons.push(
+        `Action overdue by ${actionOverdueByDays} day${
+          actionOverdueByDays !== 1 ? "s" : ""
+        }`
+      );
+    }
+  }
+
+  const finalRiskScore = escalatedRiskScore;
+  const finalRiskLevel = formatRiskLevel(finalRiskScore);
+  let finalStatus = newStatus;
+
+  if (deal.status !== "saved" && deal.status !== "lost") {
+    finalStatus = finalRiskScore >= 0.6 ? "at_risk" : "active";
+  }
+
+  const finalNextAction = finalStatus === "at_risk" ? "Follow up" : null;
+
   return {
-    riskScore,
-    riskLevel: formatRiskLevel(riskScore),
-    status: newStatus,
-    nextAction,
+    riskScore: finalRiskScore,
+    riskLevel: finalRiskLevel,
+    status: finalStatus,
+    nextAction: finalNextAction,
     lastActivityAt,
-    reasons,
-    recommendedAction,
+    reasons: escalatedReasons,
+    recommendedAction: escalatedRecommendedAction,
     riskStartedAt,
     riskAgeInDays,
     actionDueAt,

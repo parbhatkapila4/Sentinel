@@ -255,3 +255,50 @@ export async function updateDealStage(dealId: string, newStage: string) {
   revalidatePath(`/deals/${dealId}`);
   revalidatePath("/dashboard");
 }
+
+export async function getFounderRiskOverview() {
+  noStore();
+  const deals = await getAllDeals();
+
+  const totalDeals = deals.length;
+  const atRiskDealsCount = deals.filter((d) => d.status === "at_risk").length;
+  const overdueDealsCount = deals.filter((d) => d.isActionOverdue).length;
+  const highUrgencyDealsCount = deals.filter(
+    (d) => d.recommendedAction?.urgency === "high"
+  ).length;
+  const dealsOverdueMoreThan3Days = deals.filter(
+    (d) => d.actionOverdueByDays !== null && d.actionOverdueByDays > 3
+  ).length;
+
+  const criticalDeals = deals
+    .filter((d) => d.status === "at_risk" && d.recommendedAction)
+    .sort((a, b) => {
+      if (a.isActionOverdue !== b.isActionOverdue) {
+        return a.isActionOverdue ? -1 : 1;
+      }
+      const aOverdue = a.actionOverdueByDays ?? 0;
+      const bOverdue = b.actionOverdueByDays ?? 0;
+      if (aOverdue !== bOverdue) {
+        return bOverdue - aOverdue;
+      }
+      return b.riskScore - a.riskScore;
+    })
+    .slice(0, 3)
+    .map((deal) => ({
+      id: deal.id,
+      name: deal.name,
+      riskLevel: deal.riskLevel,
+      primaryRiskReason: deal.primaryRiskReason,
+      recommendedAction: deal.recommendedAction,
+      actionOverdueByDays: deal.actionOverdueByDays,
+    }));
+
+  return {
+    totalDeals,
+    atRiskDealsCount,
+    overdueDealsCount,
+    highUrgencyDealsCount,
+    dealsOverdueMoreThan3Days,
+    top3MostCriticalDeals: criticalDeals,
+  };
+}
