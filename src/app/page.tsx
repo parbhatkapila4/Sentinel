@@ -150,7 +150,7 @@ export default async function Home() {
               </h1>
               <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl">
                 Real-time risk detection that tells you exactly which deals are
-                dying—and what to do about it. See why the most innovative sales
+                dying and what to do about it. See why the most innovative sales
                 teams add automated risk alerts, deal-specific action
                 recommendations and intelligent activity tracking on top of
                 conventional CRM systems. You won&apos;t go back.
@@ -583,11 +583,11 @@ export default async function Home() {
                     opacity="0.95"
                   />
 
-                  <g className="animate-marble-1 animate-glow">
+                  <g className="animate-marble-1 animate-glow animate-bounce">
                     <circle
                       cx="360"
                       cy="56"
-                      r="11"
+                      r="12"
                       fill="url(#silverBall)"
                       opacity="1"
                       filter="url(#strongGlow)"
@@ -595,19 +595,26 @@ export default async function Home() {
                     <circle
                       cx="360"
                       cy="56"
-                      r="8"
+                      r="9"
                       fill="#ffffff"
-                      opacity="0.6"
+                      opacity="0.7"
+                    />
+                    <circle
+                      cx="360"
+                      cy="56"
+                      r="5"
+                      fill="#ffffff"
+                      opacity="0.9"
                     />
                   </g>
                   <g
-                    className="animate-marble-2 animate-glow"
-                    style={{ animationDelay: "1.5s" }}
+                    className="animate-marble-2 animate-glow animate-bounce"
+                    style={{ animationDelay: "1s" }}
                   >
                     <circle
                       cx="430"
                       cy="56"
-                      r="11"
+                      r="12"
                       fill="url(#silverBall)"
                       opacity="1"
                       filter="url(#strongGlow)"
@@ -615,98 +622,163 @@ export default async function Home() {
                     <circle
                       cx="430"
                       cy="56"
-                      r="8"
+                      r="9"
                       fill="#ffffff"
-                      opacity="0.6"
+                      opacity="0.7"
+                    />
+                    <circle
+                      cx="430"
+                      cy="56"
+                      r="5"
+                      fill="#ffffff"
+                      opacity="0.9"
                     />
                   </g>
 
-                  <circle
-                    r="10"
-                    fill="url(#silverBall)"
-                    opacity="1"
-                    filter="url(#strongGlow)"
-                    className="animate-pulse-glow"
-                  >
-                    <animateMotion
-                      dur="4s"
-                      repeatCount="indefinite"
-                      path="M 130 120 Q 200 160, 240 200 Q 260 230, 270 260"
-                    />
-                  </circle>
-                  <circle
-                    r="6"
-                    fill="url(#silverBall)"
-                    opacity="0.5"
-                    filter="url(#glow)"
-                  >
-                    <animateMotion
-                      dur="4s"
-                      repeatCount="indefinite"
-                      begin="0.2s"
-                      path="M 130 120 Q 200 160, 240 200 Q 260 230, 270 260"
-                    />
-                  </circle>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <circle
+                      key={`energy-${i}`}
+                      r="3"
+                      fill="#60a5fa"
+                      opacity="0.6"
+                      filter="url(#glow)"
+                    >
+                      <animateMotion
+                        dur="8s"
+                        repeatCount="indefinite"
+                        begin={`${i * 1}s`}
+                        path="M 130 120 Q 200 160, 240 200 Q 260 230, 270 260"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.3;0.8;0.3"
+                        dur="2s"
+                        repeatCount="indefinite"
+                        begin={`${i * 0.25}s`}
+                      />
+                    </circle>
+                  ))}
 
-                  <circle
-                    r="9"
-                    fill="url(#silverBall)"
-                    opacity="1"
-                    filter="url(#strongGlow)"
-                    className="animate-pulse-glow"
-                  >
-                    <animateMotion
-                      dur="2.5s"
-                      repeatCount="indefinite"
-                      begin="1.2s"
-                      path="M 270 260 Q 280 285, 290 310"
-                    />
-                  </circle>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <circle
+                      key={`yellow-energy-${i}`}
+                      r="2.5"
+                      fill="#fbbf24"
+                      opacity="0.5"
+                      filter="url(#glow)"
+                    >
+                      <animateMotion
+                        dur="6s"
+                        repeatCount="indefinite"
+                        begin={`${i * 1.2}s`}
+                        path="M 270 260 Q 280 285, 290 310"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.2;0.7;0.2"
+                        dur="1.5s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  ))}
 
-                  <circle
-                    r="11"
-                    fill="url(#silverBall)"
-                    opacity="1"
-                    filter="url(#strongGlow)"
-                    className="animate-pulse-glow"
-                  >
-                    <animateMotion
-                      dur="3.5s"
-                      repeatCount="indefinite"
-                      begin="0.8s"
-                      path="M 360 180 Q 420 200, 450 230 Q 420 260, 360 280"
-                    />
-                  </circle>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <circle
+                      key={`loop-energy-${i}`}
+                      r="3"
+                      fill="#3b82f6"
+                      opacity="0.5"
+                      filter="url(#glow)"
+                    >
+                      <animateMotion
+                        dur="7s"
+                        repeatCount="indefinite"
+                        begin={`${i * 1.2}s`}
+                        path="M 360 180 Q 420 200, 450 230 Q 420 260, 360 280"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.3;0.8;0.3"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  ))}
 
-                  <circle
-                    r="9"
-                    fill="url(#silverBall)"
-                    opacity="1"
-                    filter="url(#strongGlow)"
-                    className="animate-pulse-glow"
-                  >
-                    <animateMotion
-                      dur="3s"
-                      repeatCount="indefinite"
-                      begin="2s"
-                      path="M 290 310 Q 330 335, 360 360"
-                    />
-                  </circle>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <circle
+                      key={`blue-energy-${i}`}
+                      r="2.5"
+                      fill="#3b82f6"
+                      opacity="0.4"
+                      filter="url(#glow)"
+                    >
+                      <animateMotion
+                        dur="5s"
+                        repeatCount="indefinite"
+                        begin={`${i * 1.3}s`}
+                        path="M 290 310 Q 330 335, 360 360"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.2;0.6;0.2"
+                        dur="1.8s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  ))}
 
-                  <circle
-                    r="10"
-                    fill="url(#silverBall)"
-                    opacity="1"
-                    filter="url(#strongGlow)"
-                    className="animate-pulse-glow"
-                  >
-                    <animateMotion
-                      dur="5s"
-                      repeatCount="indefinite"
-                      begin="1.5s"
-                      path="M 360 360 Q 400 385, 430 410 Q 445 430, 455 450 Q 465 470, 470 490"
-                    />
-                  </circle>
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <circle
+                      key={`multi-energy-${i}`}
+                      r="3"
+                      fill={
+                        i % 3 === 0
+                          ? "#f97316"
+                          : i % 3 === 1
+                          ? "#fbbf24"
+                          : "#3b82f6"
+                      }
+                      opacity="0.4"
+                      filter="url(#glow)"
+                    >
+                      <animateMotion
+                        dur="10s"
+                        repeatCount="indefinite"
+                        begin={`${i * 1.4}s`}
+                        path="M 360 360 Q 400 385, 430 410 Q 445 430, 455 450 Q 465 470, 470 490"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.2;0.7;0.2"
+                        dur="2.5s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  ))}
+
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <circle
+                      key={`ramp-energy-${i}`}
+                      r="2.5"
+                      fill="#f97316"
+                      opacity="0.5"
+                      filter="url(#glow)"
+                    >
+                      <animateMotion
+                        dur="6s"
+                        repeatCount="indefinite"
+                        begin={`${i * 1.2}s`}
+                        path="M 130 80 Q 220 60, 300 80 Q 350 95, 370 120"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.3;0.7;0.3"
+                        dur="1.5s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  ))}
 
                   <path
                     d="M 130 120 Q 200 160, 240 200 Q 260 230, 270 260"
@@ -837,20 +909,51 @@ export default async function Home() {
                     className="animate-track-glow"
                   />
 
-                  <circle
-                    r="10"
-                    fill="url(#silverBall)"
-                    opacity="1"
-                    filter="url(#strongGlow)"
-                    className="animate-pulse-glow"
-                  >
-                    <animateMotion
-                      dur="4s"
-                      repeatCount="indefinite"
-                      begin="2.5s"
-                      path="M 400 380 Q 450 430, 470 480 Q 475 510, 470 540 L 490 560"
-                    />
-                  </circle>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <circle
+                      key={`chute-energy-${i}`}
+                      r="3"
+                      fill="#3b82f6"
+                      opacity="0.5"
+                      filter="url(#glow)"
+                    >
+                      <animateMotion
+                        dur="8s"
+                        repeatCount="indefinite"
+                        begin={`${i * 1.6}s`}
+                        path="M 400 380 Q 450 430, 470 480 Q 475 510, 470 540 L 490 560"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.3;0.8;0.3"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  ))}
+
+                  <g className="animate-pulse-glow">
+                    <circle
+                      r="11"
+                      fill="url(#silverBall)"
+                      opacity="1"
+                      filter="url(#strongGlow)"
+                    >
+                      <animateMotion
+                        dur="3s"
+                        repeatCount="indefinite"
+                        begin="2s"
+                        path="M 400 380 Q 450 430, 470 480 Q 475 510, 470 540 L 490 560"
+                      />
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        values="0;360"
+                        dur="0.45s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  </g>
 
                   <path
                     d="M 220 180 L 280 240"
@@ -922,7 +1025,6 @@ export default async function Home() {
       <section className="py-16 px-6 lg:px-8 bg-gray-900/60 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-            {/* Testimonial */}
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-gray-700 rounded-full shrink-0 flex items-center justify-center">
                 <span className="text-white/60 text-xs">RS</span>
@@ -954,32 +1056,68 @@ export default async function Home() {
 
       <section
         id="features"
-        className="py-32 px-6 lg:px-8 relative overflow-hidden"
+        className="py-32 px-6 lg:px-8 relative overflow-hidden bg-black"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-20 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-orange-500/40 via-orange-600/30 to-transparent blur-3xl"></div>
+          <div className="absolute top-1/4 right-0 w-96 h-[600px] bg-orange-500/30 rounded-full blur-3xl transform translate-x-1/4"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <p className="text-sm text-blue-400 mb-4 uppercase tracking-wider font-semibold">
-              Features
-            </p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Still Using Basic CRMs? You&apos;re Missing Out
-            </h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Everything You Need. Everything You Didn&apos;t Know You Needed.
-            </p>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
+            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl border border-gray-800 relative overflow-hidden">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Real-Time Risk Detection
+              </h3>
+              <p className="text-gray-400 mb-6">
+                Full control over your deal health
+              </p>
 
-          <div className="relative">
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mb-6">
+              <div className="relative flex items-center justify-center h-48">
+                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-orange-500/40 via-orange-500/20 to-transparent rounded-b-xl"></div>
+
+                <div className="relative z-10">
+                  <div className="w-32 h-32 relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/50 to-orange-500/50 rounded-full blur-xl"></div>
+
+                    <div className="relative w-32 h-32 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/50">
+                      <svg
+                        className="w-20 h-20 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl border border-gray-800 relative overflow-hidden">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Action Recommendations
+              </h3>
+              <p className="text-gray-400 mb-6">
+                Competitive 0% missed opportunities
+              </p>
+
+              <div className="relative flex flex-col items-center justify-center h-48">
+                <div className="w-full bg-gray-800 rounded-lg p-6 border border-gray-700">
+                  <div className="w-full h-3 bg-green-500 rounded-full mb-4"></div>
+                  <div className="text-green-400 font-bold text-lg">
+                    0% hidden risks
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center gap-2 text-gray-500 text-sm">
                   <svg
-                    className="w-8 h-8 text-white"
+                    className="w-4 h-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -988,58 +1126,134 @@ export default async function Home() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
+                  <span>At minimum until 2025-12-31</span>
                 </div>
-                <p className="text-white/90 text-lg leading-relaxed">
-                  Real-time risk alerts tell you exactly which deals need
-                  attention—before it&apos;s too late.
-                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl border border-gray-800 relative overflow-hidden">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Activity Tracking
+              </h3>
+              <p className="text-gray-400 mb-6">
+                Direct monitoring, without intermediaries
+              </p>
+
+              <div className="relative flex items-start gap-4 h-48">
+                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center shrink-0">
+                  <span className="text-white font-bold text-2xl">M</span>
+                </div>
+
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-3 bg-gray-800 rounded-lg p-3 border border-gray-700">
+                    <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-white font-semibold text-sm">
+                        Deal Activity ↑
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white text-sm font-semibold">
+                        ACT
+                      </span>
+                      <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">T</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-gray-800 rounded-lg p-3 border border-gray-700">
+                    <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-white font-semibold text-sm">
+                        Response Tracking ↓
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white text-sm font-semibold">
+                        RES
+                      </span>
+                      <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">M</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mb-6">
-                  <svg
-                    className="w-8 h-8 text-yellow-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                    />
-                  </svg>
-                </div>
-                <p className="text-white/90 text-lg leading-relaxed">
-                  Intelligent action recommendations tell you what to do next—no
-                  guessing, no missed opportunities.
-                </p>
+              <div className="mt-4 flex items-center gap-2 text-green-400 text-sm">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span>Fully encrypted tracking</span>
               </div>
+            </div>
 
-              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mb-6">
-                  <svg
-                    className="w-8 h-8 text-cyan-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
+            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl border border-gray-800 relative overflow-hidden">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Automated Monitoring
+              </h3>
+              <p className="text-gray-400 mb-6">
+                Secure Connection. Private Tracking
+              </p>
+
+              <div className="relative flex items-center justify-center h-48">
+                <div className="absolute inset-0 flex items-center justify-center gap-6">
+                  <div className="w-3 h-full bg-gradient-to-b from-purple-500/40 via-purple-600/50 to-purple-500/40 rounded-full blur-sm"></div>
+                  <div className="w-3 h-full bg-gradient-to-b from-orange-500/40 via-orange-600/50 to-orange-500/40 rounded-full blur-sm"></div>
+                  <div className="w-3 h-full bg-gradient-to-b from-purple-500/40 via-purple-600/50 to-purple-500/40 rounded-full blur-sm"></div>
                 </div>
-                <p className="text-white/90 text-lg leading-relaxed">
-                  Automated activity tracking detects silence and inactivity—so
-                  you never lose a deal to decay.
-                </p>
+
+                <div className="relative flex items-center gap-8 z-10">
+                  <div className="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center shadow-xl shadow-purple-500/50">
+                    <span className="text-white font-bold text-2xl">D</span>
+                  </div>
+
+                  <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center shadow-xl shadow-orange-500/50">
+                    <span className="text-white font-bold text-2xl">M</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1157,63 +1371,251 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="py-32 px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-sm text-blue-400 mb-4 uppercase tracking-wider font-semibold">
-              How It Works
-            </p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Action-First Deal Management
+      <section
+        className="py-20 px-6 lg:px-8 relative overflow-hidden"
+        style={{
+          backgroundColor: "#1f1f1f",
+          fontFamily: "Arial, Helvetica, sans-serif",
+        }}
+      >
+        <div className="max-w-7xl mx-auto relative">
+          <svg className="absolute w-0 h-0">
+            <defs>
+              <linearGradient
+                id="starGrad1"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" stopColor="#fbbf24" />
+                <stop offset="100%" stopColor="#a855f7" />
+              </linearGradient>
+              <linearGradient
+                id="starGrad2"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" stopColor="#fbbf24" />
+                <stop offset="100%" stopColor="#a855f7" />
+              </linearGradient>
+              <linearGradient
+                id="starGrad3"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" stopColor="#fbbf24" />
+                <stop offset="100%" stopColor="#a855f7" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <div className="mb-16">
+            <h2
+              className="text-9xl md:text-[10rem] lg:text-[12rem] font-black leading-none"
+              style={{
+                color: "#4a4a4a",
+                letterSpacing: "-0.02em",
+                position: "relative",
+                backgroundImage: `
+                  repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px),
+                  repeating-linear-gradient(90deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px)
+                `,
+                backgroundSize: "6px 6px",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "#4a4a4a",
+                textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
+              }}
+            >
+              HOWDOES
             </h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              See exactly which deals need attention and what to do about
-              them—before it&apos;s too late
-            </p>
           </div>
 
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-blue-500/20 backdrop-blur-xl rounded-2xl p-12 border border-blue-500/30">
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
-                    <span className="text-white font-bold text-lg">1</span>
+          <div className="relative" style={{ minHeight: "850px" }}>
+            <div
+              className="absolute"
+              style={{ top: "0px", left: "0px", width: "280px" }}
+            >
+              <svg className="w-5 h-5 mb-3" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
+                  fill="url(#starGrad1)"
+                />
+              </svg>
+
+              <h3 className="text-white font-bold text-lg mb-3 leading-tight">
+                Purchase of Governance token
+              </h3>
+
+              <p
+                className="text-white text-sm leading-relaxed"
+                style={{ lineHeight: "1.6" }}
+              >
+                Users purchase xyz tokens. The tokens give users the right to
+                vote on proposals and to be eligible for certain rewards such as
+                shares of the startup.
+              </p>
+            </div>
+
+            <div className="absolute" style={{ top: "50px", left: "380px" }}>
+              <div className="mb-6">
+                <div
+                  className="rounded-full bg-black flex items-center"
+                  style={{
+                    height: "50px",
+                    width: "280px",
+                    border: "4px solid #84cc16",
+                    paddingLeft: "16px",
+                  }}
+                >
+                  <div
+                    className="rounded-full flex items-center justify-center shrink-0"
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      backgroundColor: "#1a1a1a",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                    }}
+                  >
+                    <span className="text-white text-xs font-medium">xyz</span>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">
-                      Track Deal Activity
-                    </h3>
-                    <p className="text-white/80">
-                      Monitor emails, meetings, calls, and notes in real-time
-                    </p>
-                  </div>
+                  <span
+                    className="ml-3 text-white text-xs"
+                    style={{ opacity: 0.8 }}
+                  >
+                    pher
+                  </span>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
-                    <span className="text-white font-bold text-lg">2</span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">
-                      Detect Risk Automatically
-                    </h3>
-                    <p className="text-white/80">
-                      Get instant alerts when deals show signs of stalling or
-                      inactivity
-                    </p>
-                  </div>
+              </div>
+
+              <div>
+                <div
+                  className="rounded-full bg-black flex items-center justify-center"
+                  style={{
+                    height: "65px",
+                    width: "320px",
+                    border: "4px solid #a855f7",
+                  }}
+                >
+                  <span
+                    className="text-white text-2xl font-bold"
+                    style={{ letterSpacing: "0.2em" }}
+                  >
+                    x y z
+                  </span>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
-                    <span className="text-white font-bold text-lg">3</span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">
-                      Take Action
-                    </h3>
-                    <p className="text-white/80">
-                      Follow recommended actions to save deals and close more
-                      revenue
-                    </p>
+              </div>
+            </div>
+
+            <div
+              className="absolute text-right"
+              style={{ top: "240px", right: "0px", width: "320px" }}
+            >
+              <div className="flex justify-end mb-3">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
+                    fill="url(#starGrad2)"
+                  />
+                </svg>
+              </div>
+
+              <h3 className="text-white font-bold text-lg mb-3 leading-tight">
+                Closure of Purchase
+              </h3>
+
+              <p
+                className="text-white text-sm leading-relaxed"
+                style={{ lineHeight: "1.6" }}
+              >
+                The purchase of tokens is closed and the list of top holders is
+                determined based on the number of tokens they hold.
+              </p>
+            </div>
+
+            <div
+              className="absolute"
+              style={{ bottom: "80px", left: "0px", width: "300px" }}
+            >
+              <svg className="w-5 h-5 mb-3" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
+                  fill="url(#starGrad3)"
+                />
+              </svg>
+
+              <h3 className="text-white font-bold text-lg mb-3 leading-tight">
+                Submission of Proposals
+              </h3>
+
+              <p
+                className="text-white text-sm leading-relaxed mb-0"
+                style={{ lineHeight: "1.6" }}
+              >
+                Top holders and other token holders can submit proposals for new
+                projects.
+              </p>
+            </div>
+
+            <div className="absolute" style={{ bottom: "40px", left: "380px" }}>
+              <div
+                className="rounded-full bg-black relative"
+                style={{
+                  height: "80px",
+                  width: "380px",
+                  border: "4px solid #d4a574",
+                }}
+              >
+                <div
+                  className="absolute rounded shadow-2xl"
+                  style={{
+                    left: "16px",
+                    top: "12px",
+                    backgroundColor: "#2a2a2a",
+                    borderTop: "4px solid #fbbf24",
+                    padding: "10px 14px",
+                    width: "190px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      <span className="text-white text-xs font-medium">
+                        Submit your proposal
+                      </span>
+                    </div>
+                    <svg
+                      className="w-3.5 h-3.5 text-white cursor-pointer"
+                      style={{ opacity: 0.6 }}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
