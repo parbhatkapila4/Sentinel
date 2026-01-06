@@ -1056,68 +1056,46 @@ export default async function Home() {
 
       <section
         id="features"
-        className="py-32 px-6 lg:px-8 relative overflow-hidden bg-black"
+        className="py-32 px-6 lg:px-8 relative overflow-hidden"
+        style={{
+          backgroundColor: "#1a1a1a",
+          fontFamily: "Arial, Helvetica, sans-serif",
+        }}
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-orange-500/40 via-orange-600/30 to-transparent blur-3xl"></div>
-          <div className="absolute top-1/4 right-0 w-96 h-[600px] bg-orange-500/30 rounded-full blur-3xl transform translate-x-1/4"></div>
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl opacity-30"
+            style={{ backgroundColor: "#00FF00" }}
+          ></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
-            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl border border-gray-800 relative overflow-hidden">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Real-Time Risk Detection
-              </h3>
-              <p className="text-gray-400 mb-6">
-                Full control over your deal health
-              </p>
-
-              <div className="relative flex items-center justify-center h-48">
-                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-orange-500/40 via-orange-500/20 to-transparent rounded-b-xl"></div>
-
-                <div className="relative z-10">
-                  <div className="w-32 h-32 relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/50 to-orange-500/50 rounded-full blur-xl"></div>
-
-                    <div className="relative w-32 h-32 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/50">
-                      <svg
-                        className="w-20 h-20 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                        />
-                      </svg>
-                    </div>
+          <div
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            style={{ gridTemplateRows: "auto auto auto" }}
+          >
+            <div
+              className="md:col-span-3 rounded-2xl p-8 shadow-2xl relative overflow-hidden"
+              style={{
+                backgroundColor: "#2a2a2a",
+                minHeight: "140px",
+              }}
+            >
+              <div className="flex items-start justify-between h-full">
+                <div className="flex-1">
+                  <div className="text-gray-400 text-xs uppercase tracking-wider mb-2">
+                    COMMUNITY
+                  </div>
+                  <div className="text-gray-200 text-2xl font-bold">
+                    Share here, there, and everywhere.
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl border border-gray-800 relative overflow-hidden">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Action Recommendations
-              </h3>
-              <p className="text-gray-400 mb-6">
-                Competitive 0% missed opportunities
-              </p>
-
-              <div className="relative flex flex-col items-center justify-center h-48">
-                <div className="w-full bg-gray-800 rounded-lg p-6 border border-gray-700">
-                  <div className="w-full h-3 bg-green-500 rounded-full mb-4"></div>
-                  <div className="text-green-400 font-bold text-lg">
-                    0% hidden risks
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center gap-2 text-gray-500 text-sm">
+                <button
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#1a1a1a" }}
+                >
                   <svg
-                    className="w-4 h-4"
+                    className="w-5 h-5 text-white"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -1126,134 +1104,272 @@ export default async function Home() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      d="M9 5l7 7-7 7"
                     />
                   </svg>
-                  <span>At minimum until 2025-12-31</span>
-                </div>
+                </button>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl border border-gray-800 relative overflow-hidden">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Activity Tracking
-              </h3>
-              <p className="text-gray-400 mb-6">
-                Direct monitoring, without intermediaries
-              </p>
+            <div
+              className="rounded-2xl p-8 shadow-2xl relative overflow-hidden"
+              style={{
+                backgroundColor: "#2a2a2a",
+                background:
+                  "linear-gradient(to bottom, #1a2a2a 0%, #2a2a2a 100%)",
+                minHeight: "280px",
+              }}
+            >
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-4">
+                MESSAGING
+              </div>
 
-              <div className="relative flex items-start gap-4 h-48">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center shrink-0">
-                  <span className="text-white font-bold text-2xl">M</span>
-                </div>
-
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-3 bg-gray-800 rounded-lg p-3 border border-gray-700">
-                    <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-white font-semibold text-sm">
-                        Deal Activity ↑
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-white text-sm font-semibold">
-                        ACT
-                      </span>
-                      <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center">
-                        <span className="text-white font-bold text-xs">T</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 bg-gray-800 rounded-lg p-3 border border-gray-700">
-                    <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-white font-semibold text-sm">
-                        Response Tracking ↓
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-white text-sm font-semibold">
-                        RES
-                      </span>
-                      <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center">
-                        <span className="text-white font-bold text-xs">M</span>
-                      </div>
-                    </div>
-                  </div>
+              <div
+                className="flex items-center justify-center mb-8"
+                style={{ height: "120px" }}
+              >
+                <div style={{ color: "#1a1a1a" }}>
+                  <svg
+                    className="w-20 h-20"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+                    <circle cx="9" cy="10" r="1.5" />
+                    <circle cx="15" cy="10" r="1.5" />
+                    <circle cx="12" cy="13" r="1.5" />
+                  </svg>
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center gap-2 text-green-400 text-sm">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+              <div className="flex items-end justify-between mt-auto">
+                <div className="text-white text-2xl font-bold">
+                  Instant Talk
+                </div>
+                <button
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#1a1a1a" }}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>Fully encrypted tracking</span>
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl border border-gray-800 relative overflow-hidden">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Automated Monitoring
-              </h3>
-              <p className="text-gray-400 mb-6">
-                Secure Connection. Private Tracking
-              </p>
+            <div
+              className="rounded-2xl p-8 shadow-2xl relative overflow-visible"
+              style={{
+                backgroundColor: "#2a2a2a",
+                minHeight: "280px",
+                position: "relative",
+              }}
+            >
+              <div
+                className="absolute inset-0 rounded-2xl opacity-40"
+                style={{
+                  background:
+                    "radial-gradient(circle at center, rgba(0, 255, 0, 0.3) 0%, rgba(0, 255, 0, 0) 70%)",
+                }}
+              ></div>
 
-              <div className="relative flex items-center justify-center h-48">
-                <div className="absolute inset-0 flex items-center justify-center gap-6">
-                  <div className="w-3 h-full bg-gradient-to-b from-purple-500/40 via-purple-600/50 to-purple-500/40 rounded-full blur-sm"></div>
-                  <div className="w-3 h-full bg-gradient-to-b from-orange-500/40 via-orange-600/50 to-orange-500/40 rounded-full blur-sm"></div>
-                  <div className="w-3 h-full bg-gradient-to-b from-purple-500/40 via-purple-600/50 to-purple-500/40 rounded-full blur-sm"></div>
+              <div
+                className="absolute inset-0 rounded-2xl"
+                style={{
+                  border: "2px dashed #00FF00",
+                  boxShadow:
+                    "0 0 20px rgba(0, 255, 0, 0.5), inset 0 0 20px rgba(0, 255, 0, 0.1)",
+                  pointerEvents: "none",
+                }}
+              ></div>
+
+              <div className="relative z-10">
+                <div className="text-green-400 text-xs uppercase tracking-wider mb-4">
+                  MAGIC POTS
                 </div>
 
-                <div className="relative flex items-center gap-8 z-10">
-                  <div className="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center shadow-xl shadow-purple-500/50">
-                    <span className="text-white font-bold text-2xl">D</span>
-                  </div>
+                <div className="absolute top-12 right-8 flex flex-col gap-2">
+                  <svg
+                    className="w-6 h-6"
+                    fill="#00FF00"
+                    viewBox="0 0 24 24"
+                    style={{
+                      filter: "drop-shadow(0 0 4px rgba(0, 255, 0, 0.8))",
+                    }}
+                  >
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  <svg
+                    className="w-5 h-5"
+                    fill="#00FF00"
+                    viewBox="0 0 24 24"
+                    style={{
+                      filter: "drop-shadow(0 0 4px rgba(0, 255, 0, 0.8))",
+                    }}
+                  >
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  <svg
+                    className="w-4 h-4"
+                    fill="#00FF00"
+                    viewBox="0 0 24 24"
+                    style={{
+                      filter: "drop-shadow(0 0 4px rgba(0, 255, 0, 0.8))",
+                    }}
+                  >
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                </div>
 
-                  <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center shadow-xl shadow-orange-500/50">
-                    <span className="text-white font-bold text-2xl">M</span>
+                <div className="mt-8">
+                  <div className="text-white text-4xl font-bold mb-2">
+                    Fine Details
+                  </div>
+                  <div className="text-gray-400 text-sm">
+                    Features cards section concept details by Yasir Ekinci.
                   </div>
                 </div>
+
+                <div className="absolute bottom-8 right-8 flex items-center gap-3">
+                  <div className="relative">
+                    <svg
+                      className="w-6 h-6"
+                      fill="white"
+                      viewBox="0 0 24 24"
+                      style={{ filter: "drop-shadow(0 0 2px rgba(0,0,0,0.5))" }}
+                    >
+                      <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+                    </svg>
+                  </div>
+
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center"
+                    style={{
+                      border: "2px dashed #00FF00",
+                      boxShadow: "0 0 15px rgba(0, 255, 0, 0.6)",
+                      backgroundColor: "rgba(0, 255, 0, 0.1)",
+                    }}
+                  >
+                    <svg
+                      className="w-8 h-8 text-green-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                <div
+                  className="absolute bottom-16 right-4 bg-white rounded-lg p-2 shadow-lg"
+                  style={{
+                    border: "2px solid black",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Hi!
+                  <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-black transform rotate-45"></div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="rounded-2xl p-8 shadow-2xl relative overflow-hidden"
+              style={{
+                backgroundColor: "#2a2a2a",
+                minHeight: "280px",
+              }}
+            >
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-4">
+                TOP NOTCH SHOTS
+              </div>
+
+              <div
+                className="flex items-center justify-center mb-8"
+                style={{ height: "120px" }}
+              >
+                <div style={{ color: "#1a1a1a" }}>
+                  <svg
+                    className="w-20 h-20"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.1-.75-.08-.21-.17-.31-.46-.24-.74C6.01 2.62 8.88 1.5 12.01 1.5c2.23 0 4.29.6 6.08 1.73.18.11.29.31.27.52-.02.21-.15.39-.35.47-.07.03-.15.04-.22.25zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.33-.47-.24-.75C3.74 7.19 4.97 4.87 6.84 3.19c.18-.16.46-.15.64.02.18.17.2.45.05.63C6.09 5.29 5.03 7.4 4.63 9.72c-.05.28-.3.48-.58.48-.03.01-.05.01-.08 0zm16.24-.19c-.05 0-.1-.01-.15-.03-.26-.1-.54.05-.64.31-.42 1.11-1.05 2.13-1.87 3.03-.19.21-.51.23-.73.04-.22-.19-.24-.51-.05-.73.73-.81 1.29-1.72 1.65-2.72.1-.26.36-.41.62-.31.26.1.41.36.31.62-.33.85-.82 1.64-1.44 2.35.19.21.51.23.73.05.21-.19.23-.51.05-.73-.73-.81-1.29-1.72-1.65-2.72-.1-.26.05-.54.31-.64.26-.1.54.05.64.31.42 1.11 1.05 2.13 1.87 3.03.19.21.23.51.04.73-.1.11-.25.17-.4.17zm-2.99 3.75c-.08 0-.16-.02-.23-.06-.26-.14-.58-.06-.75.17-1.37 1.85-3.49 2.95-5.87 2.95-1.36 0-2.65-.37-3.75-1.09-.22-.14-.5-.16-.73-.05-.23.11-.38.34-.38.6 0 .26.15.49.38.6 1.23.78 2.66 1.19 4.15 1.19 2.73 0 5.19-1.24 6.85-3.42.16-.22.18-.51.05-.75-.08-.12-.2-.19-.33-.24z" />
+                  </svg>
+                </div>
+              </div>
+
+              <div className="flex items-end justify-between mt-auto">
+                <div className="text-white text-2xl font-bold">
+                  Encrypted Approach
+                </div>
+                <button
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#1a1a1a" }}
+                >
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div
+              className="md:col-span-3 rounded-2xl p-8 shadow-2xl relative overflow-hidden"
+              style={{
+                backgroundColor: "#00FF00",
+                minHeight: "120px",
+              }}
+            >
+              <div className="flex items-center justify-between h-full">
+                <div className="text-black text-2xl font-bold">
+                  Explore Features
+                </div>
+                <button
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#1a1a1a" }}
+                >
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
