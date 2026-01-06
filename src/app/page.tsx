@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { SignInButtonWrapper } from "@/components/sign-in-button";
+import { PricingCards } from "@/components/pricing-cards";
+import {
+  PricingToggle,
+  PricingToggleDisplay,
+} from "@/components/pricing-toggle";
 
 export default async function Home() {
   const user = await currentUser();
@@ -1749,349 +1754,49 @@ export default async function Home() {
 
       <section
         id="pricing"
-        className="py-40 px-6 lg:px-8 relative overflow-hidden bg-black"
+        className="py-16 lg:py-24 px-6 lg:px-12 relative overflow-hidden bg-black"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div
-            className="absolute bottom-1/4 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"
-            style={{ animationDelay: "1s" }}
-          ></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-blue-500/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-white/3 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-white/3 rounded-full blur-3xl"></div>
+
+          <div className="absolute top-20 left-28 w-3 h-3 bg-white/8 rounded-full blur-sm"></div>
+          <div className="absolute top-52 left-60 w-3.5 h-3.5 bg-white/7 rounded-full blur-sm"></div>
+          <div className="absolute top-28 right-36 w-3 h-3 bg-white/8 rounded-full blur-sm"></div>
+          <div className="absolute top-60 right-68 w-3.5 h-3.5 bg-white/7 rounded-full blur-sm"></div>
+          <div className="absolute bottom-36 left-44 w-3 h-3 bg-white/8 rounded-full blur-sm"></div>
+          <div className="absolute bottom-28 right-28 w-3.5 h-3.5 bg-white/7 rounded-full blur-sm"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <div className="inline-block mb-6">
-              <span className="text-blue-400 text-sm font-semibold uppercase tracking-[0.2em]">
-                Pricing
-              </span>
-              <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-blue-500 to-transparent mt-2"></div>
-            </div>
-            <h2
-              className="text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 leading-[0.9]"
-              style={{
-                fontFamily:
-                  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                textShadow: "0 0 80px rgba(59, 130, 246, 0.3)",
-              }}
-            >
-              Choose Your
-              <br />
-              <span className="relative inline-block">
-                <span className="text-blue-400">Perfect Plan</span>
-                <svg
-                  className="absolute -bottom-3 left-0 w-full h-4 text-blue-500/30"
-                  viewBox="0 0 200 20"
-                  preserveAspectRatio="none"
+          <PricingToggle>
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-10 lg:mb-14">
+              <div className="mb-6 lg:mb-0">
+                <p
+                  className="text-gray-400 text-sm lg:text-base mb-2.5"
+                  style={{
+                    fontFamily:
+                      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                  }}
                 >
-                  <path
-                    d="M0,10 Q50,0 100,10 T200,10"
-                    stroke="currentColor"
-                    fill="none"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </span>
-            </h2>
-
-            <div className="inline-flex items-center gap-3 bg-gray-900/80 backdrop-blur-xl rounded-2xl p-2 border border-gray-800/50 shadow-2xl">
-              <button
-                className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-semibold transition-all duration-300 shadow-lg shadow-blue-500/30"
-                style={{
-                  fontFamily:
-                    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                }}
-              >
-                Annual
-              </button>
-              <button
-                className="px-8 py-3 rounded-xl text-gray-400 text-sm font-semibold transition-all duration-300 hover:text-white"
-                style={{
-                  fontFamily:
-                    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                }}
-              >
-                Monthly
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
-            <div className="group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-800/90 via-gray-800/80 to-gray-900/90 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
-              <div className="relative bg-gray-900/80 backdrop-blur-2xl rounded-3xl p-10 border border-gray-700/30 shadow-2xl">
-                <div className="absolute top-6 right-6 bg-yellow-500 text-black text-xs font-bold px-4 py-2 rounded-full shadow-lg shadow-yellow-500/30 z-10">
-                  Active
-                </div>
-
-                <div className="mb-8">
-                  <h3
-                    className="text-white font-bold text-2xl mb-3"
-                    style={{
-                      fontFamily:
-                        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                    }}
-                  >
-                    Recruit Basic
-                  </h3>
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span
-                      className="text-white font-black text-5xl"
-                      style={{
-                        fontFamily:
-                          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                      }}
-                    >
-                      $17
-                    </span>
-                    <span className="text-gray-400 text-base">/ month</span>
-                  </div>
-                  <p className="text-gray-500 text-sm">$228 billed yearly</p>
-                </div>
-
-                <p className="text-gray-400 text-base mb-8 leading-relaxed">
-                  Get started with essential tools to manage your team
-                  efficiently. Ideal for small teams with fundamental needs
+                  Boost your business
                 </p>
-
-                <div className="mb-10 space-y-4">
-                  {[
-                    "Access to core HR features",
-                    "Employee record management",
-                    "Basic reporting tools",
-                    "Manage up to 10 team members",
-                  ].map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                        <svg
-                          className="w-4 h-4 text-green-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-white text-base">{feature}</span>
-                    </div>
-                  ))}
-                  {[
-                    "Track employee attendance",
-                    "Assign and monitor tasks",
-                    "Email support",
-                    "Simple onboarding process",
-                    "Designed user-focused interfaces, optimized user",
-                  ].map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-gray-700/50 flex items-center justify-center shrink-0 mt-0.5">
-                        <svg
-                          className="w-4 h-4 text-gray-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-500 text-base">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-4 rounded-xl font-semibold transition-all duration-300 border border-gray-700/50 hover:border-gray-600">
-                  Cancel
-                </button>
+                <h2
+                  className="text-3xl lg:text-5xl font-semibold text-gray-200 leading-tight"
+                  style={{
+                    fontFamily:
+                      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                  }}
+                >
+                  Choose the best plan for you
+                </h2>
               </div>
+
+              <PricingToggleDisplay />
             </div>
 
-            <div className="group relative overflow-hidden lg:scale-105 lg:-mt-4">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/30 via-yellow-500/20 to-transparent rounded-3xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity"></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black rounded-3xl"></div>
-              <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl p-10 border-2 border-yellow-500/60 shadow-2xl shadow-yellow-500/20">
-                <div className="absolute -top-4 right-6 bg-yellow-500 text-black text-xs font-bold px-5 py-2.5 rounded-full shadow-xl shadow-yellow-500/50 z-20">
-                  Save 27%
-                </div>
-
-                <div className="absolute top-6 right-6 bg-yellow-500 text-black text-xs font-bold px-4 py-2 rounded-full shadow-lg shadow-yellow-500/30 z-20 mt-10">
-                  Popular
-                </div>
-
-                <div className="mb-8">
-                  <h3
-                    className="text-white font-bold text-2xl mb-3"
-                    style={{
-                      fontFamily:
-                        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                    }}
-                  >
-                    Talent Pro
-                  </h3>
-                  <div className="flex items-baseline gap-3 mb-2">
-                    <span className="text-gray-500 line-through text-3xl font-medium">
-                      $26
-                    </span>
-                    <span
-                      className="text-white font-black text-5xl"
-                      style={{
-                        fontFamily:
-                          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                      }}
-                    >
-                      $19
-                    </span>
-                    <span className="text-gray-400 text-base">/ month</span>
-                  </div>
-                  <p className="text-gray-500 text-sm">$228 billed yearly</p>
-                </div>
-
-                <p className="text-gray-400 text-base mb-8 leading-relaxed">
-                  A comprehensive solution for growing teams, offering enhanced
-                  features to streamline HR processes
-                </p>
-
-                <div className="mb-10 space-y-4">
-                  {[
-                    "Access to core HR features",
-                    "Employee record management",
-                    "Basic reporting tools",
-                    "Manage up to 10 team members",
-                    "Track employee attendance",
-                    "Assign and monitor tasks",
-                  ].map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                        <svg
-                          className="w-4 h-4 text-green-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-white text-base">{feature}</span>
-                    </div>
-                  ))}
-                  {[
-                    "Email support",
-                    "Simple onboarding process",
-                    "Designed user-focused interfaces, optimized user",
-                  ].map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-gray-700/50 flex items-center justify-center shrink-0 mt-0.5">
-                        <svg
-                          className="w-4 h-4 text-gray-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-500 text-base">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 text-black py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 transform hover:scale-[1.02]">
-                  Start 7-days Free Trial
-                </button>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-purple-500/10 to-transparent rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
-              <div className="relative bg-gray-900/80 backdrop-blur-2xl rounded-3xl p-10 border border-purple-500/30 shadow-2xl">
-                <div className="mb-8">
-                  <h3
-                    className="text-white font-bold text-2xl mb-3"
-                    style={{
-                      fontFamily:
-                        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                    }}
-                  >
-                    HR Master
-                  </h3>
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span
-                      className="text-white font-black text-5xl"
-                      style={{
-                        fontFamily:
-                          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                      }}
-                    >
-                      $34
-                    </span>
-                    <span className="text-gray-400 text-base">/ month</span>
-                  </div>
-                  <p className="text-gray-500 text-sm">$408 billed yearly</p>
-                </div>
-
-                <p className="text-gray-400 text-base mb-8 leading-relaxed">
-                  Maximize team performance with premium tools and full
-                  customization options, perfect for larger organizations
-                </p>
-
-                <div className="mb-10 space-y-4">
-                  {[
-                    "Access to core HR features",
-                    "Employee record management",
-                    "Basic reporting tools",
-                    "Manage up to 10 team members",
-                    "Track employee attendance",
-                    "Assign and monitor tasks",
-                    "Email support",
-                    "Simple onboarding process",
-                    "Designed user-focused interfaces, optimized user",
-                  ].map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                        <svg
-                          className="w-4 h-4 text-green-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-white text-base">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <button className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transform hover:scale-[1.02]">
-                  Start 7-days Free Trial
-                </button>
-              </div>
-            </div>
-          </div>
+            <PricingCards />
+          </PricingToggle>
         </div>
       </section>
 
