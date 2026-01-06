@@ -1752,481 +1752,141 @@ export default async function Home() {
         id="faq"
         className="py-40 px-6 lg:px-8 relative overflow-hidden bg-black"
       >
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-          <div
-            className="absolute bottom-20 left-10 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse"
-            style={{ animationDelay: "1s" }}
-          ></div>
-
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 border border-blue-500/10 rotate-45"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 border border-blue-500/10 rotate-12"></div>
-        </div>
-
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="mb-20">
-            <div className="inline-block mb-6">
-              <span className="text-blue-400 text-sm font-semibold uppercase tracking-[0.2em]">
-                FAQ
-              </span>
-              <div className="h-0.5 w-full bg-gradient-to-r from-blue-500 to-transparent mt-2"></div>
-            </div>
-            <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] mb-6">
-              Frequently Asked
-              <br />
-              <span className="relative inline-block">
-                <span className="text-blue-400">Questions</span>
-                <svg
-                  className="absolute -bottom-2 left-0 w-full h-4 text-blue-500/30"
-                  viewBox="0 0 200 20"
-                  preserveAspectRatio="none"
+          <div
+            className="bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-xl rounded-3xl p-10 lg:p-16 border border-gray-800/50 shadow-2xl relative overflow-hidden"
+            style={{
+              minHeight: "600px",
+              boxShadow:
+                "0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+            }}
+          >
+            <div className="absolute top-0 left-0 w-32 h-32 border-t-2 border-l-2 border-gray-800/30 rounded-tl-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-32 h-32 border-b-2 border-r-2 border-gray-800/30 rounded-br-3xl"></div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+              <div className="flex flex-col relative">
+                <div className="absolute -left-4 top-0 w-1 h-20 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full opacity-50"></div>
+
+                <h2
+                  className="text-white font-bold mb-6 leading-tight relative group"
+                  style={{
+                    fontFamily:
+                      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                    fontSize: "clamp(3rem, 6vw, 5rem)",
+                    fontWeight: "800",
+                    textShadow:
+                      "0 0 30px rgba(59, 130, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.2)",
+                    WebkitTextStroke: "1px rgba(255, 255, 255, 0.1)",
+                    letterSpacing: "-0.03em",
+                    lineHeight: "1.1",
+                  }}
                 >
-                  <path
-                    d="M0,10 Q50,0 100,10 T200,10"
-                    stroke="currentColor"
-                    fill="none"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </span>
-            </h2>
-            <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
-              Everything you need to know about Revenue Sentinel. Can&apos;t
-              find what you&apos;re looking for? Contact our support team.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-            <div className="relative">
-              <div className="bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-3xl p-10 lg:p-12 border border-gray-800/50 shadow-2xl relative overflow-hidden hover:border-blue-500/50 transition-all duration-700">
-                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500/50 via-blue-500/30 to-transparent"></div>
-
-                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-
-                <div className="relative z-10">
-                  <div className="mb-8">
-                    <div className="inline-flex items-center gap-3 mb-6">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/30 flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-blue-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-white">
-                          Common Questions
-                        </h3>
-                        <p className="text-sm text-white/50">
-                          Quick answers to help you get started
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <FAQAccordion
-                    items={[
-                      {
-                        question:
-                          "How can I start tracking my deals with Revenue Sentinel?",
-                        answer:
-                          "To start tracking your deals, you need to sign up for a Revenue Sentinel account. Once registered, you can create deals directly in the dashboard, connect your CRM, or import existing deals. Our system will automatically begin monitoring activity and detecting risks.",
-                      },
-                      {
-                        question:
-                          "What is the minimum number of deals required to get started?",
-                        answer:
-                          "There is no minimum requirement. Revenue Sentinel works with any number of deals, from a single deal to thousands. Whether you're a solo sales rep or managing a large pipeline, our risk detection system scales to your needs.",
-                      },
-                      {
-                        question:
-                          "Are my deals and data safe on Revenue Sentinel?",
-                        answer:
-                          "Yes, we implement enterprise-grade security measures including end-to-end encryption, two-factor authentication, and regular security audits. All data is stored securely and we comply with industry-standard regulations. Your deal information is private and only accessible to you and your authorized team members.",
-                      },
-                      {
-                        question:
-                          "How do I track my deal portfolio's performance?",
-                        answer:
-                          "Our platform provides real-time tracking of your deal portfolio's performance. You can view detailed analytics, including risk scores, activity timelines, deal velocity, and win rates, all in your personalized dashboard. Set up custom alerts to stay informed about at-risk deals.",
-                      },
-                      {
-                        question:
-                          "What are the fees associated with Revenue Sentinel?",
-                        answer:
-                          "We offer flexible pricing plans based on your team size and needs. Contact our sales team for a custom quote. We also offer a free trial so you can experience the platform before committing.",
-                      },
-                      {
-                        question:
-                          "Can I integrate Revenue Sentinel with my existing CRM?",
-                        answer:
-                          "Yes, Revenue Sentinel integrates seamlessly with popular CRM platforms including Salesforce, HubSpot, and Pipedrive. Our integration syncs deal data, activity events, and risk scores in real-time, ensuring you have a unified view of your sales pipeline without disrupting your existing workflow.",
-                      },
-                      {
-                        question: "How does the risk detection algorithm work?",
-                        answer:
-                          "Our AI-powered risk detection analyzes multiple factors including deal activity patterns, time since last contact, deal stage duration, and historical win/loss data. The system continuously learns from your team's patterns and provides personalized risk scores for each deal, alerting you when intervention is needed.",
-                      },
-                      {
-                        question: "What kind of support do you offer?",
-                        answer:
-                          "We provide comprehensive support including email support, live chat during business hours, detailed documentation, video tutorials, and dedicated account managers for enterprise customers. Our support team is available to help you get the most out of Revenue Sentinel.",
-                      },
-                      {
-                        question: "How accurate are the risk detection alerts?",
-                        answer:
-                          "Our risk detection system has been trained on millions of deal data points and achieves over 90% accuracy in identifying at-risk deals. The algorithm continuously learns and adapts to your team's specific patterns, reducing false positives while ensuring you never miss a critical warning signal.",
-                      },
-                      {
-                        question:
-                          "Can multiple team members collaborate on deals?",
-                        answer:
-                          "Absolutely! Revenue Sentinel supports team collaboration with role-based access controls. Team members can share insights, assign action items, add notes, and collaborate on deals in real-time. You can set permissions to control who can view and edit specific deals.",
-                      },
-                      {
-                        question:
-                          "How often is deal data updated in Revenue Sentinel?",
-                        answer:
-                          "Deal data is updated in real-time as activities occur. When you connect your CRM, changes sync automatically. Manual activities and events are recorded immediately. Risk scores are recalculated continuously throughout the day, ensuring you always have the most current view of your pipeline health.",
-                      },
-                      {
-                        question: "Is there a mobile app available?",
-                        answer:
-                          "Yes, Revenue Sentinel is fully responsive and works seamlessly on mobile browsers. You can access your dashboard, view deals, receive alerts, and take action from any device. We're also developing native mobile apps for iOS and Android to provide an even better mobile experience.",
-                      },
-                    ]}
-                  />
+                  <span className="relative z-10">Have Any Question?</span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-purple-500/0 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                </h2>
+                <div className="flex flex-col gap-2">
+                  <span
+                    className="text-white/90 mb-1 transition-all duration-300 hover:text-white"
+                    style={{
+                      fontFamily:
+                        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                      fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
+                      fontWeight: "600",
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    We&apos;ve
+                  </span>
+                  <span
+                    className="text-white relative inline-block w-fit group"
+                    style={{
+                      fontFamily:
+                        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                      fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
+                      fontWeight: "600",
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    <span className="relative z-10">Answer</span>
+                    <span
+                      className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 transition-all duration-300 group-hover:h-1"
+                      style={{
+                        height: "2px",
+                        boxShadow: "0 2px 8px rgba(59, 130, 246, 0.5)",
+                      }}
+                    ></span>
+                  </span>
                 </div>
               </div>
-            </div>
 
-            <div className="relative">
-              <div className="bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-3xl p-10 lg:p-12 border border-gray-800/50 shadow-2xl relative overflow-hidden hover:border-blue-500/50 transition-all duration-700">
-                <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-blue-500/50 via-blue-500/30 to-transparent"></div>
+              <div className="flex flex-col justify-start">
+                <p
+                  className="text-white/80 mb-8 leading-relaxed relative"
+                  style={{
+                    fontFamily:
+                      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                    fontSize: "1rem",
+                    lineHeight: "1.7",
+                    fontWeight: "400",
+                  }}
+                >
+                  Here&apos;s everything you might want to know before booking
+                  your service with
+                  <br />
+                  <span
+                    className="text-white font-semibold relative inline-block"
+                    style={{
+                      display: "block",
+                      marginTop: "0.5rem",
+                      background: "linear-gradient(135deg, #60a5fa, #a78bfa)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }}
+                  >
+                    Revenue Sentinel.
+                  </span>
+                </p>
 
-                <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-
-                <div className="relative z-10">
-                  <div className="mb-10">
-                    <div className="inline-flex items-center gap-3 mb-6">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/30 flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-blue-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-bold text-white">
-                          Market Insights & Tools
-                        </h2>
-                        <p className="text-sm text-white/50">
-                          Stay ahead of risks
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-base text-white/70 leading-relaxed mb-8">
-                      Connect with your sales team and leverage intelligent
-                      automation to share insights and strategies.
-                    </p>
-                  </div>
-
-                  <div className="space-y-5">
-                    <div className="group bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-2xl p-6 border border-gray-700/30 hover:border-blue-500/40 transition-all duration-500 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
-
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-5">
-                          <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-500">
-                            Deal Allocation
-                          </h3>
-                          <svg
-                            className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors duration-300"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                            />
-                          </svg>
-                        </div>
-
-                        <div className="mb-5 h-36 flex items-end justify-between gap-3 px-2">
-                          <div className="flex-1 flex flex-col items-center group-hover:scale-105 transition-transform duration-300">
-                            <div
-                              className="w-full bg-gradient-to-t from-purple-500/70 via-purple-500/50 to-blue-500/60 rounded-t-xl mb-2 shadow-lg shadow-purple-500/20"
-                              style={{ height: "55%" }}
-                            ></div>
-                            <span className="text-xs text-white/50 font-medium">
-                              Q1
-                            </span>
-                          </div>
-                          <div
-                            className="flex-1 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
-                            style={{ transitionDelay: "50ms" }}
-                          >
-                            <div
-                              className="w-full bg-gradient-to-t from-purple-500/80 via-purple-500/60 to-blue-500/70 rounded-t-xl mb-2 shadow-lg shadow-purple-500/20"
-                              style={{ height: "70%" }}
-                            ></div>
-                            <span className="text-xs text-white/50 font-medium">
-                              Q2
-                            </span>
-                          </div>
-                          <div
-                            className="flex-1 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
-                            style={{ transitionDelay: "100ms" }}
-                          >
-                            <div
-                              className="w-full bg-gradient-to-t from-purple-500/90 via-purple-500/70 to-blue-500/80 rounded-t-xl mb-2 shadow-lg shadow-purple-500/20"
-                              style={{ height: "85%" }}
-                            ></div>
-                            <span className="text-xs text-white/50 font-medium">
-                              Q3
-                            </span>
-                          </div>
-                          <div
-                            className="flex-1 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
-                            style={{ transitionDelay: "150ms" }}
-                          >
-                            <div
-                              className="w-full bg-gradient-to-t from-purple-500 via-blue-500/90 to-blue-500 rounded-t-xl mb-2 shadow-lg shadow-blue-500/30"
-                              style={{ height: "100%" }}
-                            ></div>
-                            <span className="text-xs text-white/50 font-medium">
-                              Q4
-                            </span>
-                          </div>
-                        </div>
-
-                        <p className="text-sm text-white/70 leading-relaxed">
-                          We help you build a resilient deal pipeline that
-                          adapts to changing conditions, helping you achieve
-                          your revenue goals with confidence.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="group bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-2xl p-6 border border-gray-700/30 hover:border-blue-500/40 transition-all duration-500 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all duration-500"></div>
-
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-5">
-                          <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-500">
-                            Smarter Deal Tracking, Simplified
-                          </h3>
-                          <svg
-                            className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors duration-300"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                            />
-                          </svg>
-                        </div>
-
-                        <div className="mb-5 space-y-2.5">
-                          <div className="bg-gray-700/40 hover:bg-gray-700/60 rounded-xl p-3.5 border border-gray-600/30 flex items-center justify-between transition-all duration-300 group-hover:border-blue-500/30">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/30 to-blue-600/20 border border-blue-500/40 flex items-center justify-center">
-                                <span className="text-blue-400 text-xs font-bold">
-                                  D
-                                </span>
-                              </div>
-                              <div>
-                                <div className="text-white text-sm font-semibold">
-                                  Enterprise Deal
-                                </div>
-                                <div className="text-white/50 text-xs">
-                                  $125,000
-                                </div>
-                              </div>
-                            </div>
-                            <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-lg">
-                              <span className="text-green-400 text-xs font-semibold">
-                                Active
-                              </span>
-                            </div>
-                          </div>
-                          <div className="bg-gray-700/40 hover:bg-gray-700/60 rounded-xl p-3.5 border border-gray-600/30 flex items-center justify-between transition-all duration-300 group-hover:border-yellow-500/30">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500/30 to-purple-600/20 border border-purple-500/40 flex items-center justify-center">
-                                <span className="text-purple-400 text-xs font-bold">
-                                  D
-                                </span>
-                              </div>
-                              <div>
-                                <div className="text-white text-sm font-semibold">
-                                  SMB Pipeline
-                                </div>
-                                <div className="text-white/50 text-xs">
-                                  $45,000
-                                </div>
-                              </div>
-                            </div>
-                            <div className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
-                              <span className="text-yellow-400 text-xs font-semibold">
-                                At Risk
-                              </span>
-                            </div>
-                          </div>
-                          <div className="bg-gray-700/40 hover:bg-gray-700/60 rounded-xl p-3.5 border border-gray-600/30 flex items-center justify-between transition-all duration-300 group-hover:border-blue-500/30">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/30 to-blue-600/20 border border-blue-500/40 flex items-center justify-center">
-                                <span className="text-blue-400 text-xs font-bold">
-                                  D
-                                </span>
-                              </div>
-                              <div>
-                                <div className="text-white text-sm font-semibold">
-                                  Mid-Market
-                                </div>
-                                <div className="text-white/50 text-xs">
-                                  $78,500
-                                </div>
-                              </div>
-                            </div>
-                            <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-                              <span className="text-blue-400 text-xs font-semibold">
-                                Healthy
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <p className="text-sm text-white/70 leading-relaxed">
-                          Unlock the potential of your sales pipeline with a
-                          platform designed to simplify your deal tracking
-                          experience, while giving you the tools to stay ahead
-                          of risks.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="group bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-2xl p-6 border border-gray-700/30 hover:border-blue-500/40 transition-all duration-500 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
-
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-5">
-                          <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-500">
-                            Market Insights & Tools
-                          </h3>
-                          <svg
-                            className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors duration-300"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                            />
-                          </svg>
-                        </div>
-
-                        <div className="mb-5 space-y-4">
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-white/80 text-sm font-medium">
-                                Risk Detection
-                              </span>
-                              <span className="text-white text-sm font-bold">
-                                95%
-                              </span>
-                            </div>
-                            <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/30"
-                                style={{ width: "95%" }}
-                              ></div>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-white/80 text-sm font-medium">
-                                Activity Tracking
-                              </span>
-                              <span className="text-white text-sm font-bold">
-                                88%
-                              </span>
-                            </div>
-                            <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/30"
-                                style={{ width: "88%" }}
-                              ></div>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-white/80 text-sm font-medium">
-                                Action Alerts
-                              </span>
-                              <span className="text-white text-sm font-bold">
-                                92%
-                              </span>
-                            </div>
-                            <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/30"
-                                style={{ width: "92%" }}
-                              ></div>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-white/80 text-sm font-medium">
-                                Pipeline Health
-                              </span>
-                              <span className="text-white text-sm font-bold">
-                                85%
-                              </span>
-                            </div>
-                            <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/30"
-                                style={{ width: "85%" }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <p className="text-sm text-white/70 leading-relaxed">
-                          With Market Insights & Tools, you have everything you
-                          need to make smarter, more strategic deal decisions,
-                          backed by data, analysis, and expert guidance.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <FAQAccordion
+                  items={[
+                    {
+                      question:
+                        "How can I start tracking my deals with Revenue Sentinel?",
+                      answer:
+                        "To start tracking your deals, you need to sign up for a Revenue Sentinel account. Once registered, you can create deals directly in the dashboard, connect your CRM, or import existing deals. Our system will automatically begin monitoring activity and detecting risks.",
+                    },
+                    {
+                      question:
+                        "Are my deals and data safe on Revenue Sentinel?",
+                      answer:
+                        "Yes, we implement enterprise-grade security measures including end-to-end encryption, two-factor authentication, and regular security audits. All data is stored securely and we comply with industry-standard regulations. Your deal information is private and only accessible to you and your authorized team members.",
+                    },
+                    {
+                      question:
+                        "How do I track my deal portfolio's performance?",
+                      answer:
+                        "Our platform provides real-time tracking of your deal portfolio's performance. You can view detailed analytics, including risk scores, activity timelines, deal velocity, and win rates, all in your personalized dashboard. Set up custom alerts to stay informed about at-risk deals.",
+                    },
+                    {
+                      question:
+                        "Can I integrate Revenue Sentinel with my existing CRM?",
+                      answer:
+                        "Yes, Revenue Sentinel integrates seamlessly with popular CRM platforms including Salesforce, HubSpot, and Pipedrive. Our integration syncs deal data, activity events, and risk scores in real-time, ensuring you have a unified view of your sales pipeline without disrupting your existing workflow.",
+                    },
+                    {
+                      question: "How does the risk detection algorithm work?",
+                      answer:
+                        "Our AI-powered risk detection analyzes multiple factors including deal activity patterns, time since last contact, deal stage duration, and historical win/loss data. The system continuously learns from your team's patterns and provides personalized risk scores for each deal, alerting you when intervention is needed.",
+                    },
+                    {
+                      question: "What kind of support do you offer?",
+                      answer:
+                        "We provide comprehensive support including email support, live chat during business hours, detailed documentation, video tutorials, and dedicated account managers for enterprise customers. Our support team is available to help you get the most out of Revenue Sentinel.",
+                    },
+                  ]}
+                />
               </div>
             </div>
           </div>
