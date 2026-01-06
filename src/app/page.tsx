@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { SignInButtonWrapper } from "@/components/sign-in-button";
+import { FAQAccordion } from "@/components/faq-accordion";
 
 export default async function Home() {
   const user = await currentUser();
@@ -1056,330 +1057,328 @@ export default async function Home() {
 
       <section
         id="features"
-        className="py-32 px-6 lg:px-8 relative overflow-hidden bg-black"
+        className="py-40 px-6 lg:px-8 relative overflow-hidden bg-black"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-blue-500/20 via-blue-600/10 to-transparent blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-1/2 h-full bg-gradient-to-tr from-blue-500/20 via-blue-600/10 to-transparent blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div
+            className="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
+
+          <div className="absolute top-1/4 right-1/4 w-64 h-64 border border-blue-500/10 rotate-45"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-48 h-48 border border-blue-500/10 rotate-12"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-sm text-blue-400 mb-4 uppercase tracking-wider font-semibold">
-              Features
-            </p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Everything You Need to
-              <br />
-              <span className="text-blue-400">Succeed</span>
-            </h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Powerful tools designed to help you track, analyze, and close more
-              deals
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="group bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:to-transparent transition-all duration-300 rounded-2xl"></div>
-
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-blue-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                    />
-                  </svg>
+        <div className="relative z-10 max-w-[1600px] mx-auto">
+          <div className="mb-24">
+            <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 mb-12">
+              <div className="flex-1">
+                <div className="inline-block mb-6">
+                  <span className="text-blue-400 text-sm font-semibold uppercase tracking-[0.2em]">
+                    Features
+                  </span>
+                  <div className="h-0.5 w-full bg-gradient-to-r from-blue-500 to-transparent mt-2"></div>
                 </div>
-
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors duration-300">
-                  Real-Time Risk Detection
-                </h3>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  Get instant alerts when deals show signs of stalling. Never
-                  miss a warning signal with our advanced monitoring system.
-                </p>
-
-                <button className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
+                <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] mb-6">
+                  Built for
+                  <br />
+                  <span className="relative inline-block">
+                    <span className="text-blue-400">Excellence</span>
+                    <svg
+                      className="absolute -bottom-2 left-0 w-full h-4 text-blue-500/30"
+                      viewBox="0 0 200 20"
+                      preserveAspectRatio="none"
+                    >
+                      <path
+                        d="M0,10 Q50,0 100,10 T200,10"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  </span>
+                </h2>
               </div>
-            </div>
-
-            <div className="group bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:to-transparent transition-all duration-300 rounded-2xl"></div>
-
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-blue-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                    />
-                  </svg>
-                </div>
-
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors duration-300">
-                  Action Recommendations
-                </h3>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  Receive personalized, actionable steps to save at-risk deals.
-                  Our AI analyzes patterns and suggests the best next moves.
+              <div className="lg:w-96">
+                <p className="text-lg text-white/60 leading-relaxed">
+                  Every feature is crafted with precision, designed to give you
+                  the edge you need in today&apos;s competitive landscape.
                 </p>
-
-                <button className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="group bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:to-transparent transition-all duration-300 rounded-2xl"></div>
-
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-blue-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                </div>
-
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors duration-300">
-                  Activity Tracking
-                </h3>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  Monitor all deal interactions in one place. Track emails,
-                  calls, meetings, and notes with complete visibility.
-                </p>
-
-                <button className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="group bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:to-transparent transition-all duration-300 rounded-2xl"></div>
-
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-blue-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                </div>
-
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors duration-300">
-                  Automated Monitoring
-                </h3>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  Set it and forget it. Our system continuously monitors your
-                  deals 24/7, alerting you only when action is needed.
-                </p>
-
-                <button className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="group bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:to-transparent transition-all duration-300 rounded-2xl"></div>
-
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-blue-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                </div>
-
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors duration-300">
-                  Intelligent Analytics
-                </h3>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  Deep insights into your sales pipeline. Understand patterns,
-                  predict outcomes, and optimize your strategy.
-                </p>
-
-                <button className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="group bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:to-transparent transition-all duration-300 rounded-2xl"></div>
-
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-blue-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                </div>
-
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors duration-300">
-                  Team Collaboration
-                </h3>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  Work together seamlessly. Share insights, assign tasks, and
-                  keep everyone aligned on deal progress.
-                </p>
-
-                <button className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
               </div>
             </div>
           </div>
 
-          <div className="mt-16 text-center">
-            <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg shadow-blue-500/50 cursor-pointer group">
-              <span className="text-white font-semibold text-lg">
-                Explore All Features
-              </span>
-              <svg
-                className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+          <div className="space-y-16">
+            <div className="group relative overflow-hidden">
+              <div className="relative bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-3xl p-12 lg:p-16 border border-gray-800/50 hover:border-blue-500/50 transition-all duration-700">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:via-blue-500/10 group-hover:to-blue-500/5 transition-all duration-700 rounded-3xl"></div>
+
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                  <div className="lg:col-span-3 flex flex-col items-start lg:items-center gap-6">
+                    <div className="relative">
+                      <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 group-hover:border-blue-500 transition-all duration-700 shadow-2xl shadow-blue-500/20">
+                        <svg
+                          className="w-16 h-16 text-blue-400 group-hover:text-blue-300 transition-colors duration-700"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="absolute -top-3 -right-3 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white text-lg font-black shadow-lg shadow-blue-500/50 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700">
+                        01
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-7">
+                    <h3 className="text-5xl lg:text-6xl font-black text-white mb-6 leading-tight group-hover:text-blue-400 transition-colors duration-700">
+                      Real-Time
+                      <br />
+                      <span className="relative inline-block">
+                        Risk Detection
+                        <span className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
+                      </span>
+                    </h3>
+                    <p className="text-xl text-white/70 leading-relaxed">
+                      Get instant alerts when deals show signs of stalling. Our
+                      advanced AI monitoring system analyzes patterns in
+                      real-time, ensuring you never miss a critical warning
+                      signal.
+                    </p>
+                  </div>
+
+                  <div className="lg:col-span-2 flex justify-end">
+                    <div className="w-20 h-20 rounded-2xl bg-blue-500/10 border-2 border-blue-500/30 flex items-center justify-center group-hover:bg-blue-500 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700 cursor-pointer shadow-lg shadow-blue-500/20">
+                      <svg
+                        className="w-10 h-10 text-blue-400 group-hover:text-white transition-colors duration-700"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="group relative overflow-hidden">
+                <div className="relative bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-2xl p-10 border border-gray-800/50 hover:border-blue-500/50 transition-all duration-700 h-full">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-transparent transition-all duration-700 rounded-bl-full"></div>
+
+                  <div className="relative z-10 flex items-start gap-6">
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-xl shadow-blue-500/20">
+                        <svg
+                          className="w-10 h-10 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                          />
+                        </svg>
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-black shadow-lg">
+                        02
+                      </div>
+                    </div>
+
+                    <div className="flex-1">
+                      <h3 className="text-3xl font-black text-white mb-4 group-hover:text-blue-400 transition-colors duration-700">
+                        Action Recommendations
+                      </h3>
+                      <p className="text-white/70 leading-relaxed mb-6">
+                        Personalized, actionable steps powered by AI to save
+                        at-risk deals.
+                      </p>
+                      <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative overflow-hidden">
+                <div className="relative bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-2xl p-10 border border-gray-800/50 hover:border-blue-500/50 transition-all duration-700 h-full">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-transparent transition-all duration-700 rounded-bl-full"></div>
+
+                  <div className="relative z-10 flex items-start gap-6">
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-xl shadow-blue-500/20">
+                        <svg
+                          className="w-10 h-10 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-black shadow-lg">
+                        03
+                      </div>
+                    </div>
+
+                    <div className="flex-1">
+                      <h3 className="text-3xl font-black text-white mb-4 group-hover:text-blue-400 transition-colors duration-700">
+                        Activity Tracking
+                      </h3>
+                      <p className="text-white/70 leading-relaxed mb-6">
+                        Complete visibility into all deal interactions in one
+                        unified dashboard.
+                      </p>
+                      <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="group relative overflow-hidden">
+                <div className="relative bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 hover:border-blue-500/50 transition-all duration-700 h-full">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-transparent transition-all duration-700 rounded-bl-full"></div>
+
+                  <div className="relative z-10">
+                    <div className="relative mb-6">
+                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-lg shadow-blue-500/20">
+                        <svg
+                          className="w-8 h-8 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg">
+                        04
+                      </div>
+                    </div>
+
+                    <h3 className="text-2xl font-black text-white mb-3 group-hover:text-blue-400 transition-colors duration-700">
+                      Automated Monitoring
+                    </h3>
+                    <p className="text-white/70 text-sm leading-relaxed mb-4">
+                      24/7 continuous monitoring that alerts you only when
+                      action is needed.
+                    </p>
+                    <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative overflow-hidden">
+                <div className="relative bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 hover:border-blue-500/50 transition-all duration-700 h-full">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-transparent transition-all duration-700 rounded-bl-full"></div>
+
+                  <div className="relative z-10">
+                    <div className="relative mb-6">
+                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-lg shadow-blue-500/20">
+                        <svg
+                          className="w-8 h-8 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg">
+                        05
+                      </div>
+                    </div>
+
+                    <h3 className="text-2xl font-black text-white mb-3 group-hover:text-blue-400 transition-colors duration-700">
+                      Intelligent Analytics
+                    </h3>
+                    <p className="text-white/70 text-sm leading-relaxed mb-4">
+                      Deep insights to understand patterns, predict outcomes,
+                      and optimize strategy.
+                    </p>
+                    <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative overflow-hidden">
+                <div className="relative bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 hover:border-blue-500/50 transition-all duration-700 h-full">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-transparent transition-all duration-700 rounded-bl-full"></div>
+
+                  <div className="relative z-10">
+                    <div className="relative mb-6">
+                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-lg shadow-blue-500/20">
+                        <svg
+                          className="w-8 h-8 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg">
+                        06
+                      </div>
+                    </div>
+
+                    <h3 className="text-2xl font-black text-white mb-3 group-hover:text-blue-400 transition-colors duration-700">
+                      Team Collaboration
+                    </h3>
+                    <p className="text-white/70 text-sm leading-relaxed mb-4">
+                      Seamless teamwork with shared insights and aligned deal
+                      progress.
+                    </p>
+                    <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1741,6 +1740,491 @@ export default async function Home() {
                         d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="faq"
+        className="py-40 px-6 lg:px-8 relative overflow-hidden bg-black"
+      >
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div
+            className="absolute bottom-20 left-10 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
+
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 border border-blue-500/10 rotate-45"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 border border-blue-500/10 rotate-12"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <div className="mb-20">
+            <div className="inline-block mb-6">
+              <span className="text-blue-400 text-sm font-semibold uppercase tracking-[0.2em]">
+                FAQ
+              </span>
+              <div className="h-0.5 w-full bg-gradient-to-r from-blue-500 to-transparent mt-2"></div>
+            </div>
+            <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] mb-6">
+              Frequently Asked
+              <br />
+              <span className="relative inline-block">
+                <span className="text-blue-400">Questions</span>
+                <svg
+                  className="absolute -bottom-2 left-0 w-full h-4 text-blue-500/30"
+                  viewBox="0 0 200 20"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M0,10 Q50,0 100,10 T200,10"
+                    stroke="currentColor"
+                    fill="none"
+                    strokeWidth="2"
+                  />
+                </svg>
+              </span>
+            </h2>
+            <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
+              Everything you need to know about Revenue Sentinel. Can&apos;t
+              find what you&apos;re looking for? Contact our support team.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+            <div className="relative">
+              <div className="bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-3xl p-10 lg:p-12 border border-gray-800/50 shadow-2xl relative overflow-hidden hover:border-blue-500/50 transition-all duration-700">
+                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500/50 via-blue-500/30 to-transparent"></div>
+
+                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+
+                <div className="relative z-10">
+                  <div className="mb-8">
+                    <div className="inline-flex items-center gap-3 mb-6">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/30 flex items-center justify-center">
+                        <svg
+                          className="w-6 h-6 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">
+                          Common Questions
+                        </h3>
+                        <p className="text-sm text-white/50">
+                          Quick answers to help you get started
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <FAQAccordion
+                    items={[
+                      {
+                        question:
+                          "How can I start tracking my deals with Revenue Sentinel?",
+                        answer:
+                          "To start tracking your deals, you need to sign up for a Revenue Sentinel account. Once registered, you can create deals directly in the dashboard, connect your CRM, or import existing deals. Our system will automatically begin monitoring activity and detecting risks.",
+                      },
+                      {
+                        question:
+                          "What is the minimum number of deals required to get started?",
+                        answer:
+                          "There is no minimum requirement. Revenue Sentinel works with any number of deals, from a single deal to thousands. Whether you're a solo sales rep or managing a large pipeline, our risk detection system scales to your needs.",
+                      },
+                      {
+                        question:
+                          "Are my deals and data safe on Revenue Sentinel?",
+                        answer:
+                          "Yes, we implement enterprise-grade security measures including end-to-end encryption, two-factor authentication, and regular security audits. All data is stored securely and we comply with industry-standard regulations. Your deal information is private and only accessible to you and your authorized team members.",
+                      },
+                      {
+                        question:
+                          "How do I track my deal portfolio's performance?",
+                        answer:
+                          "Our platform provides real-time tracking of your deal portfolio's performance. You can view detailed analytics, including risk scores, activity timelines, deal velocity, and win rates, all in your personalized dashboard. Set up custom alerts to stay informed about at-risk deals.",
+                      },
+                      {
+                        question:
+                          "What are the fees associated with Revenue Sentinel?",
+                        answer:
+                          "We offer flexible pricing plans based on your team size and needs. Contact our sales team for a custom quote. We also offer a free trial so you can experience the platform before committing.",
+                      },
+                      {
+                        question:
+                          "Can I integrate Revenue Sentinel with my existing CRM?",
+                        answer:
+                          "Yes, Revenue Sentinel integrates seamlessly with popular CRM platforms including Salesforce, HubSpot, and Pipedrive. Our integration syncs deal data, activity events, and risk scores in real-time, ensuring you have a unified view of your sales pipeline without disrupting your existing workflow.",
+                      },
+                      {
+                        question: "How does the risk detection algorithm work?",
+                        answer:
+                          "Our AI-powered risk detection analyzes multiple factors including deal activity patterns, time since last contact, deal stage duration, and historical win/loss data. The system continuously learns from your team's patterns and provides personalized risk scores for each deal, alerting you when intervention is needed.",
+                      },
+                      {
+                        question: "What kind of support do you offer?",
+                        answer:
+                          "We provide comprehensive support including email support, live chat during business hours, detailed documentation, video tutorials, and dedicated account managers for enterprise customers. Our support team is available to help you get the most out of Revenue Sentinel.",
+                      },
+                      {
+                        question: "How accurate are the risk detection alerts?",
+                        answer:
+                          "Our risk detection system has been trained on millions of deal data points and achieves over 90% accuracy in identifying at-risk deals. The algorithm continuously learns and adapts to your team's specific patterns, reducing false positives while ensuring you never miss a critical warning signal.",
+                      },
+                      {
+                        question:
+                          "Can multiple team members collaborate on deals?",
+                        answer:
+                          "Absolutely! Revenue Sentinel supports team collaboration with role-based access controls. Team members can share insights, assign action items, add notes, and collaborate on deals in real-time. You can set permissions to control who can view and edit specific deals.",
+                      },
+                      {
+                        question:
+                          "How often is deal data updated in Revenue Sentinel?",
+                        answer:
+                          "Deal data is updated in real-time as activities occur. When you connect your CRM, changes sync automatically. Manual activities and events are recorded immediately. Risk scores are recalculated continuously throughout the day, ensuring you always have the most current view of your pipeline health.",
+                      },
+                      {
+                        question: "Is there a mobile app available?",
+                        answer:
+                          "Yes, Revenue Sentinel is fully responsive and works seamlessly on mobile browsers. You can access your dashboard, view deals, receive alerts, and take action from any device. We're also developing native mobile apps for iOS and Android to provide an even better mobile experience.",
+                      },
+                    ]}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="bg-gradient-to-br from-gray-900/50 via-gray-900/30 to-transparent backdrop-blur-sm rounded-3xl p-10 lg:p-12 border border-gray-800/50 shadow-2xl relative overflow-hidden hover:border-blue-500/50 transition-all duration-700">
+                <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-blue-500/50 via-blue-500/30 to-transparent"></div>
+
+                <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+
+                <div className="relative z-10">
+                  <div className="mb-10">
+                    <div className="inline-flex items-center gap-3 mb-6">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/30 flex items-center justify-center">
+                        <svg
+                          className="w-6 h-6 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white">
+                          Market Insights & Tools
+                        </h2>
+                        <p className="text-sm text-white/50">
+                          Stay ahead of risks
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-base text-white/70 leading-relaxed mb-8">
+                      Connect with your sales team and leverage intelligent
+                      automation to share insights and strategies.
+                    </p>
+                  </div>
+
+                  <div className="space-y-5">
+                    <div className="group bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-2xl p-6 border border-gray-700/30 hover:border-blue-500/40 transition-all duration-500 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
+
+                      <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-5">
+                          <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-500">
+                            Deal Allocation
+                          </h3>
+                          <svg
+                            className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors duration-300"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                            />
+                          </svg>
+                        </div>
+
+                        <div className="mb-5 h-36 flex items-end justify-between gap-3 px-2">
+                          <div className="flex-1 flex flex-col items-center group-hover:scale-105 transition-transform duration-300">
+                            <div
+                              className="w-full bg-gradient-to-t from-purple-500/70 via-purple-500/50 to-blue-500/60 rounded-t-xl mb-2 shadow-lg shadow-purple-500/20"
+                              style={{ height: "55%" }}
+                            ></div>
+                            <span className="text-xs text-white/50 font-medium">
+                              Q1
+                            </span>
+                          </div>
+                          <div
+                            className="flex-1 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
+                            style={{ transitionDelay: "50ms" }}
+                          >
+                            <div
+                              className="w-full bg-gradient-to-t from-purple-500/80 via-purple-500/60 to-blue-500/70 rounded-t-xl mb-2 shadow-lg shadow-purple-500/20"
+                              style={{ height: "70%" }}
+                            ></div>
+                            <span className="text-xs text-white/50 font-medium">
+                              Q2
+                            </span>
+                          </div>
+                          <div
+                            className="flex-1 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
+                            style={{ transitionDelay: "100ms" }}
+                          >
+                            <div
+                              className="w-full bg-gradient-to-t from-purple-500/90 via-purple-500/70 to-blue-500/80 rounded-t-xl mb-2 shadow-lg shadow-purple-500/20"
+                              style={{ height: "85%" }}
+                            ></div>
+                            <span className="text-xs text-white/50 font-medium">
+                              Q3
+                            </span>
+                          </div>
+                          <div
+                            className="flex-1 flex flex-col items-center group-hover:scale-105 transition-transform duration-300"
+                            style={{ transitionDelay: "150ms" }}
+                          >
+                            <div
+                              className="w-full bg-gradient-to-t from-purple-500 via-blue-500/90 to-blue-500 rounded-t-xl mb-2 shadow-lg shadow-blue-500/30"
+                              style={{ height: "100%" }}
+                            ></div>
+                            <span className="text-xs text-white/50 font-medium">
+                              Q4
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className="text-sm text-white/70 leading-relaxed">
+                          We help you build a resilient deal pipeline that
+                          adapts to changing conditions, helping you achieve
+                          your revenue goals with confidence.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="group bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-2xl p-6 border border-gray-700/30 hover:border-blue-500/40 transition-all duration-500 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all duration-500"></div>
+
+                      <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-5">
+                          <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-500">
+                            Smarter Deal Tracking, Simplified
+                          </h3>
+                          <svg
+                            className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors duration-300"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                            />
+                          </svg>
+                        </div>
+
+                        <div className="mb-5 space-y-2.5">
+                          <div className="bg-gray-700/40 hover:bg-gray-700/60 rounded-xl p-3.5 border border-gray-600/30 flex items-center justify-between transition-all duration-300 group-hover:border-blue-500/30">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/30 to-blue-600/20 border border-blue-500/40 flex items-center justify-center">
+                                <span className="text-blue-400 text-xs font-bold">
+                                  D
+                                </span>
+                              </div>
+                              <div>
+                                <div className="text-white text-sm font-semibold">
+                                  Enterprise Deal
+                                </div>
+                                <div className="text-white/50 text-xs">
+                                  $125,000
+                                </div>
+                              </div>
+                            </div>
+                            <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-lg">
+                              <span className="text-green-400 text-xs font-semibold">
+                                Active
+                              </span>
+                            </div>
+                          </div>
+                          <div className="bg-gray-700/40 hover:bg-gray-700/60 rounded-xl p-3.5 border border-gray-600/30 flex items-center justify-between transition-all duration-300 group-hover:border-yellow-500/30">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500/30 to-purple-600/20 border border-purple-500/40 flex items-center justify-center">
+                                <span className="text-purple-400 text-xs font-bold">
+                                  D
+                                </span>
+                              </div>
+                              <div>
+                                <div className="text-white text-sm font-semibold">
+                                  SMB Pipeline
+                                </div>
+                                <div className="text-white/50 text-xs">
+                                  $45,000
+                                </div>
+                              </div>
+                            </div>
+                            <div className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+                              <span className="text-yellow-400 text-xs font-semibold">
+                                At Risk
+                              </span>
+                            </div>
+                          </div>
+                          <div className="bg-gray-700/40 hover:bg-gray-700/60 rounded-xl p-3.5 border border-gray-600/30 flex items-center justify-between transition-all duration-300 group-hover:border-blue-500/30">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/30 to-blue-600/20 border border-blue-500/40 flex items-center justify-center">
+                                <span className="text-blue-400 text-xs font-bold">
+                                  D
+                                </span>
+                              </div>
+                              <div>
+                                <div className="text-white text-sm font-semibold">
+                                  Mid-Market
+                                </div>
+                                <div className="text-white/50 text-xs">
+                                  $78,500
+                                </div>
+                              </div>
+                            </div>
+                            <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+                              <span className="text-blue-400 text-xs font-semibold">
+                                Healthy
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-sm text-white/70 leading-relaxed">
+                          Unlock the potential of your sales pipeline with a
+                          platform designed to simplify your deal tracking
+                          experience, while giving you the tools to stay ahead
+                          of risks.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="group bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-2xl p-6 border border-gray-700/30 hover:border-blue-500/40 transition-all duration-500 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
+
+                      <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-5">
+                          <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-500">
+                            Market Insights & Tools
+                          </h3>
+                          <svg
+                            className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors duration-300"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                            />
+                          </svg>
+                        </div>
+
+                        <div className="mb-5 space-y-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white/80 text-sm font-medium">
+                                Risk Detection
+                              </span>
+                              <span className="text-white text-sm font-bold">
+                                95%
+                              </span>
+                            </div>
+                            <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/30"
+                                style={{ width: "95%" }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white/80 text-sm font-medium">
+                                Activity Tracking
+                              </span>
+                              <span className="text-white text-sm font-bold">
+                                88%
+                              </span>
+                            </div>
+                            <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/30"
+                                style={{ width: "88%" }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white/80 text-sm font-medium">
+                                Action Alerts
+                              </span>
+                              <span className="text-white text-sm font-bold">
+                                92%
+                              </span>
+                            </div>
+                            <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/30"
+                                style={{ width: "92%" }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white/80 text-sm font-medium">
+                                Pipeline Health
+                              </span>
+                              <span className="text-white text-sm font-bold">
+                                85%
+                              </span>
+                            </div>
+                            <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/30"
+                                style={{ width: "85%" }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-sm text-white/70 leading-relaxed">
+                          With Market Insights & Tools, you have everything you
+                          need to make smarter, more strategic deal decisions,
+                          backed by data, analysis, and expert guidance.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
