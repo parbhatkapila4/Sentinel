@@ -1,26 +1,41 @@
-import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "./prisma";
+import { getSession } from "./session";
 
 export async function getAuthenticatedUserId(): Promise<string> {
-  const clerkUser = await currentUser();
+  const session = await getSession();
 
-  if (!clerkUser) {
+  if (!session) {
     throw new Error("Unauthorized");
   }
 
-  const email = clerkUser.emailAddresses[0]?.emailAddress;
-  if (!email) {
-    throw new Error("User email not found");
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
   }
 
-  await prisma.user.upsert({
-    where: { id: clerkUser.id },
-    update: {},
-    create: {
-      id: clerkUser.id,
-      email,
+  return session.userId;
+}
+
+export async function getAuthenticatedUser() {
+  const session = await getSession();
+
+  if (!session) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: {
+      id: true,
+      name: true,
+      surname: true,
+      email: true,
+      createdAt: true,
     },
   });
 
-  return clerkUser.id;
+  return user;
 }
