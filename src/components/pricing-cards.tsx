@@ -2,392 +2,235 @@
 
 import { usePricing } from "./pricing-toggle";
 
-type Plan = {
-  name: string;
-  monthly: number;
-  annual: number;
-  description: string;
-  included: string[];
-  excluded: string[];
-  buttonText: string;
-  active?: boolean;
-  monthlyOriginal?: number;
-  popular?: boolean;
-  savePercent?: number;
-};
-
 export function PricingCards() {
   const { isAnnual } = usePricing();
 
-  const plans: {
-    basic: Plan;
-    pro: Plan;
-    master: Plan;
-  } = {
-    basic: {
-      name: "Starter",
-      monthly: 49,
-      annual: 490,
-      description:
-        "Perfect for individual sales reps and small teams getting started with deal tracking and risk detection",
-      included: [
-        "Track up to 50 active deals",
-        "Real-time risk detection",
-        "Activity tracking (emails & meetings)",
-        "Basic action recommendations",
-        "Deal timeline & history",
-      ],
-      excluded: [
-        "Advanced risk analytics",
-        "Team collaboration features",
-        "API access & integrations",
-        "Priority support",
-      ],
-      buttonText: "Get Started",
-      active: false,
-    },
-    pro: {
-      name: "Professional",
-      monthly: 149,
-      monthlyOriginal: 199,
-      annual: 1490,
-      description:
-        "Ideal for growing sales teams that need advanced risk detection and team collaboration features",
-      included: [
-        "Track up to 500 active deals",
-        "Real-time risk detection",
-        "Activity tracking (emails & meetings)",
-        "AI-powered action recommendations",
-        "Deal timeline & history",
-        "Team collaboration & sharing",
-        "Advanced risk analytics",
-        "Email & chat support",
-      ],
-      excluded: ["API access & integrations", "Priority support"],
-      buttonText: "Start 7-days Free Trial",
-      popular: true,
-      savePercent: 25,
-    },
-    master: {
-      name: "Enterprise",
-      monthly: 499,
-      annual: 4990,
-      description:
-        "Complete solution for large revenue teams with unlimited deals, custom integrations, and dedicated support",
-      included: [
-        "Unlimited active deals",
-        "Real-time risk detection",
-        "Activity tracking (emails & meetings)",
-        "AI-powered action recommendations",
-        "Deal timeline & history",
-        "Team collaboration & sharing",
-        "Advanced risk analytics",
-        "API access & custom integrations",
-        "Priority support & onboarding",
-        "Custom reporting & dashboards",
-      ],
-      excluded: [],
-      buttonText: "Contact Sales",
-    },
+  const freeFeatures = [
+    "Get 3 credits daily",
+    "Free Job AI access",
+    "Free InterviewGPT access",
+    "Free Resume AI access",
+    "Free Cover Letter Generator access",
+    "Limited Weekly AI insights",
+    "Limited company bank access",
+  ];
+
+  const proFeatures = [
+    { text: "Unlimited credits", included: true },
+    { text: "Access to all questions (20k+)", included: true },
+    { text: "Full access to company tags", included: true },
+    { text: "Full access to company question banks", included: true },
+    { text: "AI enhanced responses", included: false },
+    { text: "Full Interview GPT access", included: true },
+    { text: "Enhanced Weekly AI insights", included: true },
+  ];
+
+  const customFeatures = [
+    "Customized interview modules.",
+    "Customized performance tracker.",
+    "Customized response feedback.",
+    "Customized AI weekly insights.",
+  ];
+
+  const getProPrice = () => {
+    return isAnnual ? "$0.99" : "$1.99";
   };
 
-  const getPrice = (plan: Plan) => {
-    if (isAnnual) {
-      return Math.round(plan.annual / 12);
-    }
-    return plan.monthly;
-  };
-
-  const getBillingText = () => {
-    return isAnnual ? "/month, annually" : "/month, annually";
-  };
-
-  const getYearlyText = (plan: Plan) => {
-    if (isAnnual) {
-      return `$${plan.annual} billed yearly`;
-    }
-    return null;
-  };
-
-  const getSavings = (plan: Plan) => {
-    if (isAnnual) {
-      const savings = plan.monthly * 12 - plan.annual;
-      return savings > 0 ? savings : null;
-    }
-    return null;
+  const getProOriginalPrice = () => {
+    return isAnnual ? "$3.99" : "$7.99";
   };
 
   return (
-    <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-6">
-        <div className="relative bg-gradient-to-br from-gray-800/45 to-gray-900/35 backdrop-blur-md rounded-2xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 flex flex-col">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.025] to-transparent opacity-20 pointer-events-none"></div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+      <div
+        className="rounded-3xl p-7 flex flex-col"
+        style={{
+          background: "linear-gradient(145deg, #1a2744 0%, #0f1a2e 100%)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <h3 className="text-white font-medium text-2xl mb-4 italic">Free</h3>
 
-          <div className="relative flex flex-col grow">
-            <h3
-              className="text-gray-200 font-semibold text-xl mb-5"
-              style={{
-                fontFamily:
-                  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-              }}
-            >
-              {plans.basic.name}
-            </h3>
+        <p className="text-white/50 text-sm mb-6 leading-relaxed">
+          Perfect for testing out our platform and practicing basic interview
+          questions to see if it&apos;s the right fit for you.
+        </p>
 
-            <div className="flex items-baseline flex-wrap gap-2 mb-4">
-              <span
-                className="text-white font-bold text-4xl"
-                style={{
-                  fontFamily:
-                    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                }}
-              >
-                ${getPrice(plans.basic)}
-              </span>
-              <span className="text-gray-400 text-sm">{getBillingText()}</span>
-              {getSavings(plans.basic) !== null &&
-                getSavings(plans.basic)! > 0 && (
-                  <span className="bg-yellow-500/80 text-black text-xs font-medium px-2 py-0.5 rounded-full">
-                    Save ${getSavings(plans.basic)}
-                  </span>
-                )}
-            </div>
-            {getYearlyText(plans.basic) && (
-              <p className="text-gray-500 text-xs mb-2">
-                {getYearlyText(plans.basic)}
-              </p>
-            )}
-
-            <p className="text-gray-400 text-sm mb-7 leading-relaxed">
-              {plans.basic.description}
-            </p>
-
-            <ul className="space-y-3.5 mb-8">
-              {plans.basic.included.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <svg
-                    className="w-5 h-5 text-green-500 shrink-0 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span className="text-gray-300 text-sm leading-relaxed">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-              {plans.basic.excluded.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <svg
-                    className="w-5 h-5 text-gray-600 shrink-0 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                  <span className="text-gray-500 text-sm leading-relaxed">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <button className="w-full bg-black hover:bg-gray-900 text-white py-3 rounded-xl font-medium text-sm transition-colors border border-white/15 mt-auto">
-              {plans.basic.buttonText}
-            </button>
-          </div>
+        <div className="flex items-baseline gap-1 mb-8">
+          <span className="text-white font-bold text-5xl">$0</span>
+          <span className="text-white/40 text-sm">/month</span>
         </div>
 
-        <div className="relative bg-gradient-to-br from-gray-800/45 to-gray-900/35 backdrop-blur-md rounded-2xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 lg:scale-[1.01] flex flex-col">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.025] to-transparent opacity-20 pointer-events-none"></div>
-
-          {plans.pro.popular && (
-            <div className="absolute top-4 right-4 bg-white text-black text-xs font-medium px-2.5 py-1 rounded-full z-10">
-              Popular
-            </div>
-          )}
-
-          <div className="relative flex flex-col grow">
-            <h3
-              className="text-gray-200 font-semibold text-xl mb-5 mt-2"
-              style={{
-                fontFamily:
-                  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-              }}
-            >
-              {plans.pro.name}
-            </h3>
-
-            <div className="flex items-baseline flex-wrap gap-2 mb-4">
-              {plans.pro.monthlyOriginal && !isAnnual && (
-                <span className="text-gray-500 line-through text-2xl font-medium">
-                  ${plans.pro.monthlyOriginal}
-                </span>
-              )}
-              <span
-                className="text-white font-bold text-4xl"
-                style={{
-                  fontFamily:
-                    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                }}
-              >
-                ${getPrice(plans.pro)}
-              </span>
-              <span className="text-gray-400 text-sm">{getBillingText()}</span>
-              {getSavings(plans.pro) !== null && getSavings(plans.pro)! > 0 && (
-                <span className="bg-yellow-500/80 text-black text-xs font-medium px-2 py-0.5 rounded-full">
-                  Save ${getSavings(plans.pro)}
-                </span>
-              )}
-              {!isAnnual && plans.pro.savePercent && (
-                <span className="bg-yellow-500/80 text-black text-xs font-medium px-2 py-0.5 rounded-full">
-                  Save {plans.pro.savePercent}%
-                </span>
-              )}
-            </div>
-            {getYearlyText(plans.pro) && (
-              <p className="text-gray-500 text-xs mb-2">
-                {getYearlyText(plans.pro)}
-              </p>
-            )}
-
-            <p className="text-gray-400 text-sm mb-7 leading-relaxed">
-              {plans.pro.description}
-            </p>
-
-            <ul className="space-y-3.5 mb-8">
-              {plans.pro.included.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <svg
-                    className="w-5 h-5 text-green-500 shrink-0 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span className="text-gray-300 text-sm leading-relaxed">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-              {plans.pro.excluded.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <svg
-                    className="w-5 h-5 text-gray-600 shrink-0 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                  <span className="text-gray-500 text-sm leading-relaxed">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <button className="w-full bg-white hover:bg-gray-50 text-black py-3 rounded-xl font-medium text-sm transition-colors mt-auto">
-              {plans.pro.buttonText}
-            </button>
-          </div>
+        <div className="flex items-center gap-3 mb-5">
+          <div className="flex-1 h-px bg-white/10"></div>
+          <span className="text-white/30 text-xs">What&apos;s Included?</span>
+          <div className="flex-1 h-px bg-white/10"></div>
         </div>
 
-        <div className="relative bg-gradient-to-br from-gray-800/45 to-gray-900/35 backdrop-blur-md rounded-2xl p-8 border border-white/5 hover:border-white/10 transition-all duration-300 flex flex-col">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.025] to-transparent opacity-20 pointer-events-none"></div>
-
-          <div className="relative flex flex-col grow">
-            <h3
-              className="text-gray-200 font-semibold text-xl mb-5"
-              style={{
-                fontFamily:
-                  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-              }}
-            >
-              {plans.master.name}
-            </h3>
-
-            <div className="flex items-baseline flex-wrap gap-2 mb-4">
-              <span
-                className="text-white font-bold text-4xl"
-                style={{
-                  fontFamily:
-                    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                }}
+        <ul className="space-y-3 mb-8 flex-1">
+          {freeFeatures.map((feature, idx) => (
+            <li key={idx} className="flex items-start gap-3">
+              <svg
+                className="w-5 h-5 text-white/30 shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
               >
-                ${getPrice(plans.master)}
-              </span>
-              <span className="text-gray-400 text-sm">{getBillingText()}</span>
-              {getSavings(plans.master) !== null &&
-                getSavings(plans.master)! > 0 && (
-                  <span className="bg-yellow-500/80 text-black text-xs font-medium px-2 py-0.5 rounded-full">
-                    Save ${getSavings(plans.master)}
-                  </span>
-                )}
-            </div>
-            {getYearlyText(plans.master) && (
-              <p className="text-gray-500 text-xs mb-2">
-                {getYearlyText(plans.master)}
-              </p>
-            )}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <span className="text-white/50 text-sm">{feature}</span>
+            </li>
+          ))}
+        </ul>
 
-            <p className="text-gray-400 text-sm mb-7 leading-relaxed">
-              {plans.master.description}
-            </p>
+        <button
+          className="w-full py-3.5 rounded-xl text-sm font-medium transition-colors"
+          style={{
+            background: "transparent",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            color: "rgba(255, 255, 255, 0.7)",
+          }}
+        >
+          Get a consultation
+        </button>
+      </div>
 
-            <ul className="space-y-3.5 mb-8">
-              {plans.master.included.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <svg
-                    className="w-5 h-5 text-green-500 shrink-0 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span className="text-gray-300 text-sm leading-relaxed">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
+      <div
+        className="relative rounded-3xl p-[2px] flex flex-col"
+        style={{
+          background: "linear-gradient(180deg, #7c8dea 0%, #a78bfa 100%)",
+        }}
+      >
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#5b6fd6] text-white text-xs font-medium px-4 py-1.5 rounded-full z-10 whitespace-nowrap">
+          Most popular
+        </div>
 
-            <button className="w-full bg-[#39ff14]/90 hover:bg-[#39ff14] text-white py-3 rounded-xl font-medium text-sm transition-colors">
-              {plans.master.buttonText}
-            </button>
+        <div
+          className="rounded-3xl p-7 h-full flex flex-col"
+          style={{
+            background:
+              "linear-gradient(145deg, rgba(120, 140, 200, 0.3) 0%, rgba(100, 120, 180, 0.2) 50%, rgba(30, 45, 80, 0.95) 100%)",
+            backdropFilter: "blur(20px)",
+          }}
+        >
+          <h3 className="text-white font-medium text-2xl mb-4 italic">Pro</h3>
+
+          <p className="text-white/60 text-sm mb-6 leading-relaxed">
+            Ideal for active job seekers. Access a wide range of questions and
+            receive detailed feedback on each response to refine your
+            performance.
+          </p>
+
+          <div className="flex items-baseline gap-2 mb-8">
+            <span className="text-white/40 line-through text-base">
+              {getProOriginalPrice()}
+            </span>
+            <span className="text-white font-bold text-5xl">
+              {getProPrice()}
+            </span>
+            <span className="text-white/40 text-sm">/week.</span>
           </div>
+
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-white/15"></div>
+            <span className="text-white/40 text-xs">What&apos;s Included?</span>
+            <div className="flex-1 h-px bg-white/15"></div>
+          </div>
+
+          <ul className="space-y-3 mb-8 flex-1">
+            {proFeatures.map((feature, idx) => (
+              <li key={idx} className="flex items-start gap-3">
+                <svg
+                  className={`w-5 h-5 shrink-0 mt-0.5 ${
+                    feature.included ? "text-[#6b7fd6]" : "text-white/30"
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span className="text-white/60 text-sm">{feature.text}</span>
+              </li>
+            ))}
+          </ul>
+
+          <button
+            className="w-full py-3.5 rounded-xl text-sm font-medium text-white transition-colors"
+            style={{
+              background: "linear-gradient(135deg, #5b6fd6 0%, #7b8ce8 100%)",
+            }}
+          >
+            Get a consultation
+          </button>
         </div>
       </div>
-    </>
+
+      <div
+        className="rounded-3xl p-7 flex flex-col"
+        style={{
+          background: "linear-gradient(145deg, #1a2744 0%, #0f1a2e 100%)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <h3 className="text-white font-medium text-2xl mb-4">Custom Plan</h3>
+
+        <p className="text-white/50 text-sm mb-6 leading-relaxed">
+          Perfect for groups & teachers.
+        </p>
+
+        <div className="mb-8">
+          <span className="text-white font-bold text-2xl">Request a quote</span>
+        </div>
+
+        <div className="flex items-center gap-3 mb-5">
+          <div className="flex-1 h-px bg-white/10"></div>
+          <span className="text-white/30 text-xs">What&apos;s Included?</span>
+          <div className="flex-1 h-px bg-white/10"></div>
+        </div>
+
+        <ul className="space-y-3 mb-8 flex-1">
+          {customFeatures.map((feature, idx) => (
+            <li key={idx} className="flex items-start gap-3">
+              <svg
+                className="w-5 h-5 text-white/30 shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <span className="text-white/50 text-sm">{feature}</span>
+            </li>
+          ))}
+        </ul>
+
+        <button
+          className="w-full py-3.5 rounded-xl text-sm font-medium transition-colors"
+          style={{
+            background: "transparent",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            color: "rgba(255, 255, 255, 0.7)",
+          }}
+        >
+          Get a consultation
+        </button>
+      </div>
+    </div>
   );
 }
