@@ -2,12 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
-import { SignInButtonWrapper } from "@/components/sign-in-button";
+import { useRouter } from "next/navigation";
 
 export function AnimatedNav() {
-  const { isSignedIn } = useUser();
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        setIsSignedIn(!!data.user);
+      })
+      .catch(() => setIsSignedIn(false));
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,38 +70,33 @@ export function AnimatedNav() {
                   href="/dashboard"
                   className="text-sm font-medium text-white hover:text-white/80 transition-colors"
                 >
-                  SIGN IN
+                  DASHBOARD
                 </Link>
-                <Link
-                  href="/dashboard"
-                  className="px-6 py-2 bg-blue-500 rounded-lg text-white font-semibold flex items-center gap-2 hover:bg-blue-600 transition-colors"
+                <button
+                  onClick={async () => {
+                    await fetch("/api/auth/logout", { method: "POST" });
+                    setIsSignedIn(false);
+                    router.push("/");
+                    router.refresh();
+                  }}
+                  className="px-6 py-2 bg-gray-700 rounded-lg text-white font-semibold hover:bg-gray-600 transition-colors"
                 >
-                  OPEN DASHBOARD
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Link>
+                  LOGOUT
+                </button>
               </>
             ) : (
               <>
                 <Link
-                  href="#"
+                  href="/sign-in"
                   className="text-sm font-medium text-white hover:text-white/80 transition-colors"
                 >
                   SIGN IN
                 </Link>
-                <div className="px-6 py-2 bg-blue-500 rounded-lg text-white font-semibold flex items-center gap-2 hover:bg-blue-600 transition-colors cursor-pointer">
-                  <SignInButtonWrapper />
+                <Link
+                  href="/sign-up"
+                  className="px-6 py-2 bg-blue-500 rounded-lg text-white font-semibold flex items-center gap-2 hover:bg-blue-600 transition-colors"
+                >
+                  SIGN UP
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -106,7 +110,7 @@ export function AnimatedNav() {
                       d="M9 5l7 7-7 7"
                     />
                   </svg>
-                </div>
+                </Link>
               </>
             )}
           </div>

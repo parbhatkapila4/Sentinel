@@ -239,16 +239,20 @@ a,
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
 @keyframes sparkle {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0;
     transform: scale(0);
   }
+
   50% {
     opacity: 1;
     transform: scale(1);
@@ -256,10 +260,13 @@ a,
 }
 
 @keyframes trackPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     stroke-width: 16;
     opacity: 0.9;
   }
+
   50% {
     stroke-width: 20;
     opacity: 1;
@@ -267,9 +274,12 @@ a,
 }
 
 @keyframes bounce {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-8px);
   }
@@ -279,8 +289,53 @@ a,
   0% {
     stroke-dashoffset: 0;
   }
+
   100% {
     stroke-dashoffset: 20;
+  }
+}
+
+@keyframes moveCursor1 {
+  0% {
+    transform: translate(0.5rem, 2rem);
+  }
+
+  25% {
+    transform: translate(2rem, 1.5rem);
+  }
+
+  50% {
+    transform: translate(4rem, 2.5rem);
+  }
+
+  75% {
+    transform: translate(6rem, 2rem);
+  }
+
+  100% {
+    transform: translate(0.5rem, 2rem);
+  }
+}
+
+@keyframes moveCursor2 {
+  0% {
+    transform: translate(-0.5rem, 3rem);
+  }
+
+  25% {
+    transform: translate(-2rem, 2.5rem);
+  }
+
+  50% {
+    transform: translate(-4rem, 3.5rem);
+  }
+
+  75% {
+    transform: translate(-2.5rem, 3rem);
+  }
+
+  100% {
+    transform: translate(-0.5rem, 3rem);
   }
 }
 
@@ -325,6 +380,122 @@ a,
 .animate-shimmer {
   animation: shimmerTrack 2s linear infinite;
   stroke-dasharray: 5 5;
+}
+
+.animate-move-cursor-1 {
+  animation: moveCursor1 4s ease-in-out infinite;
+}
+
+.animate-move-cursor-2 {
+  animation: moveCursor2 5s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes moveAlert1 {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(10px, -8px);
+  }
+
+  50% {
+    transform: translate(-5px, -12px);
+  }
+
+  75% {
+    transform: translate(8px, -5px);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes moveAlert2 {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-8px, 10px);
+  }
+
+  50% {
+    transform: translate(12px, 8px);
+  }
+
+  75% {
+    transform: translate(-5px, 12px);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes moveAlert3 {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-10px, -5px);
+  }
+
+  50% {
+    transform: translate(8px, -10px);
+  }
+
+  75% {
+    transform: translate(-6px, -8px);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes moveAlert4 {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(12px, 8px);
+  }
+
+  50% {
+    transform: translate(-8px, 12px);
+  }
+
+  75% {
+    transform: translate(10px, 6px);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.animate-move-alert-1 {
+  animation: moveAlert1 6s ease-in-out infinite;
+}
+
+.animate-move-alert-2 {
+  animation: moveAlert2 7s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+.animate-move-alert-3 {
+  animation: moveAlert3 5.5s ease-in-out infinite;
+  animation-delay: 0.6s;
+}
+
+.animate-move-alert-4 {
+  animation: moveAlert4 6.5s ease-in-out infinite;
+  animation-delay: 0.9s;
 }
 
 :root {
@@ -400,6 +571,7 @@ a,
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
