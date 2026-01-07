@@ -576,3 +576,122 @@ a,
     @apply bg-background text-foreground;
   }
 }
+
+
+@keyframes aurora-float-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(50px, -30px) scale(1.1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(20px, 40px) scale(0.95);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translate(-30px, 20px) scale(1.05);
+    opacity: 0.65;
+  }
+}
+
+@keyframes aurora-float-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  33% {
+    transform: translate(-40px, 50px) scale(1.15);
+    opacity: 0.6;
+  }
+  66% {
+    transform: translate(60px, -20px) scale(0.9);
+    opacity: 0.45;
+  }
+}
+
+@keyframes aurora-float-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.4;
+  }
+  20% {
+    transform: translate(30px, 60px) scale(1.1);
+    opacity: 0.5;
+  }
+  40% {
+    transform: translate(-50px, 30px) scale(0.95);
+    opacity: 0.35;
+  }
+  60% {
+    transform: translate(-20px, -40px) scale(1.05);
+    opacity: 0.45;
+  }
+  80% {
+    transform: translate(40px, -10px) scale(1);
+    opacity: 0.4;
+  }
+}
+
+@keyframes aurora-float-4 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-60px, -40px) scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+@keyframes aurora-wave {
+  0%, 100% {
+    d: path("M0,500 Q250,300 500,500 T1000,500 L1000,1000 L0,1000 Z");
+  }
+  25% {
+    d: path("M0,480 Q200,350 500,480 T1000,520 L1000,1000 L0,1000 Z");
+  }
+  50% {
+    d: path("M0,520 Q300,280 500,520 T1000,480 L1000,1000 L0,1000 Z");
+  }
+  75% {
+    d: path("M0,490 Q250,320 500,510 T1000,490 L1000,1000 L0,1000 Z");
+  }
+}
+
+@keyframes aurora-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.4;
+    transform: translateY(-20px);
+  }
+}
+
+.aurora-orb-1 {
+  animation: aurora-float-1 15s ease-in-out infinite;
+}
+
+.aurora-orb-2 {
+  animation: aurora-float-2 18s ease-in-out infinite;
+}
+
+.aurora-orb-3 {
+  animation: aurora-float-3 20s ease-in-out infinite;
+}
+
+.aurora-orb-4 {
+  animation: aurora-float-4 12s ease-in-out infinite;
+}
+
+.aurora-wave {
+  animation: aurora-pulse 8s ease-in-out infinite;
+}
+
+.aurora-wave path {
+  animation: aurora-wave 10s ease-in-out infinite;
+}

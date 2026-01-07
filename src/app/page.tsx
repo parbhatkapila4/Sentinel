@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { currentUser } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { SignInButtonWrapper } from "@/components/sign-in-button";
 import { PricingCards } from "@/components/pricing-cards";
 import {
   PricingToggle,
   PricingToggleDisplay,
 } from "@/components/pricing-toggle";
-import { CardSpotlight } from "@/components/ui/card-spotlight";
 import Navbar from "@/components/revenue-navbar";
+import { WorldMapDemo } from "@/components/world-map-demo";
 
 export default async function Home() {
-  const user = await currentUser();
+  const user = await getAuthenticatedUser();
 
   return (
     <div className="min-h-screen bg-black text-white antialiased">
@@ -915,25 +915,25 @@ export default async function Home() {
                 </svg>
 
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-24 left-12 bg-purple-500 rounded-2xl rounded-bl-none p-4 max-w-[220px] shadow-2xl">
+                  <div className="absolute top-24 left-12 bg-purple-500 rounded-2xl rounded-bl-none p-4 max-w-[220px] shadow-2xl animate-move-alert-1">
                     <p className="text-white text-sm font-medium leading-snug">
                       Deal at risk: No activity in 7 days
                     </p>
                   </div>
 
-                  <div className="absolute top-40 right-20 bg-blue-500 rounded-2xl rounded-br-none p-4 max-w-[180px] shadow-2xl">
+                  <div className="absolute top-40 right-20 bg-blue-500 rounded-2xl rounded-br-none p-4 max-w-[180px] shadow-2xl animate-move-alert-2">
                     <p className="text-white text-sm font-medium leading-snug">
                       Send follow-up email
                     </p>
                   </div>
 
-                  <div className="absolute top-56 left-10 bg-purple-500 rounded-2xl rounded-bl-none p-4 max-w-[240px] shadow-2xl">
+                  <div className="absolute top-56 left-10 bg-purple-500 rounded-2xl rounded-bl-none p-4 max-w-[240px] shadow-2xl animate-move-alert-3">
                     <p className="text-white text-sm font-medium leading-snug">
                       Negotiation stalled without response
                     </p>
                   </div>
 
-                  <div className="absolute top-72 right-16 bg-blue-500 rounded-2xl rounded-br-none p-4 max-w-[200px] shadow-2xl">
+                  <div className="absolute top-72 right-16 bg-blue-500 rounded-2xl rounded-br-none p-4 max-w-[200px] shadow-2xl animate-move-alert-4">
                     <p className="text-white text-sm font-medium leading-snug">
                       Nudge for response
                     </p>
@@ -947,419 +947,429 @@ export default async function Home() {
 
       <section
         id="features"
-        className="py-40 px-6 lg:px-8 relative overflow-hidden bg-black"
+        className="py-40 px-6 lg:px-8 relative overflow-hidden"
+        style={{ backgroundColor: "#000000" }}
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
           <div
-            className="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse"
+            className="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl animate-pulse"
             style={{ animationDelay: "1s" }}
           ></div>
-
-          <div className="absolute top-1/4 right-1/4 w-64 h-64 border border-blue-500/10 rotate-45"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-48 h-48 border border-blue-500/10 rotate-12"></div>
         </div>
 
-        <div className="relative z-10 max-w-[1600px] mx-auto">
-          <div className="mb-24">
-            <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 mb-12">
-              <div className="flex-1">
-                <div className="inline-block mb-6">
-                  <span className="text-blue-400 text-sm font-semibold uppercase tracking-[0.2em]">
-                    Features
-                  </span>
-                  <div className="h-0.5 w-full bg-gradient-to-r from-blue-500 to-transparent mt-2"></div>
-                </div>
-                <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] mb-6">
-                  Built for
-                  <br />
-                  <span className="relative inline-block">
-                    <span className="text-blue-400">Excellence</span>
-                    <svg
-                      className="absolute -bottom-2 left-0 w-full h-4 text-blue-500/30"
-                      viewBox="0 0 200 20"
-                      preserveAspectRatio="none"
-                    >
-                      <path
-                        d="M0,10 Q50,0 100,10 T200,10"
-                        stroke="currentColor"
-                        fill="none"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                  </span>
-                </h2>
-              </div>
-              <div className="lg:w-96">
-                <p className="text-lg text-white/60 leading-relaxed">
-                  Every feature is crafted with precision, designed to give you
-                  the edge you need in today&apos;s competitive landscape.
-                </p>
-              </div>
-            </div>
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <div className="mb-16">
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight tracking-tight">
+              Ready-made collaborative features.
+            </h2>
+            <p className="text-lg md:text-xl text-white/60 leading-relaxed max-w-4xl">
+              Sentinel provides ready-to-use features through{" "}
+              <strong className="text-white font-semibold">
+                customizable pre-built components
+              </strong>{" "}
+              that can easily be dropped into your product to{" "}
+              <strong className="text-white font-semibold">
+                boost growth.
+              </strong>
+            </p>
           </div>
 
-          <div className="space-y-16">
-            <CardSpotlight
-              radius={400}
-              color="#1a1a1a"
-              className="relative overflow-hidden bg-black rounded-3xl p-12 lg:p-16 border border-white/10"
-            >
-              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                <div className="lg:col-span-3 flex flex-col items-start lg:items-center gap-6">
-                  <div className="relative">
-                    <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center shadow-2xl shadow-blue-500/20">
-                      <svg
-                        className="w-16 h-16 text-blue-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-7">
-                  <h3 className="text-5xl lg:text-6xl font-black text-white mb-6 leading-tight">
-                    Real-Time
-                    <br />
-                    Risk Detection
-                  </h3>
-                  <p className="text-xl text-white leading-relaxed">
-                    Get instant alerts when deals show signs of stalling. Our
-                    advanced AI monitoring system analyzes patterns in
-                    real-time, ensuring you never miss a critical warning
-                    signal.
-                  </p>
-                </div>
-
-                <div className="lg:col-span-2 flex justify-end">
-                  <div className="w-20 h-20 rounded-2xl bg-blue-500/10 border-2 border-blue-500/30 flex items-center justify-center cursor-pointer shadow-lg shadow-blue-500/20">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 lg:col-span-7 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-white tracking-tight">
+                  Real-Time Risk Detection
+                </h3>
+                <span className="text-xs text-white/40 font-mono">
+                  DEAL-1644
+                </span>
+              </div>
+              <p className="text-white/70 text-sm mb-6">
+                Get instant alerts when deals show signs of stalling with our
+                advanced AI monitoring system.
+              </p>
+              <div className="bg-[#0f0f0f] rounded-lg p-4 border border-white/5 mb-4">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-red-500 shrink-0 flex items-center justify-center">
                     <svg
-                      className="w-10 h-10 text-blue-400"
+                      className="w-5 h-5 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
-                      strokeWidth={2.5}
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M9 5l7 7-7 7"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                       />
                     </svg>
                   </div>
+                  <div className="flex-1">
+                    <div className="text-white/90 text-sm mb-1 font-medium">
+                      Deal at risk: No activity in 7 days
+                    </div>
+                    <div className="text-white/50 text-xs mb-3">
+                      High-value deal requires immediate attention
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-white/60">Risk Score:</span>
+                      <span className="text-red-400 font-semibold">85%</span>
+                      <span className="text-white/40">•</span>
+                      <span className="text-white/60">Created:</span>
+                      <span className="text-white/70">13 Jul, 2024</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </CardSpotlight>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <CardSpotlight
-                radius={300}
-                color="#1a1a1a"
-                className="relative overflow-hidden bg-black rounded-2xl p-10 border border-white/10 h-full"
-              >
-                <div className="relative z-10 flex items-start gap-6">
-                  <div className="relative">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center shadow-xl shadow-blue-500/20">
-                      <svg
-                        className="w-10 h-10 text-blue-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <h3 className="text-3xl font-black text-white mb-4">
-                      Action Recommendations
-                    </h3>
-                    <p className="text-white leading-relaxed mb-6">
-                      Personalized, actionable steps powered by AI to save
-                      at-risk deals.
-                    </p>
-                  </div>
-                </div>
-              </CardSpotlight>
-
-              <CardSpotlight
-                radius={300}
-                color="#1a1a1a"
-                className="relative overflow-hidden bg-black rounded-2xl p-10 border border-white/10 h-full"
-              >
-                <div className="relative z-10 flex items-start gap-6">
-                  <div className="relative">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center shadow-xl shadow-blue-500/20">
-                      <svg
-                        className="w-10 h-10 text-blue-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <h3 className="text-3xl font-black text-white mb-4">
-                      Activity Tracking
-                    </h3>
-                    <p className="text-white leading-relaxed mb-6">
-                      Complete visibility into all deal interactions in one
-                      unified dashboard.
-                    </p>
-                  </div>
-                </div>
-              </CardSpotlight>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <CardSpotlight
-                radius={250}
-                color="#1a1a1a"
-                className="relative overflow-hidden bg-black rounded-2xl p-8 border border-white/10 h-full"
-              >
-                <div className="relative z-10">
-                  <div className="relative mb-6">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="col-span-12 lg:col-span-5 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-white tracking-tight">
+                  Activity Tracking
+                </h3>
+                <div className="flex items-center gap-2">
+                  <button className="text-xs text-white/60 px-2 py-1 rounded bg-white/5 hover:bg-white/10 transition-colors">
+                    30d
+                  </button>
+                  <button className="w-5 h-5 flex items-center justify-center text-white/50">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <p className="text-white/70 text-sm mb-4">
+                Complete visibility into all deal interactions in one unified
+                timeline.
+              </p>
+              <div className="bg-[#0f0f0f] rounded-lg p-4 border border-white/5">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0"></div>
+                    <div className="flex-1">
+                      <div className="text-white/90 text-sm mb-1">
+                        Email sent to client
+                      </div>
+                      <div className="text-white/50 text-xs">2 hours ago</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0"></div>
+                    <div className="flex-1">
+                      <div className="text-white/90 text-sm mb-1">
+                        Meeting scheduled
+                      </div>
+                      <div className="text-white/50 text-xs">1 day ago</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-yellow-500 mt-2 shrink-0"></div>
+                    <div className="flex-1">
+                      <div className="text-white/90 text-sm mb-1">
+                        Deal stage updated
+                      </div>
+                      <div className="text-white/50 text-xs">3 days ago</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-span-12 md:col-span-4 lg:col-span-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#1a1a1a] rounded-xl p-4 border border-white/5 shadow-lg shadow-black/30 hover:border-white/10 transition-all">
+                  <div className="text-white/50 text-xs mb-1">
+                    At Risk Deals
+                  </div>
+                  <div className="text-2xl font-bold text-white">13</div>
+                </div>
+                <div className="bg-[#1a1a1a] rounded-xl p-4 border border-white/5 shadow-lg shadow-black/30 hover:border-white/10 transition-all">
+                  <div className="text-white/50 text-xs mb-1">Active Deals</div>
+                  <div className="text-2xl font-bold text-white">22</div>
+                </div>
+                <div className="bg-[#1a1a1a] rounded-xl p-4 border border-white/5 shadow-lg shadow-black/30 hover:border-white/10 transition-all">
+                  <div className="text-white/50 text-xs mb-1">
+                    Overdue Actions
+                  </div>
+                  <div className="text-2xl font-bold text-white">09</div>
+                </div>
+                <div className="bg-[#1a1a1a] rounded-xl p-4 border-2 border-blue-500/50 shadow-lg shadow-blue-500/20 hover:border-blue-500/70 transition-all">
+                  <div className="text-white/50 text-xs mb-1">Risk Alerts</div>
+                  <div className="text-2xl font-bold text-white">53</div>
+                </div>
+                <div className="bg-[#1a1a1a] rounded-xl p-4 border border-white/5 shadow-lg shadow-black/30 hover:border-white/10 transition-all">
+                  <div className="text-white/50 text-xs mb-1">Total Deals</div>
+                  <div className="text-2xl font-bold text-white">17</div>
+                </div>
+                <div className="bg-[#1a1a1a] rounded-xl p-4 border border-white/5 shadow-lg shadow-black/30 hover:border-white/10 transition-all">
+                  <div className="text-white/50 text-xs mb-1">
+                    High Priority
+                  </div>
+                  <div className="text-2xl font-bold text-white">11</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-span-12 md:col-span-4 lg:col-span-4 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+              <h3 className="text-lg font-bold text-white mb-4 tracking-tight">
+                Top 5 At-Risk Deals
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/50 text-sm">1.</span>
+                    <span className="text-white text-sm">Enterprise Corp</span>
+                    <span className="text-red-500 text-xs">↑</span>
+                  </div>
+                  <span className="text-white/70 text-sm">85%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/50 text-sm">2.</span>
+                    <span className="text-white text-sm">Tech Solutions</span>
+                    <span className="text-red-500 text-xs">↑</span>
+                  </div>
+                  <span className="text-white/70 text-sm">72%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/50 text-sm">3.</span>
+                    <span className="text-white/70 text-sm">Global Inc</span>
+                  </div>
+                  <span className="text-white/60 text-sm">65%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/50 text-sm">4.</span>
+                    <span className="text-white/60 text-sm">StartupXYZ</span>
+                  </div>
+                  <span className="text-white/50 text-sm">58%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/50 text-sm">5.</span>
+                    <span className="text-white/60 text-sm">MegaCorp</span>
+                  </div>
+                  <span className="text-white/50 text-sm">52%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-span-12 md:col-span-4 lg:col-span-4 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+              <h3 className="text-lg font-bold text-white mb-4 tracking-tight">
+                Risk Alerts
+              </h3>
+              <p className="text-white/70 text-sm mb-4">
+                Get notified instantly when deals require your attention.
+              </p>
+              <div className="bg-[#0f0f0f] rounded-lg p-4 border border-white/5">
+                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
+                  <svg
+                    className="w-4 h-4 text-white/70"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                  <span className="text-white text-sm font-medium">Alerts</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-red-500 shrink-0 flex items-center justify-center">
                       <svg
-                        className="w-8 h-8 text-blue-400"
+                        className="w-5 h-5 text-white"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        strokeWidth={2}
                       >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                         />
                       </svg>
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white text-sm">
+                        Deal at risk: No activity in 7 days
+                      </div>
+                      <div className="text-white/60 text-xs mt-0.5">
+                        Enterprise Corp - $50K deal
+                      </div>
+                    </div>
                   </div>
-
-                  <h3 className="text-2xl font-black text-white mb-3">
-                    Automated Monitoring
-                  </h3>
-                  <p className="text-white text-sm leading-relaxed mb-4">
-                    24/7 continuous monitoring that alerts you only when action
-                    is needed.
-                  </p>
-                </div>
-              </CardSpotlight>
-
-              <CardSpotlight
-                radius={250}
-                color="#1a1a1a"
-                className="relative overflow-hidden bg-black rounded-2xl p-8 border border-white/10 h-full"
-              >
-                <div className="relative z-10">
-                  <div className="relative mb-6">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-yellow-500 shrink-0 flex items-center justify-center">
                       <svg
-                        className="w-8 h-8 text-blue-400"
+                        className="w-5 h-5 text-white"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        strokeWidth={2}
                       >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                          strokeWidth={2}
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
                     </div>
-                  </div>
-
-                  <h3 className="text-2xl font-black text-white mb-3">
-                    Intelligent Analytics
-                  </h3>
-                  <p className="text-white text-sm leading-relaxed mb-4">
-                    Deep insights to understand patterns, predict outcomes, and
-                    optimize strategy.
-                  </p>
-                </div>
-              </CardSpotlight>
-
-              <CardSpotlight
-                radius={250}
-                color="#1a1a1a"
-                className="relative overflow-hidden bg-black rounded-2xl p-8 border border-white/10 h-full"
-              >
-                <div className="relative z-10">
-                  <div className="relative mb-6">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                      <svg
-                        className="w-8 h-8 text-blue-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                        />
-                      </svg>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white text-sm">
+                        Action overdue by 2 days
+                      </div>
+                      <div className="text-white/60 text-xs mt-0.5">
+                        Tech Solutions - Follow up required
+                      </div>
                     </div>
                   </div>
-
-                  <h3 className="text-2xl font-black text-white mb-3">
-                    Team Collaboration
-                  </h3>
-                  <p className="text-white text-sm leading-relaxed mb-4">
-                    Seamless teamwork with shared insights and aligned deal
-                    progress.
-                  </p>
                 </div>
-              </CardSpotlight>
+              </div>
+            </div>
+
+            <div className="col-span-12 md:col-span-6 lg:col-span-6 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+              <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
+                Action Recommendations
+              </h3>
+              <p className="text-white/70 text-sm leading-relaxed mb-6">
+                Personalized, actionable steps powered by AI to save at-risk
+                deals.
+              </p>
+              <div className="bg-[#0f0f0f] rounded-lg p-4 border border-white/5">
+                <div className="text-white/90 text-sm mb-4 leading-relaxed">
+                  Recommended actions for Enterprise Corp deal
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-white/80">
+                    <svg
+                      className="w-4 h-4 text-green-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Send follow-up email</span>
+                    <span className="text-white/50 text-xs ml-auto">
+                      High priority
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-white/80">
+                    <svg
+                      className="w-4 h-4 text-green-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Schedule discovery call</span>
+                    <span className="text-white/50 text-xs ml-auto">
+                      Medium
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-white/60">
+                    <svg
+                      className="w-4 h-4 text-white/40"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 012 0v2a1 1 0 11-2 0V9z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Review proposal terms</span>
+                    <span className="text-white/40 text-xs ml-auto">Low</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-span-12 md:col-span-6 lg:col-span-6 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+              <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
+                Deal Analytics
+              </h3>
+              <p className="text-white/70 text-sm leading-relaxed mb-6">
+                Deep insights to understand patterns, predict outcomes, and
+                optimize strategy.
+              </p>
+              <div className="bg-[#0f0f0f] rounded-lg p-4 border border-white/5">
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-xs text-white/60 mb-1">
+                      <span>Deal Health</span>
+                      <span>85%</span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
+                        style={{ width: "85%" }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs text-white/60 mb-1">
+                      <span>Win Probability</span>
+                      <span>72%</span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
+                        style={{ width: "72%" }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs text-white/60 mb-1">
+                      <span>Activity Score</span>
+                      <span>45%</span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full"
+                        style={{ width: "45%" }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <section
-        id="pricing"
-        className="py-32 px-6 lg:px-8 bg-black relative overflow-hidden"
-      >
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]">
-            <svg viewBox="0 0 400 400" className="w-full h-full opacity-20">
-              <circle
-                cx="200"
-                cy="200"
-                r="150"
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="2"
-                opacity="0.3"
-              />
-              <circle
-                cx="200"
-                cy="200"
-                r="100"
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="2"
-                opacity="0.3"
-              />
-              <circle cx="200" cy="200" r="50" fill="#fbbf24" opacity="0.2" />
-              <circle cx="120" cy="120" r="30" fill="#3b82f6" opacity="0.3" />
-              <circle cx="280" cy="280" r="30" fill="#f97316" opacity="0.3" />
-            </svg>
-          </div>
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <p className="text-sm text-blue-400 mb-4 uppercase tracking-wider font-semibold">
-              Why Revenue Sentinel
-            </p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Real-Time Risk Detection Means More Deals Closed
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 relative hover:bg-white/10 transition-all">
-              <div className="absolute top-4 right-4 w-3 h-3 bg-white rounded-full"></div>
-              <div className="text-6xl font-bold text-white mb-4">0</div>
-              <p className="text-white/70 text-lg leading-relaxed">
-                Deals lost to silent decay when you catch risk early
-              </p>
-            </div>
-
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 relative hover:bg-white/10 transition-all">
-              <div className="absolute top-4 right-4 w-3 h-3 bg-yellow-400 rounded-full"></div>
-              <div className="text-6xl font-bold text-white mb-4">24/7</div>
-              <p className="text-white/70 text-lg leading-relaxed">
-                Continuous monitoring of deal health and activity status
-              </p>
-            </div>
-
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 relative hover:bg-white/10 transition-all">
-              <div className="absolute top-4 right-4 w-3 h-3 bg-red-500 rounded-full"></div>
-              <div className="text-6xl font-bold text-white mb-4">100%</div>
-              <p className="text-white/70 text-lg leading-relaxed">
-                Actionable recommendations for every at-risk deal
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center mt-16">
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors"
-              >
-                Open Dashboard
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </Link>
-            ) : (
-              <div className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors cursor-pointer">
-                <SignInButtonWrapper />
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section
-        className="py-20 px-6 lg:px-8 relative overflow-hidden bg-black"
+        className="py-20 px-6 lg:px-8 relative overflow-hidden"
         style={{
+          backgroundColor: "#000000",
           fontFamily: "Arial, Helvetica, sans-serif",
         }}
       >
@@ -1401,108 +1411,184 @@ export default async function Home() {
 
           <div className="mb-16">
             <h2
-              className="text-9xl md:text-[10rem] lg:text-[12rem] font-black leading-none"
+              className="text-8xl md:text-[10rem] lg:text-[14rem] font-black leading-none"
               style={{
-                color: "#4a4a4a",
+                color: "#5a5a5a",
                 letterSpacing: "-0.02em",
-                position: "relative",
                 backgroundImage: `
-                  repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px),
-                  repeating-linear-gradient(90deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px)
+                  repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 2px, transparent 2px, transparent 8px),
+                  repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 2px, transparent 2px, transparent 8px)
                 `,
-                backgroundSize: "6px 6px",
+                backgroundSize: "8px 8px",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
-                WebkitTextFillColor: "#4a4a4a",
-                textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
+                WebkitTextFillColor: "#5a5a5a",
               }}
             >
               HOWDOES
             </h2>
           </div>
 
-          <div className="relative" style={{ minHeight: "850px" }}>
-            <div
-              className="absolute"
-              style={{ top: "0px", left: "0px", width: "280px" }}
-            >
-              <svg className="w-5 h-5 mb-3" viewBox="0 0 24 24" fill="none">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-16">
+            <div style={{ width: "320px" }}>
+              <svg className="w-8 h-8 mb-4" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
                   fill="url(#starGrad1)"
                 />
               </svg>
 
-              <h3 className="text-white font-bold text-lg mb-3 leading-tight">
-                Purchase of Governance token
+              <h3 className="text-white font-bold text-xl mb-3 leading-tight">
+                Connect Your
+                <br />
+                Deals
               </h3>
 
-              <p
-                className="text-white text-sm leading-relaxed"
-                style={{ lineHeight: "1.6" }}
-              >
-                Users purchase xyz tokens. The tokens give users the right to
-                vote on proposals and to be eligible for certain rewards such as
-                shares of the startup.
+              <p className="text-white/80 text-sm leading-relaxed">
+                Import your deals from your CRM or create them directly.
+                Sentinel tracks every deal through its lifecycle with automated
+                activity monitoring.
               </p>
             </div>
 
-            <div className="absolute" style={{ top: "50px", left: "380px" }}>
-              <div className="mb-6">
-                <div
-                  className="rounded-full bg-black flex items-center"
-                  style={{
-                    height: "50px",
-                    width: "280px",
-                    border: "4px solid #84cc16",
-                    paddingLeft: "16px",
-                  }}
-                >
-                  <div
-                    className="rounded-full flex items-center justify-center shrink-0"
-                    style={{
-                      width: "32px",
-                      height: "32px",
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
-                    }}
-                  >
-                    <span className="text-white text-xs font-medium">xyz</span>
+            <div
+              className="relative overflow-hidden"
+              style={{
+                width: "580px",
+                height: "180px",
+                borderRadius: "90px",
+                border: "8px solid #a3e635",
+                backgroundColor: "#000",
+              }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `
+                    radial-gradient(circle at 2px 2px, rgba(255,255,255,0.08) 1px, transparent 0)
+                  `,
+                  backgroundSize: "12px 12px",
+                }}
+              />
+
+              <div className="absolute inset-0 flex items-center justify-center gap-4 px-12">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-14 h-14 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center">
+                    <svg
+                      className="w-7 h-7 text-blue-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
                   </div>
-                  <span
-                    className="ml-3 text-white text-xs"
-                    style={{ opacity: 0.8 }}
-                  >
-                    pher
-                  </span>
+                  <span className="text-white/60 text-xs">Discover</span>
+                </div>
+                <div className="text-white/30">→</div>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-14 h-14 rounded-xl bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center">
+                    <svg
+                      className="w-7 h-7 text-yellow-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-white/60 text-xs">Negotiate</span>
+                </div>
+                <div className="text-white/30">→</div>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-14 h-14 rounded-xl bg-green-500/20 border border-green-500/40 flex items-center justify-center">
+                    <svg
+                      className="w-7 h-7 text-green-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-white/60 text-xs">Closed</span>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div>
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-16">
+            <div
+              className="relative overflow-hidden"
+              style={{
+                width: "480px",
+                height: "220px",
+                borderRadius: "110px",
+                backgroundColor: "#a855f7",
+              }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `
+                    radial-gradient(circle at 2px 2px, rgba(0,0,0,0.15) 1px, transparent 0)
+                  `,
+                  backgroundSize: "12px 12px",
+                }}
+              />
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                style={{
+                  width: "380px",
+                  height: "120px",
+                  borderRadius: "60px",
+                  backgroundColor: "#000",
+                }}
+              >
                 <div
-                  className="rounded-full bg-black flex items-center justify-center"
+                  className="absolute inset-0"
                   style={{
-                    height: "65px",
-                    width: "320px",
-                    border: "4px solid #a855f7",
+                    backgroundImage: `
+                      radial-gradient(circle at 2px 2px, rgba(255,255,255,0.08) 1px, transparent 0)
+                    `,
+                    backgroundSize: "12px 12px",
+                    borderRadius: "60px",
                   }}
-                >
-                  <span
-                    className="text-white text-2xl font-bold"
-                    style={{ letterSpacing: "0.2em" }}
-                  >
-                    x y z
-                  </span>
+                />
+                <div className="flex items-center gap-6 relative z-10">
+                  <div className="flex flex-col items-center">
+                    <span className="text-red-400 text-3xl font-bold">85%</span>
+                    <span className="text-white/50 text-xs">Risk Score</span>
+                  </div>
+                  <div className="w-px h-12 bg-white/20"></div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-yellow-400 text-3xl font-bold">
+                      7d
+                    </span>
+                    <span className="text-white/50 text-xs">No Activity</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div
-              className="absolute text-right"
-              style={{ top: "240px", right: "0px", width: "320px" }}
-            >
-              <div className="flex justify-end mb-3">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <div style={{ width: "320px" }} className="text-right">
+              <div className="flex justify-end mb-4">
+                <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
                     fill="url(#starGrad2)"
@@ -1510,98 +1596,121 @@ export default async function Home() {
                 </svg>
               </div>
 
-              <h3 className="text-white font-bold text-lg mb-3 leading-tight">
-                Closure of Purchase
+              <h3 className="text-white font-bold text-xl mb-3 leading-tight">
+                Detect Risk Signals
               </h3>
 
-              <p
-                className="text-white text-sm leading-relaxed"
-                style={{ lineHeight: "1.6" }}
-              >
-                The purchase of tokens is closed and the list of top holders is
-                determined based on the number of tokens they hold.
+              <p className="text-white/80 text-sm leading-relaxed">
+                Our AI continuously monitors deal activity and calculates risk
+                scores. Get instant alerts when deals show signs of stalling or
+                silent decay.
               </p>
             </div>
+          </div>
 
-            <div
-              className="absolute"
-              style={{ bottom: "80px", left: "0px", width: "300px" }}
-            >
-              <svg className="w-5 h-5 mb-3" viewBox="0 0 24 24" fill="none">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
+            <div style={{ width: "320px" }}>
+              <svg className="w-8 h-8 mb-4" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
                   fill="url(#starGrad3)"
                 />
               </svg>
 
-              <h3 className="text-white font-bold text-lg mb-3 leading-tight">
-                Submission of Proposals
+              <h3 className="text-white font-bold text-xl mb-3 leading-tight">
+                Take Action &<br />
+                Close Deals
               </h3>
 
-              <p
-                className="text-white text-sm leading-relaxed mb-0"
-                style={{ lineHeight: "1.6" }}
-              >
-                Top holders and other token holders can submit proposals for new
-                projects.
+              <p className="text-white/80 text-sm leading-relaxed">
+                Get personalized action recommendations for every at-risk deal.
+                Follow up with the right message at the right time.
               </p>
             </div>
 
-            <div className="absolute" style={{ bottom: "40px", left: "380px" }}>
+            <div
+              className="relative overflow-hidden"
+              style={{
+                width: "480px",
+                height: "220px",
+                borderRadius: "110px",
+                border: "8px solid #c9b896",
+                backgroundColor: "#000",
+              }}
+            >
               <div
-                className="rounded-full bg-black relative"
+                className="absolute inset-0"
                 style={{
-                  height: "80px",
-                  width: "380px",
-                  border: "4px solid #d4a574",
+                  backgroundImage: `
+                    radial-gradient(circle at 2px 2px, rgba(255,255,255,0.08) 1px, transparent 0)
+                  `,
+                  backgroundSize: "12px 12px",
+                }}
+              />
+
+              <div
+                className="absolute"
+                style={{
+                  top: "20px",
+                  right: "0px",
+                  width: "50px",
+                  height: "16px",
+                  backgroundColor: "#a3e635",
+                  borderRadius: "8px 0 0 8px",
+                }}
+              />
+
+              <div
+                className="absolute bg-[#1a1a1a] rounded-lg shadow-2xl"
+                style={{
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  padding: "16px 20px",
+                  width: "240px",
                 }}
               >
-                <div
-                  className="absolute rounded shadow-2xl"
-                  style={{
-                    left: "16px",
-                    top: "12px",
-                    backgroundColor: "#2a2a2a",
-                    borderTop: "4px solid #fbbf24",
-                    padding: "10px 14px",
-                    width: "190px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <span className="text-white text-xs font-medium">
-                        Submit your proposal
-                      </span>
-                    </div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
                     <svg
-                      className="w-3.5 h-3.5 text-white cursor-pointer"
-                      style={{ opacity: 0.6 }}
+                      className="w-5 h-5 text-blue-400"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
-                      strokeWidth={2.5}
+                      strokeWidth={2}
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                       />
                     </svg>
+                    <div className="flex flex-col">
+                      <span className="text-white text-sm font-medium">
+                        Send follow-up
+                      </span>
+                      <span className="text-white/50 text-xs">
+                        High priority
+                      </span>
+                    </div>
                   </div>
+                  <svg
+                    className="w-4 h-4 text-white/60"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </div>
+                <div className="h-px bg-white/10 mb-2"></div>
+                <div className="text-white/40 text-xs">
+                  Recommended for Enterprise Corp
                 </div>
               </div>
             </div>
@@ -1611,45 +1720,34 @@ export default async function Home() {
 
       <section
         id="pricing"
-        className="py-16 lg:py-24 px-6 lg:px-12 relative overflow-hidden bg-black"
+        className="py-20 lg:py-32 px-6 lg:px-12 relative overflow-hidden"
+        style={{
+          backgroundColor: "#000000",
+        }}
       >
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-white/3 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-white/3 rounded-full blur-3xl"></div>
-
-          <div className="absolute top-20 left-28 w-3 h-3 bg-white/8 rounded-full blur-sm"></div>
-          <div className="absolute top-52 left-60 w-3.5 h-3.5 bg-white/7 rounded-full blur-sm"></div>
-          <div className="absolute top-28 right-36 w-3 h-3 bg-white/8 rounded-full blur-sm"></div>
-          <div className="absolute top-60 right-68 w-3.5 h-3.5 bg-white/7 rounded-full blur-sm"></div>
-          <div className="absolute bottom-36 left-44 w-3 h-3 bg-white/8 rounded-full blur-sm"></div>
-          <div className="absolute bottom-28 right-28 w-3.5 h-3.5 bg-white/7 rounded-full blur-sm"></div>
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="relative z-10 max-w-5xl mx-auto">
           <PricingToggle>
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-10 lg:mb-14">
-              <div className="mb-6 lg:mb-0">
-                <p
-                  className="text-gray-400 text-sm lg:text-base mb-2.5"
-                  style={{
-                    fontFamily:
-                      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                  }}
-                >
-                  Boost your business
-                </p>
-                <h2
-                  className="text-3xl lg:text-5xl font-semibold text-gray-200 leading-tight"
-                  style={{
-                    fontFamily:
-                      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                  }}
-                >
-                  Choose the best plan for you
-                </h2>
-              </div>
+            <div className="text-center mb-14">
+              <h2
+                className="text-4xl md:text-5xl lg:text-6xl font-normal text-white mb-6 leading-tight tracking-tight"
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontStyle: "italic",
+                }}
+              >
+                Choose The Perfect Plan
+                <br />
+                That Fits Your Revenue Team
+              </h2>
+              <p className="text-white/60 text-sm max-w-xl mx-auto mb-10 leading-relaxed">
+                Whether you&apos;re a solo sales rep or a large revenue
+                organization, Revenue Sentinel offers flexible pricing plans to
+                help you never lose a deal to silent decay.
+              </p>
 
-              <PricingToggleDisplay />
+              <div className="flex justify-center">
+                <PricingToggleDisplay />
+              </div>
             </div>
 
             <PricingCards />
@@ -1657,55 +1755,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="py-32 px-6 lg:px-8 bg-black">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-            Getting Started is Easy and Fast
-          </h2>
-          <p className="text-xl text-white/70 mb-10 max-w-2xl mx-auto">
-            See why the most innovative revenue teams choose Revenue Sentinel
-            for deal risk detection.
-          </p>
-          {user ? (
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors"
-            >
-              Open Dashboard
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
-          ) : (
-            <div className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors cursor-pointer">
-              <SignInButtonWrapper />
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
-          )}
-        </div>
-      </section>
+      <WorldMapDemo />
 
       <footer className="border-t border-white/10 bg-black py-16 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
