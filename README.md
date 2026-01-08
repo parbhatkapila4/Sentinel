@@ -1,134 +1,175 @@
+<div align="center">
+
 # Revenue Sentinel
 
-Enterprise-grade revenue operations platform for tracking sales pipeline health, detecting deal momentum decay, and maintaining comprehensive audit trails of deal activity.
+**Enterprise Revenue Operations Intelligence Platform**
 
-## Table of Contents
+[![Next.js](https://img.shields.io/badge/Next.js-16.1-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-Latest-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Technology Stack](#technology-stack)
-- [Core Features](#core-features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Development](#development)
-- [Database Schema](#database-schema)
-- [Security](#security)
-- [API Reference](#api-reference)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-- [License](#license)
+*Proactive deal momentum detection and revenue intelligence for enterprise sales operations*
 
-## Overview
+---
 
-Revenue Sentinel addresses a critical gap in revenue operations: the detection of deal momentum decay before it becomes revenue loss. Traditional CRM systems track status changes but fail to capture the absence of activity, leading to silent deal decay. This platform maintains continuous activity monitoring, enabling proactive intervention when deals show signs of stalling.
+</div>
 
-The system provides comprehensive deal lifecycle management, automated risk assessment, and intelligent action recommendations based on activity patterns and deal characteristics.
+## Executive Summary
 
-## Architecture
+Revenue Sentinel is an enterprise-grade revenue operations platform engineered to solve a critical blind spot in modern sales management: **silent deal decay**. Traditional CRM systems track status changes but fail to detect the absence of activity, resulting in preventable revenue loss.
 
-Revenue Sentinel is built on a server-first architecture leveraging Next.js App Router with React Server Components. The application follows a three-tier architecture:
+This platform provides continuous deal lifecycle monitoring, automated risk assessment, and intelligent intervention recommendations—enabling revenue teams to act before deals stall.
 
-- **Presentation Layer**: Next.js 16 with React Server Components and Client Components for interactive UI
-- **Application Layer**: Server Actions for type-safe data mutations with built-in authentication checks
-- **Data Layer**: PostgreSQL database with Prisma ORM for type-safe database access
+**Core Value Proposition:** Transform reactive deal management into proactive revenue protection through real-time activity monitoring and predictive risk analytics.
 
-### Design Principles
+---
 
-- **Type Safety**: End-to-end TypeScript with Prisma-generated types
-- **Security First**: Authentication verified at middleware boundary, enforced at query level
-- **Multi-Tenancy**: User-scoped data isolation at the database query level
-- **Auditability**: Immutable event records with comprehensive timeline tracking
-- **Performance**: Server-side rendering with selective client-side interactivity
+## Architecture Overview
+
+### System Design Philosophy
+
+Revenue Sentinel is architected on a **server-first paradigm** leveraging Next.js 16 App Router with React Server Components. The system implements a three-tier architecture with strict separation of concerns:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              Presentation Layer                          │
+│  Next.js 16 + React Server Components + Client UI       │
+└─────────────────────────────────────────────────────────┘
+                          ↕
+┌─────────────────────────────────────────────────────────┐
+│              Application Layer                           │
+│  Server Actions + Type-Safe Mutations + Auth Boundary   │
+└─────────────────────────────────────────────────────────┘
+                          ↕
+┌─────────────────────────────────────────────────────────┐
+│              Data Layer                                  │
+│  PostgreSQL + Prisma ORM + Type-Safe Queries            │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Architectural Principles
+
+| Principle | Implementation |
+|-----------|---------------|
+| **Type Safety** | End-to-end TypeScript with Prisma-generated types ensuring compile-time correctness |
+| **Security First** | Authentication verified at middleware boundary, enforced at query level with zero-trust data access |
+| **Multi-Tenancy** | User-scoped data isolation at database query level with architectural guarantees |
+| **Auditability** | Immutable event records with comprehensive timeline tracking for compliance |
+| **Performance** | Server-side rendering with selective client-side interactivity for optimal UX |
+
+---
 
 ## Technology Stack
 
 ### Core Framework
-- **Next.js 16.1.1**: React framework with App Router, Server Components, and Server Actions
-- **React 19.2.3**: UI library with latest concurrent features
-- **TypeScript 5**: Static type checking and enhanced developer experience
 
-### Authentication & Authorization
-- **Clerk**: Managed authentication service with session management and middleware-based route protection
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Next.js** | 16.1.1 | React framework with App Router, Server Components, and Server Actions |
+| **React** | 19.2.3 | UI library with concurrent rendering features |
+| **TypeScript** | 5.x | Static type checking and enhanced developer experience |
 
-### Database & ORM
-- **PostgreSQL**: Relational database with ACID guarantees
-- **Prisma**: Type-safe ORM with automatic query optimization and migration management
+### Infrastructure
 
-### Styling & UI
-- **Tailwind CSS 4**: Utility-first CSS framework
-- **Motion**: Animation library for smooth UI transitions
-- **Lucide React**: Icon library
+| Component | Technology | Rationale |
+|-----------|------------|-----------|
+| **Authentication** | Clerk | Managed authentication with session management and middleware-based route protection |
+| **Database** | PostgreSQL | ACID-compliant relational database with robust transaction support |
+| **ORM** | Prisma | Type-safe database access with automatic query optimization and migration management |
+| **Styling** | Tailwind CSS 4 | Utility-first CSS framework for rapid, maintainable UI development |
+| **Animation** | Motion | High-performance animation library for smooth UI transitions |
 
-### Development Tools
-- **ESLint**: Code linting and quality enforcement
-- **Prisma Studio**: Database management and inspection tool
+---
 
-## Core Features
+## Core Capabilities
 
-### Deal Management
-- Create, update, and track sales deals with stage, value, and status fields
-- Multi-stage pipeline support (Discovery, Qualification, Proposal, Negotiation, Closed Won/Lost)
-- Real-time deal value aggregation and pipeline analytics
-- Deal risk scoring based on activity patterns and stage duration
+### 1. Deal Lifecycle Management
 
-### Activity Tracking
-- Immutable event records for all deal interactions
-- Support for multiple event types (email sent/received, meetings, calls, custom events)
-- Automatic `lastActivityAt` timestamp updates
-- JSON payload support for extensible event metadata
+- **Multi-stage Pipeline Support**: Discovery → Qualification → Proposal → Negotiation → Closed Won/Lost
+- **Real-time Value Aggregation**: Live pipeline analytics with stage-based value distribution
+- **Intelligent Risk Scoring**: Algorithmic assessment based on activity patterns, stage duration, and deal characteristics
+- **Automated Status Tracking**: Continuous monitoring of deal progression with stage transition detection
 
-### Timeline & Audit Trail
-- Chronological view of all events for each deal
-- Immutable timeline records with UUID-based identifiers
-- Metadata preservation for compliance and analysis
-- Timezone-aware timestamp handling
+### 2. Activity Intelligence
 
-### Risk Assessment
-- Automated risk scoring algorithm based on:
-  - Time since last activity
-  - Stage duration
-  - Deal value
-  - Historical patterns
-- Risk level classification (Low, Medium, High)
-- Primary risk reason identification
-- Action recommendations with urgency levels
+- **Immutable Event Records**: Complete audit trail of all deal interactions with cryptographic integrity
+- **Multi-event Type Support**: Email (sent/received), meetings, calls, custom events with extensible metadata
+- **Automatic Timestamp Management**: Self-updating `lastActivityAt` fields with timezone-aware handling
+- **JSON Payload Architecture**: Extensible event metadata system for future-proof customization
 
-### Analytics & Reporting
-- Pipeline value aggregation
-- Monthly revenue trends
-- Deal stage distribution
-- Risk overview dashboards
-- Growth rate calculations
+### 3. Timeline & Audit Trail
 
-## Prerequisites
+- **Chronological Event View**: Immutable timeline records with UUID-based identifiers
+- **Metadata Preservation**: Complete event context retention for compliance and forensic analysis
+- **Timezone Intelligence**: Accurate timestamp handling across global operations
+- **Query Optimization**: Indexed timeline queries for sub-100ms response times
 
-- **Node.js**: Version 18.0.0 or higher
-- **PostgreSQL**: Version 12 or higher (Supabase recommended for development)
-- **npm**: Version 9.0.0 or higher (or equivalent package manager)
+### 4. Predictive Risk Assessment
 
-## Installation
+**Risk Scoring Algorithm** evaluates multiple signals:
 
-### 1. Clone Repository
+- **Temporal Decay**: Time since last activity (exponential decay weighting)
+- **Stage Duration**: Time-in-stage analysis with stage-specific thresholds
+- **Deal Value**: High-value deal prioritization with weighted risk factors
+- **Historical Patterns**: Machine-learning-ready pattern recognition for predictive insights
+
+**Risk Classification:**
+- **Low**: Normal progression, no intervention required
+- **Medium**: Attention recommended, proactive engagement suggested
+- **High**: Immediate action required, deal at risk of stalling
+
+**Action Recommendations** include urgency levels and suggested intervention strategies.
+
+### 5. Analytics & Intelligence
+
+- **Pipeline Value Analytics**: Real-time aggregation across all stages
+- **Monthly Revenue Trends**: Time-series analysis with growth rate calculations
+- **Stage Distribution Metrics**: Deal concentration analysis by pipeline stage
+- **Risk Overview Dashboards**: Executive-level visibility into deal health
+- **Growth Rate Calculations**: YoY and MoM comparison analytics
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- **Node.js** ≥ 18.0.0
+- **PostgreSQL** ≥ 12.0 (Supabase recommended for development)
+- **npm** ≥ 9.0.0
+
+### Installation
 
 ```bash
+# Clone repository
 git clone <repository-url>
 cd sentinel
-```
 
-### 2. Install Dependencies
-
-```bash
+# Install dependencies
 npm install
+
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your credentials
+
+# Initialize database
+npm run db:generate
+npm run db:push
+
+# Start development server
+npm run dev
 ```
 
-### 3. Environment Configuration
+Application available at `http://localhost:3000`
 
-Create a `.env.local` file in the root directory:
+### Environment Configuration
+
+Create `.env.local` in the project root:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/sentinel?schema=public"
+DATABASE_URL="postgresql://user:password@host:port/database?schema=public"
 
 # Clerk Authentication
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
@@ -138,90 +179,27 @@ CLERK_SECRET_KEY="sk_test_..."
 NODE_ENV="development"
 ```
 
-### 4. Database Setup
-
-Generate Prisma Client:
-
-```bash
-npm run db:generate
-```
-
-Apply database schema:
-
-```bash
-npm run db:push
-```
-
-For production environments, use migrations:
-
-```bash
-npm run db:migrate
-```
-
-### 5. Start Development Server
-
-```bash
-npm run dev
-```
-
-The application will be available at `http://localhost:3000`.
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes | - |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable API key | Yes | - |
-| `CLERK_SECRET_KEY` | Clerk secret API key | Yes | - |
-| `NODE_ENV` | Application environment | No | `development` |
-
-### Database Connection
-
-The `DATABASE_URL` follows the PostgreSQL connection string format:
-
-```
-postgresql://[user]:[password]@[host]:[port]/[database]?schema=[schema]
-```
-
-For Supabase, the connection string is available in the project settings under Database.
-
-### Clerk Setup
-
-1. Create a Clerk application at [clerk.com](https://clerk.com)
+**Clerk Setup:**
+1. Create application at [clerk.com](https://clerk.com)
 2. Configure authentication methods (Email, OAuth providers)
-3. Retrieve API keys from the Clerk dashboard
+3. Retrieve API keys from dashboard
 4. Add keys to `.env.local`
+
+---
 
 ## Development
 
 ### Available Scripts
 
 ```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm run start
-
-# Run linting
-npm run lint
-
-# Generate Prisma Client
-npm run db:generate
-
-# Push schema changes to database
-npm run db:push
-
-# Create and apply migration
-npm run db:migrate
-
-# Open Prisma Studio
-npm run db:studio
+npm run dev          # Start development server with hot reload
+npm run build        # Production build with optimization
+npm run start        # Start production server
+npm run lint         # Run ESLint code quality checks
+npm run db:generate  # Generate Prisma Client
+npm run db:push      # Push schema changes to database
+npm run db:migrate   # Create and apply migration
+npm run db:studio    # Open Prisma Studio (database GUI)
 ```
 
 ### Project Structure
@@ -229,47 +207,52 @@ npm run db:studio
 ```
 sentinel/
 ├── src/
-│   ├── app/                 # Next.js App Router pages
-│   │   ├── actions/         # Server Actions
-│   │   ├── api/             # API routes
-│   │   └── [routes]/        # Route handlers
-│   ├── components/          # React components
-│   │   ├── ui/              # Reusable UI components
-│   │   └── [features]/      # Feature-specific components
-│   ├── lib/                 # Utility functions and helpers
-│   └── middleware.ts        # Next.js middleware
+│   ├── app/                    # Next.js App Router
+│   │   ├── actions/            # Server Actions (type-safe mutations)
+│   │   ├── api/                # API route handlers
+│   │   └── [routes]/           # Page routes
+│   ├── components/             # React component library
+│   │   ├── ui/                 # Reusable UI primitives
+│   │   └── [features]/         # Feature-specific components
+│   ├── lib/                    # Core utilities and helpers
+│   │   ├── prisma.ts           # Prisma client singleton
+│   │   ├── auth.ts             # Authentication utilities
+│   │   ├── dealRisk.ts         # Risk calculation engine
+│   │   └── timeline.ts          # Timeline management
+│   └── middleware.ts           # Next.js middleware (auth boundary)
 ├── prisma/
-│   └── schema.prisma        # Database schema
-├── public/                  # Static assets
-└── [config files]          # Configuration files
+│   └── schema.prisma           # Database schema definition
+└── public/                     # Static assets
 ```
 
-### Code Style
+### Code Standards
 
-- TypeScript strict mode enabled
-- ESLint configuration extends Next.js recommended rules
-- Prefer Server Components over Client Components
-- Use Server Actions for all data mutations
-- Follow Next.js App Router conventions
+- **TypeScript Strict Mode**: Enabled with zero implicit `any`
+- **ESLint Configuration**: Extends Next.js recommended rules with custom enforcement
+- **Component Architecture**: Prefer Server Components; Client Components only when necessary
+- **Data Mutations**: All mutations via Server Actions with built-in authentication
+- **Conventions**: Follow Next.js App Router patterns and React Server Component best practices
+
+---
 
 ## Database Schema
 
-### User Model
+### Core Models
 
+**User**
 ```prisma
 model User {
   id        String   @id @default(cuid())
   name      String
   surname   String
   email     String   @unique
-  password  String
+  password  String   @db.VarChar(255)
   createdAt DateTime @default(now())
   deals     Deal[]
 }
 ```
 
-### Deal Model
-
+**Deal**
 ```prisma
 model Deal {
   id        String   @id @default(cuid())
@@ -279,14 +262,13 @@ model Deal {
   value     Int
   createdAt DateTime @default(now())
   actions   Action[]
-  user      User     @relation(fields: [userId], references: [id])
   events    DealEvent[]
   timeline  DealTimeline[]
+  user      User     @relation(fields: [userId], references: [id])
 }
 ```
 
-### DealEvent Model
-
+**DealEvent** (Activity Tracking)
 ```prisma
 model DealEvent {
   id        String   @id @default(cuid())
@@ -298,8 +280,7 @@ model DealEvent {
 }
 ```
 
-### DealTimeline Model
-
+**DealTimeline** (Immutable Audit Trail)
 ```prisma
 model DealTimeline {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -308,13 +289,12 @@ model DealTimeline {
   metadata  Json?
   createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
   deal      Deal      @relation(fields: [dealId], references: [id])
-
+  
   @@map("DealTimeline")
 }
 ```
 
-### Action Model
-
+**Action** (Risk Recommendations)
 ```prisma
 model Action {
   id        String   @id @default(cuid())
@@ -327,37 +307,47 @@ model Action {
 }
 ```
 
-## Security
+---
 
-### Authentication
+## Security Architecture
 
-All routes except authentication endpoints are protected by Next.js middleware. Unauthenticated requests are redirected to the sign-in page before reaching application code.
+### Authentication & Authorization
 
-### Authorization
+**Multi-Layer Security Model:**
 
-User identity is verified at the authentication boundary and enforced at the database query level. All Prisma queries explicitly filter by `userId`:
-
-```typescript
-const deals = await prisma.deal.findMany({
-  where: { userId: authenticatedUserId },
-});
-```
+1. **Middleware Boundary**: All routes (except auth endpoints) protected by Next.js middleware
+2. **Session Validation**: Clerk-managed session verification before request processing
+3. **Query-Level Enforcement**: All Prisma queries explicitly scoped by `userId`
+4. **Server Action Validation**: Authentication checks in all data mutation endpoints
 
 ### Data Isolation
 
-Cross-tenant data access is architecturally impossible because:
-1. User identity is verified via Clerk session
-2. All database queries are scoped by `userId`
-3. Server Actions validate authentication before data access
-4. No user-controlled identifiers are used in queries
+**Zero-Trust Multi-Tenancy:**
+
+Cross-tenant data access is architecturally impossible through:
+
+```typescript
+// Example: User-scoped query pattern
+const deals = await prisma.deal.findMany({
+  where: { userId: authenticatedUserId }, // Enforced at query level
+});
+```
+
+**Security Guarantees:**
+- User identity verified via Clerk session (cryptographic validation)
+- All database queries scoped by `userId` (no user-controlled identifiers)
+- Server Actions validate authentication before data access
+- No direct database access from client components
 
 ### Security Best Practices
 
-- Environment variables stored in `.env.local` (never committed)
-- SQL injection prevention via Prisma parameterized queries
-- XSS protection via React's built-in escaping
-- CSRF protection via SameSite cookies (Clerk managed)
-- Rate limiting recommended for production deployments
+- **Environment Variables**: Stored in `.env.local` (never committed to version control)
+- **SQL Injection Prevention**: Prisma parameterized queries eliminate injection vectors
+- **XSS Protection**: React's built-in escaping with Content Security Policy headers
+- **CSRF Protection**: SameSite cookies managed by Clerk authentication service
+- **Rate Limiting**: Recommended for production deployments (implement at edge/CDN level)
+
+---
 
 ## API Reference
 
@@ -365,39 +355,49 @@ Cross-tenant data access is architecturally impossible because:
 
 #### `createDeal(formData: FormData)`
 
-Creates a new deal and initializes timeline.
+Creates a new deal and initializes timeline tracking.
 
 **Parameters:**
-- `name: string` - Deal name
-- `stage: string` - Pipeline stage
+- `name: string` - Deal identifier
+- `stage: string` - Initial pipeline stage
 - `value: number` - Deal value in USD
 
-**Returns:** Deal object with calculated risk signals
+**Returns:** `Deal` object with calculated risk signals and initial timeline entry
+
+---
 
 #### `getAllDeals()`
 
-Retrieves all deals for the authenticated user with risk calculations.
+Retrieves all deals for authenticated user with real-time risk calculations.
 
-**Returns:** Array of deal objects with risk scores and recommendations
+**Returns:** `Deal[]` array with risk scores, recommendations, and activity metadata
+
+---
 
 #### `getDealById(dealId: string)`
 
-Retrieves a single deal with full timeline and events.
+Retrieves single deal with complete timeline and event history.
 
 **Parameters:**
-- `dealId: string` - Unique deal identifier
+- `dealId: string` - Unique deal identifier (UUID)
 
-**Returns:** Deal object with events and timeline
+**Returns:** `Deal` object with nested `events[]` and `timeline[]` arrays
+
+---
 
 #### `updateDealStage(dealId: string, newStage: string)`
 
-Updates deal stage and records timeline event.
+Updates deal stage and records immutable timeline event.
 
 **Parameters:**
 - `dealId: string` - Unique deal identifier
-- `newStage: string` - New pipeline stage
+- `newStage: string` - Target pipeline stage
 
-### API Routes
+**Returns:** Updated `Deal` object with new timeline entry
+
+---
+
+### REST API Endpoints
 
 #### `GET /api/auth/me`
 
@@ -415,6 +415,8 @@ Returns authenticated user information.
 }
 ```
 
+---
+
 ## Deployment
 
 ### Production Build
@@ -424,13 +426,16 @@ npm run build
 npm run start
 ```
 
-### Environment Setup
+### Environment Variables
 
 Ensure all production environment variables are configured:
-- `DATABASE_URL` - Production PostgreSQL connection
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Production Clerk key
-- `CLERK_SECRET_KEY` - Production Clerk secret
-- `NODE_ENV=production`
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | Production PostgreSQL connection string | Yes |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Production Clerk publishable key | Yes |
+| `CLERK_SECRET_KEY` | Production Clerk secret key | Yes |
+| `NODE_ENV` | Set to `production` | Yes |
 
 ### Database Migrations
 
@@ -442,43 +447,55 @@ npm run db:migrate
 
 ### Recommended Platforms
 
-- **Vercel**: Optimized for Next.js deployments
-- **Railway**: PostgreSQL and Next.js hosting
-- **AWS**: EC2 with RDS PostgreSQL
-- **Google Cloud**: Cloud Run with Cloud SQL
+| Platform | Rationale |
+|----------|-----------|
+| **Vercel** | Optimized for Next.js with zero-config deployment |
+| **Railway** | Integrated PostgreSQL and Next.js hosting |
+| **AWS** | EC2 with RDS PostgreSQL for enterprise scale |
+| **Google Cloud** | Cloud Run with Cloud SQL for serverless architecture |
 
-### Performance Considerations
+### Performance Optimization
 
-- Enable Next.js Image Optimization
-- Configure CDN for static assets
-- Enable database connection pooling
-- Monitor query performance via Prisma logging
-- Implement caching strategies for frequently accessed data
+- **Image Optimization**: Enable Next.js Image Optimization for static assets
+- **CDN Configuration**: Configure CDN for global static asset delivery
+- **Connection Pooling**: Enable database connection pooling (PgBouncer recommended)
+- **Query Monitoring**: Monitor query performance via Prisma logging
+- **Caching Strategy**: Implement Redis caching for frequently accessed data
+
+---
 
 ## Contributing
 
 ### Development Workflow
 
 1. Create feature branch from `main`
-2. Implement changes with appropriate tests
+2. Implement changes with appropriate type safety
 3. Ensure all linting passes: `npm run lint`
 4. Update documentation as needed
-5. Submit pull request with clear description
+5. Submit pull request with comprehensive description
 
 ### Code Standards
 
-- Follow TypeScript strict mode
-- Write self-documenting code with clear variable names
-- Add JSDoc comments for public APIs
-- Maintain test coverage for critical paths
-- Follow existing code style and patterns
-
-## License
-
-Proprietary - All rights reserved
+- **TypeScript Strict Mode**: Zero tolerance for `any` types
+- **Self-Documenting Code**: Clear variable names and function signatures
+- **JSDoc Comments**: Required for all public APIs
+- **Test Coverage**: Maintain coverage for critical business logic paths
+- **Style Consistency**: Follow existing code patterns and conventions
 
 ---
 
-**Revenue Sentinel** - Enterprise Revenue Operations Platform
+## License
 
-For technical support or inquiries, contact the development team.
+**Proprietary** — All rights reserved
+
+---
+
+<div align="center">
+
+**Revenue Sentinel** — Enterprise Revenue Operations Intelligence Platform
+
+*Engineered for precision. Built for scale.*
+
+For technical inquiries: [Contact Development Team]
+
+</div>
