@@ -33,17 +33,17 @@ Revenue Sentinel is architected on a **server-first paradigm** leveraging Next.j
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│              Presentation Layer                          │
+│              Presentation Layer                         │
 │  Next.js 16 + React Server Components + Client UI       │
 └─────────────────────────────────────────────────────────┘
                           ↕
 ┌─────────────────────────────────────────────────────────┐
-│              Application Layer                           │
+│              Application Layer                          │
 │  Server Actions + Type-Safe Mutations + Auth Boundary   │
 └─────────────────────────────────────────────────────────┘
                           ↕
 ┌─────────────────────────────────────────────────────────┐
-│              Data Layer                                  │
+│              Data Layer                                 │
 │  PostgreSQL + Prisma ORM + Type-Safe Queries            │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -486,16 +486,16 @@ npm run db:migrate
 
 ## License
 
-**Proprietary** — All rights reserved
+**Proprietary** - All rights reserved
 
 ---
 
 <div align="center">
 
-**Revenue Sentinel** — Enterprise Revenue Operations Intelligence Platform
+**Revenue Sentinel** Enterprise Revenue Operations Intelligence Platform
 
 *Engineered for precision. Built for scale.*
 
-For technical inquiries: [Contact Development Team]
+For technical inquiries: parbhat@parbhat.dev
 
 </div>
