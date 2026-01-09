@@ -1018,7 +1018,7 @@ export default async function Home() {
                       <span className="text-red-400 font-semibold">85%</span>
                       <span className="text-white/40">•</span>
                       <span className="text-white/60">Created:</span>
-                      <span className="text-white/70">13 Jul, 2024</span>
+                      <span className="text-white/70">13 January 2026</span>
                     </div>
                   </div>
                 </div>

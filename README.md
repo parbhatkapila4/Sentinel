@@ -486,7 +486,9 @@ npm run db:migrate
 
 ## License
 
-**Proprietary** - All rights reserved
+**MIT License** - Copyright (c) 2026 Revenue Sentinel
+
+See [LICENSE](LICENSE) file for full license text.
 
 ---
 
