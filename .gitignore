@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#ROADMAP_TO_FOUNDING_ENGINEER.md
+ROADMAP_TO_FOUNDING_ENGINEER.md
+
