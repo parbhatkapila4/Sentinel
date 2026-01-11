@@ -57,6 +57,15 @@
   }
 }
 
+@keyframes scrollGrid {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 120px;
+  }
+}
+
 .animate-fade-in-up {
   animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -112,7 +121,9 @@ html {
 }
 
 * {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color,
+    text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
+    backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -176,7 +187,6 @@ a,
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;
@@ -190,7 +200,6 @@ a,
 }
 
 @keyframes glow {
-
   0%,
   100% {
     filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.6));
@@ -202,7 +211,6 @@ a,
 }
 
 @keyframes trackGlow {
-
   0%,
   100% {
     opacity: 0.8;
@@ -224,7 +232,6 @@ a,
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0);
@@ -246,7 +253,6 @@ a,
 }
 
 @keyframes sparkle {
-
   0%,
   100% {
     opacity: 0;
@@ -260,7 +266,6 @@ a,
 }
 
 @keyframes trackPulse {
-
   0%,
   100% {
     stroke-width: 16;
@@ -274,7 +279,6 @@ a,
 }
 
 @keyframes bounce {
-
   0%,
   100% {
     transform: translateY(0);
@@ -345,11 +349,13 @@ a,
 }
 
 .animate-marble-1 {
-  animation: moveMarble1 2.5s ease-in-out infinite, rotateMarble 1s linear infinite;
+  animation: moveMarble1 2.5s ease-in-out infinite,
+    rotateMarble 1s linear infinite;
 }
 
 .animate-marble-2 {
-  animation: moveMarble2 3s ease-in-out infinite, rotateMarble 1.2s linear infinite;
+  animation: moveMarble2 3s ease-in-out infinite,
+    rotateMarble 1.2s linear infinite;
   animation-delay: 0.8s;
 }
 
@@ -362,7 +368,8 @@ a,
 }
 
 .animate-track-glow {
-  animation: trackGlow 2s ease-in-out infinite, trackPulse 3s ease-in-out infinite;
+  animation: trackGlow 2s ease-in-out infinite,
+    trackPulse 3s ease-in-out infinite;
 }
 
 .animate-float {
@@ -577,9 +584,9 @@ a,
   }
 }
 
-
 @keyframes aurora-float-1 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.6;
   }
@@ -598,7 +605,8 @@ a,
 }
 
 @keyframes aurora-float-2 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.5;
   }
@@ -613,7 +621,8 @@ a,
 }
 
 @keyframes aurora-float-3 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.4;
   }
@@ -636,7 +645,8 @@ a,
 }
 
 @keyframes aurora-float-4 {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.5;
   }
@@ -647,7 +657,8 @@ a,
 }
 
 @keyframes aurora-wave {
-  0%, 100% {
+  0%,
+  100% {
     d: path("M0,500 Q250,300 500,500 T1000,500 L1000,1000 L0,1000 Z");
   }
   25% {
@@ -662,7 +673,8 @@ a,
 }
 
 @keyframes aurora-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: translateY(0);
   }
