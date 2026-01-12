@@ -8,24 +8,27 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  surname   String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  deals     Deal[]
+  id          String       @id @default(cuid())
+  name        String
+  surname     String
+  email       String       @unique
+  password    String
+  createdAt   DateTime     @default(now())
+  deals       Deal[]
+  chats       Chat[]
+  chatFolders ChatFolder[]
 }
 
 model Deal {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   userId    String
   name      String
   stage     String
   value     Int
-  createdAt DateTime @default(now())
+  location  String?
+  createdAt DateTime       @default(now())
   actions   Action[]
-  user      User     @relation(fields: [userId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
   events    DealEvent[]
   timeline  DealTimeline[]
 }
@@ -58,4 +61,42 @@ model DealTimeline {
   deal      Deal      @relation(fields: [dealId], references: [id])
 
   @@map("DealTimeline")
+}
+
+model Chat {
+  id        String        @id @default(cuid())
+  userId    String
+  title     String?
+  folderId  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id])
+  messages  ChatMessage[]
+  folder    ChatFolder?   @relation(fields: [folderId], references: [id])
+
+  @@index([userId])
+  @@index([folderId])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  chatId    String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+}
+
+model ChatFolder {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  color     String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  chats     Chat[]
+
+  @@index([userId])
 }
