@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, surname, email, password, confirmPassword } = body;
 
-    if (!name || !surname || !email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword) {
       return NextResponse.json(
         { error: "All fields are required" },
         { status: 400 }
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     const userData: Record<string, unknown> = {
       name,
-      surname,
+      surname: surname || "",
       email,
       password: hashedPassword,
     };
