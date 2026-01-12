@@ -122,120 +122,183 @@ export default async function Home() {
             </div>
 
             <div className="relative lg:min-h-[600px]">
-              <div className="relative w-full h-full">
+              <div className="relative w-full h-full min-h-[500px]">
                 <svg
-                  viewBox="0 0 500 600"
+                  viewBox="0 0 600 600"
                   className="w-full h-full"
                   preserveAspectRatio="xMidYMid meet"
                 >
                   <defs>
                     <linearGradient
-                      id="chrome"
+                      id="bluePipe3D"
                       x1="0%"
                       y1="0%"
                       x2="100%"
                       y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#dbeafe" />
+                      <stop offset="15%" stopColor="#bfdbfe" />
+                      <stop offset="35%" stopColor="#93c5fd" />
+                      <stop offset="50%" stopColor="#60a5fa" />
+                      <stop offset="70%" stopColor="#3b82f6" />
+                      <stop offset="85%" stopColor="#2563eb" />
+                      <stop offset="100%" stopColor="#1e40af" />
+                    </linearGradient>
+
+                    <linearGradient
+                      id="blueHighlight"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="0%"
                     >
                       <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                      <stop offset="20%" stopColor="#f8f9fa" stopOpacity="1" />
-                      <stop offset="40%" stopColor="#e9ecef" stopOpacity="1" />
-                      <stop offset="60%" stopColor="#dee2e6" stopOpacity="1" />
-                      <stop offset="80%" stopColor="#ced4da" stopOpacity="1" />
-                      <stop offset="100%" stopColor="#adb5bd" stopOpacity="1" />
-                    </linearGradient>
-
-                    <linearGradient
-                      id="blue3D"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#93c5fd" stopOpacity="1" />
-                      <stop offset="25%" stopColor="#60a5fa" stopOpacity="1" />
-                      <stop offset="50%" stopColor="#3b82f6" stopOpacity="1" />
-                      <stop offset="75%" stopColor="#2563eb" stopOpacity="1" />
-                      <stop offset="100%" stopColor="#1e40af" stopOpacity="1" />
-                    </linearGradient>
-
-                    <linearGradient
-                      id="orange3D"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#fdba74" stopOpacity="1" />
-                      <stop offset="25%" stopColor="#fb923c" stopOpacity="1" />
-                      <stop offset="50%" stopColor="#f97316" stopOpacity="1" />
-                      <stop offset="75%" stopColor="#ea580c" stopOpacity="1" />
-                      <stop offset="100%" stopColor="#c2410c" stopOpacity="1" />
-                    </linearGradient>
-
-                    <linearGradient
-                      id="yellow3D"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#fde047" stopOpacity="1" />
-                      <stop offset="25%" stopColor="#fcd34d" stopOpacity="1" />
-                      <stop offset="50%" stopColor="#fbbf24" stopOpacity="1" />
-                      <stop offset="75%" stopColor="#f59e0b" stopOpacity="1" />
-                      <stop offset="100%" stopColor="#d97706" stopOpacity="1" />
-                    </linearGradient>
-
-                    <radialGradient id="silverBall" cx="30%" cy="25%">
-                      <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
                       <stop
-                        offset="20%"
-                        stopColor="#f8f9fa"
-                        stopOpacity="0.98"
-                      />
-                      <stop
-                        offset="40%"
-                        stopColor="#f1f3f5"
+                        offset="15%"
+                        stopColor="#eff6ff"
                         stopOpacity="0.95"
                       />
                       <stop
+                        offset="30%"
+                        stopColor="#dbeafe"
+                        stopOpacity="0.8"
+                      />
+                      <stop
+                        offset="50%"
+                        stopColor="#bfdbfe"
+                        stopOpacity="0.6"
+                      />
+                      <stop
                         offset="70%"
-                        stopColor="#dee2e6"
-                        stopOpacity="0.9"
+                        stopColor="#93c5fd"
+                        stopOpacity="0.4"
                       />
                       <stop
                         offset="100%"
-                        stopColor="#adb5bd"
-                        stopOpacity="0.8"
+                        stopColor="#60a5fa"
+                        stopOpacity="0.1"
                       />
-                    </radialGradient>
+                    </linearGradient>
+
+                    <linearGradient
+                      id="blueShadow"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="0%"
+                    >
+                      <stop offset="0%" stopColor="#1e3a8a" stopOpacity="0.9" />
+                      <stop
+                        offset="50%"
+                        stopColor="#1e40af"
+                        stopOpacity="0.7"
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="#0f172a"
+                        stopOpacity="0.95"
+                      />
+                    </linearGradient>
+
+                    <linearGradient
+                      id="yellowTube"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#fef9c3" />
+                      <stop offset="30%" stopColor="#fef08a" />
+                      <stop offset="50%" stopColor="#fde047" />
+                      <stop offset="70%" stopColor="#facc15" />
+                      <stop offset="100%" stopColor="#eab308" />
+                    </linearGradient>
+
+                    <linearGradient
+                      id="redTube"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#fee2e2" />
+                      <stop offset="30%" stopColor="#fecaca" />
+                      <stop offset="50%" stopColor="#fca5a5" />
+                      <stop offset="70%" stopColor="#f87171" />
+                      <stop offset="100%" stopColor="#ef4444" />
+                    </linearGradient>
+
+                    <linearGradient
+                      id="orangeTube"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#ffedd5" />
+                      <stop offset="30%" stopColor="#fed7aa" />
+                      <stop offset="50%" stopColor="#fdba74" />
+                      <stop offset="70%" stopColor="#fb923c" />
+                      <stop offset="100%" stopColor="#f97316" />
+                    </linearGradient>
+
+                    <linearGradient
+                      id="silver"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="20%" stopColor="#f8fafc" />
+                      <stop offset="40%" stopColor="#f1f5f9" />
+                      <stop offset="60%" stopColor="#e2e8f0" />
+                      <stop offset="80%" stopColor="#cbd5e1" />
+                      <stop offset="100%" stopColor="#94a3b8" />
+                    </linearGradient>
+
+                    <linearGradient
+                      id="darkBlueCyl"
+                      x1="0%"
+                      y1="0%"
+                      x2="0%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="20%" stopColor="#1e40af" />
+                      <stop offset="40%" stopColor="#1e3a8a" />
+                      <stop offset="60%" stopColor="#1e3a5f" />
+                      <stop offset="80%" stopColor="#1e293b" />
+                      <stop offset="100%" stopColor="#0f172a" />
+                    </linearGradient>
+
+                    <linearGradient
+                      id="conveyor"
+                      x1="0%"
+                      y1="0%"
+                      x2="0%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#94a3b8" />
+                      <stop offset="25%" stopColor="#64748b" />
+                      <stop offset="50%" stopColor="#475569" />
+                      <stop offset="75%" stopColor="#334155" />
+                      <stop offset="100%" stopColor="#1e293b" />
+                    </linearGradient>
 
                     <filter
-                      id="glow"
-                      x="-50%"
-                      y="-50%"
-                      width="200%"
-                      height="200%"
+                      id="glowBlue"
+                      x="-100%"
+                      y="-100%"
+                      width="300%"
+                      height="300%"
                     >
-                      <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                      <feMerge>
-                        <feMergeNode in="coloredBlur" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-
-                    <filter
-                      id="realShadow"
-                      x="-50%"
-                      y="-50%"
-                      width="200%"
-                      height="200%"
-                    >
-                      <feGaussianBlur in="SourceAlpha" stdDeviation="6" />
-                      <feOffset dx="5" dy="6" result="offsetblur" />
-                      <feComponentTransfer>
-                        <feFuncA type="linear" slope="0.6" />
-                      </feComponentTransfer>
+                      <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+                      <feColorMatrix
+                        in="coloredBlur"
+                        type="matrix"
+                        values="0 0.4 1 0 0  0 0.5 1 0 0  0 0.7 1 0 0  0 0 0 0.6 0"
+                      />
                       <feMerge>
                         <feMergeNode />
                         <feMergeNode in="SourceGraphic" />
@@ -244,698 +307,677 @@ export default async function Home() {
 
                     <filter
                       id="strongGlow"
-                      x="-100%"
-                      y="-100%"
-                      width="300%"
-                      height="300%"
+                      x="-150%"
+                      y="-150%"
+                      width="400%"
+                      height="400%"
                     >
-                      <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                      <feGaussianBlur stdDeviation="12" result="coloredBlur" />
                       <feMerge>
                         <feMergeNode in="coloredBlur" />
                         <feMergeNode in="SourceGraphic" />
                       </feMerge>
                     </filter>
+
+                    <filter
+                      id="shadow3D"
+                      x="-100%"
+                      y="-100%"
+                      width="300%"
+                      height="300%"
+                    >
+                      <feGaussianBlur
+                        in="SourceAlpha"
+                        stdDeviation="3"
+                        result="blur1"
+                      />
+                      <feOffset in="blur1" dx="2" dy="3" result="offset1" />
+                      <feGaussianBlur
+                        in="SourceAlpha"
+                        stdDeviation="6"
+                        result="blur2"
+                      />
+                      <feOffset in="blur2" dx="4" dy="6" result="offset2" />
+                      <feComponentTransfer in="offset1" result="shadow1">
+                        <feFuncA type="linear" slope="0.8" />
+                      </feComponentTransfer>
+                      <feComponentTransfer in="offset2" result="shadow2">
+                        <feFuncA type="linear" slope="0.4" />
+                      </feComponentTransfer>
+                      <feMerge>
+                        <feMergeNode in="shadow2" />
+                        <feMergeNode in="shadow1" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+
+                    <filter
+                      id="pulseGlow"
+                      x="-100%"
+                      y="-100%"
+                      width="300%"
+                      height="300%"
+                    >
+                      <feGaussianBlur stdDeviation="8" result="coloredBlur">
+                        <animate
+                          attributeName="stdDeviation"
+                          values="6;10;6"
+                          dur="3s"
+                          repeatCount="indefinite"
+                        />
+                      </feGaussianBlur>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+
+                    <radialGradient id="blueBall3D" cx="25%" cy="25%">
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="15%" stopColor="#dbeafe" />
+                      <stop offset="35%" stopColor="#93c5fd" />
+                      <stop offset="55%" stopColor="#60a5fa" />
+                      <stop offset="75%" stopColor="#3b82f6" />
+                      <stop offset="90%" stopColor="#2563eb" />
+                      <stop offset="100%" stopColor="#1e40af" />
+                    </radialGradient>
+                    <radialGradient id="redBall3D" cx="25%" cy="25%">
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="15%" stopColor="#fee2e2" />
+                      <stop offset="35%" stopColor="#fecaca" />
+                      <stop offset="55%" stopColor="#fca5a5" />
+                      <stop offset="75%" stopColor="#f87171" />
+                      <stop offset="90%" stopColor="#ef4444" />
+                      <stop offset="100%" stopColor="#dc2626" />
+                    </radialGradient>
+                    <radialGradient id="silverBall3D" cx="25%" cy="25%">
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="20%" stopColor="#f8fafc" />
+                      <stop offset="40%" stopColor="#f1f5f9" />
+                      <stop offset="60%" stopColor="#e2e8f0" />
+                      <stop offset="80%" stopColor="#cbd5e1" />
+                      <stop offset="100%" stopColor="#94a3b8" />
+                    </radialGradient>
+                    <radialGradient id="orangeBall3D" cx="25%" cy="25%">
+                      <stop offset="0%" stopColor="#fff7ed" />
+                      <stop offset="20%" stopColor="#ffedd5" />
+                      <stop offset="40%" stopColor="#fed7aa" />
+                      <stop offset="60%" stopColor="#fdba74" />
+                      <stop offset="80%" stopColor="#fb923c" />
+                      <stop offset="100%" stopColor="#f97316" />
+                    </radialGradient>
                   </defs>
 
-                  <g filter="url(#realShadow)">
-                    <rect
-                      x="75"
-                      y="80"
-                      width="10"
-                      height="420"
-                      fill="url(#chrome)"
-                      opacity="0.95"
-                      rx="5"
-                    />
-                    <rect
-                      x="73"
-                      y="78"
-                      width="14"
-                      height="424"
-                      fill="none"
-                      stroke="url(#chrome)"
-                      strokeWidth="1"
-                      opacity="0.6"
-                    />
-
-                    <rect
-                      x="50"
-                      y="110"
-                      width="60"
-                      height="14"
-                      fill="url(#orange3D)"
-                      opacity="1"
-                      rx="2"
-                    />
-                    <rect
-                      x="48"
-                      y="108"
-                      width="64"
-                      height="18"
-                      fill="none"
-                      stroke="url(#chrome)"
-                      strokeWidth="2.5"
-                      opacity="0.9"
-                    />
-
-                    <rect
-                      x="50"
-                      y="170"
-                      width="60"
-                      height="14"
-                      fill="url(#blue3D)"
-                      opacity="1"
-                      rx="2"
-                    />
-                    <rect
-                      x="48"
-                      y="168"
-                      width="64"
-                      height="18"
-                      fill="none"
-                      stroke="url(#chrome)"
-                      strokeWidth="2.5"
-                      opacity="0.9"
-                    />
-
-                    <rect
-                      x="50"
-                      y="230"
-                      width="60"
-                      height="14"
-                      fill="url(#yellow3D)"
-                      opacity="1"
-                      rx="2"
-                    />
-                    <rect
-                      x="48"
-                      y="228"
-                      width="64"
-                      height="18"
-                      fill="none"
-                      stroke="url(#chrome)"
-                      strokeWidth="2.5"
-                      opacity="0.9"
-                    />
-
-                    <rect
-                      x="50"
-                      y="290"
-                      width="60"
-                      height="14"
-                      fill="url(#orange3D)"
-                      opacity="1"
-                      rx="2"
-                    />
-                    <rect
-                      x="48"
-                      y="288"
-                      width="64"
-                      height="18"
-                      fill="none"
-                      stroke="url(#chrome)"
-                      strokeWidth="2.5"
-                      opacity="0.9"
-                    />
-
-                    <ellipse
-                      cx="80"
-                      cy="440"
-                      rx="28"
-                      ry="18"
-                      fill="url(#blue3D)"
-                      opacity="1"
-                    />
-                    <rect
-                      x="52"
-                      y="422"
-                      width="56"
-                      height="36"
-                      fill="url(#blue3D)"
-                      opacity="1"
-                      rx="2"
-                    />
-                    <ellipse
-                      cx="80"
-                      cy="422"
-                      rx="28"
-                      ry="18"
-                      fill="url(#blue3D)"
-                      opacity="0.7"
-                    />
-
-                    <path
-                      d="M 45 440 Q 15 460, 5 490 Q 0 510, 8 535 Q 12 550, 20 560"
-                      stroke="url(#chrome)"
-                      strokeWidth="8"
-                      fill="none"
-                      opacity="0.95"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M 42 443 Q 12 463, 7 493 Q 3 513, 11 538 Q 15 553, 23 563"
-                      stroke="url(#blue3D)"
-                      strokeWidth="5"
-                      fill="none"
-                      opacity="0.8"
-                      strokeLinecap="round"
-                    />
-
-                    <g
-                      transform="translate(80, 80)"
-                      className="animate-rotate-gear"
-                    >
-                      <circle
-                        r="40"
-                        fill="none"
-                        stroke="url(#blue3D)"
-                        strokeWidth="10"
-                        opacity="1"
-                      />
-                      <circle
-                        r="35"
-                        fill="none"
-                        stroke="url(#chrome)"
-                        strokeWidth="4"
-                        opacity="0.95"
-                      />
-
-                      {Array.from({ length: 8 }).map((_, i) => {
-                        const angle = (i * 45 * Math.PI) / 180;
-                        const x = Math.cos(angle) * 35;
-                        const y = Math.sin(angle) * 35;
-                        return (
-                          <line
-                            key={i}
-                            x1="0"
-                            y1="0"
-                            x2={x}
-                            y2={y}
-                            stroke="url(#chrome)"
-                            strokeWidth="4"
-                            opacity="0.95"
-                            strokeLinecap="round"
-                          />
-                        );
-                      })}
-                      <circle r="12" fill="url(#blue3D)" opacity="1" />
-                      <circle r="8" fill="#ffffff" opacity="0.4" />
-                    </g>
-                  </g>
-
-                  <path
-                    d="M 130 80 Q 220 60, 300 80 Q 350 95, 370 120"
-                    stroke="url(#orange3D)"
-                    strokeWidth="18"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
+                  <rect
+                    x="85"
+                    y="50"
+                    width="32"
+                    height="430"
+                    rx="16"
+                    fill="url(#darkBlueCyl)"
+                    filter="url(#shadow3D)"
                   />
-                  <path
-                    d="M 130 80 Q 220 60, 300 80 Q 350 95, 370 120"
-                    stroke="url(#chrome)"
-                    strokeWidth="20"
-                    fill="none"
+
+                  <rect
+                    x="87"
+                    y="50"
+                    width="10"
+                    height="430"
+                    rx="5"
+                    fill="url(#blueHighlight)"
+                    opacity="0.7"
+                  />
+
+                  <rect
+                    x="103"
+                    y="50"
+                    width="6"
+                    height="430"
+                    rx="3"
+                    fill="url(#blueShadow)"
                     opacity="0.5"
                   />
+
+                  <ellipse
+                    cx="101"
+                    cy="110"
+                    rx="38"
+                    ry="14"
+                    fill="url(#darkBlueCyl)"
+                    filter="url(#shadow3D)"
+                  />
+                  <ellipse
+                    cx="96"
+                    cy="110"
+                    rx="30"
+                    ry="10"
+                    fill="url(#blueHighlight)"
+                    opacity="0.4"
+                  />
+
+                  <ellipse
+                    cx="101"
+                    cy="170"
+                    rx="35"
+                    ry="12"
+                    fill="url(#orangeTube)"
+                    filter="url(#glowBlue)"
+                  />
+                  <ellipse
+                    cx="96"
+                    cy="170"
+                    rx="28"
+                    ry="9"
+                    fill="url(#blueHighlight)"
+                    opacity="0.3"
+                  />
+
+                  <ellipse
+                    cx="101"
+                    cy="230"
+                    rx="33"
+                    ry="11"
+                    fill="url(#redTube)"
+                    filter="url(#glowBlue)"
+                  />
+                  <ellipse
+                    cx="96"
+                    cy="230"
+                    rx="26"
+                    ry="8"
+                    fill="url(#blueHighlight)"
+                    opacity="0.3"
+                  />
+
+                  <ellipse
+                    cx="101"
+                    cy="460"
+                    rx="45"
+                    ry="18"
+                    fill="url(#redTube)"
+                    filter="url(#glowBlue)"
+                  />
+                  <ellipse
+                    cx="96"
+                    cy="460"
+                    rx="38"
+                    ry="15"
+                    fill="url(#blueHighlight)"
+                    opacity="0.3"
+                  />
+
+                  <ellipse
+                    cx="101"
+                    cy="290"
+                    rx="22"
+                    ry="9"
+                    fill="url(#darkBlueCyl)"
+                  />
+                  <ellipse
+                    cx="97"
+                    cy="290"
+                    rx="18"
+                    ry="7"
+                    fill="url(#blueHighlight)"
+                    opacity="0.4"
+                  />
+
                   <path
-                    d="M 370 120 Q 390 145, 400 170"
-                    stroke="url(#blue3D)"
+                    d="M 45 90 Q 20 135 45 180 Q 65 205 101 195"
+                    stroke="url(#silver)"
+                    strokeWidth="22"
+                    fill="none"
+                    strokeLinecap="round"
+                    filter="url(#shadow3D)"
+                  />
+                  <path
+                    d="M 47 92 Q 22 137 47 182 Q 67 207 101 197"
+                    stroke="url(#blueHighlight)"
+                    strokeWidth="5"
+                    fill="none"
+                    opacity="0.6"
+                  />
+
+                  <path
+                    d="M 115 145 Q 205 135 290 155"
+                    stroke="url(#yellowTube)"
+                    strokeWidth="20"
+                    fill="none"
+                    strokeLinecap="round"
+                    filter="url(#glowBlue)"
+                  />
+                  <path
+                    d="M 115 145 Q 205 135 290 155"
+                    stroke="#fef08a"
+                    strokeWidth="6"
+                    fill="none"
+                    strokeLinecap="round"
+                    opacity="0.5"
+                  />
+
+                  <path
+                    d="M 290 155 Q 335 200 355 265"
+                    stroke="url(#redTube)"
                     strokeWidth="18"
                     fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
                     strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
+                    filter="url(#glowBlue)"
                   />
-
-                  <rect
-                    x="320"
-                    y="50"
-                    width="160"
-                    height="12"
-                    fill="url(#blue3D)"
-                    opacity="1"
-                    rx="6"
-                    filter="url(#glow)"
-                    className="animate-track-glow"
-                  />
-                  <rect
-                    x="320"
-                    y="48"
-                    width="70"
-                    height="16"
-                    fill="url(#yellow3D)"
-                    opacity="1"
-                    rx="6"
-                    filter="url(#glow)"
-                    className="animate-track-glow"
-                  />
-                  <rect
-                    x="318"
-                    y="46"
-                    width="164"
-                    height="20"
+                  <path
+                    d="M 290 155 Q 335 200 355 265"
+                    stroke="#fecaca"
+                    strokeWidth="5"
                     fill="none"
-                    stroke="url(#chrome)"
-                    strokeWidth="3.5"
-                    opacity="0.95"
+                    strokeLinecap="round"
+                    opacity="0.5"
                   />
 
-                  <g className="animate-marble-1 animate-glow animate-bounce">
-                    <circle
-                      cx="360"
-                      cy="56"
-                      r="12"
-                      fill="url(#silverBall)"
-                      opacity="1"
-                      filter="url(#strongGlow)"
-                    />
-                    <circle
-                      cx="360"
-                      cy="56"
-                      r="9"
-                      fill="#ffffff"
-                      opacity="0.7"
-                    />
-                    <circle
-                      cx="360"
-                      cy="56"
-                      r="5"
-                      fill="#ffffff"
-                      opacity="0.9"
-                    />
-                  </g>
-                  <g
-                    className="animate-marble-2 animate-glow animate-bounce"
-                    style={{ animationDelay: "1s" }}
-                  >
-                    <circle
-                      cx="430"
-                      cy="56"
-                      r="12"
-                      fill="url(#silverBall)"
-                      opacity="1"
-                      filter="url(#strongGlow)"
-                    />
-                    <circle
-                      cx="430"
-                      cy="56"
-                      r="9"
-                      fill="#ffffff"
-                      opacity="0.7"
-                    />
-                    <circle
-                      cx="430"
-                      cy="56"
-                      r="5"
-                      fill="#ffffff"
-                      opacity="0.9"
-                    />
-                  </g>
+                  <path
+                    d="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                    stroke="url(#bluePipe3D)"
+                    strokeWidth="28"
+                    fill="none"
+                    strokeLinecap="round"
+                    filter="url(#glowBlue)"
+                  />
+                  {/* Strong highlight */}
+                  <path
+                    d="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                    stroke="url(#blueHighlight)"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeLinecap="round"
+                    opacity="0.7"
+                  />
 
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <circle
-                      key={`energy-${i}`}
-                      r="3"
-                      fill="#60a5fa"
-                      opacity="0.6"
-                      filter="url(#glow)"
-                    >
-                      <animateMotion
-                        dur="8s"
-                        repeatCount="indefinite"
-                        begin={`${i * 1}s`}
-                        path="M 130 120 Q 200 160, 240 200 Q 260 230, 270 260"
+                  <path
+                    d="M 290 155 Q 320 185 340 250"
+                    stroke="url(#bluePipe3D)"
+                    strokeWidth="14"
+                    fill="none"
+                    strokeLinecap="round"
+                    filter="url(#glowBlue)"
+                  />
+                  <path
+                    d="M 290 155 Q 320 185 340 250"
+                    stroke="url(#blueHighlight)"
+                    strokeWidth="4"
+                    fill="none"
+                    strokeLinecap="round"
+                    opacity="0.5"
+                  />
+
+                  <rect
+                    x="45"
+                    y="195"
+                    width="85"
+                    height="14"
+                    rx="7"
+                    fill="url(#orangeTube)"
+                    filter="url(#shadow3D)"
+                  />
+                  <rect
+                    x="47"
+                    y="197"
+                    width="30"
+                    height="10"
+                    rx="5"
+                    fill="url(#blueHighlight)"
+                    opacity="0.4"
+                  />
+
+                  <rect
+                    x="45"
+                    y="225"
+                    width="80"
+                    height="14"
+                    rx="7"
+                    fill="#fbbf24"
+                    filter="url(#shadow3D)"
+                  />
+                  <rect
+                    x="47"
+                    y="227"
+                    width="28"
+                    height="10"
+                    rx="5"
+                    fill="#fef08a"
+                    opacity="0.4"
+                  />
+
+                  <rect
+                    x="45"
+                    y="255"
+                    width="75"
+                    height="14"
+                    rx="7"
+                    fill="url(#redTube)"
+                    filter="url(#shadow3D)"
+                  />
+                  <rect
+                    x="47"
+                    y="257"
+                    width="26"
+                    height="10"
+                    rx="5"
+                    fill="#fecaca"
+                    opacity="0.4"
+                  />
+
+                  <rect
+                    x="40"
+                    y="495"
+                    width="520"
+                    height="70"
+                    fill="url(#conveyor)"
+                    filter="url(#shadow3D)"
+                  />
+
+                  {[
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                    17,
+                  ].map((i) => (
+                    <g key={i}>
+                      <line
+                        x1={40 + i * 29}
+                        y1="495"
+                        x2={40 + i * 29}
+                        y2="565"
+                        stroke="#0f172a"
+                        strokeWidth="2.5"
                       />
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;0.8;0.3"
-                        dur="2s"
-                        repeatCount="indefinite"
-                        begin={`${i * 0.25}s`}
+                      <rect
+                        x={40 + i * 29 + 2}
+                        y1="495"
+                        width="6"
+                        height="70"
+                        fill="#1e293b"
+                        opacity="0.5"
                       />
-                    </circle>
+                    </g>
                   ))}
 
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                    <g key={i} transform={`rotate(${-6 + i * 2.5})`}>
+                      <animateMotion
+                        dur={`${10 + i * 0.8}s`}
+                        repeatCount="indefinite"
+                        begin={`${i * 1.2}s`}
+                        path={`M ${110 + i * 65},${510 + (i % 2) * 6} L 560,${
+                          510 + (i % 2) * 6
+                        }`}
+                      />
+                      <rect
+                        width="48"
+                        height="24"
+                        rx="3"
+                        fill="#22c55e"
+                        filter="url(#shadow3D)"
+                      >
+                        <animate
+                          attributeName="opacity"
+                          values="0.85;1;0.85"
+                          dur={`${2.5 + i * 0.3}s`}
+                          repeatCount="indefinite"
+                          begin={`${i * 0.4}s`}
+                        />
+                      </rect>
+                      <rect
+                        x="3"
+                        y="3"
+                        width="42"
+                        height="18"
+                        fill="none"
+                        stroke="#166534"
+                        strokeWidth="1"
+                      />
+                      <text
+                        x="24"
+                        y="17"
+                        fontSize="10"
+                        fill="#166534"
+                        textAnchor="middle"
+                        fontWeight="bold"
+                        fontFamily="Arial"
+                      >
+                        $
+                      </text>
+                      <rect
+                        x="5"
+                        y="12"
+                        width="38"
+                        height="1"
+                        fill="#166534"
+                        opacity="0.3"
+                      />
+                    </g>
+                  ))}
+
+                  <g>
                     <circle
-                      key={`yellow-energy-${i}`}
-                      r="2.5"
-                      fill="#fbbf24"
-                      opacity="0.5"
-                      filter="url(#glow)"
+                      r="12"
+                      fill="url(#silverBall3D)"
+                      filter="url(#pulseGlow)"
+                      opacity="0.95"
                     >
                       <animateMotion
                         dur="6s"
                         repeatCount="indefinite"
-                        begin={`${i * 1.2}s`}
-                        path="M 270 260 Q 280 285, 290 310"
+                        path="M 115 145 Q 205 135 290 155"
                       />
                       <animate
                         attributeName="opacity"
-                        values="0.2;0.7;0.2"
-                        dur="1.5s"
+                        values="0.85;1;0.85"
+                        dur="2s"
                         repeatCount="indefinite"
                       />
                     </circle>
-                  ))}
+                    <circle r="9" fill="url(#silverBall3D)" opacity="0.6">
+                      <animateMotion
+                        dur="6s"
+                        repeatCount="indefinite"
+                        path="M 115 145 Q 205 135 290 155"
+                      />
+                    </circle>
+                    <circle r="5" fill="#ffffff" opacity="0.95">
+                      <animateMotion
+                        dur="6s"
+                        repeatCount="indefinite"
+                        path="M 110 140 Q 200 130 285 150"
+                      />
+                    </circle>
+                    <circle r="2" fill="#ffffff" opacity="1">
+                      <animateMotion
+                        dur="6s"
+                        repeatCount="indefinite"
+                        path="M 108 138 Q 198 128 283 148"
+                      />
+                    </circle>
+                  </g>
 
-                  {Array.from({ length: 6 }).map((_, i) => (
+                  <g>
                     <circle
-                      key={`loop-energy-${i}`}
-                      r="3"
-                      fill="#3b82f6"
-                      opacity="0.5"
-                      filter="url(#glow)"
+                      r="16"
+                      fill="url(#blueBall3D)"
+                      filter="url(#pulseGlow)"
+                      opacity="0.95"
+                    >
+                      <animateMotion
+                        dur="12s"
+                        repeatCount="indefinite"
+                        path="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.9;1;0.9"
+                        dur="3s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle r="12" fill="url(#blueBall3D)" opacity="0.5">
+                      <animateMotion
+                        dur="12s"
+                        repeatCount="indefinite"
+                        path="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                      />
+                    </circle>
+                    <circle r="6" fill="#ffffff" opacity="0.95">
+                      <animateMotion
+                        dur="12s"
+                        repeatCount="indefinite"
+                        path="M 118 188 Q 218 208 323 228 Q 383 238 383 298 Q 383 363 338 403 Q 288 443 233 423"
+                      />
+                    </circle>
+                    <circle r="3" fill="#ffffff" opacity="1">
+                      <animateMotion
+                        dur="12s"
+                        repeatCount="indefinite"
+                        path="M 116 186 Q 216 206 321 226 Q 381 236 381 296 Q 381 361 336 401 Q 286 441 231 421"
+                      />
+                    </circle>
+                  </g>
+
+                  <g>
+                    <circle
+                      r="13"
+                      fill="url(#redBall3D)"
+                      filter="url(#pulseGlow)"
+                      opacity="0.95"
                     >
                       <animateMotion
                         dur="7s"
                         repeatCount="indefinite"
-                        begin={`${i * 1.2}s`}
-                        path="M 360 180 Q 420 200, 450 230 Q 420 260, 360 280"
+                        path="M 290 155 Q 335 200 355 265"
                       />
                       <animate
                         attributeName="opacity"
-                        values="0.3;0.8;0.3"
-                        dur="2s"
-                        repeatCount="indefinite"
-                      />
-                    </circle>
-                  ))}
-
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <circle
-                      key={`blue-energy-${i}`}
-                      r="2.5"
-                      fill="#3b82f6"
-                      opacity="0.4"
-                      filter="url(#glow)"
-                    >
-                      <animateMotion
-                        dur="5s"
-                        repeatCount="indefinite"
-                        begin={`${i * 1.3}s`}
-                        path="M 290 310 Q 330 335, 360 360"
-                      />
-                      <animate
-                        attributeName="opacity"
-                        values="0.2;0.6;0.2"
-                        dur="1.8s"
-                        repeatCount="indefinite"
-                      />
-                    </circle>
-                  ))}
-
-                  {Array.from({ length: 7 }).map((_, i) => (
-                    <circle
-                      key={`multi-energy-${i}`}
-                      r="3"
-                      fill={
-                        i % 3 === 0
-                          ? "#f97316"
-                          : i % 3 === 1
-                          ? "#fbbf24"
-                          : "#3b82f6"
-                      }
-                      opacity="0.4"
-                      filter="url(#glow)"
-                    >
-                      <animateMotion
-                        dur="10s"
-                        repeatCount="indefinite"
-                        begin={`${i * 1.4}s`}
-                        path="M 360 360 Q 400 385, 430 410 Q 445 430, 455 450 Q 465 470, 470 490"
-                      />
-                      <animate
-                        attributeName="opacity"
-                        values="0.2;0.7;0.2"
+                        values="0.85;1;0.85"
                         dur="2.5s"
                         repeatCount="indefinite"
                       />
                     </circle>
-                  ))}
-
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <circle
-                      key={`ramp-energy-${i}`}
-                      r="2.5"
-                      fill="#f97316"
-                      opacity="0.5"
-                      filter="url(#glow)"
-                    >
+                    <circle r="10" fill="url(#redBall3D)" opacity="0.5">
                       <animateMotion
-                        dur="6s"
+                        dur="7s"
                         repeatCount="indefinite"
-                        begin={`${i * 1.2}s`}
-                        path="M 130 80 Q 220 60, 300 80 Q 350 95, 370 120"
-                      />
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;0.7;0.3"
-                        dur="1.5s"
-                        repeatCount="indefinite"
+                        path="M 290 155 Q 335 200 355 265"
                       />
                     </circle>
-                  ))}
-
-                  <path
-                    d="M 130 120 Q 200 160, 240 200 Q 260 230, 270 260"
-                    stroke="url(#orange3D)"
-                    strokeWidth="16"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-                  <path
-                    d="M 130 120 Q 200 160, 240 200 Q 260 230, 270 260"
-                    stroke="url(#chrome)"
-                    strokeWidth="18"
-                    fill="none"
-                    opacity="0.4"
-                  />
-                  <path
-                    d="M 270 260 Q 280 285, 290 310"
-                    stroke="url(#yellow3D)"
-                    strokeWidth="16"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-
-                  <path
-                    d="M 290 310 Q 330 335, 360 360"
-                    stroke="url(#blue3D)"
-                    strokeWidth="18"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-
-                  <path
-                    d="M 360 360 Q 400 385, 430 410"
-                    stroke="url(#orange3D)"
-                    strokeWidth="20"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-                  <path
-                    d="M 430 410 Q 445 430, 455 450"
-                    stroke="url(#yellow3D)"
-                    strokeWidth="20"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-                  <path
-                    d="M 455 450 Q 465 470, 470 490"
-                    stroke="url(#blue3D)"
-                    strokeWidth="20"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-
-                  <path
-                    d="M 360 180 Q 420 200, 450 230 Q 420 260, 360 280"
-                    stroke="url(#blue3D)"
-                    strokeWidth="22"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-                  <path
-                    d="M 360 180 Q 420 200, 450 230 Q 420 260, 360 280"
-                    stroke="url(#chrome)"
-                    strokeWidth="24"
-                    fill="none"
-                    opacity="0.3"
-                  />
-                  <path
-                    d="M 370 210 Q 410 225, 430 230 Q 410 235, 370 250"
-                    stroke="url(#orange3D)"
-                    strokeWidth="16"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-
-                  <path
-                    d="M 400 380 Q 450 430, 470 480 Q 475 510, 470 540"
-                    stroke="url(#blue3D)"
-                    strokeWidth="24"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="animate-track-glow"
-                  />
-
-                  <path
-                    d="M 470 540 L 490 560"
-                    stroke="url(#blue3D)"
-                    strokeWidth="20"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#glow)"
-                    strokeLinecap="round"
-                    className="animate-track-glow"
-                  />
-
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <circle
-                      key={`chute-energy-${i}`}
-                      r="3"
-                      fill="#3b82f6"
-                      opacity="0.5"
-                      filter="url(#glow)"
-                    >
+                    <circle r="5" fill="#ffffff" opacity="0.95">
                       <animateMotion
-                        dur="8s"
+                        dur="7s"
                         repeatCount="indefinite"
-                        begin={`${i * 1.6}s`}
-                        path="M 400 380 Q 450 430, 470 480 Q 475 510, 470 540 L 490 560"
-                      />
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;0.8;0.3"
-                        dur="2s"
-                        repeatCount="indefinite"
+                        path="M 284 149 Q 329 194 349 259"
                       />
                     </circle>
-                  ))}
-
-                  <g className="animate-pulse-glow">
-                    <circle
-                      r="11"
-                      fill="url(#silverBall)"
-                      opacity="1"
-                      filter="url(#strongGlow)"
-                    >
+                    <circle r="2.5" fill="#ffffff" opacity="1">
                       <animateMotion
-                        dur="3s"
+                        dur="7s"
                         repeatCount="indefinite"
-                        begin="2s"
-                        path="M 400 380 Q 450 430, 470 480 Q 475 510, 470 540 L 490 560"
-                      />
-                      <animateTransform
-                        attributeName="transform"
-                        type="rotate"
-                        values="0;360"
-                        dur="0.45s"
-                        repeatCount="indefinite"
+                        path="M 282 147 Q 327 192 347 257"
                       />
                     </circle>
                   </g>
 
-                  <path
-                    d="M 220 180 L 280 240"
-                    stroke="url(#yellow3D)"
-                    strokeWidth="12"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#realShadow)"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M 220 180 L 280 240"
-                    stroke="url(#chrome)"
-                    strokeWidth="14"
-                    fill="none"
-                    opacity="0.4"
-                  />
+                  <g>
+                    <circle
+                      r="11"
+                      fill="url(#orangeBall3D)"
+                      filter="url(#pulseGlow)"
+                      opacity="0.95"
+                    >
+                      <animateMotion
+                        dur="5s"
+                        repeatCount="indefinite"
+                        path="M 45 200 L 130 200"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.9;1;0.9"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    <circle r="8" fill="url(#orangeBall3D)" opacity="0.5">
+                      <animateMotion
+                        dur="5s"
+                        repeatCount="indefinite"
+                        path="M 45 200 L 130 200"
+                      />
+                    </circle>
+                    <circle r="4" fill="#fff7ed" opacity="0.95">
+                      <animateMotion
+                        dur="5s"
+                        repeatCount="indefinite"
+                        path="M 40 195 L 125 195"
+                      />
+                    </circle>
+                    <circle r="2" fill="#ffffff" opacity="1">
+                      <animateMotion
+                        dur="5s"
+                        repeatCount="indefinite"
+                        path="M 38 193 L 123 193"
+                      />
+                    </circle>
+                  </g>
 
-                  <path
-                    d="M 320 280 Q 350 300, 370 320"
-                    stroke="url(#blue3D)"
-                    strokeWidth="14"
-                    fill="none"
-                    opacity="1"
-                    filter="url(#realShadow)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M 320 280 Q 350 300, 370 320"
-                    stroke="url(#chrome)"
-                    strokeWidth="16"
-                    fill="none"
-                    opacity="0.4"
-                  />
+                  {[0, 1, 2, 3].map((i) => (
+                    <circle
+                      key={`particle-${i}`}
+                      r="3"
+                      fill="#60a5fa"
+                      opacity="0.6"
+                    >
+                      <animateMotion
+                        dur={`${4 + i * 0.5}s`}
+                        repeatCount="indefinite"
+                        begin={`${i * 1}s`}
+                        path="M 125 195 Q 225 215 330 235"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.3;0.8;0.3"
+                        dur={`${2 + i * 0.3}s`}
+                        repeatCount="indefinite"
+                      />
+                      <animate
+                        attributeName="r"
+                        values="2;4;2"
+                        dur={`${1.5 + i * 0.2}s`}
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  ))}
                 </svg>
 
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-24 left-12 bg-purple-500 rounded-2xl rounded-bl-none p-4 max-w-[220px] shadow-2xl animate-move-alert-1">
-                    <p className="text-white text-sm font-medium leading-snug">
-                      Deal at risk: No activity in 7 days
+                  <div className="absolute top-10 right-12 bg-white rounded-2xl rounded-bl-none px-5 py-3.5 shadow-2xl max-w-[210px] border border-gray-100">
+                    <p className="text-gray-800 text-sm font-medium leading-snug">
+                      Ready to protect your revenue with Sentinel?
                     </p>
                   </div>
 
-                  <div className="absolute top-40 right-20 bg-blue-500 rounded-2xl rounded-br-none p-4 max-w-[180px] shadow-2xl animate-move-alert-2">
-                    <p className="text-white text-sm font-medium leading-snug">
-                      Send follow-up email
+                  <div className="absolute top-28 right-16 bg-blue-500 rounded-2xl rounded-br-none px-6 py-3 shadow-2xl">
+                    <p className="text-white text-sm font-semibold">
+                      Absolutely!
                     </p>
                   </div>
 
-                  <div className="absolute top-56 left-10 bg-purple-500 rounded-2xl rounded-bl-none p-4 max-w-[240px] shadow-2xl animate-move-alert-3">
-                    <p className="text-white text-sm font-medium leading-snug">
-                      Negotiation stalled without response
+                  <div className="absolute top-44 left-6 bg-white rounded-2xl rounded-bl-none px-5 py-3.5 shadow-2xl max-w-[230px] border border-gray-100">
+                    <p className="text-gray-800 text-sm font-medium leading-snug">
+                      Deal at risk: No activity detected in 7 days
                     </p>
                   </div>
 
-                  <div className="absolute top-72 right-16 bg-blue-500 rounded-2xl rounded-br-none p-4 max-w-[200px] shadow-2xl animate-move-alert-4">
+                  <div className="absolute top-60 right-6 bg-blue-500 rounded-2xl rounded-br-none px-5 py-3.5 shadow-2xl max-w-[190px]">
                     <p className="text-white text-sm font-medium leading-snug">
-                      Nudge for response
+                      Sending follow-up email now
+                    </p>
+                  </div>
+
+                  <div className="absolute bottom-20 left-10 bg-white rounded-2xl rounded-bl-none px-5 py-3.5 shadow-2xl max-w-[210px] border border-gray-100">
+                    <p className="text-gray-800 text-sm font-medium leading-snug">
+                      Deal saved! Activity resumed
                     </p>
                   </div>
                 </div>
@@ -1757,208 +1799,235 @@ export default async function Home() {
 
       <WorldMapDemo />
 
-      <footer className="border-t border-white/10 bg-black py-16 px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            <div className="lg:col-span-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">RS</span>
-                </div>
-                <span className="text-white font-bold text-xl">
-                  Revenue Sentinel
-                </span>
+      <footer
+        className="relative"
+        style={{ background: "#000000", padding: "60px 40px" }}
+      >
+        <div
+          className="max-w-7xl mx-auto rounded-3xl p-12"
+          style={{
+            background: "#000000",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+          }}
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                Join our newsletter to stay up to date on the latest news and
+                updates.
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-6 py-3 rounded-full border border-white/20 focus:outline-none focus:border-blue-500 text-white placeholder:text-white/50"
+                  style={{ background: "#2a2a2a" }}
+                />
+                <button
+                  className="px-8 py-3 rounded-full text-white font-semibold whitespace-nowrap hover:opacity-90 transition-opacity"
+                  style={{ background: "#2563eb" }}
+                >
+                  Subscribe
+                </button>
               </div>
-              <p className="text-white/60 text-sm leading-relaxed mb-6">
-                Never lose a deal to silent decay. Real-time risk detection for
-                modern revenue teams.
+              <p className="text-sm text-white/60 mb-6">
+                By subscribing, you agree to our Privacy Policy and consent to
+                receive updates from us.
               </p>
-              <div className="flex gap-4">
+
+              <div className="flex items-center gap-4">
                 <a
                   href="#"
-                  className="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                  style={{ border: "1px solid rgba(255,255,255,0.2)" }}
                   aria-label="Twitter"
                 >
                   <svg
-                    className="w-5 h-5 text-white/70"
-                    fill="currentColor"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
                   </svg>
                 </a>
                 <a
                   href="#"
-                  className="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-colors"
-                  aria-label="LinkedIn"
-                >
-                  <svg
-                    className="w-5 h-5 text-white/70"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                  style={{ border: "1px solid rgba(255,255,255,0.2)" }}
                   aria-label="GitHub"
                 >
                   <svg
-                    className="w-5 h-5 text-white/70"
-                    fill="currentColor"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                      clipRule="evenodd"
-                    />
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                  </svg>
+                </a>
+                <a
+                  href="#"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                  style={{ border: "1px solid rgba(255,255,255,0.2)" }}
+                  aria-label="LinkedIn"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                    <rect x="2" y="9" width="4" height="12" />
+                    <circle cx="4" cy="4" r="2" />
+                  </svg>
+                </a>
+                <a
+                  href="#"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                  style={{ border: "1px solid rgba(255,255,255,0.2)" }}
+                  aria-label="Reddit"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="#ffffff"
+                  >
+                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
                   </svg>
                 </a>
               </div>
             </div>
 
-            <div>
-              <h3 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">
-                Product
-              </h3>
-              <ul className="space-y-3">
-                <li>
-                  <Link
-                    href="#features"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#pricing"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Integrations
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    API
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            <div className="grid grid-cols-3 gap-8">
+              <div>
+                <h4 className="text-white font-semibold mb-4">Product</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href="#features"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      Features
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#pricing"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      Pricing
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      API Documentation
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <div>
-              <h3 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">
-                Company
-              </h3>
-              <ul className="space-y-3">
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Careers
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
+              <div>
+                <h4 className="text-white font-semibold mb-4">Resources</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      Documentation
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      Customer Stories
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      Support
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <div>
-              <h3 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">
-                Resources
-              </h3>
-              <ul className="space-y-3">
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Documentation
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Community
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    Status
-                  </Link>
-                </li>
-              </ul>
+              <div>
+                <h4 className="text-white font-semibold mb-4">Company</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      About Us
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      Contact
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      Privacy Policy
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-white/10">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-white/60 text-sm">
-                © {new Date().getFullYear()} Revenue Sentinel. All rights
-                reserved.
-              </p>
-              <div className="flex gap-6 text-white/60 text-sm">
-                <Link href="#" className="hover:text-white transition-colors">
-                  Privacy
-                </Link>
-                <Link href="#" className="hover:text-white transition-colors">
-                  Terms
-                </Link>
-                <Link href="#" className="hover:text-white transition-colors">
-                  Cookies
-                </Link>
-              </div>
-            </div>
+          <div className="text-center">
+            <span
+              className="text-7xl md:text-8xl font-bold"
+              style={{
+                color: "#ffffff",
+                fontFamily: "'Joyride', sans-serif",
+                letterSpacing: "0.01em",
+              }}
+            >
+              S
+              <span
+                style={{
+                  display: "inline-block",
+                  transform: "scaleX(1.35)",
+                  transformOrigin: "center",
+                  marginRight: "0.2em",
+                }}
+              >
+                E
+              </span>
+              NTINEL
+            </span>
           </div>
         </div>
       </footer>
