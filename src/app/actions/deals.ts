@@ -18,6 +18,7 @@ export async function createDeal(formData: FormData) {
   const name = formData.get("name") as string;
   const stage = formData.get("stage") as string;
   const value = parseInt(formData.get("value") as string, 10);
+  const location = (formData.get("location") as string) || null;
 
   if (!name || !stage || isNaN(value)) {
     throw new Error("Missing required fields");
@@ -29,6 +30,7 @@ export async function createDeal(formData: FormData) {
       name,
       stage,
       value,
+      location,
     },
   });
 
@@ -301,6 +303,31 @@ export async function getFounderRiskOverview() {
     dealsOverdueMoreThan3Days,
     top3MostCriticalDeals: criticalDeals,
   };
+}
+
+export async function getDealCountsByCountry() {
+  noStore();
+  const userId = await getAuthenticatedUserId();
+
+  const deals = await prisma.deal.findMany({
+    where: { userId },
+    select: { location: true },
+  });
+
+  const countryCounts = new Map<string, number>();
+
+  for (const deal of deals) {
+    if (deal.location) {
+      const count = countryCounts.get(deal.location) || 0;
+      countryCounts.set(deal.location, count + 1);
+    }
+  }
+
+  const result = Array.from(countryCounts.entries())
+    .map(([country, count]) => ({ country, count }))
+    .sort((a, b) => b.count - a.count);
+
+  return result;
 }
 
 export async function getFounderActionQueue() {
