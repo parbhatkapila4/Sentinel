@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUserId } from "@/lib/auth";
+import { routeToAI, analyzeTaskType } from "@/lib/ai-router";
+import { getAllDeals } from "@/app/actions/deals";
+import { formatRiskLevel } from "@/lib/dealRisk";
 
 export async function POST(request: NextRequest) {
   try {
-    await getAuthenticatedUserId();
+    const userId = await getAuthenticatedUserId();
 
     const body = await request.json();
     const { messages } = body;
@@ -15,59 +18,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+    const lastUserMessage =
+      messages.filter((m: { role: string }) => m.role === "user").pop()
+        ?.content || "";
 
-    if (!openRouterApiKey) {
-      console.error("OPENROUTER_API_KEY is not set");
-      return NextResponse.json(
-        { error: "AI service is not configured" },
-        { status: 500 }
-      );
-    }
+    const taskType = analyzeTaskType(lastUserMessage);
 
-    const response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${openRouterApiKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer":
-            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-          "X-Title": "Revenue Sentinel",
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-4-turbo",
-          messages: messages.map((m: { role: string; content: string }) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
+    let enhancedMessages = [...messages];
+    if (taskType === "financial_reasoning") {
+      try {
+        const deals = await getAllDeals();
+        const totalValue = deals.reduce((sum, d) => sum + d.value, 0);
+        const totalDeals = deals.length;
+        const highRiskDeals = deals.filter(
+          (d) => formatRiskLevel(d.riskScore) === "High"
+        ).length;
+        const stageDistribution = deals.reduce((acc, deal) => {
+          acc[deal.stage] = (acc[deal.stage] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+
+        const contextMessage = `Context about the user's sales pipeline:
+- Total Pipeline Value: $${totalValue.toLocaleString()}
+- Total Deals: ${totalDeals}
+- High Risk Deals: ${highRiskDeals}
+- Stage Distribution: ${JSON.stringify(stageDistribution)}
+- Recent deals: ${deals
+          .slice(0, 5)
+          .map(
+            (d) =>
+              `${d.name} (${
+                d.stage
+              }, $${d.value.toLocaleString()}, ${formatRiskLevel(
+                d.riskScore
+              )} risk)`
+          )
+          .join(", ")}
+
+Use this context to provide accurate, data-driven insights about their pipeline, deals, revenue, and risk.`;
+
+        enhancedMessages = [
+          ...messages.slice(0, -1),
+          {
+            role: "system",
+            content: contextMessage,
+          },
+          messages[messages.length - 1],
+        ];
+      } catch (error) {
+        console.error("Error fetching deals for context:", error);
       }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error("OpenRouter API error:", errorData);
-      return NextResponse.json(
-        { error: "Failed to get AI response" },
-        { status: response.status }
-      );
     }
 
-    const data = await response.json();
-
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      return NextResponse.json(
-        { error: "Invalid response from AI service" },
-        { status: 500 }
-      );
-    }
+    const content = await routeToAI(enhancedMessages, lastUserMessage);
 
     return NextResponse.json({
-      content: data.choices[0].message.content,
+      content,
+      taskType,
     });
   } catch (error) {
     console.error("Chat API error:", error);
