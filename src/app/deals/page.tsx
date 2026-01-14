@@ -1,18 +1,51 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { unstable_noStore as noStore } from "next/cache";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatDistanceToNow } from "date-fns";
 import { DashboardLayout } from "@/components/dashboard-layout";
+import { ExportButton } from "@/components/export-button";
+import { DealsFilter } from "@/components/deals-filter";
+import { PipelineValueCard } from "@/components/pipeline-value-card";
 
 export const dynamic = "force-dynamic";
 
-export default async function DealsPage() {
+type FilterType = "all" | "active" | "at-risk" | "closed";
+
+function filterDeals(
+  deals: Awaited<ReturnType<typeof getAllDeals>>,
+  filter: FilterType
+) {
+  switch (filter) {
+    case "all":
+      return deals;
+    case "active":
+      return deals.filter((deal) => deal.status === "active");
+    case "at-risk":
+      return deals.filter((deal) => formatRiskLevel(deal.riskScore) === "High");
+    case "closed":
+      return deals.filter(
+        (deal) => deal.status === "saved" || deal.status === "lost"
+      );
+    default:
+      return deals;
+  }
+}
+
+export default async function DealsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
   noStore();
   const deals = await getAllDeals();
+  const params = await searchParams;
+  const filter = (params?.filter || "all") as FilterType;
+  const filteredDeals = filterDeals(deals, filter);
 
   const urgencyOrder = { high: 0, medium: 1, low: 2, none: 3 };
-  const sortedDeals = [...deals].sort((a, b) => {
+  const sortedDeals = [...filteredDeals].sort((a, b) => {
     const aUrgency = a.recommendedAction?.urgency || "none";
     const bUrgency = b.recommendedAction?.urgency || "none";
     const urgencyDiff = urgencyOrder[aUrgency] - urgencyOrder[bUrgency];
@@ -30,43 +63,19 @@ export default async function DealsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 min-h-full" style={{ background: "#0a0a0f" }}>
-        <div className="flex items-start justify-between mb-6">
+      <div className="min-h-full p-8 space-y-6 bg-[#0b0b0b]">
+        <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white mb-1">All Deals</h1>
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-[#8a8a8a]">
               Manage and track your deals pipeline
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white transition-colors"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                />
-              </svg>
-              Export
-            </button>
+            <ExportButton className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-[#8a8a8a] hover:text-white transition-colors bg-[#131313] border border-[#1f1f1f] disabled:opacity-50 disabled:cursor-not-allowed" />
             <Link
               href="/deals/new"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all"
-              style={{
-                background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
-              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all bg-[#d51024] hover:bg-[#b80e1f]"
             >
               <svg
                 className="w-4 h-4"
@@ -86,22 +95,12 @@ export default async function DealsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.02) 100%)",
-              border: "1px solid rgba(139, 92, 246, 0.2)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold text-violet-400/70 uppercase tracking-wider">
-                All Deals
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+        <div className="grid grid-cols-4 gap-4">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
                 <svg
-                  className="w-4 h-4 text-violet-400"
+                  className="w-5 h-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -113,26 +112,23 @@ export default async function DealsPage() {
                     d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
                   />
                 </svg>
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+                  All Deals
+                </p>
+                <p className="text-[11px] text-[#5f5f5f]">Total deals</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">{deals.length}</p>
+            <p className="text-3xl font-bold text-white mb-1">{deals.length}</p>
+            <p className="text-xs text-[#7d7d7d]">Active pipeline</p>
           </div>
 
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.02) 100%)",
-              border: "1px solid rgba(16, 185, 129, 0.2)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold text-emerald-400/70 uppercase tracking-wider">
-                Active
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#22c55e] border border-[#1f1f1f]">
                 <svg
-                  className="w-4 h-4 text-emerald-400"
+                  className="w-5 h-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -144,28 +140,25 @@ export default async function DealsPage() {
                     d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
                   />
                 </svg>
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+                  Active
+                </p>
+                <p className="text-[11px] text-[#5f5f5f]">In progress</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-white mb-1">
               {activeDeals.length}
             </p>
+            <p className="text-xs text-[#22c55e]">Increasing</p>
           </div>
 
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.02) 100%)",
-              border: "1px solid rgba(245, 158, 11, 0.2)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold text-amber-400/70 uppercase tracking-wider">
-                At Risk
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#f97316] border border-[#1f1f1f]">
                 <svg
-                  className="w-4 h-4 text-amber-400"
+                  className="w-5 h-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -177,85 +170,40 @@ export default async function DealsPage() {
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   />
                 </svg>
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+                  At Risk
+                </p>
+                <p className="text-[11px] text-[#5f5f5f]">Need attention</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-white mb-1">
               {highRiskDeals.length}
             </p>
+            <p className="text-xs text-[#7d7d7d]">Monitor closely</p>
           </div>
 
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.02) 100%)",
-              border: "1px solid rgba(59, 130, 246, 0.2)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold text-blue-400/70 uppercase tracking-wider">
-                Pipeline
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-white">
-              ${(totalValue / 1000).toFixed(0)}K
-            </p>
-          </div>
+          <PipelineValueCard totalValue={totalValue} />
         </div>
 
-        <div
-          className="rounded-2xl"
-          style={{
-            background:
-              "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-            border: "1px solid rgba(255,255,255,0.06)",
-          }}
-        >
-          <div className="flex items-center justify-between p-6 border-b border-white/5">
+        <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
+          <div className="flex items-center justify-between mb-6 border-b border-[#1a1a1a] pb-5">
             <h3 className="text-lg font-semibold text-white">Deal Pipeline</h3>
-            <div className="flex items-center gap-2">
-              {["All", "Active", "At Risk", "Closed"].map((filter, i) => (
-                <button
-                  key={filter}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    i === 0
-                      ? "bg-violet-500/20 text-violet-400"
-                      : "text-white/40 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
+            <Suspense
+              fallback={
+                <div className="h-8 w-48 bg-[#151515] rounded-xl animate-pulse" />
+              }
+            >
+              <DealsFilter currentFilter={filter} />
+            </Suspense>
           </div>
 
-          {deals.length === 0 ? (
+          {filteredDeals.length === 0 ? (
             <div className="p-16 text-center">
-              <div
-                className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6"
-                style={{
-                  background:
-                    "linear-gradient(145deg, rgba(139,92,246,0.1) 0%, rgba(139,92,246,0.02) 100%)",
-                  border: "1px solid rgba(139,92,246,0.2)",
-                }}
-              >
+              <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 bg-[#151515] border border-[#1f1f1f]">
                 <svg
-                  className="w-10 h-10 text-violet-400/50"
+                  className="w-10 h-10 text-[#8a8a8a]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -271,17 +219,13 @@ export default async function DealsPage() {
               <h3 className="text-2xl font-bold text-white mb-2">
                 No deals yet
               </h3>
-              <p className="text-white/40 mb-8 max-w-md mx-auto">
+              <p className="text-[#8a8a8a] mb-8 max-w-md mx-auto">
                 Start tracking your revenue pipeline by creating your first
                 deal.
               </p>
               <Link
                 href="/deals/new"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium text-white"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
-                }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white transition-all bg-[#d51024] hover:bg-[#b80e1f]"
               >
                 <svg
                   className="w-4 h-4"
@@ -303,26 +247,26 @@ export default async function DealsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">
+                  <tr className="border-b border-[#1a1a1a]">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-white uppercase tracking-wider">
                       Deal
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-white uppercase tracking-wider">
                       Value
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-white uppercase tracking-wider">
                       Stage
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-white uppercase tracking-wider">
                       Risk
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-white uppercase tracking-wider">
                       Next Action
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-white uppercase tracking-wider">
                       Last Activity
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider"></th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-white uppercase tracking-wider"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -331,13 +275,13 @@ export default async function DealsPage() {
                     return (
                       <tr
                         key={deal.id}
-                        className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                        className="border-b border-[#1a1a1a] last:border-0 hover:bg-[#151515] transition-colors"
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-xl bg-[#151515] border border-[#1f1f1f] flex items-center justify-center">
                               <svg
-                                className="w-5 h-5 text-violet-400"
+                                className="w-5 h-5 text-[#8b5cf6]"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -355,37 +299,49 @@ export default async function DealsPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm font-semibold text-white">
-                          ${deal.value.toLocaleString()}
+                        <td className="px-6 py-4">
+                          <span className="text-sm font-semibold text-white">
+                            ${deal.value.toLocaleString()}
+                          </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-white/60">
-                          {deal.stage}
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-[#8a8a8a]">
+                            {deal.stage}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <span
                             className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
                               riskLevel === "High"
-                                ? "bg-red-500/20 text-red-400"
+                                ? "bg-red-500/20 text-red-400 border border-red-500/30"
                                 : riskLevel === "Medium"
-                                ? "bg-amber-500/20 text-amber-400"
-                                : "bg-emerald-500/20 text-emerald-400"
+                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                             }`}
                           >
                             {riskLevel}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-white/60">
-                          {deal.recommendedAction?.label || "No action needed"}
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-[#8a8a8a]">
+                            {deal.recommendedAction?.label ||
+                              "No action needed"}
+                          </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-white/40">
-                          {formatDistanceToNow(new Date(deal.lastActivityAt), {
-                            addSuffix: true,
-                          })}
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-[#8a8a8a]">
+                            {formatDistanceToNow(
+                              new Date(deal.lastActivityAt),
+                              {
+                                addSuffix: true,
+                              }
+                            )}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <Link
                             href={`/deals/${deal.id}`}
-                            className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+                            className="text-sm text-[#8b5cf6] hover:text-[#7c3aed] transition-colors font-medium"
                           >
                             View →
                           </Link>
