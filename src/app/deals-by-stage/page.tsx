@@ -2,7 +2,10 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
+import { formatDistanceToNow, differenceInDays } from "date-fns";
 import { DashboardLayout } from "@/components/dashboard-layout";
+import { PipelineValueCard } from "@/components/pipeline-value-card";
+import { formatValueInMillions, formatRevenue } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -20,37 +23,48 @@ export default async function DealsByStagePage() {
 
   const stageConfig: Record<
     string,
-    { order: number; color: string; bgColor: string; borderColor: string }
+    {
+      order: number;
+      color: string;
+      bgColor: string;
+      borderColor: string;
+      iconColor: string;
+    }
   > = {
     discover: {
       order: 1,
       color: "text-blue-400",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20",
+      iconColor: "text-blue-400",
     },
     qualify: {
       order: 2,
       color: "text-cyan-400",
       bgColor: "bg-cyan-500/10",
       borderColor: "border-cyan-500/20",
+      iconColor: "text-cyan-400",
     },
     proposal: {
       order: 3,
       color: "text-violet-400",
       bgColor: "bg-violet-500/10",
       borderColor: "border-violet-500/20",
+      iconColor: "text-violet-400",
     },
     negotiation: {
       order: 4,
       color: "text-amber-400",
       bgColor: "bg-amber-500/10",
       borderColor: "border-amber-500/20",
+      iconColor: "text-amber-400",
     },
     closed: {
       order: 5,
       color: "text-emerald-400",
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/20",
+      iconColor: "text-emerald-400",
     },
   };
 
@@ -62,25 +76,95 @@ export default async function DealsByStagePage() {
 
   const totalDeals = deals.length;
   const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
+  const avgDealValue = totalDeals > 0 ? totalValue / totalDeals : 0;
+
+  const stageMetrics = sortedStages.map((stage) => {
+    const stageDeals = stageGroups[stage];
+    const stageValue = stageDeals.reduce((sum, d) => sum + d.value, 0);
+    const avgValue = stageDeals.length > 0 ? stageValue / stageDeals.length : 0;
+    const highRiskCount = stageDeals.filter(
+      (d) => formatRiskLevel(d.riskScore) === "High"
+    ).length;
+    const mediumRiskCount = stageDeals.filter(
+      (d) => formatRiskLevel(d.riskScore) === "Medium"
+    ).length;
+    const lowRiskCount = stageDeals.filter(
+      (d) => formatRiskLevel(d.riskScore) === "Low"
+    ).length;
+
+    const now = new Date();
+    const avgDaysSinceActivity =
+      stageDeals.length > 0
+        ? stageDeals.reduce((sum, deal) => {
+            const days = differenceInDays(now, new Date(deal.lastActivityAt));
+            return sum + days;
+          }, 0) / stageDeals.length
+        : 0;
+
+    return {
+      stage,
+      count: stageDeals.length,
+      value: stageValue,
+      avgValue,
+      highRiskCount,
+      mediumRiskCount,
+      lowRiskCount,
+      avgDaysSinceActivity,
+      percentage: totalDeals > 0 ? (stageDeals.length / totalDeals) * 100 : 0,
+    };
+  });
+
+  const conversionRates: Record<string, number> = {};
+  for (let i = 0; i < sortedStages.length - 1; i++) {
+    const currentStage = sortedStages[i];
+    const nextStage = sortedStages[i + 1];
+    const currentCount = stageGroups[currentStage]?.length || 0;
+    const nextCount = stageGroups[nextStage]?.length || 0;
+    const totalAfterCurrent = deals.filter(
+      (d) =>
+        stageConfig[d.stage.toLowerCase()]?.order >=
+        stageConfig[currentStage.toLowerCase()]?.order
+    ).length;
+    conversionRates[currentStage] =
+      totalAfterCurrent > 0 ? (nextCount / totalAfterCurrent) * 100 : 0;
+  }
+
+  const highRiskDeals = deals.filter(
+    (d) => formatRiskLevel(d.riskScore) === "High"
+  );
+  const activeDeals = deals.filter(
+    (d) => d.status === "active" || d.status === "Active"
+  );
+  const valueAtRisk = highRiskDeals.reduce((sum, d) => sum + d.value, 0);
+
+  const stageVelocity: Record<string, number> = {};
+  sortedStages.forEach((stage) => {
+    const stageDeals = stageGroups[stage];
+    if (stageDeals.length > 0) {
+      const avgAge =
+        stageDeals.reduce((sum, deal) => {
+          const age = differenceInDays(new Date(), new Date(deal.createdAt));
+          return sum + age;
+        }, 0) / stageDeals.length;
+      stageVelocity[stage] = avgAge;
+    }
+  });
 
   return (
     <DashboardLayout>
-      <div className="p-6 min-h-full" style={{ background: "#0a0a0f" }}>
-        <div className="flex items-start justify-between mb-6">
+      <div className="min-h-full p-8 space-y-6 bg-[#0b0b0b]">
+        <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white mb-1">
               Deals by Stage
             </h1>
-            <p className="text-sm text-white/40">
-              Visualize your pipeline across different stages
+            <p className="text-sm text-[#8a8a8a]">
+              Comprehensive pipeline analysis across all stages
             </p>
           </div>
           <Link
             href="/deals/new"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white"
-            style={{
-              background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
-            }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all bg-[#d51024] hover:bg-[#b80e1f]"
           >
             <svg
               className="w-4 h-4"
@@ -99,54 +183,107 @@ export default async function DealsByStagePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.02) 100%)",
-              border: "1px solid rgba(139, 92, 246, 0.2)",
-            }}
-          >
-            <p className="text-sm text-white/40 mb-2">
-              Total Deals in Pipeline
+        <div className="grid grid-cols-4 gap-4">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+                  Total Deals
+                </p>
+                <p className="text-[11px] text-[#5f5f5f]">In pipeline</p>
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">{totalDeals}</p>
+            <p className="text-xs text-[#7d7d7d]">
+              {sortedStages.length} active stages
             </p>
-            <p className="text-3xl font-bold text-white">{totalDeals}</p>
           </div>
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.02) 100%)",
-              border: "1px solid rgba(16, 185, 129, 0.2)",
-            }}
-          >
-            <p className="text-sm text-white/40 mb-2">Total Pipeline Value</p>
-            <p className="text-3xl font-bold text-white">
-              ${totalValue.toLocaleString()}
+
+          <PipelineValueCard totalValue={totalValue} />
+
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#f97316] border border-[#1f1f1f]">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+                  At Risk
+                </p>
+                <p className="text-[11px] text-[#5f5f5f]">Requires attention</p>
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">
+              {highRiskDeals.length}
             </p>
+            <p className="text-xs text-[#f97316]">
+              {formatRevenue(valueAtRisk)} at risk
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#22c55e] border border-[#1f1f1f]">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  />
+                </svg>
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+                  Avg Deal Size
+                </p>
+                <p className="text-[11px] text-[#5f5f5f]">Per deal</p>
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">
+              {formatRevenue(avgDealValue)}
+            </p>
+            <p className="text-xs text-[#22c55e]">Across all stages</p>
           </div>
         </div>
 
         {deals.length === 0 ? (
-          <div
-            className="rounded-2xl p-16 text-center"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            <div
-              className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6"
-              style={{
-                background:
-                  "linear-gradient(145deg, rgba(139,92,246,0.1) 0%, rgba(139,92,246,0.02) 100%)",
-                border: "1px solid rgba(139,92,246,0.2)",
-              }}
-            >
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-16 text-center shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
+            <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 bg-[#151515] border border-[#1f1f1f]">
               <svg
-                className="w-10 h-10 text-violet-400/50"
+                className="w-10 h-10 text-[#8a8a8a]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -160,15 +297,13 @@ export default async function DealsByStagePage() {
               </svg>
             </div>
             <h3 className="text-2xl font-bold text-white mb-2">No deals yet</h3>
-            <p className="text-white/40 mb-8">
-              Create deals to see them organized by stage.
+            <p className="text-[#8a8a8a] mb-8 max-w-md mx-auto">
+              Create deals to see them organized by stage with comprehensive
+              analytics.
             </p>
             <Link
               href="/deals/new"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium text-white"
-              style={{
-                background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
-              }}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white transition-all bg-[#d51024] hover:bg-[#b80e1f]"
             >
               <svg
                 className="w-4 h-4"
@@ -183,66 +318,76 @@ export default async function DealsByStagePage() {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              Create First Deal
+              Create Your First Deal
             </Link>
           </div>
         ) : (
           <>
-            <div
-              className="rounded-2xl p-6 mb-6"
-              style={{
-                background:
-                  "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Pipeline Distribution
-              </h3>
-              <div className="h-4 rounded-full bg-white/5 overflow-hidden flex">
-                {sortedStages.map((stage) => {
-                  const count = stageGroups[stage].length;
-                  const percentage = (count / totalDeals) * 100;
-                  const config = stageConfig[stage.toLowerCase()] || {
-                    color: "text-white/60",
-                    bgColor: "bg-white/10",
-                  };
-                  return (
-                    <div
-                      key={stage}
-                      className={`h-full ${config.bgColor.replace(
-                        "/10",
-                        "/50"
-                      )}`}
-                      style={{ width: `${percentage}%` }}
-                      title={`${stage}: ${count} deals (${percentage.toFixed(
-                        1
-                      )}%)`}
-                    />
-                  );
-                })}
+            <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">
+                    Pipeline Distribution
+                  </h3>
+                  <p className="text-sm text-[#8a8a8a]">
+                    Deal count and value across stages
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-4 mt-4">
-                {sortedStages.map((stage) => {
-                  const config = stageConfig[stage.toLowerCase()] || {
-                    color: "text-white/60",
-                    bgColor: "bg-white/10",
-                  };
-                  return (
-                    <div key={stage} className="flex items-center gap-2">
+              <div className="space-y-4">
+                <div className="h-6 rounded-full bg-[#151515] overflow-hidden flex border border-[#1f1f1f]">
+                  {sortedStages.map((stage) => {
+                    const metric = stageMetrics.find((m) => m.stage === stage);
+                    const percentage = metric?.percentage || 0;
+                    const config = stageConfig[stage.toLowerCase()] || {
+                      bgColor: "bg-white/10",
+                    };
+                    return (
                       <div
-                        className={`w-3 h-3 rounded-full ${config.bgColor.replace(
+                        key={stage}
+                        className={`h-full ${config.bgColor.replace(
                           "/10",
                           "/50"
                         )}`}
+                        style={{ width: `${percentage}%` }}
+                        title={`${stage}: ${
+                          metric?.count || 0
+                        } deals (${percentage.toFixed(1)}%)`}
                       />
-                      <span className="text-sm text-white/60">{stage}</span>
-                      <span className="text-sm text-white/30">
-                        ({stageGroups[stage].length})
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+                <div className="grid grid-cols-5 gap-4">
+                  {sortedStages.map((stage) => {
+                    const metric = stageMetrics.find((m) => m.stage === stage);
+                    const config = stageConfig[stage.toLowerCase()] || {
+                      color: "text-white/60",
+                      bgColor: "bg-white/10",
+                    };
+                    return (
+                      <div
+                        key={stage}
+                        className="flex flex-col items-center p-3 rounded-xl bg-[#151515] border border-[#1f1f1f]"
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full mb-2 ${config.bgColor.replace(
+                            "/10",
+                            "/50"
+                          )}`}
+                        />
+                        <span className="text-xs text-white/60 mb-1">
+                          {stage}
+                        </span>
+                        <span className="text-sm font-semibold text-white">
+                          {metric?.count || 0}
+                        </span>
+                        <span className="text-xs text-white/40">
+                          {formatRevenue(metric?.value || 0)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -251,80 +396,163 @@ export default async function DealsByStagePage() {
               style={{
                 gridTemplateColumns: `repeat(${Math.min(
                   sortedStages.length,
-                  4
+                  5
                 )}, 1fr)`,
               }}
             >
               {sortedStages.map((stage) => {
                 const stageDeals = stageGroups[stage];
-                const stageValue = stageDeals.reduce(
-                  (sum, d) => sum + d.value,
-                  0
-                );
+                const metric = stageMetrics.find((m) => m.stage === stage);
                 const config = stageConfig[stage.toLowerCase()] || {
                   color: "text-white/60",
                   bgColor: "bg-white/10",
                   borderColor: "border-white/10",
+                  iconColor: "text-white/60",
                 };
+
+                const formatted = formatValueInMillions(metric?.value || 0);
 
                 return (
                   <div
                     key={stage}
-                    className={`rounded-2xl border ${config.borderColor}`}
-                    style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                    }}
+                    className={`rounded-2xl border ${config.borderColor} bg-[#111111] shadow-[0_10px_40px_rgba(0,0,0,0.35)] overflow-hidden`}
                   >
-                    <div className="p-4 border-b border-white/5">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3
-                          className={`text-base font-semibold ${config.color}`}
-                        >
-                          {stage}
-                        </h3>
+                    <div className="p-5 border-b border-[#1f1f1f] bg-gradient-to-br from-[#151515] to-[#111111]">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2 h-2 rounded-full ${config.bgColor.replace(
+                              "/10",
+                              "/50"
+                            )}`}
+                          />
+                          <h3
+                            className={`text-base font-semibold ${config.color} capitalize`}
+                          >
+                            {stage}
+                          </h3>
+                        </div>
                         <span
-                          className={`text-xs font-medium px-2 py-1 rounded-lg ${config.bgColor} ${config.color}`}
+                          className={`text-xs font-medium px-2.5 py-1 rounded-lg ${config.bgColor} ${config.color}`}
                         >
                           {stageDeals.length}
                         </span>
                       </div>
-                      <p className="text-sm text-white/40">
-                        ${stageValue.toLocaleString()}
-                      </p>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-[#7d7d7d] mb-1">
+                            Stage Value
+                          </p>
+                          <p className="text-2xl font-bold text-white">
+                            ${formatted.value}
+                            {formatted.suffix}
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#1f1f1f]">
+                          <div>
+                            <p className="text-[10px] text-[#7d7d7d] mb-0.5">
+                              Avg Deal
+                            </p>
+                            <p className="text-sm font-semibold text-white">
+                              {formatRevenue(metric?.avgValue || 0)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-[#7d7d7d] mb-0.5">
+                              Avg Days
+                            </p>
+                            <p className="text-sm font-semibold text-white">
+                              {metric?.avgDaysSinceActivity?.toFixed(0) || "0"}d
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="p-3 space-y-2 max-h-[400px] overflow-y-auto">
-                      {stageDeals.map((deal) => {
-                        const riskLevel = formatRiskLevel(deal.riskScore);
-                        return (
-                          <Link
-                            key={deal.id}
-                            href={`/deals/${deal.id}`}
-                            className="block p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] transition-colors"
-                          >
-                            <p className="text-sm font-medium text-white truncate mb-1">
-                              {deal.name}
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-white/40">
-                                ${deal.value.toLocaleString()}
-                              </span>
-                              <span
-                                className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                                  riskLevel === "High"
-                                    ? "bg-red-500/20 text-red-400"
-                                    : riskLevel === "Medium"
-                                    ? "bg-amber-500/20 text-amber-400"
-                                    : "bg-emerald-500/20 text-emerald-400"
-                                }`}
-                              >
-                                {riskLevel}
-                              </span>
-                            </div>
-                          </Link>
-                        );
-                      })}
+                    <div className="px-5 py-3 bg-[#151515] border-b border-[#1f1f1f]">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-red-500/50" />
+                            <span className="text-[#7d7d7d]">
+                              {metric?.highRiskCount || 0}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-amber-500/50" />
+                            <span className="text-[#7d7d7d]">
+                              {metric?.mediumRiskCount || 0}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500/50" />
+                            <span className="text-[#7d7d7d]">
+                              {metric?.lowRiskCount || 0}
+                            </span>
+                          </div>
+                        </div>
+                        {conversionRates[stage] !== undefined && (
+                          <span className="text-[#7d7d7d]">
+                            →{conversionRates[stage].toFixed(0)}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-4 space-y-2 max-h-[500px] overflow-y-auto">
+                      {stageDeals.length === 0 ? (
+                        <div className="text-center py-8">
+                          <p className="text-sm text-[#7d7d7d]">No deals</p>
+                        </div>
+                      ) : (
+                        stageDeals.map((deal) => {
+                          const riskLevel = formatRiskLevel(deal.riskScore);
+                          return (
+                            <Link
+                              key={deal.id}
+                              href={`/deals/${deal.id}`}
+                              className="block p-3 rounded-xl bg-[#151515] border border-[#1f1f1f] hover:bg-[#1a1a1a] hover:border-[#2a2a2a] transition-all group"
+                            >
+                              <div className="flex items-start justify-between mb-2">
+                                <p className="text-sm font-medium text-white truncate flex-1 group-hover:text-[#0ea5e9] transition-colors">
+                                  {deal.name}
+                                </p>
+                                <span
+                                  className={`text-[10px] font-medium px-2 py-0.5 rounded ${
+                                    riskLevel === "High"
+                                      ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                      : riskLevel === "Medium"
+                                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                      : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                  }`}
+                                >
+                                  {riskLevel}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-white">
+                                  {formatRevenue(deal.value)}
+                                </span>
+                                <span className="text-[10px] text-[#7d7d7d]">
+                                  {formatDistanceToNow(
+                                    new Date(deal.lastActivityAt),
+                                    {
+                                      addSuffix: true,
+                                    }
+                                  )}
+                                </span>
+                              </div>
+                              {deal.recommendedAction && (
+                                <div className="mt-2 pt-2 border-t border-[#1f1f1f]">
+                                  <p className="text-[10px] text-[#7d7d7d] truncate">
+                                    {deal.recommendedAction.label}
+                                  </p>
+                                </div>
+                              )}
+                            </Link>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 );
