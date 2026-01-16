@@ -769,3 +769,153 @@ input::placeholder {
 .table-row {
   border-bottom: 1px solid #1a1a1a;
 }
+
+[data-sonner-toaster] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: auto !important;
+  max-width: 90vw !important;
+  pointer-events: none !important;
+  z-index: 9999 !important;
+}
+
+[data-sonner-toaster] > * {
+  pointer-events: auto !important;
+}
+
+[data-sonner-toast] {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  animation: toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: white !important;
+  color: #111827 !important;
+}
+
+[data-sonner-toast] * {
+  color: inherit !important;
+}
+
+[data-sonner-toast] h2,
+[data-sonner-toast] p {
+  color: #111827 !important;
+}
+
+[data-sonner-toast] .text-gray-900 {
+  color: #111827 !important;
+}
+
+[data-sonner-toast] .text-gray-600 {
+  color: #4b5563 !important;
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+[data-sonner-toast] > div {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+[data-sonner-toast] > div > div:last-of-type,
+[data-sonner-toast] > div > div:has(button),
+[data-sonner-toast] > div > div[style*="display"]:has(button) {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  margin-top: 24px !important;
+  padding: 0 !important;
+  gap: 12px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: static !important;
+}
+
+[data-sonner-toast] button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  border-radius: 9999px !important;
+  padding: 10px 24px !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 120px !important;
+  flex: 0 0 auto !important;
+}
+
+[data-sonner-toast]
+  button:first-child:not([style*="rgb(239, 68, 68)"]):not(
+    [style*="rgb(220, 38, 38)"]
+  ):not([style*="background: rgb(239, 68, 68)"]),
+[data-sonner-toast] button.cancel {
+  background: white !important;
+  color: #ef4444 !important;
+  border: 1px solid #ef4444 !important;
+}
+
+[data-sonner-toast]
+  button:first-child:not([style*="rgb(239, 68, 68)"]):not(
+    [style*="rgb(220, 38, 38)"]
+  ):not([style*="background: rgb(239, 68, 68)"]):hover,
+[data-sonner-toast] button.cancel:hover {
+  background: #fef2f2 !important;
+  border-color: #dc2626 !important;
+  color: #dc2626 !important;
+}
+
+[data-sonner-toast] button[style*="rgb(239, 68, 68)"],
+[data-sonner-toast] button[style*="rgb(220, 38, 38)"],
+[data-sonner-toast] button[style*="background: rgb(239, 68, 68)"],
+[data-sonner-toast] button:last-child:not(:only-child),
+[data-sonner-toast] button.action {
+  background: #ef4444 !important;
+  color: white !important;
+  border: 1px solid #ef4444 !important;
+}
+
+[data-sonner-toast] button[style*="rgb(239, 68, 68)"]:hover,
+[data-sonner-toast] button[style*="rgb(220, 38, 38)"]:hover,
+[data-sonner-toast] button[style*="background: rgb(239, 68, 68)"]:hover,
+[data-sonner-toast] button:last-child:not(:only-child):hover,
+[data-sonner-toast] button.action:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+}
+
+[data-sonner-toast] button:active {
+  transform: scale(0.98) !important;
+}
+
+[data-sonner-toast] button + button {
+  border-left: none !important;
+}
+
+[data-sonner-toast] * {
+  box-sizing: border-box !important;
+}
+
+[data-sonner-toast] > div > div:has(> button),
+[data-sonner-toast] > div > div:has(button:first-child) {
+  flex-direction: row !important;
+  display: flex !important;
+}
+
+[data-sonner-toast] button {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
