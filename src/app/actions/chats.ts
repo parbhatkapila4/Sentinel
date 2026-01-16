@@ -167,3 +167,22 @@ export async function createChatFolder(name: string, color?: string) {
 
   return folder;
 }
+
+export async function deleteChat(chatId: string) {
+  const userId = await getAuthenticatedUserId();
+
+  const chat = await prisma.chat.findFirst({
+    where: {
+      id: chatId,
+      userId,
+    },
+  });
+
+  if (!chat) {
+    throw new Error("Chat not found");
+  }
+
+  await prisma.chat.delete({
+    where: { id: chatId },
+  });
+}
