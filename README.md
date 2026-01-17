@@ -1,6 +1,6 @@
 <div align="center">
 
-# Revenue Sentinel
+# Sentinel
 
 **Enterprise Revenue Operations Intelligence Platform**
 
@@ -17,7 +17,7 @@
 
 ## Executive Summary
 
-Revenue Sentinel is an enterprise-grade revenue operations platform engineered to solve a critical blind spot in modern sales management: **silent deal decay**. Traditional CRM systems track status changes but fail to detect the absence of activity, resulting in preventable revenue loss.
+Sentinel is an enterprise-grade revenue operations platform engineered to solve a critical blind spot in modern sales management: **silent deal decay**. Traditional CRM systems track status changes but fail to detect the absence of activity, resulting in preventable revenue loss.
 
 This platform provides continuous deal lifecycle monitoring, automated risk assessment, and intelligent intervention recommendations—enabling revenue teams to act before deals stall.
 
@@ -29,7 +29,7 @@ This platform provides continuous deal lifecycle monitoring, automated risk asse
 
 ### System Design Philosophy
 
-Revenue Sentinel is architected on a **server-first paradigm** leveraging Next.js 16 App Router with React Server Components. The system implements a three-tier architecture with strict separation of concerns:
+Sentinel is architected on a **server-first paradigm** leveraging Next.js 16 App Router with React Server Components. The system implements a three-tier architecture with strict separation of concerns:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -486,7 +486,7 @@ npm run db:migrate
 
 ## License
 
-**MIT License** - Copyright (c) 2026 Revenue Sentinel
+**MIT License** - Copyright (c) 2026 Sentinel
 
 See [LICENSE](LICENSE) file for full license text.
 
@@ -494,7 +494,7 @@ See [LICENSE](LICENSE) file for full license text.
 
 <div align="center">
 
-**Revenue Sentinel** Enterprise Revenue Operations Intelligence Platform
+**Sentinel** Enterprise Revenue Operations Intelligence Platform
 
 *Engineered for precision. Built for scale.*
 
