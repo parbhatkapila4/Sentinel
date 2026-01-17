@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Revenue Sentinel",
-  description: "Revenue Sentinel - Deal Management Platform",
+  title: "Sentinel",
+  description: "Sentinel - Deal Management Platform",
 };
 
 export default function RootLayout({
