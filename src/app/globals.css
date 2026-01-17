@@ -61,6 +61,7 @@
   0% {
     background-position: 0 0;
   }
+
   100% {
     background-position: 0 120px;
   }
@@ -187,6 +188,7 @@ a,
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
@@ -200,6 +202,7 @@ a,
 }
 
 @keyframes glow {
+
   0%,
   100% {
     filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.6));
@@ -211,6 +214,7 @@ a,
 }
 
 @keyframes trackGlow {
+
   0%,
   100% {
     opacity: 0.8;
@@ -232,6 +236,7 @@ a,
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0);
@@ -253,6 +258,7 @@ a,
 }
 
 @keyframes sparkle {
+
   0%,
   100% {
     opacity: 0;
@@ -266,6 +272,7 @@ a,
 }
 
 @keyframes trackPulse {
+
   0%,
   100% {
     stroke-width: 16;
@@ -279,6 +286,7 @@ a,
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(0);
@@ -612,19 +620,23 @@ a,
 }
 
 @keyframes aurora-float-1 {
+
   0%,
   100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.6;
   }
+
   25% {
     transform: translate(50px, -30px) scale(1.1);
     opacity: 0.7;
   }
+
   50% {
     transform: translate(20px, 40px) scale(0.95);
     opacity: 0.5;
   }
+
   75% {
     transform: translate(-30px, 20px) scale(1.05);
     opacity: 0.65;
@@ -632,15 +644,18 @@ a,
 }
 
 @keyframes aurora-float-2 {
+
   0%,
   100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.5;
   }
+
   33% {
     transform: translate(-40px, 50px) scale(1.15);
     opacity: 0.6;
   }
+
   66% {
     transform: translate(60px, -20px) scale(0.9);
     opacity: 0.45;
@@ -648,23 +663,28 @@ a,
 }
 
 @keyframes aurora-float-3 {
+
   0%,
   100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.4;
   }
+
   20% {
     transform: translate(30px, 60px) scale(1.1);
     opacity: 0.5;
   }
+
   40% {
     transform: translate(-50px, 30px) scale(0.95);
     opacity: 0.35;
   }
+
   60% {
     transform: translate(-20px, -40px) scale(1.05);
     opacity: 0.45;
   }
+
   80% {
     transform: translate(40px, -10px) scale(1);
     opacity: 0.4;
@@ -672,11 +692,13 @@ a,
 }
 
 @keyframes aurora-float-4 {
+
   0%,
   100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.5;
   }
+
   50% {
     transform: translate(-60px, -40px) scale(1.2);
     opacity: 0.6;
@@ -684,27 +706,33 @@ a,
 }
 
 @keyframes aurora-wave {
+
   0%,
   100% {
     d: path("M0,500 Q250,300 500,500 T1000,500 L1000,1000 L0,1000 Z");
   }
+
   25% {
     d: path("M0,480 Q200,350 500,480 T1000,520 L1000,1000 L0,1000 Z");
   }
+
   50% {
     d: path("M0,520 Q300,280 500,520 T1000,480 L1000,1000 L0,1000 Z");
   }
+
   75% {
     d: path("M0,490 Q250,320 500,510 T1000,490 L1000,1000 L0,1000 Z");
   }
 }
 
 @keyframes aurora-pulse {
+
   0%,
   100% {
     opacity: 0.3;
     transform: translateY(0);
   }
+
   50% {
     opacity: 0.4;
     transform: translateY(-20px);
@@ -781,7 +809,7 @@ input::placeholder {
   z-index: 9999 !important;
 }
 
-[data-sonner-toaster] > * {
+[data-sonner-toaster]>* {
   pointer-events: auto !important;
 }
 
@@ -817,21 +845,22 @@ input::placeholder {
     opacity: 0;
     transform: translate(-50%, -45%) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
 }
 
-[data-sonner-toast] > div {
+[data-sonner-toast]>div {
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
 }
 
-[data-sonner-toast] > div > div:last-of-type,
-[data-sonner-toast] > div > div:has(button),
-[data-sonner-toast] > div > div[style*="display"]:has(button) {
+[data-sonner-toast]>div>div:last-of-type,
+[data-sonner-toast]>div>div:has(button),
+[data-sonner-toast]>div>div[style*="display"]:has(button) {
   display: flex !important;
   flex-direction: row !important;
   width: 100% !important;
@@ -858,20 +887,14 @@ input::placeholder {
   flex: 0 0 auto !important;
 }
 
-[data-sonner-toast]
-  button:first-child:not([style*="rgb(239, 68, 68)"]):not(
-    [style*="rgb(220, 38, 38)"]
-  ):not([style*="background: rgb(239, 68, 68)"]),
+[data-sonner-toast] button:first-child:not([style*="rgb(239, 68, 68)"]):not([style*="rgb(220, 38, 38)"]):not([style*="background: rgb(239, 68, 68)"]),
 [data-sonner-toast] button.cancel {
   background: white !important;
   color: #ef4444 !important;
   border: 1px solid #ef4444 !important;
 }
 
-[data-sonner-toast]
-  button:first-child:not([style*="rgb(239, 68, 68)"]):not(
-    [style*="rgb(220, 38, 38)"]
-  ):not([style*="background: rgb(239, 68, 68)"]):hover,
+[data-sonner-toast] button:first-child:not([style*="rgb(239, 68, 68)"]):not([style*="rgb(220, 38, 38)"]):not([style*="background: rgb(239, 68, 68)"]):hover,
 [data-sonner-toast] button.cancel:hover {
   background: #fef2f2 !important;
   border-color: #dc2626 !important;
@@ -901,7 +924,7 @@ input::placeholder {
   transform: scale(0.98) !important;
 }
 
-[data-sonner-toast] button + button {
+[data-sonner-toast] button+button {
   border-left: none !important;
 }
 
@@ -909,8 +932,8 @@ input::placeholder {
   box-sizing: border-box !important;
 }
 
-[data-sonner-toast] > div > div:has(> button),
-[data-sonner-toast] > div > div:has(button:first-child) {
+[data-sonner-toast]>div>div:has(> button),
+[data-sonner-toast]>div>div:has(button:first-child) {
   flex-direction: row !important;
   display: flex !important;
 }
@@ -918,4 +941,154 @@ input::placeholder {
 [data-sonner-toast] button {
   flex-shrink: 0 !important;
   white-space: nowrap !important;
+}
+
+
+.clerk-sign-up-wrapper,
+.clerk-sign-in-wrapper {
+  width: 100%;
+}
+
+.clerk-sign-up-wrapper [data-clerk-element],
+.clerk-sign-in-wrapper [data-clerk-element] {
+  width: 100%;
+}
+
+
+.clerk-sign-up-wrapper input,
+.clerk-sign-in-wrapper input {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.clerk-sign-up-wrapper input::placeholder,
+.clerk-sign-in-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.clerk-sign-up-wrapper button[type="submit"],
+.clerk-sign-in-wrapper button[type="submit"] {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.clerk-sign-up-wrapper button[type="submit"]:hover,
+.clerk-sign-in-wrapper button[type="submit"]:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+}
+
+
+.clerk-sign-up-wrapper button[data-social-provider],
+.clerk-sign-in-wrapper button[data-social-provider],
+.clerk-sign-up-wrapper [data-social-provider] span,
+.clerk-sign-in-wrapper [data-social-provider] span,
+.clerk-sign-up-wrapper button[aria-label*="Google"],
+.clerk-sign-in-wrapper button[aria-label*="Google"],
+.clerk-sign-up-wrapper button[aria-label*="Apple"],
+.clerk-sign-in-wrapper button[aria-label*="Apple"] {
+  color: #ffffff !important;
+}
+
+.clerk-sign-up-wrapper button[data-social-provider] span,
+.clerk-sign-in-wrapper button[data-social-provider] span {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.clerk-sign-in-wrapper button[data-social-provider] *,
+.clerk-sign-up-wrapper button[data-social-provider] *,
+.clerk-sign-in-wrapper [data-social-provider] *,
+.clerk-sign-up-wrapper [data-social-provider] * {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper [class*="socialButton"] span,
+.clerk-sign-up-wrapper [class*="socialButton"] span,
+.clerk-sign-in-wrapper [class*="socialButton"] p,
+.clerk-sign-up-wrapper [class*="socialButton"] p,
+.clerk-sign-in-wrapper [class*="socialButton"] div,
+.clerk-sign-up-wrapper [class*="socialButton"] div {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper button:has([data-social-provider]) *,
+.clerk-sign-up-wrapper button:has([data-social-provider]) *,
+.clerk-sign-in-wrapper [role="button"]:has([data-social-provider]) *,
+.clerk-sign-up-wrapper [role="button"]:has([data-social-provider]) * {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper [class*="clerk"] button span,
+.clerk-sign-in-wrapper [class*="clerk"] button p,
+.clerk-sign-in-wrapper [class*="clerk"] button div,
+.clerk-sign-in-wrapper button[class*="social"] span,
+.clerk-sign-in-wrapper button[class*="social"] p,
+.clerk-sign-in-wrapper button[class*="social"] div {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper button[type="button"] span,
+.clerk-sign-in-wrapper button[type="button"] p,
+.clerk-sign-in-wrapper button[type="button"] div:not([class*="icon"]) {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper [data-social-provider] *,
+.clerk-sign-in-wrapper button:has(svg)+*,
+.clerk-sign-in-wrapper button:has(svg)~* {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper>div>div button span,
+.clerk-sign-in-wrapper>div>div button p,
+.clerk-sign-in-wrapper>div>div button div {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper button[class*="socialButton"] *,
+.clerk-sign-in-wrapper [class*="socialButton"] * {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper button * {
+  color: #ffffff !important;
+}
+
+.clerk-sign-in-wrapper button[data-social-provider="oauth_apple"] [class*="icon"],
+.clerk-sign-in-wrapper button[data-social-provider="oauth_apple"] [class*="Icon"],
+.clerk-sign-in-wrapper button[data-social-provider="oauth_apple"] [class*="logo"],
+.clerk-sign-in-wrapper button[data-social-provider="oauth_apple"] [class*="Logo"],
+.clerk-sign-up-wrapper button[data-social-provider="oauth_apple"] [class*="icon"],
+.clerk-sign-up-wrapper button[data-social-provider="oauth_apple"] [class*="Icon"],
+.clerk-sign-up-wrapper button[data-social-provider="oauth_apple"] [class*="logo"],
+.clerk-sign-up-wrapper button[data-social-provider="oauth_apple"] [class*="Logo"] {
+  filter: brightness(0) invert(1) !important;
+}
+
+.clerk-sign-in-wrapper button[data-social-provider="oauth_apple"] svg,
+.clerk-sign-up-wrapper button[data-social-provider="oauth_apple"] svg,
+.clerk-sign-in-wrapper button[aria-label*="Apple"] svg,
+.clerk-sign-up-wrapper button[aria-label*="Apple"] svg,
+.clerk-sign-in-wrapper button svg[class*="apple"],
+.clerk-sign-up-wrapper button svg[class*="apple"] {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+.clerk-sign-in-wrapper button[data-social-provider="oauth_apple"] svg path,
+.clerk-sign-up-wrapper button[data-social-provider="oauth_apple"] svg path {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+.clerk-sign-in-wrapper [data-social-provider="oauth_apple"] svg *,
+.clerk-sign-up-wrapper [data-social-provider="oauth_apple"] svg * {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+  filter: brightness(0) invert(1) !important;
 }

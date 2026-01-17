@@ -18,7 +18,7 @@
 
 </div>
 
-## 🎯 The Problem
+## The Problem
 
 **Revenue teams lose $2.3 trillion annually to preventable deal losses.**
 
@@ -571,7 +571,7 @@ See [LICENSE](LICENSE) file for full license text.
 
 <div align="center">
 
-**Sentinel** - AI-Powered Revenue Intelligence Platform
+**Sentinel** - AI Powered Revenue Intelligence Platform
 
 *Engineered for precision. Built for scale. Designed to prevent revenue loss.*
 
@@ -579,8 +579,5 @@ See [LICENSE](LICENSE) file for full license text.
 
 [Website](https://www.sentinel.parbhat.dev) • [Documentation](#) • [Contact](mailto:parbhat@parbhat.dev)
 
----
-
-⭐ **Star this repo if you find it useful!**
 
 </div>
