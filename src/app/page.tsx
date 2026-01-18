@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { SignInButtonWrapper } from "@/components/sign-in-button";
 import { PricingCards } from "@/components/pricing-cards";
 import {
   PricingToggle,
@@ -80,12 +79,12 @@ export default async function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 max-w-2xl pt-4">
-                {user ? (
+                {!user && (
                   <Link
-                    href="/dashboard"
+                    href="/sign-up"
                     className="px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                   >
-                    Open Dashboard
+                    Sign Up
                     <svg
                       className="w-5 h-5"
                       fill="none"
@@ -100,23 +99,6 @@ export default async function Home() {
                       />
                     </svg>
                   </Link>
-                ) : (
-                  <div className="px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
-                    <SignInButtonWrapper />
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </div>
                 )}
               </div>
             </div>
@@ -703,9 +685,8 @@ export default async function Home() {
                         dur={`${10 + i * 0.8}s`}
                         repeatCount="indefinite"
                         begin={`${i * 1.2}s`}
-                        path={`M ${110 + i * 65},${510 + (i % 2) * 6} L 560,${
-                          510 + (i % 2) * 6
-                        }`}
+                        path={`M ${110 + i * 65},${510 + (i % 2) * 6} L 560,${510 + (i % 2) * 6
+                          }`}
                       />
                       <rect
                         width="48"
@@ -1783,7 +1764,7 @@ export default async function Home() {
               </h2>
               <p className="text-white/60 text-sm max-w-xl mx-auto mb-10 leading-relaxed">
                 Whether you&apos;re a solo sales rep or a large revenue
-                organization, Revenue Sentinel offers flexible pricing plans to
+                organization, Sentinel offers flexible pricing plans to
                 help you never lose a deal to silent decay.
               </p>
 
@@ -1834,10 +1815,83 @@ export default async function Home() {
                 By subscribing, you agree to our Privacy Policy and consent to
                 receive updates from us.
               </p>
+            </div>
 
-              <div className="flex items-center gap-4">
+            <div>
+              <div className="grid grid-cols-3 gap-8 mb-8">
+                <div>
+                  <h4 className="text-white font-semibold mb-4">Product</h4>
+                  <ul className="space-y-2">
+                    <li>
+                      <a
+                        href="/features"
+                        className="text-white/60 hover:text-white transition-colors"
+                      >
+                        Features
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/pricing"
+                        className="text-white/60 hover:text-white transition-colors"
+                      >
+                        Pricing
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-semibold mb-4">Resources</h4>
+                  <ul className="space-y-2">
+                    <li>
+                      <Link
+                        href="/docs"
+                        className="text-white/60 hover:text-white transition-colors"
+                      >
+                        Documentation
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/contact"
+                        className="text-white/60 hover:text-white transition-colors"
+                      >
+                        Contact
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-semibold mb-4">Company</h4>
+                  <ul className="space-y-2">
+                    <li>
+                      <Link
+                        href="/about"
+                        className="text-white/60 hover:text-white transition-colors"
+                      >
+                        About Us
+                      </Link>
+                    </li>
+                    <li>
+                      <a
+                        href="/privacy"
+                        className="text-white/60 hover:text-white transition-colors"
+                      >
+                        Privacy Policy
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+
+              <div className="flex items-center gap-4" style={{ marginLeft: 'calc(33.333% - 2.5rem)' }}>
                 <a
-                  href="#"
+                  href="https://x.com/Parbhat03"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
                   style={{ border: "1px solid rgba(255,255,255,0.2)" }}
                   aria-label="Twitter"
@@ -1856,7 +1910,9 @@ export default async function Home() {
                   </svg>
                 </a>
                 <a
-                  href="#"
+                  href="https://github.com/parbhatkapila4/Sentinel"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
                   style={{ border: "1px solid rgba(255,255,255,0.2)" }}
                   aria-label="GitHub"
@@ -1875,7 +1931,9 @@ export default async function Home() {
                   </svg>
                 </a>
                 <a
-                  href="#"
+                  href="https://www.linkedin.com/in/parbhat-kapila/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
                   style={{ border: "1px solid rgba(255,255,255,0.2)" }}
                   aria-label="LinkedIn"
@@ -1896,7 +1954,9 @@ export default async function Home() {
                   </svg>
                 </a>
                 <a
-                  href="#"
+                  href="https://www.reddit.com/user/Confident-Mistake204/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
                   style={{ border: "1px solid rgba(255,255,255,0.2)" }}
                   aria-label="Reddit"
@@ -1910,98 +1970,6 @@ export default async function Home() {
                     <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
                   </svg>
                 </a>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-8">
-              <div>
-                <h4 className="text-white font-semibold mb-4">Product</h4>
-                <ul className="space-y-2">
-                  <li>
-                    <a
-                      href="#features"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      Features
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#pricing"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      Pricing
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      API Documentation
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="text-white font-semibold mb-4">Resources</h4>
-                <ul className="space-y-2">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      Documentation
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      Customer Stories
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      Support
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="text-white font-semibold mb-4">Company</h4>
-                <ul className="space-y-2">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      About Us
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      Contact
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      Privacy Policy
-                    </a>
-                  </li>
-                </ul>
               </div>
             </div>
           </div>
