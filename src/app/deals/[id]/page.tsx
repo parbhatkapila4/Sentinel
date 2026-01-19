@@ -64,7 +64,7 @@ export default async function DealDetailPage({
                 <span className="text-white text-sm font-bold">RS</span>
               </div>
               <span className="text-white font-semibold text-lg tracking-tight hidden sm:block">
-                Revenue Sentinel
+                Sentinel
               </span>
             </Link>
           </div>
@@ -104,13 +104,12 @@ export default async function DealDetailPage({
               {deal.name}
             </h1>
             <span
-              className={`inline-flex px-3 py-1.5 rounded-xl text-sm font-medium ${
-                riskLevel === "High"
-                  ? "bg-red-500/15 text-red-400 border border-red-500/20"
-                  : riskLevel === "Medium"
+              className={`inline-flex px-3 py-1.5 rounded-xl text-sm font-medium ${riskLevel === "High"
+                ? "bg-red-500/15 text-red-400 border border-red-500/20"
+                : riskLevel === "Medium"
                   ? "bg-amber-500/15 text-amber-400 border border-amber-500/20"
                   : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-              }`}
+                }`}
             >
               {riskLevel} Risk
             </span>
@@ -174,13 +173,12 @@ export default async function DealDetailPage({
                     {(deal.riskScore * 100).toFixed(0)}%
                   </span>
                   <span
-                    className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                      riskLevel === "High"
-                        ? "bg-red-500/15 text-red-400"
-                        : riskLevel === "Medium"
+                    className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold ${riskLevel === "High"
+                      ? "bg-red-500/15 text-red-400"
+                      : riskLevel === "Medium"
                         ? "bg-amber-500/15 text-amber-400"
                         : "bg-emerald-500/15 text-emerald-400"
-                    }`}
+                      }`}
                   >
                     {riskLevel}
                   </span>
@@ -188,13 +186,12 @@ export default async function DealDetailPage({
 
                 <div className="mt-3 h-2 rounded-full bg-white/5 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${
-                      riskLevel === "High"
-                        ? "bg-gradient-to-r from-red-500 to-red-400"
-                        : riskLevel === "Medium"
+                    className={`h-full rounded-full ${riskLevel === "High"
+                      ? "bg-gradient-to-r from-red-500 to-red-400"
+                      : riskLevel === "Medium"
                         ? "bg-gradient-to-r from-amber-500 to-amber-400"
                         : "bg-gradient-to-r from-emerald-500 to-emerald-400"
-                    }`}
+                      }`}
                     style={{ width: `${deal.riskScore * 100}%` }}
                   />
                 </div>
@@ -221,13 +218,12 @@ export default async function DealDetailPage({
                       {deal.recommendedAction.label}
                     </p>
                     <span
-                      className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${
-                        deal.recommendedAction.urgency === "high"
-                          ? "bg-red-500/15 text-red-400"
-                          : deal.recommendedAction.urgency === "medium"
+                      className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${deal.recommendedAction.urgency === "high"
+                        ? "bg-red-500/15 text-red-400"
+                        : deal.recommendedAction.urgency === "medium"
                           ? "bg-amber-500/15 text-amber-400"
                           : "bg-white/5 text-white/50"
-                      }`}
+                        }`}
                     >
                       {deal.recommendedAction.urgency}
                     </span>
@@ -272,10 +268,10 @@ export default async function DealDetailPage({
                     {deal.nextAction === "send_follow_up_email"
                       ? "Send Follow-up Email"
                       : deal.nextAction === "schedule_meeting"
-                      ? "Schedule Meeting"
-                      : deal.nextAction === "escalate"
-                      ? "Escalate"
-                      : "Wait"}
+                        ? "Schedule Meeting"
+                        : deal.nextAction === "escalate"
+                          ? "Escalate"
+                          : "Wait"}
                   </p>
                   <p className="text-sm text-white/60">
                     {deal.nextActionReason}
@@ -463,10 +459,10 @@ export default async function DealDetailPage({
                     </p>
                     {Object.keys(event.payload as Record<string, unknown>)
                       .length > 0 && (
-                      <pre className="mt-2 text-xs text-white/30 bg-white/5 rounded-lg p-2 overflow-auto">
-                        {JSON.stringify(event.payload, null, 2)}
-                      </pre>
-                    )}
+                        <pre className="mt-2 text-xs text-white/30 bg-white/5 rounded-lg p-2 overflow-auto">
+                          {JSON.stringify(event.payload, null, 2)}
+                        </pre>
+                      )}
                   </div>
                 </div>
               ))}
@@ -507,41 +503,36 @@ export default async function DealDetailPage({
                 {deal.timeline.map((entry, index) => (
                   <div key={entry.id} className="flex gap-4 relative">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 z-10 ${
-                        index === 0 ? "bg-blue-500/20" : "bg-white/5"
-                      }`}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 z-10 ${index === 0 ? "bg-blue-500/20" : "bg-white/5"
+                        }`}
                     >
                       <div
-                        className={`w-3 h-3 rounded-full ${
-                          index === 0 ? "bg-blue-400" : "bg-white/30"
-                        }`}
+                        className={`w-3 h-3 rounded-full ${index === 0 ? "bg-blue-400" : "bg-white/30"
+                          }`}
                       />
                     </div>
 
                     <div className="flex-1 pb-4">
                       <p className="text-sm font-medium text-white">
                         {entry.eventType === "risk_evaluated"
-                          ? `Risk evaluated: ${
-                              ((entry.metadata as Record<string, unknown>)
-                                ?.score as number) * 100
-                            }%`
+                          ? `Risk evaluated: ${((entry.metadata as Record<string, unknown>)
+                            ?.score as number) * 100
+                          }%`
                           : entry.eventType === "event_created"
-                          ? `Event recorded: ${
-                              ((entry.metadata as Record<string, unknown>)
-                                ?.eventType as string) || ""
+                            ? `Event recorded: ${((entry.metadata as Record<string, unknown>)
+                              ?.eventType as string) || ""
                             }`
-                          : entry.eventType === "stage_changed"
-                          ? `Stage changed to ${
-                              ((entry.metadata as Record<string, unknown>)
+                            : entry.eventType === "stage_changed"
+                              ? `Stage changed to ${((entry.metadata as Record<string, unknown>)
                                 ?.stage as string) || ""
-                            }`
-                          : entry.eventType}
+                              }`
+                              : entry.eventType}
                       </p>
                       <p className="text-xs text-white/40 mt-1">
                         {entry.createdAt
                           ? formatDistanceToNow(new Date(entry.createdAt), {
-                              addSuffix: true,
-                            })
+                            addSuffix: true,
+                          })
                           : "—"}
                       </p>
                     </div>
