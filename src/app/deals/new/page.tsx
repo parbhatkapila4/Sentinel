@@ -172,7 +172,7 @@ export default function NewDealPage() {
               <span className="text-white text-sm font-bold">RS</span>
             </div>
             <span className="text-white font-semibold text-lg tracking-tight hidden sm:block">
-              Revenue Sentinel
+              Sentinel
             </span>
           </Link>
           <Link
