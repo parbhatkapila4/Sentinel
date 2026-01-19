@@ -15,34 +15,49 @@ type FilterType = "all" | "active" | "at-risk" | "closed";
 
 function filterDeals(
   deals: Awaited<ReturnType<typeof getAllDeals>>,
-  filter: FilterType
+  filter: FilterType,
+  searchQuery?: string
 ) {
+  let filtered = deals;
+
+  if (searchQuery && searchQuery.trim().length > 0) {
+    const query = searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (deal) =>
+        deal.name.toLowerCase().includes(query) ||
+        deal.stage.toLowerCase().includes(query)
+    );
+  }
+
   switch (filter) {
     case "all":
-      return deals;
+      return filtered;
     case "active":
-      return deals.filter((deal) => deal.status === "active");
+      return filtered.filter((deal) => deal.status === "active");
     case "at-risk":
-      return deals.filter((deal) => formatRiskLevel(deal.riskScore) === "High");
+      return filtered.filter(
+        (deal) => formatRiskLevel(deal.riskScore) === "High"
+      );
     case "closed":
-      return deals.filter(
+      return filtered.filter(
         (deal) => deal.status === "saved" || deal.status === "lost"
       );
     default:
-      return deals;
+      return filtered;
   }
 }
 
 export default async function DealsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; search?: string }>;
 }) {
   noStore();
   const deals = await getAllDeals();
   const params = await searchParams;
   const filter = (params?.filter || "all") as FilterType;
-  const filteredDeals = filterDeals(deals, filter);
+  const searchQuery = params?.search;
+  const filteredDeals = filterDeals(deals, filter, searchQuery);
 
   const urgencyOrder = { high: 0, medium: 1, low: 2, none: 3 };
   const sortedDeals = [...filteredDeals].sort((a, b) => {
