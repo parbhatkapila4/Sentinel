@@ -148,7 +148,7 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="text"
-                        defaultValue="Revenue Sentinel"
+                        defaultValue="Sentinel"
                         className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-violet-500/50 transition-colors"
                       />
                     </div>
