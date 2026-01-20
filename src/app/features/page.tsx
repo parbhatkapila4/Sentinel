@@ -10,7 +10,7 @@ export default async function FeaturesPage() {
         <div className="max-w-6xl mx-auto px-6 lg:px-8 py-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors -ml-76"
           >
             <svg
               className="w-4 h-4"
@@ -30,7 +30,7 @@ export default async function FeaturesPage() {
         </div>
       </div>
 
-      <section className="py-16 px-6 lg:px-8 border-b border-white/10">
+      <section className="py-16 px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Features
@@ -43,7 +43,7 @@ export default async function FeaturesPage() {
         </div>
       </section>
 
-      <section className="py-16 px-6 lg:px-8">
+      <section className="px-6 lg:px-8 pt-8 pb-16">
         <div className="max-w-4xl mx-auto space-y-20">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
@@ -185,7 +185,7 @@ export default async function FeaturesPage() {
               Action Recommendations
             </h2>
             <p className="text-white/70 mb-6 leading-relaxed">
-              Don&apos;t just know which deals are at risk—know exactly what to
+              Don&apos;t just know which deals are at risk, know exactly what to
               do about it. Get personalized, actionable recommendations for
               every at-risk deal.
             </p>
@@ -283,36 +283,54 @@ export default async function FeaturesPage() {
 
       <section className="py-16 px-6 lg:px-8 border-t border-white/10">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to get started?
-          </h2>
-          <p className="text-white/60 mb-8">
-            Join revenue teams using Revenue Sentinel to proactively manage
-            deals and prevent silent decay.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Go to Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Get Started
-              </Link>
-            )}
-            <Link
-              href="/#pricing"
-              className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
-            >
-              View Pricing
-            </Link>
-          </div>
+          {user ? (
+            <>
+              <h2 className="text-3xl font-bold text-white mb-4">
+                Ready to get started?
+              </h2>
+              <p className="text-white/60 mb-8">
+                Join revenue teams using Sentinel to proactively manage
+                deals and prevent silent decay.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/dashboard"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Go to Dashboard
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
+                >
+                  View Pricing
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-3xl font-bold text-white mb-4">
+                Login Required
+              </h2>
+              <p className="text-white/60 mb-8">
+                Please log in first to access the dashboard and start managing your deals.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/sign-in"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
     </div>
