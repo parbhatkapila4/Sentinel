@@ -37,14 +37,30 @@ export function AnimatedNav() {
     >
       <div className="mx-auto max-w-7xl px-6 py-4 lg:px-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-blue-500 rounded shrink-0"></div>
-            <div>
-              <span className="text-xl font-bold text-white">
-                REVENUE SENTINEL
-              </span>
-            </div>
-          </div>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <svg
+              className="w-9 h-9"
+              viewBox="0 0 36 36"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect width="36" height="36" rx="10" fill="#10B981" />
+              <path
+                d="M18 8V28"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M22 12C22 12 20.5 10 18 10C15.5 10 13 11.5 13 14C13 16.5 15 17 18 18C21 19 23 19.5 23 22C23 24.5 20.5 26 18 26C15.5 26 14 24 14 24"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="text-xl font-bold text-white">Sentinel</span>
+          </Link>
           <div className="flex items-center gap-6">
             <Link
               href="#features"
