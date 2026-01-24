@@ -31,6 +31,9 @@ model Deal {
   user      User           @relation(fields: [userId], references: [id])
   events    DealEvent[]
   timeline  DealTimeline[]
+
+  @@index([userId, createdAt])
+  @@index([userId, stage])
 }
 
 model DealEvent {
@@ -40,6 +43,8 @@ model DealEvent {
   payload   Json
   createdAt DateTime @default(now())
   deal      Deal     @relation(fields: [dealId], references: [id])
+
+  @@index([dealId, createdAt])
 }
 
 model Action {
@@ -60,6 +65,7 @@ model DealTimeline {
   createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
   deal      Deal      @relation(fields: [dealId], references: [id])
 
+  @@index([dealId, createdAt])
   @@map("DealTimeline")
 }
 
