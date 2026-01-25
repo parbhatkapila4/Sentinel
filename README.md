@@ -1,583 +1,382 @@
-<div align="center">
-
-# 🛡️ Sentinel
+# Sentinel
 
 **AI-Powered Revenue Intelligence Platform**
 
-*Preventing Silent Deal Decay Through Real-Time Risk Detection*
+Early warning for pipeline risk. Predictions, recommendations, and real-time visibility.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.1-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[Demo](https://www.sentinel.parbhat.dev) · [API Reference](https://www.sentinel.parbhat.dev/api-docs) · [Documentation](https://www.sentinel.parbhat.dev/docs/developers)
+
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-Latest-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-
-[Live Demo](#) • [Documentation](#) • [Contact](mailto:parbhat@parbhat.dev)
 
 ---
 
-</div>
+## Overview
 
-## The Problem
+Revenue teams lose an estimated **$1.3 trillion annually** due to poor pipeline visibility. Deals stall silently: prospects stop replying, meetings slip, proposals go unread. By the time traditional CRMs surface the problem, relationships have cooled and opportunities are lost.
 
-**Revenue teams lose $2.3 trillion annually to preventable deal losses.**
-
-The issue isn't that deals fail it's that they fail *silently*. Traditional CRMs track what happened yesterday, but by the time you see a deal has stalled, the relationship has cooled, decision-makers have moved on, or competitors have stepped in.
-
-**Silent deal decay** happens when:
-- Prospects stop responding to emails (but don't say "no")
-- Meetings get postponed repeatedly (but aren't cancelled)
-- Proposals sit unread for weeks (but aren't rejected)
-- Deals linger in stages longer than normal (but show no obvious warning signs)
-
-**The Cost:** Revenue teams waste 65% of their time on deals that will never close, while high-value opportunities slip away unnoticed.
-
----
-
-## The Solution
-
-**Sentinel is the early warning system for your revenue pipeline.**
-
-We don't just track deals, we actively monitor them for warning signs, calculate real-time risk scores, and alert you to problems *before* they become lost revenue.
-
-### Core Innovation
-
-**Predictive Risk Analytics** that identify at-risk deals through:
-- **Activity Pattern Analysis**: Detects decreasing engagement before it becomes obvious
-- **Temporal Decay Detection**: Flags deals that have been silent too long
-- **Stage Velocity Monitoring**: Identifies bottlenecks before they impact revenue
-- **Intelligent Action Recommendations**: Tells you exactly what to do, not just what's wrong
-
-**Result:** Revenue teams using Sentinel catch 73% more at-risk deals early, leading to 2.4x higher recovery rates.
-
----
-
-## Key Features
-
-### 1. **Real-Time Risk Scoring**
-Every deal receives a continuous risk score (0.0-1.0) calculated from multiple signals:
-- Time since last activity
-- Stage duration vs. historical averages
-- Deal value and priority weighting
-- Activity frequency and engagement patterns
-
-**Risk Levels:**
-- 🟢 **Low (0.0-0.4)**: Normal progression, no action needed
-- 🟡 **Medium (0.4-0.7)**: Attention recommended, proactive engagement suggested
-- 🔴 **High (0.7-1.0)**: Immediate action required, deal at risk of stalling
-
-### 2. **Intelligent Activity Tracking**
-- **Immutable Timeline**: Complete audit trail of all deal interactions
-- **Multi-Event Support**: Emails, meetings, calls, proposals, custom events
-- **Automatic Activity Detection**: Self-updating activity timestamps
-- **Metadata Preservation**: Extensible JSON payloads for future-proof customization
-
-### 3. **Predictive Analytics Dashboard**
-- **Pipeline Value Analytics**: Real-time aggregation across all stages
-- **Revenue Forecasting**: AI-powered predictions based on historical patterns
-- **Risk Overview**: Executive-level visibility into deal health
-- **Growth Metrics**: YoY and MoM comparison analytics
-- **Stage Distribution**: Deal concentration analysis
-
-### 4. **Actionable Intelligence**
-- **Personalized Recommendations**: Deal-specific intervention strategies
-- **Urgency Classification**: Prioritized action items with due dates
-- **Overdue Detection**: Automatic flagging of missed follow-ups
-- **Context-Aware Suggestions**: Recommendations based on deal stage and history
-
-### 5. **Enterprise-Grade Architecture**
-- **Type-Safe End-to-End**: Full TypeScript coverage with Prisma-generated types
-- **Zero-Trust Security**: Multi-layer authentication with query-level data isolation
-- **Server-First Design**: Next.js 16 App Router with React Server Components
-- **Scalable Infrastructure**: Built for enterprise scale from day one
-
-### 6. **AI-Powered Assistant**
-- **Natural Language Queries**: Ask questions about your pipeline in plain English
-- **Intelligent Insights**: Get recommendations based on your deal data
-- **Contextual Help**: Understand risk scores and recommendations instantly
-
----
-
-## Technical Architecture
-
-### System Design Philosophy
-
-Sentinel is architected on a **server-first paradigm** leveraging Next.js 16 App Router with React Server Components. The system implements a three-tier architecture with strict separation of concerns:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│              Presentation Layer                         │
-│  Next.js 16 + React Server Components + Client UI       │
-│  • Server-side rendering for optimal performance        │
-│  • Selective client-side interactivity                  │
-│  • Type-safe component architecture                     │
-└─────────────────────────────────────────────────────────┘
-                          ↕
-┌─────────────────────────────────────────────────────────┐
-│              Application Layer                          │
-│  Server Actions + Type-Safe Mutations + Auth Boundary   │
-│  • Zero-trust authentication at middleware              │
-│  • Type-safe data mutations                             │
-│  • Business logic encapsulation                         │
-└─────────────────────────────────────────────────────────┘
-                          ↕
-┌─────────────────────────────────────────────────────────┐
-│              Data Layer                                 │
-│  PostgreSQL + Prisma ORM + Type-Safe Queries            │
-│  • ACID-compliant transactions                          │
-│  • Optimized query performance                          │
-│  • Automatic migration management                       │
-└─────────────────────────────────────────────────────────┘
-```
-
-### Technology Stack
-
-| Category | Technology | Version | Purpose |
-|----------|-----------|---------|---------|
-| **Framework** | Next.js | 16.1.1 | React framework with App Router, Server Components, Server Actions |
-| **Language** | TypeScript | 5.x | Static type checking with zero implicit `any` |
-| **UI Library** | React | 19.2.3 | Concurrent rendering with Server Components |
-| **Database** | PostgreSQL | 12+ | ACID-compliant relational database |
-| **ORM** | Prisma | Latest | Type-safe database access with query optimization |
-| **Authentication** | Clerk | Latest | Managed auth with session management |
-| **Styling** | Tailwind CSS | 4.x | Utility-first CSS framework |
-| **Animation** | Motion | 12.x | High-performance UI transitions |
-
-### Architectural Principles
-
-| Principle | Implementation |
-|-----------|---------------|
-| **Type Safety** | End-to-end TypeScript with Prisma-generated types ensuring compile-time correctness |
-| **Security First** | Authentication verified at middleware boundary, enforced at query level with zero-trust data access |
-| **Multi-Tenancy** | User-scoped data isolation at database query level with architectural guarantees |
-| **Auditability** | Immutable event records with comprehensive timeline tracking for compliance |
-| **Performance** | Server-side rendering with selective client-side interactivity for optimal UX |
-| **Scalability** | Stateless server architecture ready for horizontal scaling |
+Sentinel adds an **AI intelligence layer** on top of your pipeline. It computes predictive risk scores from temporal decay, stage velocity, and engagement patterns; detects at-risk deals before they fail; and surfaces actionable recommendations. Natural-language queries, webhooks, and team workspaces integrate insights into your existing workflow.
 
 ---
 
 ## Core Capabilities
 
-### Deal Lifecycle Management
-- **Multi-Stage Pipeline**: Discovery → Qualification → Proposal → Negotiation → Closed Won/Lost
-- **Real-Time Value Aggregation**: Live pipeline analytics with stage-based distribution
-- **Intelligent Risk Scoring**: Algorithmic assessment based on activity patterns, stage duration, and deal characteristics
-- **Automated Status Tracking**: Continuous monitoring with stage transition detection
+---
 
-### Activity Intelligence
-- **Immutable Event Records**: Complete audit trail with cryptographic integrity
-- **Multi-Event Type Support**: Email (sent/received), meetings, calls, proposals, custom events
-- **Automatic Timestamp Management**: Self-updating activity fields with timezone-aware handling
-- **JSON Payload Architecture**: Extensible metadata system for future-proof customization
+### Predictive Risk Analysis
 
-### Timeline & Audit Trail
-- **Chronological Event View**: Immutable timeline records with UUID-based identifiers
-- **Metadata Preservation**: Complete event context retention for compliance and forensic analysis
-- **Timezone Intelligence**: Accurate timestamp handling across global operations
-- **Query Optimization**: Indexed timeline queries for sub-100ms response times
-
-### Predictive Risk Assessment
-**Risk Scoring Algorithm** evaluates multiple signals:
-- **Temporal Decay**: Time since last activity (exponential decay weighting)
-- **Stage Duration**: Time-in-stage analysis with stage-specific thresholds
-- **Deal Value**: High-value deal prioritization with weighted risk factors
-- **Historical Patterns**: Machine-learning-ready pattern recognition for predictive insights
-
-**Action Recommendations** include:
-- Urgency levels (low, medium, high)
-- Suggested intervention strategies
-- Context-aware recommendations based on deal stage
-- Overdue detection and alerting
-
-### Analytics & Intelligence
-- **Pipeline Value Analytics**: Real-time aggregation across all stages
-- **Monthly Revenue Trends**: Time-series analysis with growth rate calculations
-- **Stage Distribution Metrics**: Deal concentration analysis by pipeline stage
-- **Risk Overview Dashboards**: Executive-level visibility into deal health
-- **Growth Rate Calculations**: YoY and MoM comparison analytics
-- **Export Capabilities**: PDF and CSV export for reporting and analysis
+- **Temporal decay**: Weighted risk from time since last activity; configurable inactivity thresholds.
+- **Stage velocity**: Time-in-stage vs. historical norms; bottlenecks and stalled stages flagged.
+- **Engagement scoring**: Human touchpoints (emails, meetings, calls) tracked; drop-off triggers alerts.
+- **Competitive signals**: High-value and negotiation-stage deals weighted for priority.
+- **Composite risk score**: Single 0–1 score with Low / Medium / High bands and reason strings.
 
 ---
 
-## Quick Start
+### Intelligent AI Assistant
+
+Natural-language queries over your deals and pipeline. Example prompts:
+
+- "Which deals need my attention today?"
+- "Tell me about the Acme Corp deal."
+- "Why is my pipeline health declining?"
+- "Compare my performance this month vs. last month."
+
+The AI router maps query intent to specialized models:
+
+| Query type       | Model                    | Use case                          |
+|------------------|--------------------------|-----------------------------------|
+| Semantic search  | OpenAI GPT-4 Turbo       | Find, similar, match, embedding   |
+| Financial / deal | Anthropic Claude 3.5     | Pipeline, revenue, risk, forecast |
+| Deal-specific    | Anthropic Claude 3.5     | Single-deal detail, follow-ups    |
+| Code / SQL       | OpenAI GPT-4o            | Queries, scripts, database        |
+| Planning / docs  | Google Gemini Pro        | Strategy, roadmap, multimodal     |
+| General          | OpenAI GPT-4 Turbo       | Everything else                   |
+
+---
+
+### Team Collaboration
+
+- **RBAC**: Owner, admin, member, viewer roles; team-scoped deal access.
+- **Team workspaces**: Create teams, invite by email, assign deals to members.
+- **Activity timeline**: Immutable audit trail per deal; stage changes and events.
+- **Real-time notifications**: In-app plus optional email (deal at risk, action overdue, stage change).
+
+---
+
+### Webhooks and Integrations
+
+Configure endpoints to receive JSON payloads on deal and team events. Example payload:
+
+```json
+{
+  "id": "evt_abc123",
+  "event": "deal.stage_changed",
+  "timestamp": "2025-01-25T12:00:00Z",
+  "data": {
+    "id": "clx123",
+    "name": "Acme Corp",
+    "oldStage": "proposal",
+    "newStage": "negotiation",
+    "value": 50000
+  }
+}
+```
+
+**Supported events:** `deal.created`, `deal.updated`, `deal.stage_changed`, `deal.at_risk`, `deal.closed_won`, `deal.closed_lost`, `team.member_added`, `team.member_removed`. Slack incoming webhooks supported for deal notifications.
+
+---
+
+## Architecture
+
+```
++------------------------------------------------------------------+
+|  PRESENTATION                                                     |
+|  Next.js 16 · React 19 · Tailwind CSS · Server / Client Components|
++------------------------------------------------------------------+
+                                    |
++------------------------------------------------------------------+
+|  APPLICATION                                                      |
+|  Server Actions · API Routes · Middleware · Clerk Auth            |
++------------------------------------------------------------------+
+                                    |
++------------------------------------------------------------------+
+|  SERVICES                                                         |
+|  +------------------+  +------------------+  +------------------+ |
+|  | AI (OpenRouter)  |  | Data Layer       |  | External         | |
+|  | Claude, GPT-4o,  |  | PostgreSQL       |  | Redis (Upstash)  | |
+|  | Gemini           |  | Prisma ORM       |  | Resend · Slack   | |
+|  +------------------+  +------------------+  +------------------+ |
++------------------------------------------------------------------+
+```
+
+---
+
+## Data Model
+
+Core `Deal` model (Prisma):
+
+```prisma
+model Deal {
+  id           String    @id @default(cuid())
+  userId       String
+  teamId       String?
+  assignedToId String?
+  name         String
+  stage        String
+  value        Int
+  location     String?
+  createdAt    DateTime  @default(now())
+  user         User      @relation("CreatedDeals", ...)
+  team         Team?     @relation(...)
+  assignedTo   User?     @relation("AssignedDeals", ...)
+  events       DealEvent[]
+  timeline     DealTimeline[]
+  notifications Notification[]
+
+  @@index([userId, createdAt])
+  @@index([userId, stage])
+  @@index([teamId])
+  @@index([assignedToId])
+}
+```
+
+---
+
+## Technology Decisions
+
+| Component     | Choice            | Rationale                                              |
+|---------------|-------------------|--------------------------------------------------------|
+| Framework     | Next.js 16        | App Router, RSC, Server Actions, Vercel-ready          |
+| Language      | TypeScript 5      | Type safety, Prisma alignment, editor support          |
+| Database      | PostgreSQL        | ACID, JSON, scaling; Supabase/Railway-friendly         |
+| ORM           | Prisma            | Type-safe queries, migrations, generated client        |
+| Authentication| Clerk             | MFA, sessions, OAuth; minimal backend code             |
+| AI            | OpenRouter        | Multi-model routing; Claude, GPT, Gemini via one API   |
+| Queue         | Upstash Redis     | Optional email/webhook queue; serverless-friendly      |
+| Email         | Resend            | Transactional email; simple API, deliverability        |
+| Testing       | Vitest, Playwright| Unit + E2E; fast feedback, CI integration              |
+
+---
+
+## Local Development
 
 ### Prerequisites
 
-- **Node.js** ≥ 18.0.0
-- **PostgreSQL** ≥ 12.0 (Supabase recommended for development)
-- **npm** ≥ 9.0.0
+- **Node.js** >= 18
+- **PostgreSQL** >= 12 (or Supabase)
+- **npm** >= 9
 
-### Installation
+### Setup
 
 ```bash
-# Clone repository
 git clone https://github.com/parbhatkapila4/Sentinel.git
-cd sentinel
-
-# Install dependencies
+cd Sentinel
 npm install
-
-# Configure environment
 cp .env.example .env.local
-# Edit .env.local with your credentials
+```
 
-# Initialize database
+Edit `.env.local` with required variables (see below). Then:
+
+```bash
 npm run db:generate
 npm run db:push
-
-# Start development server
 npm run dev
 ```
 
-Application available at `http://localhost:3000`
-
-### Environment Configuration
-
-Create `.env.local` in the project root:
-
-```env
-# Database
-DATABASE_URL="postgresql://user:password@host:port/database?schema=public"
-
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
-CLERK_SECRET_KEY="sk_test_..."
-
-# Application
-NODE_ENV="development"
-```
-
-**Clerk Setup:**
-1. Create application at [clerk.com](https://clerk.com)
-2. Configure authentication methods (Email, OAuth providers)
-3. Retrieve API keys from dashboard
-4. Add keys to `.env.local`
+App runs at `http://localhost:3000`.
 
 ---
 
-## Development
-
-### Available Scripts
+## Required Environment Variables
 
 ```bash
-npm run dev          # Start development server with hot reload
-npm run build        # Production build with optimization
-npm run start        # Start production server
-npm run lint         # Run ESLint code quality checks
-npm run db:generate  # Generate Prisma Client
-npm run db:push      # Push schema changes to database
-npm run db:migrate   # Create and apply migration
-npm run db:studio    # Open Prisma Studio (database GUI)
+DATABASE_URL=postgresql://user:password@host:5432/db?schema=public
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+OPENROUTER_API_KEY=sk-or-...
 ```
-
-### Project Structure
-
-```
-sentinel/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── actions/            # Server Actions (type-safe mutations)
-│   │   ├── api/                # API route handlers
-│   │   ├── analytics/         # Analytics dashboard
-│   │   ├── deals/              # Deal management pages
-│   │   ├── insights/           # AI-powered insights
-│   │   ├── reports/            # Reporting and exports
-│   │   ├── risk-overview/      # Risk dashboard
-│   │   └── settings/           # User settings
-│   ├── components/             # React component library
-│   │   ├── ui/                 # Reusable UI primitives
-│   │   └── [features]/         # Feature-specific components
-│   ├── lib/                    # Core utilities and helpers
-│   │   ├── prisma.ts           # Prisma client singleton
-│   │   ├── auth.ts             # Authentication utilities
-│   │   ├── dealRisk.ts         # Risk calculation engine
-│   │   ├── timeline.ts          # Timeline management
-│   │   └── ai-router.ts         # AI assistant routing
-│   └── middleware.ts           # Next.js middleware (auth boundary)
-├── prisma/
-│   └── schema.prisma           # Database schema definition
-└── public/                     # Static assets
-```
-
-### Code Standards
-
-- **TypeScript Strict Mode**: Enabled with zero implicit `any`
-- **ESLint Configuration**: Extends Next.js recommended rules with custom enforcement
-- **Component Architecture**: Prefer Server Components; Client Components only when necessary
-- **Data Mutations**: All mutations via Server Actions with built-in authentication
-- **Conventions**: Follow Next.js App Router patterns and React Server Component best practices
 
 ---
 
-## Security Architecture
+## Optional Environment Variables
 
-### Authentication & Authorization
-
-**Multi-Layer Security Model:**
-
-1. **Middleware Boundary**: All routes (except auth endpoints) protected by Next.js middleware
-2. **Session Validation**: Clerk-managed session verification before request processing
-3. **Query-Level Enforcement**: All Prisma queries explicitly scoped by `userId`
-4. **Server Action Validation**: Authentication checks in all data mutation endpoints
-
-### Data Isolation
-
-**Zero-Trust Multi-Tenancy:**
-
-Cross-tenant data access is architecturally impossible through:
-
-```typescript
-// Example: User-scoped query pattern
-const deals = await prisma.deal.findMany({
-  where: { userId: authenticatedUserId }, // Enforced at query level
-});
-```
-
-**Security Guarantees:**
-- User identity verified via Clerk session (cryptographic validation)
-- All database queries scoped by `userId` (no user-controlled identifiers)
-- Server Actions validate authentication before data access
-- No direct database access from client components
-
-### Security Best Practices
-
-- **Environment Variables**: Stored in `.env.local` (never committed to version control)
-- **SQL Injection Prevention**: Prisma parameterized queries eliminate injection vectors
-- **XSS Protection**: React's built-in escaping with Content Security Policy headers
-- **CSRF Protection**: SameSite cookies managed by Clerk authentication service
-- **Rate Limiting**: Recommended for production deployments (implement at edge/CDN level)
-
----
-
-## Database Schema
-
-### Core Models
-
-**User**
-```prisma
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  surname   String
-  email     String   @unique
-  password  String   @db.VarChar(255)
-  createdAt DateTime @default(now())
-  deals     Deal[]
-}
-```
-
-**Deal**
-```prisma
-model Deal {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String
-  stage     String
-  value     Int
-  createdAt DateTime @default(now())
-  actions   Action[]
-  events    DealEvent[]
-  timeline  DealTimeline[]
-  user      User     @relation(fields: [userId], references: [id])
-}
-```
-
-**DealEvent** (Activity Tracking)
-```prisma
-model DealEvent {
-  id        String   @id @default(cuid())
-  dealId    String
-  type      String
-  payload   Json
-  createdAt DateTime @default(now())
-  deal      Deal     @relation(fields: [dealId], references: [id])
-}
-```
-
-**DealTimeline** (Immutable Audit Trail)
-```prisma
-model DealTimeline {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  dealId    String    @map("deal_id")
-  eventType String    @map("event_type")
-  metadata  Json?
-  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  deal      Deal      @relation(fields: [dealId], references: [id])
-  
-  @@map("DealTimeline")
-}
-```
-
-**Action** (Risk Recommendations)
-```prisma
-model Action {
-  id        String   @id @default(cuid())
-  dealId    String
-  type      String
-  status    String
-  reason    String
-  createdAt DateTime @default(now())
-  deal      Deal     @relation(fields: [dealId], references: [id])
-}
+```bash
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
+RESEND_API_KEY=re_...
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ---
 
 ## API Reference
 
-### Server Actions
+### Authentication
 
-#### `createDeal(formData: FormData)`
-Creates a new deal and initializes timeline tracking.
+All API requests use Bearer auth. Include the token in the `Authorization` header:
 
-**Parameters:**
-- `name: string` - Deal identifier
-- `stage: string` - Initial pipeline stage
-- `value: number` - Deal value in USD
+```bash
+curl -X GET "https://your-domain.com/api/deals" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+```
 
-**Returns:** `Deal` object with calculated risk signals and initial timeline entry
+### Endpoints
 
-#### `getAllDeals()`
-Retrieves all deals for authenticated user with real-time risk calculations.
+| Method | Endpoint               | Description                          |
+|--------|------------------------|--------------------------------------|
+| GET    | `/api/deals`           | List deals (optional `stage`, `limit`) |
+| POST   | `/api/deals`           | Create deal                          |
+| GET    | `/api/deals/:id`       | Get deal by ID                       |
+| PATCH  | `/api/deals/:id`       | Update deal                          |
+| POST   | `/api/insights/chat`   | AI chat (body: `{ messages }`)       |
+| GET    | `/api/notifications`   | List notifications                   |
+| GET    | `/api/auth/me`         | Current user                         |
 
-**Returns:** `Deal[]` array with risk scores, recommendations, and activity metadata
+Full OpenAPI spec and interactive docs: `/api-docs`.
 
-#### `getDealById(dealId: string)`
-Retrieves single deal with complete timeline and event history.
+### Webhook signature verification
 
-**Parameters:**
-- `dealId: string` - Unique deal identifier (UUID)
+Verify `X-Webhook-Signature` with HMAC-SHA256:
 
-**Returns:** `Deal` object with nested `events[]` and `timeline[]` arrays
-
-#### `updateDealStage(dealId: string, newStage: string)`
-Updates deal stage and records immutable timeline event.
-
-**Parameters:**
-- `dealId: string` - Unique deal identifier
-- `newStage: string` - Target pipeline stage
-
-**Returns:** Updated `Deal` object with new timeline entry
-
-### REST API Endpoints
-
-#### `GET /api/auth/me`
-Returns authenticated user information.
-
-**Response:**
-```json
-{
-  "user": {
-    "id": "string",
-    "name": "string",
-    "surname": "string",
-    "email": "string"
-  }
+```javascript
+const crypto = require("crypto");
+const sig = req.headers["x-webhook-signature"];
+const expected = crypto
+  .createHmac("sha256", webhookSecret)
+  .update(JSON.stringify(payload))
+  .digest("hex");
+if (sig === expected) {
+  // Payload is authentic
 }
 ```
 
-#### `POST /api/deals/export`
-Exports deals data in CSV or PDF format.
+---
 
-#### `POST /api/reports/export`
-Exports analytics reports in various formats.
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── actions/            # Server Actions (deals, teams, webhooks, etc.)
+│   ├── api/                # REST routes (deals, insights, notifications, cron)
+│   ├── dashboard/          # Dashboard, deals, reports, settings pages
+│   └── ...                 # Auth, pricing, docs, static pages
+├── components/             # React UI (dashboard, forms, charts, AI chat)
+│   └── ui/                 # Shared primitives (sidebar, skeleton, etc.)
+├── lib/                    # Core logic (auth, risk, AI router, webhooks, etc.)
+├── hooks/                  # useKeyboardShortcuts, useOptimisticAction
+├── types/                  # Shared TypeScript types
+├── test/                   # Mocks and Vitest setup
+└── middleware.ts           # Auth boundary
+```
+
+---
+
+## Testing
+
+| Command           | Description                    |
+|-------------------|--------------------------------|
+| `npm run test`    | Vitest watch mode              |
+| `npm run test:run`| Unit tests (CI)                |
+| `npm run test:coverage` | Coverage report          |
+| `npm run test:e2e`| Playwright E2E                 |
+
+Unit tests live in `src/app/actions/__tests__` and `src/lib/__tests__`. E2E specs are in `e2e/` (home, dashboard, deals). Use `src/test/mocks` for auth and Prisma in tests.
 
 ---
 
 ## Deployment
 
-### Production Build
+### Vercel
 
 ```bash
-npm run build
-npm run start
+vercel
 ```
 
-### Environment Variables
+Set env vars in the Vercel dashboard. Use Vercel Postgres or an external PostgreSQL URL.
 
-Ensure all production environment variables are configured:
+### Docker (multi-stage)
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | Production PostgreSQL connection string | Yes |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Production Clerk publishable key | Yes |
-| `CLERK_SECRET_KEY` | Production Clerk secret key | Yes |
-| `NODE_ENV` | Set to `production` | Yes |
+Example `Dockerfile`:
 
-### Database Migrations
+```dockerfile
+# Stage 1: deps
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
 
-For production deployments, use Prisma migrations:
+# Stage 2: builder
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx prisma generate
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
 
-```bash
-npm run db:migrate
+# Stage 3: runner
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+CMD ["node", "server.js"]
 ```
 
-### Recommended Platforms
-
-| Platform | Rationale |
-|----------|-----------|
-| **Vercel** | Optimized for Next.js with zero-config deployment |
-| **Railway** | Integrated PostgreSQL and Next.js hosting |
-| **AWS** | EC2 with RDS PostgreSQL for enterprise scale |
-| **Google Cloud** | Cloud Run with Cloud SQL for serverless architecture |
-
-### Performance Optimization
-
-- **Image Optimization**: Enable Next.js Image Optimization for static assets
-- **CDN Configuration**: Configure CDN for global static asset delivery
-- **Connection Pooling**: Enable database connection pooling (PgBouncer recommended)
-- **Query Monitoring**: Monitor query performance via Prisma logging
-- **Caching Strategy**: Implement Redis caching for frequently accessed data
+Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations before starting (e.g. init container or CI step).
 
 ---
 
-## Contributing
+## Security
 
-### Development Workflow
+- **Clerk auth**: Sessions, MFA support; no password storage in-app.
+- **RBAC**: Team roles (owner, admin, member, viewer); scope enforced in Server Actions and API.
+- **Row-level security**: All deal/list queries filtered by `userId` or team membership.
+- **Webhooks**: HMAC-SHA256 signatures; verify `X-Webhook-Signature` before processing.
+- **Headers**: HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy via `next.config`.
+- **Input validation**: Zod in `src/lib/env`; validate request bodies in API routes.
+- **Rate limiting**: Recommended at edge/CDN for production (e.g. Vercel, Cloudflare).
 
-1. Create feature branch from `main`
-2. Implement changes with appropriate type safety
-3. Ensure all linting passes: `npm run lint`
-4. Update documentation as needed
-5. Submit pull request with comprehensive description
+---
 
-### Code Standards
+## Performance
 
-- **TypeScript Strict Mode**: Zero tolerance for `any` types
-- **Self-Documenting Code**: Clear variable names and function signatures
-- **JSDoc Comments**: Required for all public APIs
-- **Test Coverage**: Maintain coverage for critical business logic paths
-- **Style Consistency**: Follow existing code patterns and conventions
+| Metric        | Target  |
+|---------------|---------|
+| Lighthouse    | 98      |
+| FCP           | 0.8 s   |
+| TTI           | 1.2 s   |
+| LCP           | < 1.5 s |
+| CLS           | < 0.1   |
+
+- React Server Components and Server Actions to reduce client JS.
+- Dynamic imports for heavy UI (e.g. Swagger, charts).
+- Prisma query tuning; indexed access on `userId`, `teamId`, `dealId`.
+- Optional Redis for queue and caching.
+- Image optimization via `next/image` where used.
 
 ---
 
 ## License
 
-**MIT License** - Copyright (c) 2026 Sentinel
-
-See [LICENSE](LICENSE) file for full license text.
-
----
-
-## Founder
-
-**Parbhat Kapila** - Creator & Maintainer
-
-- Email: [parbhat@parbhat.dev](mailto:parbhat@parbhat.dev)
-- GitHub: [@parbhatkapila4](https://github.com/parbhatkapila4)
-- LinkedIn: [parbhat-kapila](https://www.linkedin.com/in/parbhat-kapila/)
+[MIT](LICENSE)
 
 ---
 
 <div align="center">
 
-**Sentinel** - AI Powered Revenue Intelligence Platform
-
-*Engineered for precision. Built for scale. Designed to prevent revenue loss.*
-
-**By [Parbhat Kapila](https://github.com/parbhatkapila4)**
-
-[Website](https://www.sentinel.parbhat.dev) • [Documentation](#) • [Contact](mailto:parbhat@parbhat.dev)
-
+Built by [Parbhat Kapila](https://github.com/parbhatkapila4)
 
 </div>

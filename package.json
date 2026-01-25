@@ -26,6 +26,7 @@
     "@mui/x-charts": "^8.24.0",
     "@prisma/client": "latest",
     "@react-three/fiber": "^9.0.0-alpha.8",
+    "@sentry/nextjs": "^10.36.0",
     "@tabler/icons-react": "^3.36.1",
     "@upstash/redis": "^1.36.1",
     "clsx": "^2.1.1",
@@ -35,6 +36,7 @@
     "jspdf": "^4.0.0",
     "motion": "^12.24.8",
     "next": "16.1.1",
+    "next-swagger-doc": "^0.4.1",
     "next-themes": "^0.4.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -44,7 +46,8 @@
     "sonner": "^2.0.7",
     "swagger-ui-react": "^5.31.0",
     "tailwind-merge": "^3.4.0",
-    "three": "^0.182.0"
+    "three": "^0.182.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",
