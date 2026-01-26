@@ -8,32 +8,57 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(cuid())
-  name        String
-  surname     String
-  email       String       @unique
-  password    String
-  createdAt   DateTime     @default(now())
-  deals       Deal[]
-  chats       Chat[]
-  chatFolders ChatFolder[]
+  id                        String                     @id @default(cuid())
+  name                      String
+  surname                   String
+  email                     String                     @unique
+  password                  String
+  company                   String?
+  role                      String?
+  imageUrl                  String?
+  createdAt                 DateTime                   @default(now())
+  deals                     Deal[]                     @relation("CreatedDeals")
+  assignedDeals             Deal[]                     @relation("AssignedDeals")
+  teamMemberships           TeamMember[]
+  chats                     Chat[]
+  chatFolders               ChatFolder[]
+  notifications             Notification[]
+  notificationSettings      UserNotificationSettings?
+  webhooks                  Webhook[]
+  slackIntegrations         SlackIntegration[]
+  salesforceIntegration     SalesforceIntegration?
+  hubspotIntegration        HubSpotIntegration?
+  googleCalendarIntegration GoogleCalendarIntegration?
+  meetings                  Meeting[]
 }
 
 model Deal {
-  id        String         @id @default(cuid())
-  userId    String
-  name      String
-  stage     String
-  value     Int
-  location  String?
-  createdAt DateTime       @default(now())
-  actions   Action[]
-  user      User           @relation(fields: [userId], references: [id])
-  events    DealEvent[]
-  timeline  DealTimeline[]
+  id            String         @id @default(cuid())
+  userId        String
+  teamId        String?
+  assignedToId  String?
+  name          String
+  stage         String
+  value         Int
+  location      String?
+  isDemo        Boolean        @default(false)
+  source        String?
+  externalId    String?
+  createdAt     DateTime       @default(now())
+  actions       Action[]
+  user          User           @relation("CreatedDeals", fields: [userId], references: [id])
+  team          Team?          @relation(fields: [teamId], references: [id])
+  assignedTo    User?          @relation("AssignedDeals", fields: [assignedToId], references: [id])
+  events        DealEvent[]
+  timeline      DealTimeline[]
+  notifications Notification[]
+  meetings      Meeting[]
 
   @@index([userId, createdAt])
   @@index([userId, stage])
+  @@index([teamId])
+  @@index([assignedToId])
+  @@index([externalId])
 }
 
 model DealEvent {
@@ -105,4 +130,220 @@ model ChatFolder {
   chats     Chat[]
 
   @@index([userId])
+}
+
+model Team {
+  id                String             @id @default(cuid())
+  name              String
+  slug              String             @unique
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  members           TeamMember[]
+  invites           TeamInvite[]
+  deals             Deal[]
+  webhooks          Webhook[]
+  slackIntegrations SlackIntegration[]
+
+  @@index([slug])
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  userId    String
+  teamId    String
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@index([teamId])
+  @@index([userId])
+}
+
+model TeamInvite {
+  id        String   @id @default(cuid())
+  teamId    String
+  email     String
+  role      String   @default("member")
+  token     String   @unique @default(cuid())
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([email])
+  @@index([token])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  dealId    String?
+  teamId    String?
+  read      Boolean  @default(false)
+  emailSent Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deal      Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}
+
+model UserNotificationSettings {
+  id                   String  @id @default(cuid())
+  userId               String  @unique
+  emailOnDealAtRisk    Boolean @default(true)
+  emailOnActionOverdue Boolean @default(true)
+  emailOnStageChange   Boolean @default(false)
+  emailOnTeamActivity  Boolean @default(true)
+  emailDigestFrequency String  @default("daily")
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Webhook {
+  id         String            @id @default(cuid())
+  userId     String
+  teamId     String?
+  name       String
+  url        String
+  secret     String
+  events     String[]
+  isActive   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team       Team?             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([userId])
+  @@index([teamId])
+}
+
+model WebhookDelivery {
+  id         String   @id @default(cuid())
+  webhookId  String
+  event      String
+  payload    Json
+  statusCode Int?
+  response   String?
+  success    Boolean  @default(false)
+  attempts   Int      @default(1)
+  createdAt  DateTime @default(now())
+  webhook    Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([createdAt])
+}
+
+model SlackIntegration {
+  id          String   @id @default(cuid())
+  userId      String
+  teamId      String?
+  webhookUrl  String
+  channelName String?
+  notifyOn    String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team        Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([teamId])
+}
+
+model SalesforceIntegration {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  apiKey         String
+  instanceUrl    String
+  isActive       Boolean   @default(true)
+  syncEnabled    Boolean   @default(true)
+  lastSyncAt     DateTime?
+  lastSyncStatus String?
+  syncErrors     String?
+  totalSynced    Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model HubSpotIntegration {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  apiKey         String
+  portalId       String?
+  isActive       Boolean   @default(true)
+  syncEnabled    Boolean   @default(true)
+  lastSyncAt     DateTime?
+  lastSyncStatus String?
+  syncErrors     String?
+  totalSynced    Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model GoogleCalendarIntegration {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  apiKey         String
+  calendarId     String
+  refreshToken   String?
+  isActive       Boolean   @default(true)
+  syncEnabled    Boolean   @default(true)
+  lastSyncAt     DateTime?
+  lastSyncStatus String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model IntegrationLog {
+  id          String   @id @default(cuid())
+  userId      String
+  integration String
+  action      String
+  status      String
+  message     String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, integration])
+  @@index([createdAt])
+}
+
+model Meeting {
+  id          String   @id @default(cuid())
+  userId      String
+  dealId      String?
+  externalId  String?
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  attendees   String[]
+  location    String?
+  meetingLink String?
+  source      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deal        Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([dealId])
+  @@index([startTime])
+  @@index([externalId])
 }
