@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Deal"
+ADD COLUMN "isDemo" BOOLEAN NOT NULL DEFAULT false;

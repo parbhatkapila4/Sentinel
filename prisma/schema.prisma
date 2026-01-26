@@ -30,6 +30,7 @@ model User {
   hubspotIntegration        HubSpotIntegration?
   googleCalendarIntegration GoogleCalendarIntegration?
   meetings                  Meeting[]
+  sentInvites               UserInvite[]               @relation("SentInvites")
 }
 
 model Deal {
@@ -346,4 +347,21 @@ model Meeting {
   @@index([dealId])
   @@index([startTime])
   @@index([externalId])
+}
+
+model UserInvite {
+  id        String   @id @default(cuid())
+  email     String
+  role      String   @default("member")
+  token     String   @unique @default(cuid())
+  invitedBy String
+  expiresAt DateTime
+  accepted  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  invitedByUser User  @relation("SentInvites", fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([token])
+  @@index([invitedBy])
+  @@index([expiresAt])
 }
