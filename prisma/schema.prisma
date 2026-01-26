@@ -31,6 +31,8 @@ model User {
   googleCalendarIntegration GoogleCalendarIntegration?
   meetings                  Meeting[]
   sentInvites               UserInvite[]               @relation("SentInvites")
+  plan                      UserPlan?
+  usageTracking             UsageTracking[]
 }
 
 model Deal {
@@ -350,18 +352,58 @@ model Meeting {
 }
 
 model UserInvite {
-  id        String   @id @default(cuid())
-  email     String
-  role      String   @default("member")
-  token     String   @unique @default(cuid())
-  invitedBy String
-  expiresAt DateTime
-  accepted  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  invitedByUser User  @relation("SentInvites", fields: [invitedBy], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  email         String
+  role          String   @default("member")
+  token         String   @unique @default(cuid())
+  invitedBy     String
+  expiresAt     DateTime
+  accepted      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  invitedByUser User     @relation("SentInvites", fields: [invitedBy], references: [id], onDelete: Cascade)
 
   @@index([email])
   @@index([token])
   @@index([invitedBy])
   @@index([expiresAt])
+}
+
+model UserPlan {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  planType        String
+  planName        String
+  maxDeals        Int
+  maxTeamMembers  Int
+  maxApiCalls     Int
+  maxWebhooks     Int
+  maxIntegrations Int
+  features        Json
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageTracking   UsageTracking[]
+
+  @@index([userId])
+  @@index([planType])
+}
+
+model UsageTracking {
+  id           String    @id @default(cuid())
+  userId       String
+  planId       String?
+  metricType   String
+  currentCount Int       @default(0)
+  periodStart  DateTime
+  periodEnd    DateTime
+  lastResetAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan         UserPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, metricType, periodStart])
+  @@index([userId, metricType])
+  @@index([userId, periodStart])
+  @@index([periodEnd])
 }

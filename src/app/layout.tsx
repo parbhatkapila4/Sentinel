@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 import { ClerkProvider } from "@clerk/nextjs";
+import { CommandPalette } from "@/components/command-palette";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,26 +32,25 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <Providers>{children}</Providers>
+          <Providers>
+            <CommandPalette />
+            {children}
+          </Providers>
           <Toaster
-          position="top-center"
-          richColors
-          theme="light"
-          toastOptions={{
-            classNames: {
-              toast:
-                "!bg-white !border !border-gray-200 !text-gray-900 !shadow-lg !rounded-2xl !p-6 !min-w-[450px] !max-w-[500px] !overflow-hidden !flex !flex-col",
-              title: "!hidden",
-              description: "!hidden",
-              actionButton:
-                "!bg-red-500 hover:!bg-red-600 !text-white !font-semibold !px-6 !py-2.5 !rounded-full !transition-all !duration-200 !border-0 !min-w-[120px]",
-              cancelButton:
-                "!bg-white hover:!bg-gray-50 !text-red-500 !font-medium !px-6 !py-2.5 !rounded-full !transition-all !duration-200 !border !border-red-500 !min-w-[120px]",
-            },
-          }}
-          closeButton={false}
-          expand={true}
-        />
+            position="top-right"
+            theme="dark"
+            richColors
+            duration={4000}
+            closeButton
+            toastOptions={{
+              style: {
+                background: "#1a1a1a",
+                border: "1px solid #2a2a2a",
+                color: "#ffffff",
+              },
+              className: "dark-toast",
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>

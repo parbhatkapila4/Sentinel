@@ -12,13 +12,13 @@ export default async function Home() {
   const user = await getAuthenticatedUser();
 
   return (
-    <div className="min-h-screen bg-black text-white antialiased">
+    <div className="min-h-screen bg-black text-white antialiased overflow-x-hidden">
       <Navbar />
 
-      <section className="relative min-h-screen flex items-center pt-32 pb-20 px-6 lg:px-8 overflow-hidden">
+      <section className="px-4 sm:px-6 lg:px-8 pt-20 sm:pt-32 pb-16 sm:pb-20">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <svg
-            className="absolute top-32 right-32 w-[500px] h-[500px] opacity-40"
+            className="absolute top-16 right-4 sm:top-32 sm:right-32 w-48 h-48 sm:w-[500px] sm:h-[500px] opacity-40"
             viewBox="0 0 500 500"
             fill="none"
           >
@@ -38,11 +38,11 @@ export default async function Home() {
             />
           </svg>
 
-          <div className="absolute top-48 left-24 w-40 h-40 bg-red-500 rounded-full opacity-25 blur-2xl"></div>
-          <div className="absolute top-64 left-48 w-32 h-32 bg-yellow-400 rounded-full opacity-25 blur-2xl"></div>
-          <div className="absolute bottom-48 right-48 w-48 h-48 bg-blue-500 rounded-full opacity-25 blur-2xl"></div>
+          <div className="absolute top-24 left-4 sm:top-48 sm:left-24 w-24 h-24 sm:w-40 sm:h-40 bg-red-500 rounded-full opacity-25 blur-2xl"></div>
+          <div className="absolute top-32 left-12 sm:top-64 sm:left-48 w-20 h-20 sm:w-32 sm:h-32 bg-yellow-400 rounded-full opacity-25 blur-2xl"></div>
+          <div className="absolute bottom-24 right-8 sm:bottom-48 sm:right-48 w-28 h-28 sm:w-48 sm:h-48 bg-blue-500 rounded-full opacity-25 blur-2xl"></div>
 
-          <div className="absolute right-24 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-30">
+          <div className="absolute right-4 sm:right-24 top-1/2 -translate-y-1/2 hidden sm:flex flex-col gap-3 opacity-30">
             {Array.from({ length: 7 }).map((_, i) => (
               <svg
                 key={i}
@@ -63,14 +63,14 @@ export default async function Home() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto w-full">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-8">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 items-center">
+            <div className="space-y-6 sm:space-y-8">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight text-white">
                 Never Lose a Deal to
                 <br />
                 <span className="text-blue-400">Silent Decay.</span>
               </h1>
-              <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl">
+              <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl">
                 Real-time risk detection that tells you exactly which deals are
                 dying and what to do about it. See why the most innovative sales
                 teams add automated risk alerts, deal-specific action
@@ -78,11 +78,11 @@ export default async function Home() {
                 conventional CRM systems. You won&apos;t go back.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 max-w-2xl pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
                 {!user && (
                   <Link
                     href="/sign-up"
-                    className="px-8 py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                    className="px-6 sm:px-8 py-3 sm:py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap min-h-[44px]"
                   >
                     Sign Up
                     <svg
@@ -103,8 +103,8 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="relative lg:min-h-[600px]">
-              <div className="relative w-full h-full min-h-[500px]">
+            <div className="relative lg:min-h-[600px] min-h-[280px] sm:min-h-[380px]">
+              <div className="relative w-full h-full min-h-[280px] sm:min-h-[380px] lg:min-h-[500px]">
                 <svg
                   viewBox="0 0 600 600"
                   className="w-full h-full"
@@ -562,7 +562,7 @@ export default async function Home() {
                     strokeLinecap="round"
                     filter="url(#glowBlue)"
                   />
-                  {/* Strong highlight */}
+
                   <path
                     d="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
                     stroke="url(#blueHighlight)"
@@ -932,32 +932,32 @@ export default async function Home() {
                 </svg>
 
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-10 right-12 bg-white rounded-2xl rounded-bl-none px-5 py-3.5 shadow-2xl max-w-[210px] border border-gray-100">
-                    <p className="text-gray-800 text-sm font-medium leading-snug">
+                  <div className="absolute top-2 right-2 sm:top-10 sm:right-12 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-2xl max-w-[160px] sm:max-w-[210px] border border-gray-100">
+                    <p className="text-gray-800 text-xs sm:text-sm font-medium leading-snug">
                       Ready to protect your revenue with Sentinel?
                     </p>
                   </div>
 
-                  <div className="absolute top-28 right-16 bg-blue-500 rounded-2xl rounded-br-none px-6 py-3 shadow-2xl">
-                    <p className="text-white text-sm font-semibold">
+                  <div className="absolute top-14 right-4 sm:top-28 sm:right-16 bg-blue-500 rounded-2xl rounded-br-none px-4 py-2 sm:px-6 sm:py-3 shadow-2xl max-w-[140px] sm:max-w-none">
+                    <p className="text-white text-xs sm:text-sm font-semibold">
                       Absolutely!
                     </p>
                   </div>
 
-                  <div className="absolute top-44 left-6 bg-white rounded-2xl rounded-bl-none px-5 py-3.5 shadow-2xl max-w-[230px] border border-gray-100">
-                    <p className="text-gray-800 text-sm font-medium leading-snug">
+                  <div className="absolute top-28 left-2 sm:top-44 sm:left-6 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-2xl max-w-[180px] sm:max-w-[230px] border border-gray-100 sm:block hidden">
+                    <p className="text-gray-800 text-xs sm:text-sm font-medium leading-snug">
                       Deal at risk: No activity detected in 7 days
                     </p>
                   </div>
 
-                  <div className="absolute top-60 right-6 bg-blue-500 rounded-2xl rounded-br-none px-5 py-3.5 shadow-2xl max-w-[190px]">
-                    <p className="text-white text-sm font-medium leading-snug">
+                  <div className="absolute top-40 right-2 sm:top-60 sm:right-6 bg-blue-500 rounded-2xl rounded-br-none px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-2xl max-w-[150px] sm:max-w-[190px]">
+                    <p className="text-white text-xs sm:text-sm font-medium leading-snug">
                       Sending follow-up email now
                     </p>
                   </div>
 
-                  <div className="absolute bottom-20 left-10 bg-white rounded-2xl rounded-bl-none px-5 py-3.5 shadow-2xl max-w-[210px] border border-gray-100">
-                    <p className="text-gray-800 text-sm font-medium leading-snug">
+                  <div className="absolute bottom-4 left-2 sm:bottom-20 sm:left-10 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-2xl max-w-[160px] sm:max-w-[210px] border border-gray-100">
+                    <p className="text-gray-800 text-xs sm:text-sm font-medium leading-snug">
                       Deal saved! Activity resumed
                     </p>
                   </div>
@@ -970,7 +970,7 @@ export default async function Home() {
 
       <section
         id="features"
-        className="py-40 px-6 lg:px-8 relative overflow-hidden"
+        className="py-20 sm:py-40 px-4 sm:px-6 lg:px-8"
         style={{ backgroundColor: "#000000" }}
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -982,8 +982,8 @@ export default async function Home() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="mb-16">
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight tracking-tight">
+          <div className="mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white mb-4 sm:mb-6 leading-tight tracking-tight">
               Ready-made collaborative features.
             </h2>
             <p className="text-lg md:text-xl text-white/60 leading-relaxed max-w-4xl">
@@ -998,8 +998,8 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 lg:col-span-7 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bg-[#1a1a1a] rounded-2xl p-4 sm:p-6 border border-white/5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white tracking-tight">
                   Real-Time Risk Detection
@@ -1390,7 +1390,7 @@ export default async function Home() {
       </section>
 
       <section
-        className="py-20 px-6 lg:px-8 relative overflow-hidden"
+        className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
         style={{
           backgroundColor: "#000000",
           fontFamily: "Arial, Helvetica, sans-serif",
@@ -1432,9 +1432,9 @@ export default async function Home() {
             </defs>
           </svg>
 
-          <div className="mb-16">
+          <div className="mb-10 sm:mb-16">
             <h2
-              className="text-8xl md:text-[10rem] lg:text-[14rem] font-black leading-none"
+              className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] xl:text-[14rem] font-black leading-none break-words"
               style={{
                 color: "#5a5a5a",
                 letterSpacing: "-0.02em",
@@ -1452,8 +1452,8 @@ export default async function Home() {
             </h2>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-16">
-            <div style={{ width: "320px" }}>
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-12 sm:mb-16">
+            <div className="w-full max-w-[320px]">
               <svg className="w-8 h-8 mb-4" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
@@ -1475,14 +1475,7 @@ export default async function Home() {
             </div>
 
             <div
-              className="relative overflow-hidden"
-              style={{
-                width: "580px",
-                height: "180px",
-                borderRadius: "90px",
-                border: "8px solid #a3e635",
-                backgroundColor: "#000",
-              }}
+              className="relative overflow-hidden w-full max-w-[580px] h-[140px] sm:h-[180px] rounded-[70px] sm:rounded-[90px] border-4 sm:border-[8px] border-[#a3e635] bg-black mx-auto lg:mx-0"
             >
               <div
                 className="absolute inset-0"
@@ -1494,7 +1487,7 @@ export default async function Home() {
                 }}
               />
 
-              <div className="absolute inset-0 flex items-center justify-center gap-4 px-12">
+              <div className="absolute inset-0 flex items-center justify-center gap-2 sm:gap-4 px-4 sm:px-12">
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-14 h-14 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center">
                     <svg
@@ -1555,15 +1548,9 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-16">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-12 sm:mb-16">
             <div
-              className="relative overflow-hidden"
-              style={{
-                width: "480px",
-                height: "220px",
-                borderRadius: "110px",
-                backgroundColor: "#a855f7",
-              }}
+              className="relative overflow-hidden w-full max-w-[480px] h-[180px] sm:h-[220px] rounded-[90px] sm:rounded-[110px] bg-[#a855f7] mx-auto lg:mx-0 order-2 lg:order-1"
             >
               <div
                 className="absolute inset-0"
@@ -1575,13 +1562,7 @@ export default async function Home() {
                 }}
               />
               <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                style={{
-                  width: "380px",
-                  height: "120px",
-                  borderRadius: "60px",
-                  backgroundColor: "#000",
-                }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-[300px] sm:w-[380px] h-[100px] sm:h-[120px] rounded-[50px] sm:rounded-[60px] bg-black"
               >
                 <div
                   className="absolute inset-0"
@@ -1593,14 +1574,14 @@ export default async function Home() {
                     borderRadius: "60px",
                   }}
                 />
-                <div className="flex items-center gap-6 relative z-10">
+                <div className="flex items-center gap-4 sm:gap-6 relative z-10">
                   <div className="flex flex-col items-center">
-                    <span className="text-red-400 text-3xl font-bold">85%</span>
+                    <span className="text-red-400 text-2xl sm:text-3xl font-bold">85%</span>
                     <span className="text-white/50 text-xs">Risk Score</span>
                   </div>
                   <div className="w-px h-12 bg-white/20"></div>
                   <div className="flex flex-col items-center">
-                    <span className="text-yellow-400 text-3xl font-bold">
+                    <span className="text-yellow-400 text-2xl sm:text-3xl font-bold">
                       7d
                     </span>
                     <span className="text-white/50 text-xs">No Activity</span>
@@ -1609,7 +1590,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div style={{ width: "320px" }} className="text-right">
+            <div className="w-full max-w-[320px] text-left lg:text-right order-1 lg:order-2 mx-auto lg:mx-0">
               <div className="flex justify-end mb-4">
                 <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
                   <path
@@ -1632,7 +1613,7 @@ export default async function Home() {
           </div>
 
           <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
-            <div style={{ width: "320px" }}>
+            <div className="w-full max-w-[320px] mx-auto lg:mx-0">
               <svg className="w-8 h-8 mb-4" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
@@ -1652,14 +1633,7 @@ export default async function Home() {
             </div>
 
             <div
-              className="relative overflow-hidden"
-              style={{
-                width: "480px",
-                height: "220px",
-                borderRadius: "110px",
-                border: "8px solid #c9b896",
-                backgroundColor: "#000",
-              }}
+              className="relative overflow-hidden w-full max-w-[480px] h-[180px] sm:h-[220px] rounded-[90px] sm:rounded-[110px] border-4 sm:border-[8px] border-[#c9b896] bg-black mx-auto lg:mx-0"
             >
               <div
                 className="absolute inset-0"
@@ -1684,14 +1658,7 @@ export default async function Home() {
               />
 
               <div
-                className="absolute bg-[#1a1a1a] rounded-lg shadow-2xl"
-                style={{
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  padding: "16px 20px",
-                  width: "240px",
-                }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1a1a1a] rounded-lg shadow-2xl p-3 sm:p-4 w-[200px] sm:w-[240px]"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -1743,16 +1710,16 @@ export default async function Home() {
 
       <section
         id="pricing"
-        className="py-20 lg:py-32 px-6 lg:px-12 relative overflow-hidden"
+        className="py-12 sm:py-20 lg:py-32 px-4 sm:px-6 lg:px-12 relative overflow-hidden"
         style={{
           backgroundColor: "#000000",
         }}
       >
         <div className="relative z-10 max-w-5xl mx-auto">
           <PricingToggle>
-            <div className="text-center mb-14">
+            <div className="text-center mb-10 sm:mb-14">
               <h2
-                className="text-4xl md:text-5xl lg:text-6xl font-normal text-white mb-6 leading-tight tracking-tight"
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-normal text-white mb-4 sm:mb-6 leading-tight tracking-tight px-2"
                 style={{
                   fontFamily: "Georgia, 'Times New Roman', serif",
                   fontStyle: "italic",
@@ -1762,7 +1729,7 @@ export default async function Home() {
                 <br />
                 That Fits Your Revenue Team
               </h2>
-              <p className="text-white/60 text-sm max-w-xl mx-auto mb-10 leading-relaxed">
+              <p className="text-white/60 text-sm max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
                 Whether you&apos;re a solo sales rep or a large revenue
                 organization, Sentinel offers flexible pricing plans to
                 help you never lose a deal to silent decay.
@@ -1781,17 +1748,17 @@ export default async function Home() {
       <WorldMapDemo />
 
       <footer
-        className="relative"
-        style={{ background: "#000000", padding: "60px 40px" }}
+        className="px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
+        style={{ background: "#000000" }}
       >
         <div
-          className="max-w-7xl mx-auto rounded-3xl p-12"
+          className="max-w-7xl mx-auto rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12"
           style={{
             background: "#000000",
             boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
           }}
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10 sm:mb-16">
             <div>
               <h3 className="text-white text-lg font-semibold mb-4">
                 Join our newsletter to stay up to date on the latest news and
@@ -1818,7 +1785,7 @@ export default async function Home() {
             </div>
 
             <div>
-              <div className="grid grid-cols-3 gap-8 mb-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
                 <div>
                   <h4 className="text-white font-semibold mb-4">Product</h4>
                   <ul className="space-y-2">
@@ -1887,7 +1854,7 @@ export default async function Home() {
               </div>
 
 
-              <div className="flex items-center gap-4" style={{ marginLeft: 'calc(33.333% - 2.5rem)' }}>
+              <div className="flex items-center justify-center sm:justify-start gap-4 lg:ml-[calc(33.333%-2.5rem)]">
                 <a
                   href="https://x.com/Parbhat03"
                   target="_blank"
@@ -1974,9 +1941,9 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="text-center">
+          <div className="text-center mt-8 sm:mt-12">
             <span
-              className="text-7xl md:text-8xl font-bold"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold block break-words"
               style={{
                 color: "#ffffff",
                 fontFamily: "'Joyride', sans-serif",
