@@ -8,9 +8,49 @@ import {
   formatRiskLevel,
   getPrimaryRiskReason,
 } from "@/lib/dealRisk";
+import { STAGE_PRIORITY_FOR_RISK, TEAM_ROLES } from "@/lib/config";
 import { assertRiskFieldIntegrity } from "@/lib/riskAssertions";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { appendDealTimeline } from "@/lib/timeline";
+import {
+  triggerStageChangeNotification,
+  triggerDealAtRiskNotification,
+  triggerActionOverdueNotification,
+} from "@/lib/notification-triggers";
+import { dispatchWebhookEvent } from "@/lib/webhooks";
+import {
+  sendSlackNotification,
+  formatDealAtRiskSlackMessage,
+  formatDealWonSlackMessage,
+  formatStageChangeSlackMessage,
+} from "@/lib/slack";
+import { removeDemoDataForUser, hasDemoData } from "@/lib/demo-data";
+import { NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
+import { getUserTeamRole } from "@/lib/team-utils";
+import { enforceDealLimit } from "@/lib/plan-enforcement";
+import type { GetDealsOptions } from "@/types";
+
+export async function canUserAccessDeal(
+  userId: string,
+  deal: { userId: string; teamId: string | null }
+): Promise<boolean> {
+  if (deal.userId === userId) return true;
+  if (!deal.teamId) return false;
+  const role = await getUserTeamRole(userId, deal.teamId);
+  return role !== null;
+}
+
+export async function canUserEditDeal(
+  userId: string,
+  deal: { userId: string; teamId: string | null }
+): Promise<boolean> {
+  if (deal.userId === userId) return true;
+  if (!deal.teamId) return false;
+  const role = await getUserTeamRole(userId, deal.teamId);
+  if (!role) return false;
+  return role !== TEAM_ROLES.VIEWER;
+}
 
 export async function createDeal(formData: FormData) {
   const userId = await getAuthenticatedUserId();
@@ -19,9 +59,22 @@ export async function createDeal(formData: FormData) {
   const stage = formData.get("stage") as string;
   const value = parseInt(formData.get("value") as string, 10);
   const location = (formData.get("location") as string) || null;
+  const teamId = (formData.get("teamId") as string) || null;
+  const assignedToId = (formData.get("assignedToId") as string) || null;
 
   if (!name || !stage || isNaN(value)) {
-    throw new Error("Missing required fields");
+    const errors: Record<string, string> = {};
+    if (!name) errors.name = "Required";
+    if (!stage) errors.stage = "Required";
+    if (isNaN(value)) errors.value = "Required";
+    throw new ValidationError("Missing required fields", errors);
+  }
+
+  await enforceDealLimit(userId);
+
+  if (teamId) {
+    const role = await getUserTeamRole(userId, teamId);
+    if (!role) throw new ForbiddenError("You are not a member of this team");
   }
 
   const deal = await prisma.deal.create({
@@ -31,6 +84,8 @@ export async function createDeal(formData: FormData) {
       stage,
       value,
       location,
+      ...(teamId && { teamId }),
+      ...(assignedToId && { assignedToId }),
     },
   });
 
@@ -38,7 +93,24 @@ export async function createDeal(formData: FormData) {
     stage,
   });
 
+  try {
+    await dispatchWebhookEvent(userId, teamId, "deal.created", {
+      id: deal.id,
+      name: deal.name,
+      value: deal.value,
+      stage: deal.stage,
+    });
+  } catch (e) {
+    console.error("[deals] Webhook dispatch failed:", e);
+  }
+
+  const hadDemo = await hasDemoData(userId);
+  if (hadDemo) {
+    await removeDemoDataForUser(userId);
+  }
+
   revalidatePath("/dashboard");
+  if (teamId) revalidatePath(`/teams/${teamId}`);
 
   const timeline = await prisma.dealTimeline.findMany({
     where: { dealId: deal.id },
@@ -67,6 +139,8 @@ export async function createDeal(formData: FormData) {
   return {
     id: deal.id,
     userId: deal.userId,
+    teamId: deal.teamId,
+    assignedToId: deal.assignedToId,
     name: deal.name,
     stage: deal.stage,
     value: deal.value,
@@ -88,13 +162,36 @@ export async function createDeal(formData: FormData) {
   };
 }
 
-export async function getAllDeals() {
+export async function getAllDeals(options?: GetDealsOptions) {
   noStore();
   const userId = await getAuthenticatedUserId();
 
+  let where: Prisma.DealWhereInput = { userId };
+
+  if (options?.teamId) {
+    const role = await getUserTeamRole(userId, options.teamId);
+    if (!role) throw new ForbiddenError("You are not a member of this team");
+    where = { teamId: options.teamId };
+  } else if (options?.includeTeamDeals) {
+    const memberships = await prisma.teamMember.findMany({
+      where: { userId },
+      select: { teamId: true },
+    });
+    const teamIds = memberships.map((m) => m.teamId);
+    where = {
+      OR: [
+        { userId },
+        ...(teamIds.length ? [{ teamId: { in: teamIds } }] : []),
+      ],
+    };
+  }
+
   const deals = await prisma.deal.findMany({
-    where: { userId },
+    where,
     orderBy: { createdAt: "desc" },
+    include: {
+      assignedTo: { select: { id: true, name: true, surname: true } },
+    },
   });
 
   const dealIds = deals.map((d) => d.id);
@@ -121,8 +218,8 @@ export async function getAllDeals() {
       createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
       metadata:
         e.metadata &&
-        typeof e.metadata === "object" &&
-        !Array.isArray(e.metadata)
+          typeof e.metadata === "object" &&
+          !Array.isArray(e.metadata)
           ? ({ ...e.metadata } as Record<string, unknown>)
           : null,
     }));
@@ -140,9 +237,15 @@ export async function getAllDeals() {
     return {
       id: deal.id,
       userId: deal.userId,
+      teamId: deal.teamId,
+      assignedToId: deal.assignedToId,
+      assignedTo: deal.assignedTo
+        ? { id: deal.assignedTo.id, name: deal.assignedTo.name, surname: deal.assignedTo.surname }
+        : null,
       name: deal.name,
       stage: deal.stage,
       value: deal.value,
+      isDemo: deal.isDemo,
       lastActivityAt: signals.lastActivityAt,
       riskScore: signals.riskScore,
       riskLevel: formatRiskLevel(signals.riskScore),
@@ -162,19 +265,106 @@ export async function getAllDeals() {
   });
 }
 
-export async function getDealById(dealId: string) {
+export async function getTeamDeals(teamId: string) {
+  noStore();
   const userId = await getAuthenticatedUserId();
+  const role = await getUserTeamRole(userId, teamId);
+  if (!role) throw new ForbiddenError("You are not a member of this team");
 
-  const deal = await prisma.deal.findFirst({
-    where: {
-      id: dealId,
-      userId,
+  const deals = await prisma.deal.findMany({
+    where: { teamId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      assignedTo: {
+        select: { id: true, name: true, surname: true, email: true },
+      },
     },
   });
 
-  if (!deal) {
-    throw new Error("Deal not found");
+  const dealIds = deals.map((d) => d.id);
+  const allTimelineEvents = await prisma.dealTimeline.findMany({
+    where: { dealId: { in: dealIds } },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const timelineByDealId = new Map<string, typeof allTimelineEvents>();
+  for (const event of allTimelineEvents) {
+    if (!timelineByDealId.has(event.dealId)) {
+      timelineByDealId.set(event.dealId, []);
+    }
+    timelineByDealId.get(event.dealId)!.push(event);
   }
+
+  return deals.map((deal) => {
+    assertRiskFieldIntegrity(deal);
+    const dealTimeline = timelineByDealId.get(deal.id) ?? [];
+    const timelineEvents = dealTimeline.map((e) => ({
+      eventType: e.eventType,
+      createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
+      metadata:
+        e.metadata &&
+          typeof e.metadata === "object" &&
+          !Array.isArray(e.metadata)
+          ? ({ ...e.metadata } as Record<string, unknown>)
+          : null,
+    }));
+
+    const signals = calculateDealSignals(
+      {
+        stage: deal.stage,
+        value: deal.value,
+        status: "active",
+        createdAt: deal.createdAt,
+      },
+      timelineEvents
+    );
+
+    return {
+      id: deal.id,
+      userId: deal.userId,
+      teamId: deal.teamId,
+      assignedToId: deal.assignedToId,
+      name: deal.name,
+      stage: deal.stage,
+      value: deal.value,
+      isDemo: deal.isDemo,
+      lastActivityAt: signals.lastActivityAt,
+      riskScore: signals.riskScore,
+      riskLevel: formatRiskLevel(signals.riskScore),
+      status: signals.status,
+      nextAction: signals.nextAction,
+      nextActionReason: null,
+      riskReasons: signals.reasons,
+      primaryRiskReason: getPrimaryRiskReason(signals.reasons),
+      recommendedAction: signals.recommendedAction,
+      riskStartedAt: signals.riskStartedAt,
+      riskAgeInDays: signals.riskAgeInDays,
+      actionDueAt: signals.actionDueAt,
+      actionOverdueByDays: signals.actionOverdueByDays,
+      isActionOverdue: signals.isActionOverdue,
+      createdAt: deal.createdAt,
+      assignedTo: deal.assignedTo,
+    };
+  });
+}
+
+export async function getDealById(dealId: string) {
+  const userId = await getAuthenticatedUserId();
+
+  const deal = await prisma.deal.findUnique({
+    where: { id: dealId },
+    include: {
+      team: true,
+      assignedTo: {
+        select: { id: true, name: true, surname: true, email: true },
+      },
+    },
+  });
+
+  if (!deal) throw new NotFoundError("Deal");
+
+  const canAccess = await canUserAccessDeal(userId, deal);
+  if (!canAccess) throw new ForbiddenError("You do not have access to this deal");
 
   const timeline = await prisma.dealTimeline.findMany({
     where: { dealId: deal.id },
@@ -205,12 +395,18 @@ export async function getDealById(dealId: string) {
     orderBy: { createdAt: "desc" },
   });
 
+  const dealWithSource = deal as typeof deal & { source?: string | null; externalId?: string | null };
+
   return {
     id: deal.id,
     userId: deal.userId,
+    teamId: deal.teamId,
+    assignedToId: deal.assignedToId,
     name: deal.name,
     stage: deal.stage,
     value: deal.value,
+    source: dealWithSource.source ?? null,
+    externalId: dealWithSource.externalId ?? null,
     lastActivityAt: signals.lastActivityAt,
     riskScore: signals.riskScore,
     riskLevel: formatRiskLevel(signals.riskScore),
@@ -228,22 +424,21 @@ export async function getDealById(dealId: string) {
     createdAt: deal.createdAt,
     events,
     timeline,
+    team: deal.team ?? undefined,
+    assignedTo: deal.assignedTo ?? undefined,
   };
 }
 
 export async function updateDealStage(dealId: string, newStage: string) {
   const userId = await getAuthenticatedUserId();
 
-  const deal = await prisma.deal.findFirst({
-    where: {
-      id: dealId,
-      userId,
-    },
-  });
+  const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+  if (!deal) throw new NotFoundError("Deal");
 
-  if (!deal) {
-    throw new Error("Deal not found");
-  }
+  const canEdit = await canUserEditDeal(userId, deal);
+  if (!canEdit) throw new ForbiddenError("You cannot edit this deal");
+
+  const oldStage = deal.stage;
 
   await prisma.deal.update({
     where: { id: dealId },
@@ -256,11 +451,194 @@ export async function updateDealStage(dealId: string, newStage: string) {
 
   revalidatePath(`/deals/${dealId}`);
   revalidatePath("/dashboard");
+  if (deal.teamId) revalidatePath(`/teams/${deal.teamId}`);
+
+  try {
+    if (oldStage !== newStage) {
+      await triggerStageChangeNotification(
+        { id: deal.id, name: deal.name, userId: deal.userId },
+        oldStage,
+        newStage
+      );
+      await dispatchWebhookEvent(userId, deal.teamId, "deal.stage_changed", {
+        id: deal.id,
+        name: deal.name,
+        oldStage,
+        newStage,
+      });
+      await sendSlackNotification(
+        userId,
+        deal.teamId,
+        "deal.stage_changed",
+        formatStageChangeSlackMessage({
+          name: deal.name,
+          value: deal.value,
+          oldStage,
+          newStage,
+        })
+      );
+    }
+    if (newStage === "closed_won") {
+      await dispatchWebhookEvent(userId, deal.teamId, "deal.closed_won", {
+        id: deal.id,
+        name: deal.name,
+        value: deal.value,
+      });
+      await sendSlackNotification(
+        userId,
+        deal.teamId,
+        "deal.closed_won",
+        formatDealWonSlackMessage({ name: deal.name, value: deal.value })
+      );
+    }
+    const enriched = await getDealById(dealId);
+    const riskLevel = enriched.riskLevel ?? formatRiskLevel(enriched.riskScore);
+    if (
+      riskLevel === "High" ||
+      (riskLevel as string).toLowerCase() === "critical"
+    ) {
+      await triggerDealAtRiskNotification({
+        id: enriched.id,
+        name: enriched.name,
+        userId: enriched.userId,
+        riskLevel: riskLevel as string,
+        primaryRiskReason: enriched.primaryRiskReason ?? undefined,
+      });
+      await dispatchWebhookEvent(userId, deal.teamId, "deal.at_risk", {
+        id: enriched.id,
+        name: enriched.name,
+        value: enriched.value,
+        stage: enriched.stage,
+        riskLevel: riskLevel as string,
+        primaryRiskReason: enriched.primaryRiskReason ?? undefined,
+      });
+      await sendSlackNotification(
+        userId,
+        deal.teamId,
+        "deal.at_risk",
+        formatDealAtRiskSlackMessage({
+          name: enriched.name,
+          value: enriched.value,
+          stage: enriched.stage,
+          riskLevel: riskLevel as string,
+          riskReason: enriched.primaryRiskReason ?? undefined,
+        })
+      );
+    }
+    if (
+      enriched.isActionOverdue &&
+      enriched.recommendedAction &&
+      enriched.actionOverdueByDays != null
+    ) {
+      await triggerActionOverdueNotification(
+        { id: enriched.id, name: enriched.name, userId: enriched.userId },
+        enriched.recommendedAction.label,
+        enriched.actionOverdueByDays
+      );
+    }
+  } catch (e) {
+    console.error("[deals] Notification triggers failed:", e);
+  }
 }
 
-export async function getFounderRiskOverview() {
+export async function assignDeal(
+  dealId: string,
+  assignedToId: string | null
+) {
+  const userId = await getAuthenticatedUserId();
+
+  const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+  if (!deal) throw new NotFoundError("Deal");
+  if (!deal.teamId) throw new ForbiddenError("Deal must belong to a team");
+
+  const myRole = await getUserTeamRole(userId, deal.teamId);
+  if (!myRole) throw new ForbiddenError("You are not a member of this team");
+  if (myRole !== "owner" && myRole !== "admin") {
+    throw new ForbiddenError("Only owners and admins can assign deals");
+  }
+
+  if (assignedToId) {
+    const assigneeMembership = await prisma.teamMember.findUnique({
+      where: { userId_teamId: { userId: assignedToId, teamId: deal.teamId } },
+    });
+    if (!assigneeMembership) {
+      throw new ForbiddenError("Assignee must be a member of the team");
+    }
+  }
+
+  await prisma.deal.update({
+    where: { id: dealId },
+    data: { assignedToId },
+  });
+
+  await appendDealTimeline(dealId, "activity", {
+    type: "assignment_changed",
+    assignedToId,
+  });
+
+  revalidatePath(`/deals/${dealId}`);
+  revalidatePath(`/teams/${deal.teamId}`);
+  revalidatePath("/dashboard");
+}
+
+export async function moveDealToTeam(dealId: string, teamId: string) {
+  const userId = await getAuthenticatedUserId();
+
+  const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+  if (!deal) throw new NotFoundError("Deal");
+  if (deal.userId !== userId) throw new ForbiddenError("You do not own this deal");
+  if (deal.teamId) throw new ForbiddenError("Deal is already a team deal");
+
+  const role = await getUserTeamRole(userId, teamId);
+  if (!role) throw new ForbiddenError("You are not a member of this team");
+
+  await prisma.deal.update({
+    where: { id: dealId },
+    data: { teamId },
+  });
+
+  await appendDealTimeline(dealId, "activity", {
+    type: "moved_to_team",
+    teamId,
+  });
+
+  revalidatePath(`/deals/${dealId}`);
+  revalidatePath(`/teams/${teamId}`);
+  revalidatePath("/dashboard");
+}
+
+export async function moveDealToPersonal(dealId: string) {
+  const userId = await getAuthenticatedUserId();
+
+  const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+  if (!deal) throw new NotFoundError("Deal");
+  if (!deal.teamId) throw new ForbiddenError("Deal is not a team deal");
+
+  const myRole = await getUserTeamRole(userId, deal.teamId);
+  if (!myRole) throw new ForbiddenError("You are not a member of this team");
+  if (myRole !== "owner" && myRole !== "admin") {
+    throw new ForbiddenError("Only owners and admins can move deals to personal");
+  }
+
+  await prisma.deal.update({
+    where: { id: dealId },
+    data: { teamId: null, assignedToId: null, userId },
+  });
+
+  await appendDealTimeline(dealId, "activity", {
+    type: "moved_to_personal",
+  });
+
+  revalidatePath(`/deals/${dealId}`);
+  revalidatePath(`/teams/${deal.teamId}`);
+  revalidatePath("/dashboard");
+}
+
+export async function getFounderRiskOverview(teamId?: string) {
   noStore();
-  const deals = await getAllDeals();
+  const deals = await getAllDeals(
+    teamId ? { teamId } : undefined
+  );
 
   const totalDeals = deals.length;
   const atRiskDealsCount = deals.filter((d) => d.status === "at_risk").length;
@@ -330,9 +708,11 @@ export async function getDealCountsByCountry() {
   return result;
 }
 
-export async function getFounderActionQueue() {
+export async function getFounderActionQueue(teamId?: string) {
   noStore();
-  const deals = await getAllDeals();
+  const deals = await getAllDeals(
+    teamId ? { teamId } : undefined
+  );
 
   const urgent: typeof deals = [];
   const important: typeof deals = [];
@@ -365,14 +745,9 @@ export async function getFounderActionQueue() {
 
   important.sort((a, b) => b.riskScore - a.riskScore);
 
-  const stagePriority: Record<string, number> = {
-    negotiation: 2,
-    discover: 1,
-  };
-
   safe.sort((a, b) => {
-    const aPriority = stagePriority[a.stage] ?? 0;
-    const bPriority = stagePriority[b.stage] ?? 0;
+    const aPriority = STAGE_PRIORITY_FOR_RISK[a.stage] ?? 0;
+    const bPriority = STAGE_PRIORITY_FOR_RISK[b.stage] ?? 0;
     if (aPriority !== bPriority) {
       return bPriority - aPriority;
     }
