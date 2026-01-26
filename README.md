@@ -369,14 +369,64 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 
 ---
 
+## Contributing
+
+We welcome contributions. Please read our contributing guidelines before submitting a pull request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
+
+---
+
+## Support
+
+- Documentation: [docs](https://www.sentinel.parbhat.dev/docs)
+- API Reference: [api-docs](https://www.sentinel.parbhat.dev/api-docs)
+- Issues: [GitHub Issues](https://github.com/parbhatkapila4/Sentinel/issues)
+
+---
+
+## Acknowledgments
+
+- [Next.js](https://nextjs.org) — The React framework for production
+- [Prisma](https://prisma.io) — Next-generation ORM for Node.js
+- [Clerk](https://clerk.com) — Authentication and user management
+- [OpenRouter](https://openrouter.ai) — Unified API for AI models
+- [Tailwind CSS](https://tailwindcss.com) — Utility-first CSS framework
+- [Vercel](https://vercel.com) — Deployment and hosting
+
+---
+
 ## License
 
-[MIT](LICENSE)
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-
-Built by [Parbhat Kapila](https://github.com/parbhatkapila4)
-
+  <br />
+  <p>
+    <sub>
+      Built with precision by <a href="https://github.com/parbhatkapila4"><strong>Parbhat Kapila</strong></a>
+    </sub>
+  </p>
+  <p>
+    <a href="https://twitter.com/parbhatkapila4">Twitter</a>
+    ·
+    <a href="https://linkedin.com/in/parbhat-kapila">LinkedIn</a>
+    ·
+    <a href="https://github.com/parbhatkapila4">GitHub</a>
+  </p>
+  <br />
+  <p>
+    <sub>If Sentinel helped you, consider giving it a star.</sub>
+  </p>
+  <p>
+    <a href="https://github.com/parbhatkapila4/Sentinel">
+      <img src="https://img.shields.io/github/stars/parbhatkapila4/Sentinel?style=social" alt="Star on GitHub" />
+    </a>
+  </p>
 </div>
