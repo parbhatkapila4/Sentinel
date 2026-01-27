@@ -592,7 +592,7 @@ function SignUpContent() {
                 }}
                 routing="hash"
                 signInUrl={token ? `/sign-in?email=${encodeURIComponent(email || "")}&token=${encodeURIComponent(token)}` : "/sign-in"}
-                afterSignUpUrl={afterSignUpUrl}
+                fallbackRedirectUrl={afterSignUpUrl}
                 initialValues={email ? { emailAddress: email } : undefined}
               />
             </div>
