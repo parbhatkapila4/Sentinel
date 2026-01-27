@@ -614,7 +614,8 @@ a,
   body {
     @apply bg-background text-foreground;
     height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
 
@@ -869,17 +870,6 @@ input::placeholder {
 
 [data-sonner-toast][data-type="error"] [data-icon] {
   color: #ef4444 !important;
-}
-
-[data-sonner-toast] [data-close-button] {
-  background: transparent !important;
-  border: none !important;
-  color: #8a8a8a !important;
-}
-
-[data-sonner-toast] [data-close-button]:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 

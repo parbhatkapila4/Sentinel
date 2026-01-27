@@ -5,6 +5,7 @@ import { Providers } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 import { ClerkProvider } from "@clerk/nextjs";
 import { CommandPalette } from "@/components/command-palette";
+import { WebVitalsTracker } from "@/components/web-vitals-tracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <WebVitalsTracker />
           <Providers>
             <CommandPalette />
             {children}
@@ -40,8 +42,8 @@ export default function RootLayout({
             position="top-right"
             theme="dark"
             richColors
-            duration={4000}
-            closeButton
+            duration={3000}
+            closeButton={false}
             toastOptions={{
               style: {
                 background: "#1a1a1a",

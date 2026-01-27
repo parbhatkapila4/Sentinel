@@ -34,6 +34,7 @@ model User {
   sentInvites               UserInvite[]               @relation("SentInvites")
   plan                      UserPlan?
   usageTracking             UsageTracking[]
+  paymentMethods            PaymentMethod[]
 }
 
 model Deal {
@@ -61,6 +62,7 @@ model Deal {
   @@index([userId, createdAt])
   @@index([userId, stage])
   @@index([teamId])
+  @@index([teamId, createdAt])
   @@index([assignedToId])
   @@index([externalId])
 }
@@ -397,6 +399,20 @@ model UserPlan {
 
   @@index([userId])
   @@index([planType])
+}
+
+model PaymentMethod {
+  id        String   @id @default(cuid())
+  userId    String
+  brand     String
+  last4     String
+  expMonth  Int
+  expYear   Int
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UsageTracking {
