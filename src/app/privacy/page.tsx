@@ -164,10 +164,10 @@ export default async function PrivacyPage() {
               information at any time. You can also opt-out of receiving marketing
               communications from us. To exercise these rights, please contact us at{" "}
               <a
-                href="mailto:parbhat@parbhat.dev"
+                href="mailto:help@sentinels.in"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                parbhat@parbhat.dev
+                help@sentinels.in
               </a>
               .
             </p>
@@ -193,10 +193,10 @@ export default async function PrivacyPage() {
               If you have any questions about this Privacy Policy, please contact us
               at{" "}
               <a
-                href="mailto:parbhat@parbhat.dev"
+                href="mailto:help@sentinels.in"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                parbhat@parbhat.dev
+                help@sentinels.in
               </a>
               .
             </p>

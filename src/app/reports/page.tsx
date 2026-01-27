@@ -456,12 +456,14 @@ export default async function ReportsPage() {
                       <div>
                         <p className="text-xs text-white/50 mb-1">Value Added</p>
                         <p className="text-lg font-bold text-green-400">
-                          ${(deals.filter((d) => {
-                            const created = new Date(d.createdAt);
-                            const weekAgo = new Date();
-                            weekAgo.setDate(weekAgo.getDate() - 7);
-                            return created >= weekAgo;
-                          }).reduce((acc, d) => acc + d.value, 0) / 1000).toFixed(0)}K
+                          {formatRevenue(
+                            deals.filter((d) => {
+                              const created = new Date(d.createdAt);
+                              const weekAgo = new Date();
+                              weekAgo.setDate(weekAgo.getDate() - 7);
+                              return created >= weekAgo;
+                            }).reduce((acc, d) => acc + d.value, 0)
+                          )}
                         </p>
                       </div>
                       <div>
@@ -516,7 +518,9 @@ export default async function ReportsPage() {
                           {deals.reduce((max, d) => d.value > max.value ? d : max, deals[0]).name}
                         </p>
                         <p className="text-lg font-bold text-yellow-400">
-                          ${(deals.reduce((max, d) => d.value > max.value ? d : max, deals[0]).value / 1000).toFixed(0)}K
+                          {formatRevenue(
+                            deals.reduce((max, d) => d.value > max.value ? d : max, deals[0]).value
+                          )}
                         </p>
                       </>
                     ) : (
@@ -685,8 +689,8 @@ export default async function ReportsPage() {
                         <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${max <= 14 ? 'bg-green-500' :
-                                max <= 30 ? 'bg-yellow-500' :
-                                  max <= 60 ? 'bg-orange-500' : 'bg-red-500'
+                              max <= 30 ? 'bg-yellow-500' :
+                                max <= 60 ? 'bg-orange-500' : 'bg-red-500'
                               }`}
                             style={{ width: `${percentage}%` }}
                           />

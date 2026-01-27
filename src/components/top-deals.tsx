@@ -75,7 +75,7 @@ export function TopDeals({ deals }: TopDealsProps) {
                   <td className="py-3 lg:py-4 px-3 lg:px-4">
                     <span className="text-sm font-semibold text-white">
                       $
-                      {deal.value.toLocaleString(undefined, {
+                      {deal.value.toLocaleString("en-US", {
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 0,
                       })}

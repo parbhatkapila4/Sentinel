@@ -913,7 +913,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           {deal.name}
                         </div>
                         <div className="text-xs text-[#8a8a8a] mt-1">
-                          {deal.stage} • ${deal.value.toLocaleString()}
+                          {deal.stage} • ${deal.value.toLocaleString("en-US")}
                         </div>
                       </Link>
                     ))}
@@ -982,7 +982,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                         </div>
                       </Link>
                       <a
-                        href="mailto:parbhat@parbhat.dev"
+                        href="mailto:help@sentinels.in"
                         onClick={() => setShowHelp(false)}
                         className="block px-4 py-3 hover:bg-[#1a1a1a] transition-colors"
                       >
@@ -990,7 +990,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           Contact Support
                         </div>
                         <div className="text-xs text-[#8a8a8a] mt-1">
-                          parbhat@parbhat.dev
+                          help@sentinels.in
                         </div>
                       </a>
                       <button

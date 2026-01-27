@@ -357,7 +357,7 @@ export default async function DealsPage({
                           </td>
                           <td className="py-3 sm:py-4 px-3 sm:px-4">
                             <span className="text-sm font-semibold text-white">
-                              ${deal.value.toLocaleString()}
+                              ${deal.value.toLocaleString("en-US")}
                             </span>
                           </td>
                           <td className="py-3 sm:py-4 px-3 sm:px-4">
@@ -428,7 +428,7 @@ export default async function DealsPage({
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-white">{deal.name}</span>
                         <span className="text-sm text-white/60">
-                          ${deal.value.toLocaleString()}
+                          ${deal.value.toLocaleString("en-US")}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-white/50 flex-wrap">

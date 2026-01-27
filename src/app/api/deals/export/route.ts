@@ -61,7 +61,7 @@ export async function GET() {
     doc.text(`High Risk Deals: ${highRiskDeals}`, margin, yPos);
     yPos += 6;
     doc.text(
-      `Total Pipeline Value: $${totalValue.toLocaleString()}`,
+      `Total Pipeline Value: $${totalValue.toLocaleString("en-US")}`,
       margin,
       yPos
     );
@@ -152,7 +152,7 @@ export async function GET() {
       doc.text(dealName, xPos + 2, yPos + 5);
       xPos += colWidths[0];
 
-      doc.text(`$${deal.value.toLocaleString()}`, xPos + 2, yPos + 5);
+      doc.text(`$${deal.value.toLocaleString("en-US")}`, xPos + 2, yPos + 5);
       xPos += colWidths[1];
 
       doc.setTextColor(...textSecondary);

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { formatRevenue } from "@/lib/utils";
 
 interface RevenueSource {
   source: string;
@@ -108,21 +109,6 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
             Top Revenue Sources
           </h3>
         </div>
-        <button type="button" className="text-[#8a8a8a] hover:text-white transition-colors p-2 min-w-[44px] min-h-[44px] rounded-lg hover:bg-[#1a1a1a] flex items-center justify-center shrink-0">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-            />
-          </svg>
-        </button>
       </div>
 
       <div
@@ -269,12 +255,9 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
               />
 
               <div className="text-white font-semibold text-sm leading-tight">
-                $
-                {(
-                  (data[hoveredIndex ?? highlightedIndex ?? 0]?.value ?? 0) /
-                  1000
-                ).toFixed(0)}
-                K
+                {formatRevenue(
+                  data[hoveredIndex ?? highlightedIndex ?? 0]?.value ?? 0
+                )}
               </div>
               <div
                 className="text-xs mt-1 leading-tight"

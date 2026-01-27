@@ -150,7 +150,7 @@ export function TotalSellingSource({
 
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="text-2xl font-bold text-white">
-              ${totalSale.toLocaleString()}
+              ${totalSale.toLocaleString("en-US")}
             </div>
             <div className="text-xs text-[#8a8a8a] mt-1">Total Sale</div>
           </div>
@@ -199,7 +199,7 @@ export function TotalSellingSource({
                 </div>
               </div>
               <div className="text-sm font-bold text-white">
-                {item.value.toLocaleString()}
+                {item.value.toLocaleString("en-US")}
               </div>
             </div>
           ))}

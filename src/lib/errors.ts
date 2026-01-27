@@ -86,6 +86,18 @@ export class ConflictError extends AppError {
   }
 }
 
+export class RateLimitError extends AppError {
+  constructor(message = "Rate limit exceeded") {
+    super(message, {
+      statusCode: 429,
+      code: "RATE_LIMIT_EXCEEDED",
+      isOperational: true,
+    });
+    this.name = "RateLimitError";
+    Object.setPrototypeOf(this, RateLimitError.prototype);
+  }
+}
+
 export function isAppError(error: unknown): error is AppError {
   return error instanceof AppError;
 }

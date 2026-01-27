@@ -57,11 +57,11 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
 
   if (!connected) {
     return (
-      <div>
+      <div className="flex flex-col" style={{ minHeight: "300px" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-white">Upcoming Meetings</h3>
         </div>
-        <div className="text-center py-8">
+        <div className="flex-1 flex flex-col items-center justify-center text-center mt-8">
           <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
             <span className="text-2xl">📅</span>
           </div>
@@ -125,10 +125,10 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
                     <div className="flex items-center gap-2 mt-1">
                       <span
                         className={`text-xs px-2 py-0.5 rounded-md ${isToday
-                            ? "bg-red-500/20 text-red-400"
-                            : isTomorrow
-                              ? "bg-amber-500/20 text-amber-400"
-                              : "bg-white/10 text-white/60"
+                          ? "bg-red-500/20 text-red-400"
+                          : isTomorrow
+                            ? "bg-amber-500/20 text-amber-400"
+                            : "bg-white/10 text-white/60"
                           }`}
                       >
                         {isToday ? "Today" : isTomorrow ? "Tomorrow" : formatDate(meeting.startTime)}

@@ -112,7 +112,7 @@ export function EmailGenerator({
               Generate follow-up email
             </h3>
             <p className="text-sm text-white/50 mb-4">
-              {dealName} · ${dealValue.toLocaleString()} · {dealStage}
+              {dealName} · ${dealValue.toLocaleString("en-US")} · {dealStage}
             </p>
 
             {!email ? (

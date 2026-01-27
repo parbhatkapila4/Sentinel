@@ -206,7 +206,7 @@ export function identifyDealPatterns(deals: DealForPrediction[]): DealPatterns {
   if (avgWonValue > 0 || avgLostValue > 0) {
     insights.push({
       type: "value",
-      description: `Avg won deal: $${Math.round(avgWonValue).toLocaleString()}; avg lost: $${Math.round(avgLostValue).toLocaleString()}.`,
+      description: `Avg won deal: $${Math.round(avgWonValue).toLocaleString("en-US")}; avg lost: $${Math.round(avgLostValue).toLocaleString("en-US")}.`,
       impact: "neutral",
     });
   }
@@ -351,7 +351,7 @@ export function detectAnomalies(deals: DealForPrediction[]): AnomaliesResult {
     if (stdVal > 0 && (d.value > avgVal + 2 * stdVal || d.value < Math.max(0, avgVal - 2 * stdVal))) {
       anomalies.push({
         deal: { id: d.id, name: d.name, stage: d.stage, value: d.value },
-        reason: `Value $${d.value.toLocaleString()} is unusual for your pipeline (avg ≈ $${Math.round(avgVal).toLocaleString()}).`,
+        reason: `Value $${d.value.toLocaleString("en-US")} is unusual for your pipeline (avg ≈ $${Math.round(avgVal).toLocaleString("en-US")}).`,
         severity: "low",
       });
     }

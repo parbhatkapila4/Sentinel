@@ -1063,10 +1063,10 @@ export default async function DocsPage() {
                   risk analysis work effectively. If you have specific needs or
                   use cases, we&apos;d love to hear about them, contact us at{" "}
                   <a
-                    href="mailto:parbhat@parbhat.dev"
+                    href="mailto:help@sentinels.in"
                     className="text-blue-400 hover:text-blue-300 underline"
                   >
-                    parbhat@parbhat.dev
+                    help@sentinels.in
                   </a>
                   .
                 </p>
@@ -1091,10 +1091,10 @@ export default async function DocsPage() {
                 <p className="text-white/70 leading-relaxed">
                   We&apos;re here to help! Reach out to us at{" "}
                   <a
-                    href="mailto:parbhat@parbhat.dev"
+                    href="mailto:help@sentinels.in"
                     className="text-blue-400 hover:text-blue-300 underline"
                   >
-                    parbhat@parbhat.dev
+                    help@sentinels.in
                   </a>
                   . Whether you have questions about features, need help
                   understanding risk scores, or want to share feedback, we&apos;d

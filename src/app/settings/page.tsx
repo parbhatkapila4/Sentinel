@@ -40,6 +40,14 @@ import {
   syncCalendarEvents,
   updateGoogleCalendarSettings,
 } from "@/app/actions/google-calendar";
+import {
+  getPaymentMethods,
+  addPaymentMethod,
+  updatePaymentMethod,
+  removePaymentMethod,
+  setDefaultPaymentMethod,
+} from "@/app/actions/payment-methods";
+import { CARD_BRANDS, type PaymentMethodItem } from "@/lib/payment-methods";
 import { formatRelativeTime } from "@/lib/utils";
 
 export default function SettingsPage() {
@@ -80,7 +88,7 @@ export default function SettingsPage() {
   const [integrationLogs, setIntegrationLogs] = useState<IntegrationLogEntry[]>([]);
   const [salesforceForm, setSalesforceForm] = useState({ apiKey: "", instanceUrl: "" });
   const [hubspotForm, setHubspotForm] = useState({ apiKey: "" });
-  const [googleCalendarForm, setGoogleCalendarForm] = useState({ apiKey: "", calendarId: "primary" });
+  const [googleCalendarForm, setGoogleCalendarForm] = useState({ apiKey: "", calendarId: "" });
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
@@ -90,6 +98,19 @@ export default function SettingsPage() {
     enableCompetitiveSignals: true,
   });
   const [isSavingRiskSettings, setIsSavingRiskSettings] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodItem[]>([]);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState<"add" | { type: "edit"; id: string } | null>(null);
+  const [paymentForm, setPaymentForm] = useState({
+    brand: "VISA",
+    last4: "",
+    expMonth: new Date().getMonth() + 1,
+    expYear: new Date().getFullYear() + 1,
+    setAsDefault: true,
+  });
+  const [isSavingPayment, setIsSavingPayment] = useState(false);
+  const [showRemovePaymentDialog, setShowRemovePaymentDialog] = useState(false);
+  const [removingPaymentId, setRemovingPaymentId] = useState<string | null>(null);
 
   const tabs = [
     { id: "general", label: "General", icon: "⚙️" },
@@ -147,6 +168,23 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
+    async function loadPaymentMethods() {
+      if (activeTab !== "billing") return;
+      setLoadingPaymentMethods(true);
+      try {
+        const list = await getPaymentMethods();
+        setPaymentMethods(list);
+      } catch (e) {
+        console.error("Failed to load payment methods:", e);
+        toast.error("Failed to load payment methods.");
+      } finally {
+        setLoadingPaymentMethods(false);
+      }
+    }
+    loadPaymentMethods();
+  }, [activeTab]);
+
+  useEffect(() => {
     async function loadIntegrationStatuses() {
       if (activeTab !== "integrations") return;
 
@@ -173,7 +211,102 @@ export default function SettingsPage() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsCanceling(false);
     setShowCancelDialog(false);
-    alert("Your subscription has been canceled successfully.");
+    toast.success("Your subscription has been canceled successfully.");
+  };
+
+  const openAddPaymentModal = () => {
+    setPaymentForm({
+      brand: "VISA",
+      last4: "",
+      expMonth: new Date().getMonth() + 1,
+      expYear: new Date().getFullYear() + 1,
+      setAsDefault: paymentMethods.length === 0,
+    });
+    setShowPaymentModal("add");
+  };
+
+  const openEditPaymentModal = (pm: PaymentMethodItem) => {
+    setPaymentForm({
+      brand: pm.brand,
+      last4: pm.last4,
+      expMonth: pm.expMonth,
+      expYear: pm.expYear,
+      setAsDefault: pm.isDefault,
+    });
+    setShowPaymentModal({ type: "edit", id: pm.id });
+  };
+
+  const handleSavePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paymentForm.last4.trim()) {
+      toast.error("Please enter the last 4 digits of your card.");
+      return;
+    }
+    setIsSavingPayment(true);
+    try {
+      if (showPaymentModal === "add") {
+        await addPaymentMethod({
+          brand: paymentForm.brand,
+          last4: paymentForm.last4,
+          expMonth: paymentForm.expMonth,
+          expYear: paymentForm.expYear,
+          setAsDefault: paymentForm.setAsDefault,
+        });
+        toast.success("Payment method added.");
+      } else if (showPaymentModal?.type === "edit") {
+        await updatePaymentMethod(showPaymentModal.id, {
+          brand: paymentForm.brand,
+          last4: paymentForm.last4,
+          expMonth: paymentForm.expMonth,
+          expYear: paymentForm.expYear,
+        });
+        toast.success("Payment method updated.");
+      }
+      setShowPaymentModal(null);
+      const list = await getPaymentMethods();
+      setPaymentMethods(list);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save payment method.");
+    } finally {
+      setIsSavingPayment(false);
+    }
+  };
+
+  const handleRemovePaymentClick = (id: string) => {
+    setRemovingPaymentId(id);
+    setShowRemovePaymentDialog(true);
+  };
+
+  const handleConfirmRemovePayment = async () => {
+    if (!removingPaymentId) return;
+    try {
+      await removePaymentMethod(removingPaymentId);
+      toast.success("Payment method removed.");
+      setShowRemovePaymentDialog(false);
+      setRemovingPaymentId(null);
+      const list = await getPaymentMethods();
+      setPaymentMethods(list);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to remove payment method.");
+    }
+  };
+
+  const handleSetDefaultPayment = async (id: string) => {
+    try {
+      await setDefaultPaymentMethod(id);
+      toast.success("Default payment method updated.");
+      const list = await getPaymentMethods();
+      setPaymentMethods(list);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to set default.");
+    }
+  };
+
+  const brandStyles: Record<string, { bg: string; label: string }> = {
+    VISA: { bg: "from-blue-600 to-blue-400", label: "VISA" },
+    Mastercard: { bg: "from-orange-600 to-red-500", label: "MC" },
+    Amex: { bg: "from-cyan-600 to-blue-500", label: "Amex" },
+    Discover: { bg: "from-amber-600 to-orange-500", label: "Discover" },
   };
 
   const handleDeleteAccount = async () => {
@@ -195,7 +328,7 @@ export default function SettingsPage() {
       router.refresh();
     } catch (error) {
       console.error("Failed to delete account:", error);
-      alert("Failed to delete account. Please try again.");
+      toast.error("Failed to delete account. Please try again.");
       setIsDeleting(false);
       setShowDeleteDialog(false);
     }
@@ -205,11 +338,11 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Please select an image file");
+        toast.error("Please select an image file");
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert("Image size should be less than 5MB");
+        toast.error("Image size should be less than 5MB");
         return;
       }
       const reader = new FileReader();
@@ -236,11 +369,11 @@ export default function SettingsPage() {
         imageUrl: imageUrl,
       });
 
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
       window.location.reload();
     } catch (error) {
       console.error("Failed to update profile:", error);
-      alert("Failed to update profile. Please try again.");
+      toast.error("Failed to update profile. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -255,10 +388,10 @@ export default function SettingsPage() {
         emailDigestFrequency: notifications.weeklyDigest ? "weekly" : "never",
         emailOnStageChange: notifications.dealUpdates,
       });
-      alert("Notification preferences saved successfully!");
+      toast.success("Notification preferences saved successfully!");
     } catch (error) {
       console.error("Failed to save notification settings:", error);
-      alert("Failed to save notification preferences. Please try again.");
+      toast.error("Failed to save notification preferences. Please try again.");
     } finally {
       setIsSavingNotifications(false);
     }
@@ -333,7 +466,7 @@ export default function SettingsPage() {
       await connectGoogleCalendar(googleCalendarForm.apiKey.trim(), googleCalendarForm.calendarId.trim());
       toast.success("Google Calendar connected successfully!");
       setShowConnectModal(null);
-      setGoogleCalendarForm({ apiKey: "", calendarId: "primary" });
+      setGoogleCalendarForm({ apiKey: "", calendarId: "" });
       const statuses = await getAllIntegrationStatuses();
       setIntegrationStatuses(statuses);
     } catch (error) {
@@ -908,14 +1041,14 @@ export default function SettingsPage() {
                             })
                           }
                           className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${riskSettings.enableCompetitiveSignals
-                              ? "bg-[#8b1a1a]"
-                              : "bg-white/10"
+                            ? "bg-[#8b1a1a]"
+                            : "bg-white/10"
                             }`}
                         >
                           <div
                             className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-lg transition-transform ${riskSettings.enableCompetitiveSignals
-                                ? "translate-x-6"
-                                : "translate-x-1"
+                              ? "translate-x-6"
+                              : "translate-x-1"
                               }`}
                           />
                         </button>
@@ -1262,28 +1395,78 @@ export default function SettingsPage() {
                       Payment Method
                     </h3>
 
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center shrink-0">
-                          <span className="text-white text-xs font-bold">
-                            VISA
-                          </span>
+                    {loadingPaymentMethods ? (
+                      <p className="text-sm text-white/40 py-4">Loading...</p>
+                    ) : (
+                      <>
+                        <div className="space-y-4 mb-4">
+                          {paymentMethods.length === 0 && (
+                            <p className="text-sm text-white/40 py-2">No payment methods yet.</p>
+                          )}
+                          {paymentMethods.map((pm) => {
+                            const style = brandStyles[pm.brand] ?? { bg: "from-gray-600 to-gray-500", label: pm.brand.slice(0, 2).toUpperCase() };
+                            return (
+                              <div
+                                key={pm.id}
+                                className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5"
+                              >
+                                <div className="flex items-center gap-4 min-w-0">
+                                  <div className={`w-12 h-8 rounded-lg bg-gradient-to-r ${style.bg} flex items-center justify-center shrink-0`}>
+                                    <span className="text-white text-xs font-bold">
+                                      {style.label}
+                                    </span>
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium text-white">
+                                      •••• •••• •••• {pm.last4}
+                                    </p>
+                                    <p className="text-xs text-white/40">
+                                      Expires {String(pm.expMonth).padStart(2, "0")}/{pm.expYear}
+                                      {pm.isDefault && (
+                                        <span className="ml-2 text-red-400">Default</span>
+                                      )}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {!pm.isDefault && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSetDefaultPayment(pm.id)}
+                                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-white/60 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+                                    >
+                                      Set default
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditPaymentModal(pm)}
+                                    className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+                                  >
+                                    Update
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemovePaymentClick(pm.id)}
+                                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-white">
-                            •••• •••• •••• 4242
-                          </p>
-                          <p className="text-xs text-white/40">Expires 12/25</p>
-                        </div>
-                      </div>
-                      <button className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white bg-white/5 hover:bg-white/10 transition-colors">
-                        Update
-                      </button>
-                    </div>
 
-                    <button className="text-sm text-red-400 hover:text-red-300 transition-colors">
-                      + Add new payment method
-                    </button>
+                        <button
+                          type="button"
+                          onClick={openAddPaymentModal}
+                          className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          + Add new payment method
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -1330,6 +1513,153 @@ export default function SettingsPage() {
                 }}
               >
                 {isCanceling ? "Canceling..." : "Yes, Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPaymentModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => !isSavingPayment && setShowPaymentModal(null)}
+        >
+          <div
+            className="rounded-2xl p-6 max-w-md w-full relative"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background:
+                "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <h3 className="text-xl font-bold text-white mb-4">
+              {showPaymentModal === "add" ? "Add payment method" : "Update payment method"}
+            </h3>
+            <form onSubmit={handleSavePayment} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Card brand</label>
+                <select
+                  value={paymentForm.brand}
+                  onChange={(e) => setPaymentForm((f) => ({ ...f, brand: e.target.value }))}
+                  className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
+                >
+                  {CARD_BRANDS.map((b) => (
+                    <option key={b} value={b} className="bg-gray-900">
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Last 4 digits</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="4242"
+                  value={paymentForm.last4}
+                  onChange={(e) => setPaymentForm((f) => ({ ...f, last4: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">Exp. month</label>
+                  <select
+                    value={paymentForm.expMonth}
+                    onChange={(e) => setPaymentForm((f) => ({ ...f, expMonth: Number(e.target.value) }))}
+                    className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
+                  >
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                      <option key={m} value={m} className="bg-gray-900">
+                        {String(m).padStart(2, "0")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">Exp. year</label>
+                  <select
+                    value={paymentForm.expYear}
+                    onChange={(e) => setPaymentForm((f) => ({ ...f, expYear: Number(e.target.value) }))}
+                    className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
+                  >
+                    {Array.from({ length: 15 }, (_, i) => new Date().getFullYear() + i).map((y) => (
+                      <option key={y} value={y} className="bg-gray-900">
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {showPaymentModal === "add" && (
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={paymentForm.setAsDefault}
+                    onChange={(e) => setPaymentForm((f) => ({ ...f, setAsDefault: e.target.checked }))}
+                    className="rounded border-white/20 bg-white/5 text-red-500 focus:ring-red-500/50"
+                  />
+                  <span className="text-sm text-white/70">Set as default payment method</span>
+                </label>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => !isSavingPayment && setShowPaymentModal(null)}
+                  disabled={isSavingPayment}
+                  className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white/60 hover:text-white bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingPayment}
+                  className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)" }}
+                >
+                  {isSavingPayment ? "Saving..." : showPaymentModal === "add" ? "Add card" : "Update"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showRemovePaymentDialog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowRemovePaymentDialog(false)}
+        >
+          <div
+            className="rounded-2xl p-6 max-w-md w-full relative"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background:
+                "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <h3 className="text-xl font-bold text-white mb-2">Remove payment method?</h3>
+            <p className="text-sm text-white/60 mb-6">
+              This card will be removed from your account. You can add it again anytime.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowRemovePaymentDialog(false); setRemovingPaymentId(null); }}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRemovePayment}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors"
+                style={{ background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)" }}
+              >
+                Remove
               </button>
             </div>
           </div>
@@ -1568,6 +1898,9 @@ export default function SettingsPage() {
                   className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
                   required
                 />
+                <p className="text-xs text-white/40 mt-1">
+                  Create in Google Cloud Console → APIs &amp; Services → Credentials. Enable &quot;Google Calendar API&quot; for the project.
+                </p>
               </div>
 
               <div>
@@ -1576,12 +1909,12 @@ export default function SettingsPage() {
                   type="text"
                   value={googleCalendarForm.calendarId}
                   onChange={(e) => setGoogleCalendarForm((f) => ({ ...f, calendarId: e.target.value }))}
-                  placeholder="primary or your@email.com"
+                  placeholder="e.g. xxx@group.calendar.google.com"
                   className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
                   required
                 />
                 <p className="text-xs text-white/40 mt-1">
-                  Use &quot;primary&quot; for your main calendar or the calendar&apos;s email address
+                  Use a <strong>public</strong> calendar&apos;s ID. API keys cannot access &quot;primary&quot; or private calendars. In Google Calendar, create a calendar, set it to &quot;Make available to public&quot;, then copy its ID (Settings → your calendar → Integrate calendar).
                 </p>
               </div>
 

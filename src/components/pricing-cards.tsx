@@ -12,6 +12,10 @@ export function PricingCards() {
     "Basic deal timeline & history",
     "Email notifications for at-risk deals",
     "7-day activity history",
+    "1 team member",
+    "100 API calls/month",
+    "1 webhook",
+    "1 integration",
   ];
 
   const proFeatures = [
@@ -19,13 +23,20 @@ export function PricingCards() {
     { text: "Real-time risk detection & scoring", included: true },
     { text: "AI-powered action recommendations", included: true },
     { text: "Advanced activity tracking & analytics", included: true },
-    { text: "Team collaboration & sharing", included: true },
+    { text: "Team collaboration & sharing (up to 10 members)", included: true },
     { text: "Unlimited activity history", included: true },
+    { text: "50,000 API calls/month", included: true },
+    { text: "10 webhooks", included: true },
+    { text: "999 integrations", included: true },
     { text: "Priority email support", included: true },
   ];
 
   const enterpriseFeatures = [
     "Unlimited active deals",
+    "Unlimited team members",
+    "Unlimited API calls",
+    "Unlimited webhooks",
+    "Unlimited integrations",
     "Custom risk detection models",
     "Advanced AI copilots & automation",
     "Custom integrations & API access",

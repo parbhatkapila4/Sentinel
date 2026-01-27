@@ -45,7 +45,7 @@ ${deal.previousCommunicationPatterns.map((p) => `- ${p}`).join("\n")}`
 
 DEAL CONTEXT:
 - Company/Deal: ${deal.dealName}
-- Value: $${deal.dealValue.toLocaleString()}
+- Value: $${deal.dealValue.toLocaleString("en-US")}
 - Stage: ${deal.stage}
 - Last contact: ${deal.daysSinceActivity} days ago
 - Last interaction: ${deal.lastInteractionType}
@@ -88,7 +88,7 @@ export function getDealSummaryPrompt(deal: {
 DEAL:
 - Name: ${deal.name}
 - Stage: ${deal.stage}
-- Value: $${deal.value.toLocaleString()}
+- Value: $${deal.value.toLocaleString("en-US")}
 - Status: ${deal.status}
 - Risk: ${deal.riskLevel}
 - Primary risk reason: ${deal.primaryRiskReason ?? "None"}
@@ -121,7 +121,7 @@ export function getWinStrategyPrompt(deal: {
 DEAL:
 - Name: ${deal.name}
 - Stage: ${deal.stage}
-- Value: $${deal.value.toLocaleString()}
+- Value: $${deal.value.toLocaleString("en-US")}
 - Risk/concerns: ${deal.primaryRiskReason ?? "None"}
 
 TIMELINE:

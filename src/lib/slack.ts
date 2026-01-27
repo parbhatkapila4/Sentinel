@@ -65,7 +65,7 @@ export function formatDealAtRiskSlackMessage(deal: {
       type: "section",
       fields: [
         { type: "mrkdwn", text: `*Deal:*\n${deal.name}` },
-        { type: "mrkdwn", text: `*Value:*\n$${deal.value.toLocaleString()}` },
+        { type: "mrkdwn", text: `*Value:*\n$${deal.value.toLocaleString("en-US")}` },
         { type: "mrkdwn", text: `*Stage:*\n${deal.stage}` },
         { type: "mrkdwn", text: `*Risk Level:*\n${deal.riskLevel}` },
       ],
@@ -94,7 +94,7 @@ export function formatDealWonSlackMessage(deal: {
         type: "section",
         fields: [
           { type: "mrkdwn", text: `*Deal:*\n${deal.name}` },
-          { type: "mrkdwn", text: `*Value:*\n$${deal.value.toLocaleString()}` },
+          { type: "mrkdwn", text: `*Value:*\n$${deal.value.toLocaleString("en-US")}` },
         ],
       },
     ],
@@ -113,7 +113,7 @@ export function formatStageChangeSlackMessage(deal: {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `📊 *${deal.name}* moved from _${deal.oldStage}_ to *${deal.newStage}*\nValue: $${deal.value.toLocaleString()}`,
+          text: `📊 *${deal.name}* moved from _${deal.oldStage}_ to *${deal.newStage}*\nValue: $${deal.value.toLocaleString("en-US")}`,
         },
       },
     ],

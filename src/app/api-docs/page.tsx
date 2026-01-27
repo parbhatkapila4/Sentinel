@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import "swagger-ui-react/swagger-ui.css";
 import { openApiSpec } from "@/lib/openapi";
 
@@ -8,31 +9,46 @@ const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
 
 export default function ApiDocsPage() {
   return (
-    <div className="fixed inset-0 bg-[#0a0a0a] overflow-y-auto">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-white">
-                Sentinel API
-              </h1>
-              <p className="text-xs text-white/50">v1.0.0</p>
-            </div>
-          </div>
-          <a
-            href="/dashboard"
-            className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-white/10 hover:bg-white/20 transition-colors"
+    <div className="min-h-screen bg-black text-white">
+      <div className="border-b border-white/10 sticky top-0 z-50 bg-black/95 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors -ml-76"
           >
-            Back to App
-          </a>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back
+          </Link>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-7xl mx-auto">
-        <style jsx global>{`
+      <section className="py-16 px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            API Reference
+          </h1>
+          <p className="text-lg text-white/60 leading-relaxed">
+            Complete API documentation with interactive examples. Explore all endpoints,
+            request/response formats, and authentication methods.
+          </p>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-8 pt-8 pb-16">
+        <div className="max-w-7xl mx-auto">
+          <style jsx global>{`
           .swagger-ui {
             background: transparent !important;
           }
@@ -153,8 +169,9 @@ export default function ApiDocsPage() {
             color: rgba(255,255,255,0.7) !important;
           }
         `}</style>
-        <SwaggerUI spec={openApiSpec} />
-      </main>
+          <SwaggerUI spec={openApiSpec} />
+        </div>
+      </section>
     </div>
   );
 }

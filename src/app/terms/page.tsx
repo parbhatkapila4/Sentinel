@@ -242,10 +242,10 @@ export default async function TermsPage() {
               If you have any questions about these Terms of Service, please
               contact us at{" "}
               <a
-                href="mailto:parbhat@parbhat.dev"
+                href="mailto:help@sentinels.in"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                parbhat@parbhat.dev
+                help@sentinels.in
               </a>
               .
             </p>

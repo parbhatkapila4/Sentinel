@@ -124,10 +124,10 @@ export default async function DealDetailPage({
               {deal.source && (
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium ${deal.source === "salesforce"
-                      ? "bg-blue-500/20 text-blue-400"
-                      : deal.source === "hubspot"
-                        ? "bg-orange-500/20 text-orange-400"
-                        : "bg-white/10 text-white/60"
+                    ? "bg-blue-500/20 text-blue-400"
+                    : deal.source === "hubspot"
+                      ? "bg-orange-500/20 text-orange-400"
+                      : "bg-white/10 text-white/60"
                     }`}
                 >
                   {deal.source === "salesforce" && "☁️ Synced from Salesforce"}
@@ -160,7 +160,7 @@ export default async function DealDetailPage({
                 Value
               </p>
               <p className="text-lg font-semibold text-white">
-                ${deal.value.toLocaleString()}
+                ${deal.value.toLocaleString("en-US")}
               </p>
             </div>
             <div>

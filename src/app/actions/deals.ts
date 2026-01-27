@@ -29,6 +29,7 @@ import { removeDemoDataForUser, hasDemoData } from "@/lib/demo-data";
 import { NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
 import { getUserTeamRole } from "@/lib/team-utils";
 import { enforceDealLimit } from "@/lib/plan-enforcement";
+import { withCache, invalidateCachePattern, invalidateCache } from "@/lib/cache";
 import type { GetDealsOptions } from "@/types";
 
 export async function canUserAccessDeal(
@@ -92,6 +93,10 @@ export async function createDeal(formData: FormData) {
   await appendDealTimeline(deal.id, "stage_changed", {
     stage,
   });
+
+
+  await invalidateCachePattern(`deals:all:${userId}:*`);
+  await invalidateCachePattern(`deals:team:*:${userId}`);
 
   try {
     await dispatchWebhookEvent(userId, teamId, "deal.created", {
@@ -175,124 +180,129 @@ export async function getAllDeals(options?: GetDealsOptions) {
   noStore();
   const userId = await getAuthenticatedUserId();
 
-  let where: Prisma.DealWhereInput = { userId };
 
-  if (options?.teamId) {
-    const role = await getUserTeamRole(userId, options.teamId);
-    if (!role) throw new ForbiddenError("You are not a member of this team");
-    where = { teamId: options.teamId };
-  } else if (options?.includeTeamDeals) {
-    const memberships = await prisma.teamMember.findMany({
-      where: { userId },
-      select: { teamId: true },
-    });
-    const teamIds = memberships.map((m) => m.teamId);
-    where = {
-      OR: [
-        { userId },
-        ...(teamIds.length ? [{ teamId: { in: teamIds } }] : []),
-      ],
-    };
-  }
+  const cacheKey = `deals:all:${userId}:${JSON.stringify(options ?? {})}`;
 
-  const deals = await prisma.deal.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: {
-      assignedTo: { select: { id: true, name: true, surname: true } },
-    },
-  });
+  return withCache(cacheKey, 60, async () => {
+    let where: Prisma.DealWhereInput = { userId };
 
-  const dealIds = deals.map((d) => d.id);
-  const allTimelineEvents = await prisma.dealTimeline.findMany({
-    where: { dealId: { in: dealIds } },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const timelineByDealId = new Map<string, typeof allTimelineEvents>();
-  for (const event of allTimelineEvents) {
-    if (!timelineByDealId.has(event.dealId)) {
-      timelineByDealId.set(event.dealId, []);
+    if (options?.teamId) {
+      const role = await getUserTeamRole(userId, options.teamId);
+      if (!role) throw new ForbiddenError("You are not a member of this team");
+      where = { teamId: options.teamId };
+    } else if (options?.includeTeamDeals) {
+      const memberships = await prisma.teamMember.findMany({
+        where: { userId },
+        select: { teamId: true },
+      });
+      const teamIds = memberships.map((m) => m.teamId);
+      where = {
+        OR: [
+          { userId },
+          ...(teamIds.length ? [{ teamId: { in: teamIds } }] : []),
+        ],
+      };
     }
-    timelineByDealId.get(event.dealId)!.push(event);
-  }
 
-  const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
-  const riskSettingsMap = new Map<string, { inactivityThresholdDays: number; enableCompetitiveSignals: boolean }>();
-  if (uniqueUserIds.length > 0) {
-    const riskSettings = await prisma.userRiskSettings.findMany({
-      where: { userId: { in: uniqueUserIds } },
-      select: {
-        userId: true,
-        inactivityThresholdDays: true,
-        enableCompetitiveSignals: true,
+    const deals = await prisma.deal.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        assignedTo: { select: { id: true, name: true, surname: true } },
       },
     });
-    for (const setting of riskSettings) {
-      riskSettingsMap.set(setting.userId, {
-        inactivityThresholdDays: setting.inactivityThresholdDays,
-        enableCompetitiveSignals: setting.enableCompetitiveSignals,
-      });
+
+    const dealIds = deals.map((d) => d.id);
+    const allTimelineEvents = await prisma.dealTimeline.findMany({
+      where: { dealId: { in: dealIds } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const timelineByDealId = new Map<string, typeof allTimelineEvents>();
+    for (const event of allTimelineEvents) {
+      if (!timelineByDealId.has(event.dealId)) {
+        timelineByDealId.set(event.dealId, []);
+      }
+      timelineByDealId.get(event.dealId)!.push(event);
     }
-  }
 
-  return deals.map((deal) => {
-    assertRiskFieldIntegrity(deal);
+    const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
+    const riskSettingsMap = new Map<string, { inactivityThresholdDays: number; enableCompetitiveSignals: boolean }>();
+    if (uniqueUserIds.length > 0) {
+      const riskSettings = await prisma.userRiskSettings.findMany({
+        where: { userId: { in: uniqueUserIds } },
+        select: {
+          userId: true,
+          inactivityThresholdDays: true,
+          enableCompetitiveSignals: true,
+        },
+      });
+      for (const setting of riskSettings) {
+        riskSettingsMap.set(setting.userId, {
+          inactivityThresholdDays: setting.inactivityThresholdDays,
+          enableCompetitiveSignals: setting.enableCompetitiveSignals,
+        });
+      }
+    }
 
-    const dealTimeline = timelineByDealId.get(deal.id) ?? [];
+    return deals.map((deal) => {
+      assertRiskFieldIntegrity(deal);
 
-    const timelineEvents = dealTimeline.map((e) => ({
-      eventType: e.eventType,
-      createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
-      metadata:
-        e.metadata &&
-          typeof e.metadata === "object" &&
-          !Array.isArray(e.metadata)
-          ? ({ ...e.metadata } as Record<string, unknown>)
+      const dealTimeline = timelineByDealId.get(deal.id) ?? [];
+
+      const timelineEvents = dealTimeline.map((e) => ({
+        eventType: e.eventType,
+        createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
+        metadata:
+          e.metadata &&
+            typeof e.metadata === "object" &&
+            !Array.isArray(e.metadata)
+            ? ({ ...e.metadata } as Record<string, unknown>)
+            : null,
+      }));
+
+      const userRiskSettings = riskSettingsMap.get(deal.userId);
+
+      const signals = calculateDealSignals(
+        {
+          stage: deal.stage,
+          value: deal.value,
+          status: "active",
+          createdAt: deal.createdAt,
+        },
+        timelineEvents,
+        userRiskSettings
+      );
+
+      return {
+        id: deal.id,
+        userId: deal.userId,
+        teamId: deal.teamId,
+        assignedToId: deal.assignedToId,
+        assignedTo: deal.assignedTo
+          ? { id: deal.assignedTo.id, name: deal.assignedTo.name, surname: deal.assignedTo.surname }
           : null,
-    }));
-
-    const userRiskSettings = riskSettingsMap.get(deal.userId);
-
-    const signals = calculateDealSignals(
-      {
+        name: deal.name,
         stage: deal.stage,
         value: deal.value,
-        status: "active",
+        isDemo: deal.isDemo,
+        lastActivityAt: signals.lastActivityAt,
+        riskScore: signals.riskScore,
+        riskLevel: formatRiskLevel(signals.riskScore),
+        status: signals.status,
+        nextAction: signals.nextAction,
+        nextActionReason: null,
+        riskReasons: signals.reasons,
+        primaryRiskReason: getPrimaryRiskReason(signals.reasons),
+        recommendedAction: signals.recommendedAction,
+        riskStartedAt: signals.riskStartedAt,
+        riskAgeInDays: signals.riskAgeInDays,
+        actionDueAt: signals.actionDueAt,
+        actionOverdueByDays: signals.actionOverdueByDays,
+        isActionOverdue: signals.isActionOverdue,
         createdAt: deal.createdAt,
-      },
-      timelineEvents,
-      userRiskSettings
-    );
-
-    return {
-      id: deal.id,
-      userId: deal.userId,
-      teamId: deal.teamId,
-      assignedToId: deal.assignedToId,
-      assignedTo: deal.assignedTo
-        ? { id: deal.assignedTo.id, name: deal.assignedTo.name, surname: deal.assignedTo.surname }
-        : null,
-      name: deal.name,
-      stage: deal.stage,
-      value: deal.value,
-      isDemo: deal.isDemo,
-      lastActivityAt: signals.lastActivityAt,
-      riskScore: signals.riskScore,
-      riskLevel: formatRiskLevel(signals.riskScore),
-      status: signals.status,
-      nextAction: signals.nextAction,
-      nextActionReason: null,
-      riskReasons: signals.reasons,
-      primaryRiskReason: getPrimaryRiskReason(signals.reasons),
-      recommendedAction: signals.recommendedAction,
-      riskStartedAt: signals.riskStartedAt,
-      riskAgeInDays: signals.riskAgeInDays,
-      actionDueAt: signals.actionDueAt,
-      actionOverdueByDays: signals.actionOverdueByDays,
-      isActionOverdue: signals.isActionOverdue,
-      createdAt: deal.createdAt,
-    };
+      };
+    });
   });
 }
 
@@ -302,64 +312,141 @@ export async function getTeamDeals(teamId: string) {
   const role = await getUserTeamRole(userId, teamId);
   if (!role) throw new ForbiddenError("You are not a member of this team");
 
-  const deals = await prisma.deal.findMany({
-    where: { teamId },
-    orderBy: { createdAt: "desc" },
-    include: {
-      assignedTo: {
-        select: { id: true, name: true, surname: true, email: true },
-      },
-    },
-  });
-
-  const dealIds = deals.map((d) => d.id);
-  const allTimelineEvents = await prisma.dealTimeline.findMany({
-    where: { dealId: { in: dealIds } },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const timelineByDealId = new Map<string, typeof allTimelineEvents>();
-  for (const event of allTimelineEvents) {
-    if (!timelineByDealId.has(event.dealId)) {
-      timelineByDealId.set(event.dealId, []);
-    }
-    timelineByDealId.get(event.dealId)!.push(event);
-  }
-
-  const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
-  const riskSettingsMap = new Map<string, { inactivityThresholdDays: number; enableCompetitiveSignals: boolean }>();
-  if (uniqueUserIds.length > 0) {
-    const riskSettings = await prisma.userRiskSettings.findMany({
-      where: { userId: { in: uniqueUserIds } },
-      select: {
-        userId: true,
-        inactivityThresholdDays: true,
-        enableCompetitiveSignals: true,
+  const cacheKey = `deals:team:${teamId}:${userId}`;
+  return withCache(cacheKey, 60, async () => {
+    const deals = await prisma.deal.findMany({
+      where: { teamId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        assignedTo: {
+          select: { id: true, name: true, surname: true, email: true },
+        },
       },
     });
-    for (const setting of riskSettings) {
-      riskSettingsMap.set(setting.userId, {
-        inactivityThresholdDays: setting.inactivityThresholdDays,
-        enableCompetitiveSignals: setting.enableCompetitiveSignals,
-      });
-    }
-  }
 
-  return deals.map((deal) => {
-    assertRiskFieldIntegrity(deal);
-    const dealTimeline = timelineByDealId.get(deal.id) ?? [];
-    const timelineEvents = dealTimeline.map((e) => ({
+    const dealIds = deals.map((d) => d.id);
+    const allTimelineEvents = await prisma.dealTimeline.findMany({
+      where: { dealId: { in: dealIds } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const timelineByDealId = new Map<string, typeof allTimelineEvents>();
+    for (const event of allTimelineEvents) {
+      if (!timelineByDealId.has(event.dealId)) {
+        timelineByDealId.set(event.dealId, []);
+      }
+      timelineByDealId.get(event.dealId)!.push(event);
+    }
+
+    const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
+    const riskSettingsMap = new Map<string, { inactivityThresholdDays: number; enableCompetitiveSignals: boolean }>();
+    if (uniqueUserIds.length > 0) {
+      const riskSettings = await prisma.userRiskSettings.findMany({
+        where: { userId: { in: uniqueUserIds } },
+        select: {
+          userId: true,
+          inactivityThresholdDays: true,
+          enableCompetitiveSignals: true,
+        },
+      });
+      for (const setting of riskSettings) {
+        riskSettingsMap.set(setting.userId, {
+          inactivityThresholdDays: setting.inactivityThresholdDays,
+          enableCompetitiveSignals: setting.enableCompetitiveSignals,
+        });
+      }
+    }
+
+    return deals.map((deal) => {
+      assertRiskFieldIntegrity(deal);
+      const dealTimeline = timelineByDealId.get(deal.id) ?? [];
+      const timelineEvents = dealTimeline.map((e) => ({
+        eventType: e.eventType,
+        createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
+        metadata:
+          e.metadata &&
+            typeof e.metadata === "object" &&
+            !Array.isArray(e.metadata)
+            ? ({ ...e.metadata } as Record<string, unknown>)
+            : null,
+      }));
+
+      const userRiskSettings = riskSettingsMap.get(deal.userId);
+
+      const signals = calculateDealSignals(
+        {
+          stage: deal.stage,
+          value: deal.value,
+          status: "active",
+          createdAt: deal.createdAt,
+        },
+        timelineEvents,
+        userRiskSettings ?? undefined
+      );
+
+      return {
+        id: deal.id,
+        userId: deal.userId,
+        teamId: deal.teamId,
+        assignedToId: deal.assignedToId,
+        name: deal.name,
+        stage: deal.stage,
+        value: deal.value,
+        isDemo: deal.isDemo,
+        lastActivityAt: signals.lastActivityAt,
+        riskScore: signals.riskScore,
+        riskLevel: formatRiskLevel(signals.riskScore),
+        status: signals.status,
+        nextAction: signals.nextAction,
+        nextActionReason: null,
+        riskReasons: signals.reasons,
+        primaryRiskReason: getPrimaryRiskReason(signals.reasons),
+        recommendedAction: signals.recommendedAction,
+        riskStartedAt: signals.riskStartedAt,
+        riskAgeInDays: signals.riskAgeInDays,
+        actionDueAt: signals.actionDueAt,
+        actionOverdueByDays: signals.actionOverdueByDays,
+        isActionOverdue: signals.isActionOverdue,
+        createdAt: deal.createdAt,
+        assignedTo: deal.assignedTo,
+      };
+    });
+  });
+}
+
+export async function getDealById(dealId: string) {
+  const userId = await getAuthenticatedUserId();
+
+  const cacheKey = `deal:${dealId}:${userId}`;
+  return withCache(cacheKey, 30, async () => {
+    const deal = await prisma.deal.findUnique({
+      where: { id: dealId },
+      include: {
+        team: true,
+        assignedTo: {
+          select: { id: true, name: true, surname: true, email: true },
+        },
+      },
+    });
+
+    if (!deal) throw new NotFoundError("Deal");
+
+    const canAccess = await canUserAccessDeal(userId, deal);
+    if (!canAccess) throw new ForbiddenError("You do not have access to this deal");
+
+    const timeline = await prisma.dealTimeline.findMany({
+      where: { dealId: deal.id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const timelineEventsInput = timeline.map((e) => ({
       eventType: e.eventType,
-      createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
+      createdAt: e.createdAt || new Date(),
       metadata:
-        e.metadata &&
-          typeof e.metadata === "object" &&
-          !Array.isArray(e.metadata)
-          ? ({ ...e.metadata } as Record<string, unknown>)
+        e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
+          ? (e.metadata as Record<string, unknown>)
           : null,
     }));
-
-    const userRiskSettings = riskSettingsMap.get(deal.userId);
 
     const signals = calculateDealSignals(
       {
@@ -368,9 +455,15 @@ export async function getTeamDeals(teamId: string) {
         status: "active",
         createdAt: deal.createdAt,
       },
-      timelineEvents,
-      userRiskSettings ?? undefined
+      timelineEventsInput
     );
+
+    const events = await prisma.dealEvent.findMany({
+      where: { dealId: deal.id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const dealWithSource = deal as typeof deal & { source?: string | null; externalId?: string | null };
 
     return {
       id: deal.id,
@@ -380,7 +473,8 @@ export async function getTeamDeals(teamId: string) {
       name: deal.name,
       stage: deal.stage,
       value: deal.value,
-      isDemo: deal.isDemo,
+      source: dealWithSource.source ?? null,
+      externalId: dealWithSource.externalId ?? null,
       lastActivityAt: signals.lastActivityAt,
       riskScore: signals.riskScore,
       riskLevel: formatRiskLevel(signals.riskScore),
@@ -396,90 +490,12 @@ export async function getTeamDeals(teamId: string) {
       actionOverdueByDays: signals.actionOverdueByDays,
       isActionOverdue: signals.isActionOverdue,
       createdAt: deal.createdAt,
-      assignedTo: deal.assignedTo,
+      events,
+      timeline,
+      team: deal.team ?? undefined,
+      assignedTo: deal.assignedTo ?? undefined,
     };
   });
-}
-
-export async function getDealById(dealId: string) {
-  const userId = await getAuthenticatedUserId();
-
-  const deal = await prisma.deal.findUnique({
-    where: { id: dealId },
-    include: {
-      team: true,
-      assignedTo: {
-        select: { id: true, name: true, surname: true, email: true },
-      },
-    },
-  });
-
-  if (!deal) throw new NotFoundError("Deal");
-
-  const canAccess = await canUserAccessDeal(userId, deal);
-  if (!canAccess) throw new ForbiddenError("You do not have access to this deal");
-
-  const timeline = await prisma.dealTimeline.findMany({
-    where: { dealId: deal.id },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const timelineEventsInput = timeline.map((e) => ({
-    eventType: e.eventType,
-    createdAt: e.createdAt || new Date(),
-    metadata:
-      e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
-        ? (e.metadata as Record<string, unknown>)
-        : null,
-  }));
-
-  const signals = calculateDealSignals(
-    {
-      stage: deal.stage,
-      value: deal.value,
-      status: "active",
-      createdAt: deal.createdAt,
-    },
-    timelineEventsInput
-  );
-
-  const events = await prisma.dealEvent.findMany({
-    where: { dealId: deal.id },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const dealWithSource = deal as typeof deal & { source?: string | null; externalId?: string | null };
-
-  return {
-    id: deal.id,
-    userId: deal.userId,
-    teamId: deal.teamId,
-    assignedToId: deal.assignedToId,
-    name: deal.name,
-    stage: deal.stage,
-    value: deal.value,
-    source: dealWithSource.source ?? null,
-    externalId: dealWithSource.externalId ?? null,
-    lastActivityAt: signals.lastActivityAt,
-    riskScore: signals.riskScore,
-    riskLevel: formatRiskLevel(signals.riskScore),
-    status: signals.status,
-    nextAction: signals.nextAction,
-    nextActionReason: null,
-    riskReasons: signals.reasons,
-    primaryRiskReason: getPrimaryRiskReason(signals.reasons),
-    recommendedAction: signals.recommendedAction,
-    riskStartedAt: signals.riskStartedAt,
-    riskAgeInDays: signals.riskAgeInDays,
-    actionDueAt: signals.actionDueAt,
-    actionOverdueByDays: signals.actionOverdueByDays,
-    isActionOverdue: signals.isActionOverdue,
-    createdAt: deal.createdAt,
-    events,
-    timeline,
-    team: deal.team ?? undefined,
-    assignedTo: deal.assignedTo ?? undefined,
-  };
 }
 
 export async function updateDealStage(dealId: string, newStage: string) {
@@ -497,6 +513,10 @@ export async function updateDealStage(dealId: string, newStage: string) {
     where: { id: dealId },
     data: { stage: newStage },
   });
+
+  await invalidateCachePattern(`deals:all:${userId}:*`);
+  await invalidateCachePattern(`deals:team:*:${userId}`);
+  await invalidateCache(`deal:${dealId}:${userId}`);
 
   await appendDealTimeline(dealId, "stage_changed", {
     stage: newStage,
@@ -624,6 +644,10 @@ export async function assignDeal(
     data: { assignedToId },
   });
 
+  await invalidateCachePattern(`deals:all:${userId}:*`);
+  await invalidateCachePattern(`deals:team:*:${userId}`);
+  await invalidateCache(`deal:${dealId}:${userId}`);
+
   await appendDealTimeline(dealId, "activity", {
     type: "assignment_changed",
     assignedToId,
@@ -649,6 +673,10 @@ export async function moveDealToTeam(dealId: string, teamId: string) {
     where: { id: dealId },
     data: { teamId },
   });
+
+  await invalidateCachePattern(`deals:all:${userId}:*`);
+  await invalidateCachePattern(`deals:team:*:${userId}`);
+  await invalidateCache(`deal:${dealId}:${userId}`);
 
   await appendDealTimeline(dealId, "activity", {
     type: "moved_to_team",
@@ -678,6 +706,10 @@ export async function moveDealToPersonal(dealId: string) {
     data: { teamId: null, assignedToId: null, userId },
   });
 
+  await invalidateCachePattern(`deals:all:${userId}:*`);
+  await invalidateCachePattern(`deals:team:*:${userId}`);
+  await invalidateCache(`deal:${dealId}:${userId}`);
+
   await appendDealTimeline(dealId, "activity", {
     type: "moved_to_personal",
   });
@@ -689,23 +721,114 @@ export async function moveDealToPersonal(dealId: string) {
 
 export async function getFounderRiskOverview(teamId?: string) {
   noStore();
-  const deals = await getAllDeals(
-    teamId ? { teamId } : undefined
-  );
+  const userId = await getAuthenticatedUserId();
+  const cacheKey = `deals:risk:overview:${userId}:${teamId ?? "personal"}`;
 
-  const totalDeals = deals.length;
-  const atRiskDealsCount = deals.filter((d) => d.status === "at_risk").length;
-  const overdueDealsCount = deals.filter((d) => d.isActionOverdue).length;
-  const highUrgencyDealsCount = deals.filter(
-    (d) => d.recommendedAction?.urgency === "high"
-  ).length;
-  const dealsOverdueMoreThan3Days = deals.filter(
-    (d) => d.actionOverdueByDays !== null && d.actionOverdueByDays > 3
-  ).length;
+  return withCache(cacheKey, 60, async () => {
+    const deals = await getAllDeals(
+      teamId ? { teamId } : undefined
+    );
 
-  const criticalDeals = deals
-    .filter((d) => d.status === "at_risk" && d.recommendedAction)
-    .sort((a, b) => {
+    const totalDeals = deals.length;
+    const atRiskDealsCount = deals.filter((d) => d.status === "at_risk").length;
+    const overdueDealsCount = deals.filter((d) => d.isActionOverdue).length;
+    const highUrgencyDealsCount = deals.filter(
+      (d) => d.recommendedAction?.urgency === "high"
+    ).length;
+    const dealsOverdueMoreThan3Days = deals.filter(
+      (d) => d.actionOverdueByDays !== null && d.actionOverdueByDays > 3
+    ).length;
+
+    const criticalDeals = deals
+      .filter((d) => d.status === "at_risk" && d.recommendedAction)
+      .sort((a, b) => {
+        if (a.isActionOverdue !== b.isActionOverdue) {
+          return a.isActionOverdue ? -1 : 1;
+        }
+        const aOverdue = a.actionOverdueByDays ?? 0;
+        const bOverdue = b.actionOverdueByDays ?? 0;
+        if (aOverdue !== bOverdue) {
+          return bOverdue - aOverdue;
+        }
+        return b.riskScore - a.riskScore;
+      })
+      .slice(0, 3)
+      .map((deal) => ({
+        id: deal.id,
+        name: deal.name,
+        riskLevel: deal.riskLevel,
+        primaryRiskReason: deal.primaryRiskReason,
+        recommendedAction: deal.recommendedAction,
+        actionOverdueByDays: deal.actionOverdueByDays,
+      }));
+
+    return {
+      totalDeals,
+      atRiskDealsCount,
+      overdueDealsCount,
+      highUrgencyDealsCount,
+      dealsOverdueMoreThan3Days,
+      top3MostCriticalDeals: criticalDeals,
+    };
+  });
+}
+
+export async function getDealCountsByCountry() {
+  noStore();
+  const userId = await getAuthenticatedUserId();
+
+  const cacheKey = `deals:counts:country:${userId}`;
+  return withCache(cacheKey, 120, async () => {
+    const deals = await prisma.deal.findMany({
+      where: { userId },
+      select: { location: true },
+    });
+
+    const countryCounts = new Map<string, number>();
+
+    for (const deal of deals) {
+      if (deal.location) {
+        const count = countryCounts.get(deal.location) || 0;
+        countryCounts.set(deal.location, count + 1);
+      }
+    }
+
+    const result = Array.from(countryCounts.entries())
+      .map(([country, count]) => ({ country, count }))
+      .sort((a, b) => b.count - a.count);
+
+    return result;
+  });
+}
+
+export async function getFounderActionQueue(teamId?: string) {
+  noStore();
+  const userId = await getAuthenticatedUserId();
+  const cacheKey = `deals:action:queue:${userId}:${teamId ?? "personal"}`;
+
+  return withCache(cacheKey, 60, async () => {
+    const deals = await getAllDeals(
+      teamId ? { teamId } : undefined
+    );
+
+    const urgent: typeof deals = [];
+    const important: typeof deals = [];
+    const safe: typeof deals = [];
+
+    for (const deal of deals) {
+      if (
+        deal.status === "at_risk" &&
+        (deal.isActionOverdue || deal.recommendedAction?.urgency === "high")
+      ) {
+        urgent.push(deal);
+      } else if (deal.status === "at_risk") {
+        important.push(deal);
+      } else if (deal.status === "active") {
+        safe.push(deal);
+      }
+    }
+
+    urgent.sort((a, b) => {
       if (a.isActionOverdue !== b.isActionOverdue) {
         return a.isActionOverdue ? -1 : 1;
       }
@@ -715,131 +838,53 @@ export async function getFounderRiskOverview(teamId?: string) {
         return bOverdue - aOverdue;
       }
       return b.riskScore - a.riskScore;
-    })
-    .slice(0, 3)
-    .map((deal) => ({
-      id: deal.id,
-      name: deal.name,
-      riskLevel: deal.riskLevel,
-      primaryRiskReason: deal.primaryRiskReason,
-      recommendedAction: deal.recommendedAction,
-      actionOverdueByDays: deal.actionOverdueByDays,
-    }));
+    });
 
-  return {
-    totalDeals,
-    atRiskDealsCount,
-    overdueDealsCount,
-    highUrgencyDealsCount,
-    dealsOverdueMoreThan3Days,
-    top3MostCriticalDeals: criticalDeals,
-  };
-}
+    important.sort((a, b) => b.riskScore - a.riskScore);
 
-export async function getDealCountsByCountry() {
-  noStore();
-  const userId = await getAuthenticatedUserId();
+    safe.sort((a, b) => {
+      const aPriority = STAGE_PRIORITY_FOR_RISK[a.stage] ?? 0;
+      const bPriority = STAGE_PRIORITY_FOR_RISK[b.stage] ?? 0;
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority;
+      }
+      return (
+        new Date(b.lastActivityAt).getTime() -
+        new Date(a.lastActivityAt).getTime()
+      );
+    });
 
-  const deals = await prisma.deal.findMany({
-    where: { userId },
-    select: { location: true },
+    return {
+      urgent: urgent.slice(0, 5).map((deal) => ({
+        id: deal.id,
+        name: deal.name,
+        stage: deal.stage,
+        riskLevel: deal.riskLevel,
+        primaryRiskReason: deal.primaryRiskReason,
+        recommendedAction: deal.recommendedAction,
+        isActionOverdue: deal.isActionOverdue,
+        actionOverdueByDays: deal.actionOverdueByDays,
+      })),
+      important: important.slice(0, 5).map((deal) => ({
+        id: deal.id,
+        name: deal.name,
+        stage: deal.stage,
+        riskLevel: deal.riskLevel,
+        primaryRiskReason: deal.primaryRiskReason,
+        recommendedAction: deal.recommendedAction,
+        isActionOverdue: deal.isActionOverdue,
+        actionOverdueByDays: deal.actionOverdueByDays,
+      })),
+      safe: safe.slice(0, 5).map((deal) => ({
+        id: deal.id,
+        name: deal.name,
+        stage: deal.stage,
+        riskLevel: deal.riskLevel,
+        primaryRiskReason: deal.primaryRiskReason,
+        recommendedAction: deal.recommendedAction,
+        isActionOverdue: deal.isActionOverdue,
+        actionOverdueByDays: deal.actionOverdueByDays,
+      })),
+    };
   });
-
-  const countryCounts = new Map<string, number>();
-
-  for (const deal of deals) {
-    if (deal.location) {
-      const count = countryCounts.get(deal.location) || 0;
-      countryCounts.set(deal.location, count + 1);
-    }
-  }
-
-  const result = Array.from(countryCounts.entries())
-    .map(([country, count]) => ({ country, count }))
-    .sort((a, b) => b.count - a.count);
-
-  return result;
-}
-
-export async function getFounderActionQueue(teamId?: string) {
-  noStore();
-  const deals = await getAllDeals(
-    teamId ? { teamId } : undefined
-  );
-
-  const urgent: typeof deals = [];
-  const important: typeof deals = [];
-  const safe: typeof deals = [];
-
-  for (const deal of deals) {
-    if (
-      deal.status === "at_risk" &&
-      (deal.isActionOverdue || deal.recommendedAction?.urgency === "high")
-    ) {
-      urgent.push(deal);
-    } else if (deal.status === "at_risk") {
-      important.push(deal);
-    } else if (deal.status === "active") {
-      safe.push(deal);
-    }
-  }
-
-  urgent.sort((a, b) => {
-    if (a.isActionOverdue !== b.isActionOverdue) {
-      return a.isActionOverdue ? -1 : 1;
-    }
-    const aOverdue = a.actionOverdueByDays ?? 0;
-    const bOverdue = b.actionOverdueByDays ?? 0;
-    if (aOverdue !== bOverdue) {
-      return bOverdue - aOverdue;
-    }
-    return b.riskScore - a.riskScore;
-  });
-
-  important.sort((a, b) => b.riskScore - a.riskScore);
-
-  safe.sort((a, b) => {
-    const aPriority = STAGE_PRIORITY_FOR_RISK[a.stage] ?? 0;
-    const bPriority = STAGE_PRIORITY_FOR_RISK[b.stage] ?? 0;
-    if (aPriority !== bPriority) {
-      return bPriority - aPriority;
-    }
-    return (
-      new Date(b.lastActivityAt).getTime() -
-      new Date(a.lastActivityAt).getTime()
-    );
-  });
-
-  return {
-    urgent: urgent.slice(0, 5).map((deal) => ({
-      id: deal.id,
-      name: deal.name,
-      stage: deal.stage,
-      riskLevel: deal.riskLevel,
-      primaryRiskReason: deal.primaryRiskReason,
-      recommendedAction: deal.recommendedAction,
-      isActionOverdue: deal.isActionOverdue,
-      actionOverdueByDays: deal.actionOverdueByDays,
-    })),
-    important: important.slice(0, 5).map((deal) => ({
-      id: deal.id,
-      name: deal.name,
-      stage: deal.stage,
-      riskLevel: deal.riskLevel,
-      primaryRiskReason: deal.primaryRiskReason,
-      recommendedAction: deal.recommendedAction,
-      isActionOverdue: deal.isActionOverdue,
-      actionOverdueByDays: deal.actionOverdueByDays,
-    })),
-    safe: safe.slice(0, 5).map((deal) => ({
-      id: deal.id,
-      name: deal.name,
-      stage: deal.stage,
-      riskLevel: deal.riskLevel,
-      primaryRiskReason: deal.primaryRiskReason,
-      recommendedAction: deal.recommendedAction,
-      isActionOverdue: deal.isActionOverdue,
-      actionOverdueByDays: deal.actionOverdueByDays,
-    })),
-  };
 }

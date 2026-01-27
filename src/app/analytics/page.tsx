@@ -1,6 +1,7 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
+import { formatRevenue } from "@/lib/utils";
 import { DashboardLayout } from "@/components/dashboard-layout";
 
 export const dynamic = "force-dynamic";
@@ -115,7 +116,7 @@ export default async function AnalyticsPage() {
               </div>
             </div>
             <p className="text-2xl font-bold text-white mb-1">
-              ${(totalValue / 1000).toFixed(0)}K
+              {formatRevenue(totalValue)}
             </p>
             <p className="text-xs text-emerald-400">+12.5% from last month</p>
           </div>
@@ -147,7 +148,7 @@ export default async function AnalyticsPage() {
               </div>
             </div>
             <p className="text-2xl font-bold text-white mb-1">
-              ${(avgDealValue / 1000).toFixed(1)}K
+              {formatRevenue(avgDealValue)}
             </p>
             <p className="text-xs text-emerald-400">+8.2% from last month</p>
           </div>
@@ -348,7 +349,7 @@ export default async function AnalyticsPage() {
                         <div className="w-2 h-2 rounded-full shrink-0 bg-red-500" />
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white truncate">{deal.name}</p>
-                          <p className="text-xs text-white/50">{deal.stage} • ${deal.value.toLocaleString()}</p>
+                          <p className="text-xs text-white/50">{deal.stage} • ${deal.value.toLocaleString("en-US")}</p>
                         </div>
                       </div>
                       <div className="shrink-0 ml-3">
@@ -434,7 +435,7 @@ export default async function AnalyticsPage() {
                         </div>
                       </div>
                       <p className="text-sm font-semibold text-white shrink-0">
-                        ${deal.value.toLocaleString()}
+                        ${deal.value.toLocaleString("en-US")}
                       </p>
                     </div>
                   ))}
@@ -574,7 +575,7 @@ export default async function AnalyticsPage() {
                   <div key={stage}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-white/60 capitalize">{stage.replace("_", " ")}</span>
-                      <span className="text-xs font-medium text-white">${(stageValue / 1000).toFixed(0)}K</span>
+                      <span className="text-xs font-medium text-white">{formatRevenue(stageValue)}</span>
                     </div>
                     <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                       <div

@@ -59,12 +59,42 @@ export async function validateGoogleCalendarCredentials(
       return { valid: true };
     }
 
+    const error = await response.json().catch(() => ({}));
+    const msg = (error?.error?.message ?? "") as string;
+    const isPrimary = calendarId.toLowerCase() === "primary";
+
     if (response.status === 401 || response.status === 403) {
-      const error = await response.json().catch(() => ({}));
-      if (error.error?.message?.includes("API key")) {
-        return { valid: false, error: "Invalid API key - please check your credentials" };
+      if (isPrimary) {
+        return {
+          valid: false,
+          error:
+            "The 'primary' calendar is private. API keys cannot access private calendars. " +
+            "Use a public calendar: create one in Google Calendar, set it to 'Make available to public', " +
+            "then use its Calendar ID (e.g. xxx@group.calendar.google.com) here.",
+        };
       }
-      return { valid: false, error: "Permission denied - ensure the calendar is public or use OAuth" };
+      if (msg.toLowerCase().includes("login required") || msg.toLowerCase().includes("invalid credentials")) {
+        return {
+          valid: false,
+          error:
+            "This calendar is private. API keys only work with public calendars. " +
+            "Use a public calendar's ID (e.g. xxx@group.calendar.google.com), or make the calendar public in Google Calendar settings.",
+        };
+      }
+      if (msg.includes("API key")) {
+        return {
+          valid: false,
+          error:
+            "Invalid API key — check it's correct and that Google Calendar API is enabled in Google Cloud Console. " +
+            "API keys also cannot access private calendars; use a public calendar ID.",
+        };
+      }
+      return {
+        valid: false,
+        error:
+          "Permission denied. The calendar may be private. API keys only work with public calendars — " +
+          "use a public calendar's ID (e.g. xxx@group.calendar.google.com).",
+      };
     }
 
     if (response.status === 404) {
@@ -75,10 +105,9 @@ export async function validateGoogleCalendarCredentials(
       return { valid: false, error: "Rate limit exceeded - please try again in a few minutes" };
     }
 
-    const errorData = await response.json().catch(() => ({}));
     return {
       valid: false,
-      error: errorData.error?.message || `Connection failed with status ${response.status}`
+      error: msg || `Connection failed with status ${response.status}`,
     };
   } catch (error) {
     if (error instanceof TypeError && error.message.includes("fetch")) {

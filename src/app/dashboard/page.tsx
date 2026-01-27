@@ -101,21 +101,6 @@ export default async function DashboardPage() {
                   <p className="text-[11px] text-[#9f6168]">Verified models</p>
                 </div>
               </div>
-              <button type="button" className="text-[#fca5a5] shrink-0 p-2 min-w-[44px] min-h-[44px] -m-2 flex items-center justify-center rounded-lg hover:bg-white/5">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                  />
-                </svg>
-              </button>
             </div>
             <p className="text-2xl sm:text-3xl font-bold text-white mb-2 break-words min-w-0">
               {formatRevenue(revenueImpact)}

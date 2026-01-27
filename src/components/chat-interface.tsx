@@ -114,6 +114,7 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sendingRef = useRef(false);
 
   useEffect(() => {
     loadChatsAndFolders();
@@ -293,7 +294,8 @@ export function ChatInterface() {
   };
 
   const sendMessage = async (messageText: string) => {
-    if (!messageText.trim() || isLoading) return;
+    if (!messageText.trim() || isLoading || sendingRef.current) return;
+    sendingRef.current = true;
 
     const userMessage = messageText.trim();
     const timestamp = new Date().toLocaleTimeString([], {
@@ -350,47 +352,64 @@ export function ChatInterface() {
       messageContent = `${userMessage}\n\n${attachmentInfo}`;
     }
 
+    const requestBody = {
+      messages: [...messages, { role: "user", content: messageContent }],
+      attachments: currentAttachments.map((att) => ({
+        name: att.name,
+        type: att.type,
+        size: att.size,
+        data: att.data,
+      })),
+    };
+
+    const maxRetries = 2;
+
     try {
-      const response = await fetch("/api/insights/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...messages, { role: "user", content: messageContent }],
-          attachments: currentAttachments.map((att) => ({
-            name: att.name,
-            type: att.type,
-            size: att.size,
-            data: att.data,
-          })),
-        }),
-      });
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const response = await fetch("/api/insights/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to get response");
-      }
-
-      const json = await response.json();
-      const payload = json.data ?? json;
-      const assistantMessage = {
-        role: "assistant" as const,
-        content: payload.content,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-
-      if (chatId) {
-        try {
-          await saveChatMessage(chatId, "assistant", payload.content);
-          await loadChatsAndFolders();
-        } catch (error) {
-          console.error("Error saving message:", error);
+        if (response.status === 429 && attempt < maxRetries) {
+          const data = await response.json().catch(() => ({}));
+          const retryAfter =
+            Number(response.headers.get("Retry-After")) ||
+            (typeof data?.retryAfter === "number" ? data.retryAfter : null) ||
+            3;
+          const delayMs = Math.min(retryAfter * 1000, 15_000);
+          await new Promise((r) => setTimeout(r, delayMs));
+          continue;
         }
+
+        if (!response.ok) {
+          throw new Error("Failed to get response");
+        }
+
+        const json = await response.json();
+        const payload = json.data ?? json;
+        const assistantMessage = {
+          role: "assistant" as const,
+          content: payload.content,
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+
+        if (chatId) {
+          try {
+            await saveChatMessage(chatId, "assistant", payload.content);
+            await loadChatsAndFolders();
+          } catch (error) {
+            console.error("Error saving message:", error);
+          }
+        }
+        return;
       }
+      throw new Error("Failed to get response");
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [
@@ -406,6 +425,7 @@ export function ChatInterface() {
       ]);
     } finally {
       setIsLoading(false);
+      sendingRef.current = false;
     }
   };
 

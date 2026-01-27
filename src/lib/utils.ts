@@ -67,7 +67,7 @@ export function formatRevenue(value: number | undefined | null): string {
     const thousands = numValue / 1000;
     return `$${thousands.toFixed(thousands >= 10 ? 0 : 1)}K`;
   } else {
-    return `$${numValue.toLocaleString()}`;
+    return `$${numValue.toLocaleString("en-US")}`;
   }
 }
 
@@ -93,7 +93,7 @@ export function formatValueInMillions(value: number | undefined | null): {
     };
   }
   return {
-    value: numValue.toLocaleString(),
+    value: numValue.toLocaleString("en-US"),
     suffix: "",
   };
 }

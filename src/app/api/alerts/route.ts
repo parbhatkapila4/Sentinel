@@ -1,10 +1,19 @@
+import { NextRequest } from "next/server";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { successResponse, handleApiError } from "@/lib/api-response";
+import { withRateLimit } from "@/lib/api-rate-limit";
+import { trackPerformance, trackApiCall } from "@/lib/monitoring";
+import { trackApiCall as trackApiMetric } from "@/lib/metrics";
 
-export async function GET() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by withRateLimit
+async function alertsHandler(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
-    const deals = await getAllDeals();
+    const deals = await trackPerformance("alerts.getDeals", async () => {
+      return await getAllDeals();
+    });
 
     const atRiskDeals = deals
       .filter((deal) => {
@@ -40,8 +49,20 @@ export async function GET() {
       };
     });
 
+    const duration = Date.now() - startTime;
+    trackApiCall("/api/alerts", "GET", duration, 200);
+    trackApiMetric("/api/alerts", duration, 200);
     return successResponse({ alerts });
   } catch (error) {
+    const duration = Date.now() - startTime;
+    const statusCode =
+      error instanceof Error && "statusCode" in error
+        ? (error as Error & { statusCode: number }).statusCode
+        : 500;
+    trackApiCall("/api/alerts", "GET", duration, statusCode);
+    trackApiMetric("/api/alerts", duration, statusCode);
     return handleApiError(error);
   }
 }
+
+export const GET = withRateLimit(alertsHandler, { tier: "normal" });

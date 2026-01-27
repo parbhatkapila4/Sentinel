@@ -3,6 +3,7 @@
 import * as React from "react";
 import { LineChart, BarChart } from "@mui/x-charts";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { formatRevenue } from "@/lib/utils";
 
 const darkTheme = createTheme({
   palette: {
@@ -53,7 +54,7 @@ export function RevenueForecastChart({
   chartType = "graph",
 }: RevenueForecastChartProps) {
   const valueFormatter = (value: number | null) =>
-    value != null ? `$${(value / 1000).toFixed(0)}k` : "";
+    value != null ? formatRevenue(value) : "";
 
   return (
     <ThemeProvider theme={darkTheme}>

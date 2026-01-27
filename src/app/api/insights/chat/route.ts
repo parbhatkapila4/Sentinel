@@ -14,6 +14,9 @@ import type { DealForContext, DealWithTimeline } from "@/lib/ai-context";
 import { generateFollowUpEmail } from "@/app/actions/ai";
 import { AppError, ValidationError } from "@/lib/errors";
 import { successResponse, handleApiError } from "@/lib/api-response";
+import { withRateLimit } from "@/lib/api-rate-limit";
+import { trackPerformance, trackApiCall } from "@/lib/monitoring";
+import { trackApiCall as trackApiMetric } from "@/lib/metrics";
 
 const FOLLOW_UP_EMAIL_PATTERN =
   /\b(write|draft|generate|compose)\s+(a\s+)?(follow-up\s+)?email\s+for\b|\bfollow-up\s+email\s+for\s+/i;
@@ -53,7 +56,9 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
-export async function POST(request: NextRequest) {
+async function chatHandler(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
     const userId = await getAuthenticatedUserId();
 
@@ -238,11 +243,26 @@ export async function POST(request: NextRequest) {
       content: m.content,
     }));
 
-    const content = await routeToAI(aiMessages, lastUserMessage, {
-      dealContext: dealContext ?? undefined,
+    const content = await trackPerformance("ai.chat", async () => {
+      return await routeToAI(aiMessages, lastUserMessage, {
+        dealContext: dealContext ?? undefined,
+      });
     });
+
+    const duration = Date.now() - startTime;
+    trackApiCall("/api/insights/chat", "POST", duration, 200);
+    trackApiMetric("/api/insights/chat", duration, 200);
     return successResponse({ content, taskType });
   } catch (error) {
+    const duration = Date.now() - startTime;
+    const statusCode =
+      error instanceof Error && "statusCode" in error
+        ? (error as Error & { statusCode: number }).statusCode
+        : 500;
+    trackApiCall("/api/insights/chat", "POST", duration, statusCode);
+    trackApiMetric("/api/insights/chat", duration, statusCode);
     return handleApiError(error);
   }
 }
+
+export const POST = withRateLimit(chatHandler, { tier: "ai" });

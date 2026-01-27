@@ -54,7 +54,7 @@ export default function NewDealPage() {
   const formatCurrency = (value: string) => {
     const num = parseInt(value.replace(/,/g, ""), 10);
     if (isNaN(num)) return "";
-    return num.toLocaleString();
+    return num.toLocaleString("en-US");
   };
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -593,7 +593,7 @@ export default function NewDealPage() {
                       Deal Value
                     </p>
                     <p className="text-3xl font-bold text-white">
-                      ${dealValue ? parseInt(dealValue).toLocaleString() : "0"}
+                      ${dealValue ? parseInt(dealValue).toLocaleString("en-US") : "0"}
                     </p>
                   </div>
 

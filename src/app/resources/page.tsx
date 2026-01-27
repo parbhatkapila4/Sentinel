@@ -389,9 +389,12 @@ export default async function ResourcesPage() {
                 </p>
               </Link>
 
-              <div className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10">
+              <Link
+                href="/terms"
+                className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
+              >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center group-hover:bg-yellow-500/30 transition-colors">
                     <svg
                       className="w-5 h-5 text-yellow-400"
                       fill="none"
@@ -414,10 +417,7 @@ export default async function ResourcesPage() {
                   Review our terms of service and understand your rights and
                   responsibilities when using Sentinel.
                 </p>
-                <p className="text-white/50 text-sm mt-4">
-                  Terms of Service coming soon
-                </p>
-              </div>
+              </Link>
             </div>
           </div>
 

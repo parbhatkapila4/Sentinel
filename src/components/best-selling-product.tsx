@@ -115,7 +115,7 @@ export function BestSellingProduct({
                 </td>
                 <td className="px-4 py-4">
                   <span className="text-sm text-white">
-                    {product.quantity.toLocaleString()}
+                    {product.quantity.toLocaleString("en-US")}
                   </span>
                 </td>
                 <td className="px-4 py-4">
@@ -126,7 +126,7 @@ export function BestSellingProduct({
                 <td className="px-4 py-4">
                   <span className="text-sm font-semibold text-white">
                     $
-                    {product.earning.toLocaleString(undefined, {
+                    {product.earning.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}

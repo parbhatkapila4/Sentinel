@@ -262,15 +262,15 @@ export function formatContextForAI(deals: DealForContext[]): string {
   const parts: string[] = [];
 
   parts.push("PIPELINE OVERVIEW:");
-  parts.push(`- Total: ${deals.length} deals worth $${totalValue.toLocaleString()}`);
-  parts.push(`- At Risk: ${atRisk.length} deals ($${atRiskValue.toLocaleString()})`);
+  parts.push(`- Total: ${deals.length} deals worth $${totalValue.toLocaleString("en-US")}`);
+  parts.push(`- At Risk: ${atRisk.length} deals ($${atRiskValue.toLocaleString("en-US")})`);
   parts.push(`- Overdue Actions: ${overdueCount} deals`);
   parts.push("");
 
   if (ctx.urgent.length > 0) {
     parts.push("URGENT ATTENTION:");
     ctx.urgent.slice(0, 5).forEach((u, i) => {
-      parts.push(`${i + 1}. ${u.name} ($${u.value.toLocaleString()}) - ${u.reason} [${u.stage}]`);
+      parts.push(`${i + 1}. ${u.name} ($${u.value.toLocaleString("en-US")}) - ${u.reason} [${u.stage}]`);
     });
     parts.push("");
   }
@@ -279,7 +279,7 @@ export function formatContextForAI(deals: DealForContext[]): string {
   const stageOrder = Object.entries(STAGE_ORDER).sort((a, b) => a[1] - b[1]);
   for (const [stage] of stageOrder) {
     const s = ctx.byStage[stage];
-    if (s) parts.push(`- ${stage}: ${s.count} deals ($${s.value.toLocaleString()})`);
+    if (s) parts.push(`- ${stage}: ${s.count} deals ($${s.value.toLocaleString("en-US")})`);
   }
   parts.push("");
 
@@ -299,7 +299,7 @@ export function formatContextForAI(deals: DealForContext[]): string {
   if (recent.silentDeals.length > 0) {
     parts.push("  Silent deals:");
     recent.silentDeals.slice(0, 3).forEach((s) => {
-      parts.push(`    · ${s.name} ($${s.value.toLocaleString()}) - ${s.daysSilent} days, ${s.stage}`);
+      parts.push(`    · ${s.name} ($${s.value.toLocaleString("en-US")}) - ${s.daysSilent} days, ${s.stage}`);
     });
   }
 
@@ -330,8 +330,8 @@ export function formatPredictionsForAI(deals: DealForContext[]): string {
 
   const lines: string[] = [];
   lines.push("PREDICTIONS & FORECAST:");
-  lines.push(`- Expected pipeline value: $${forecast.expected.toLocaleString()} (best $${forecast.bestCase.toLocaleString()}, worst $${forecast.worstCase.toLocaleString()})`);
-  lines.push(`- Next 3 months: ${forecast.monthly.map((m) => `${m.month} $${m.value.toLocaleString()}`).join("; ")}`);
+  lines.push(`- Expected pipeline value: $${forecast.expected.toLocaleString("en-US")} (best $${forecast.bestCase.toLocaleString("en-US")}, worst $${forecast.worstCase.toLocaleString("en-US")})`);
+  lines.push(`- Next 3 months: ${forecast.monthly.map((m) => `${m.month} $${m.value.toLocaleString("en-US")}`).join("; ")}`);
   if (anomalies.length > 0) {
     lines.push(`- Anomalies: ${anomalies.length} (e.g. ${anomalies.slice(0, 2).map((a) => `${a.deal.name}: ${a.reason}`).join("; ")})`);
   }
@@ -463,7 +463,7 @@ export function formatDealDetailForAI(
 ): string {
   const lines: string[] = [];
   lines.push(`DEAL: ${deal.name}`);
-  lines.push(`- Value: $${deal.value.toLocaleString()}`);
+  lines.push(`- Value: $${deal.value.toLocaleString("en-US")}`);
   lines.push(`- Stage: ${deal.stage}`);
   lines.push(`- Status: ${deal.status}, Risk: ${deal.riskLevel}`);
   lines.push(`- Last activity: ${deal.lastActivityAt ? new Date(deal.lastActivityAt).toISOString().slice(0, 10) : "N/A"}`);

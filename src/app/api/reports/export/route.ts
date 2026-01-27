@@ -70,12 +70,12 @@ export async function GET() {
     doc.setTextColor(...textSecondary);
 
     const summaryData = [
-      ["Total Pipeline Value", `$${totalValue.toLocaleString()}`],
+      ["Total Pipeline Value", `$${totalValue.toLocaleString("en-US")}`],
       ["Total Deals", totalDeals.toString()],
-      ["Average Deal Size", `$${Math.round(avgDealValue).toLocaleString()}`],
+      ["Average Deal Size", `$${Math.round(avgDealValue).toLocaleString("en-US")}`],
       [
         "High Risk Deals",
-        `${highRiskDeals.length} ($${highRiskValue.toLocaleString()})`,
+        `${highRiskDeals.length} ($${highRiskValue.toLocaleString("en-US")})`,
       ],
       ["Average Risk Score", `${(avgRiskScore * 100).toFixed(0)}%`],
     ];
@@ -162,7 +162,7 @@ export async function GET() {
 
         doc.text(stage, margin, yPos);
         doc.text(count.toString(), margin + 50, yPos);
-        doc.text(`$${value.toLocaleString()}`, margin + 90, yPos);
+        doc.text(`$${value.toLocaleString("en-US")}`, margin + 90, yPos);
         doc.text(`${percentage.toFixed(1)}%`, margin + 140, yPos);
         yPos += 7;
       });
@@ -213,7 +213,7 @@ export async function GET() {
 
       doc.text(dealName, margin, yPos);
       doc.text(deal.stage, margin + 70, yPos);
-      doc.text(`$${deal.value.toLocaleString()}`, margin + 110, yPos);
+      doc.text(`$${deal.value.toLocaleString("en-US")}`, margin + 110, yPos);
       doc.text(riskLevel, margin + 150, yPos);
       yPos += 6;
     });
