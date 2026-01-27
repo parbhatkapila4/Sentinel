@@ -1,4 +1,7 @@
 import { prisma } from "./prisma";
+import { retryWithBackoff } from "./retry";
+import { RetryableError } from "./errors";
+import { logError, logWarn } from "./logger";
 
 interface SlackMessage {
   text?: string;
@@ -38,13 +41,37 @@ export async function sendSlackNotification(
 
   for (const integration of integrations) {
     try {
-      await fetch(integration.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message),
-      });
+      await retryWithBackoff(
+        async () => {
+          const response = await fetch(integration.webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(message),
+          });
+
+          if (!response.ok) {
+            if (response.status === 429 || response.status >= 500) {
+              throw new RetryableError(`Slack webhook returned ${response.status}`, {
+                statusCode: response.status,
+              });
+            }
+
+            throw new Error(`Slack webhook returned ${response.status}`);
+          }
+        },
+        {
+          maxRetries: 3,
+          isIdempotent: true,
+        }
+      );
     } catch (error) {
-      console.error("Failed to send Slack notification:", error);
+      logWarn("Failed to send Slack notification", {
+        userId,
+        teamId,
+        event,
+        webhookUrl: integration.webhookUrl.substring(0, 50) + "...",
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 }

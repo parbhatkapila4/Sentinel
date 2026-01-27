@@ -7,9 +7,9 @@ export function WorldMapDemo() {
     <div className="py-16 sm:py-24 lg:py-40 bg-black w-full overflow-x-hidden">
       <div className="max-w-7xl mx-auto text-center px-4 sm:px-6">
         <p className="font-bold text-xl md:text-4xl text-white">
-          Remote{" "}
+          Real-Time{" "}
           <span className="text-neutral-400">
-            {"Connectivity".split("").map((word, idx) => (
+            {"Intelligence".split("").map((word, idx) => (
               <motion.span
                 key={idx}
                 className="inline-block"
@@ -23,9 +23,9 @@ export function WorldMapDemo() {
           </span>
         </p>
         <p className="text-sm md:text-lg text-neutral-500 max-w-2xl mx-auto py-4">
-          Break free from traditional boundaries. Work from anywhere, at the
-          comfort of your own studio apartment. Perfect for Nomads and
-          Travellers.
+          Monitor your entire revenue pipeline across Salesforce, HubSpot, and
+          Google Calendar. Get instant alerts when deals are at risk and
+          actionable recommendations to save them before they decay.
         </p>
       </div>
       <WorldMap

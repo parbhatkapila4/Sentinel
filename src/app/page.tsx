@@ -1788,7 +1788,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div>
+            <div className="lg:ml-8 xl:ml-12">
               <h4 className="text-white font-semibold mb-4 lg:mb-6">Product</h4>
               <ul className="space-y-2 lg:space-y-3">
                 <li>

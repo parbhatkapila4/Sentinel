@@ -98,6 +98,7 @@ export default function SettingsPage() {
     enableCompetitiveSignals: true,
   });
   const [isSavingRiskSettings, setIsSavingRiskSettings] = useState(false);
+  const [riskSettingsError, setRiskSettingsError] = useState<string | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodItem[]>([]);
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState<"add" | { type: "edit"; id: string } | null>(null);
@@ -398,7 +399,15 @@ export default function SettingsPage() {
   };
 
   const handleSaveRiskSettings = async () => {
+
+    if (riskSettings.inactivityThresholdDays < 1 || riskSettings.inactivityThresholdDays > 30) {
+      setRiskSettingsError("Inactivity threshold must be between 1 and 30 days");
+      toast.error("Please fix the validation errors before saving");
+      return;
+    }
+
     setIsSavingRiskSettings(true);
+    setRiskSettingsError(null);
     try {
       await updateMyRiskSettings({
         inactivityThresholdDays: riskSettings.inactivityThresholdDays,
@@ -407,7 +416,9 @@ export default function SettingsPage() {
       toast.success("Risk settings saved successfully!");
     } catch (error) {
       console.error("Failed to save risk settings:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to save risk settings");
+      const errorMessage = error instanceof Error ? error.message : "Failed to save risk settings";
+      toast.error(errorMessage);
+      setRiskSettingsError(errorMessage);
     } finally {
       setIsSavingRiskSettings(false);
     }
@@ -588,35 +599,11 @@ export default function SettingsPage() {
     <DashboardLayout>
       <div className="p-6 min-h-full" style={{ background: "#0a0a0f" }}>
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-1">Settings</h1>
-              <p className="text-sm text-white/40">
-                Manage your account and preferences
-              </p>
-            </div>
-            <button
-              type="button"
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all min-h-[44px] w-full sm:w-auto"
-              style={{
-                background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)",
-              }}
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              Save Changes
-            </button>
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-white mb-1">Settings</h1>
+            <p className="text-sm text-white/40">
+              Manage your account and preferences
+            </p>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
@@ -1011,17 +998,59 @@ export default function SettingsPage() {
                           min="1"
                           max="30"
                           value={riskSettings.inactivityThresholdDays}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === "") {
+                              setRiskSettings({
+                                ...riskSettings,
+                                inactivityThresholdDays: 7,
+                              });
+                              setRiskSettingsError(null);
+                              return;
+                            }
+                            const numValue = parseInt(value, 10);
+                            if (isNaN(numValue)) {
+                              setRiskSettingsError("Please enter a valid number");
+                              return;
+                            }
+                            if (numValue < 1 || numValue > 30) {
+                              setRiskSettingsError("Value must be between 1 and 30 days");
+                              return;
+                            }
                             setRiskSettings({
                               ...riskSettings,
-                              inactivityThresholdDays: parseInt(e.target.value) || 7,
-                            })
-                          }
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50 transition-colors"
+                              inactivityThresholdDays: numValue,
+                            });
+                            setRiskSettingsError(null);
+                          }}
+                          onBlur={(e) => {
+                            const value = parseInt(e.target.value, 10);
+                            if (isNaN(value) || value < 1) {
+                              setRiskSettings({
+                                ...riskSettings,
+                                inactivityThresholdDays: 1,
+                              });
+                              setRiskSettingsError(null);
+                            } else if (value > 30) {
+                              setRiskSettings({
+                                ...riskSettings,
+                                inactivityThresholdDays: 30,
+                              });
+                              setRiskSettingsError(null);
+                            }
+                          }}
+                          className={`w-full px-4 py-3 rounded-xl bg-white/5 border text-white placeholder-white/30 focus:outline-none transition-colors ${riskSettingsError
+                              ? "border-red-500/50 focus:border-red-500"
+                              : "border-white/10 focus:border-[#8b1a1a]/50"
+                            }`}
                         />
-                        <p className="text-xs text-white/30 mt-2">
-                          Range: 1-30 days
-                        </p>
+                        {riskSettingsError ? (
+                          <p className="text-xs text-red-400 mt-2">{riskSettingsError}</p>
+                        ) : (
+                          <p className="text-xs text-white/30 mt-2">
+                            Range: 1-30 days
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t border-white/10">

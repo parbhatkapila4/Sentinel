@@ -3,6 +3,8 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth";
+import { logInfo, logError, logWarn } from "@/lib/logger";
+import { withErrorContext } from "@/lib/error-context";
 import {
   calculateDealSignals,
   formatRiskLevel,
@@ -56,124 +58,149 @@ export async function canUserEditDeal(
 export async function createDeal(formData: FormData) {
   const userId = await getAuthenticatedUserId();
 
-  const name = formData.get("name") as string;
-  const stage = formData.get("stage") as string;
-  const value = parseInt(formData.get("value") as string, 10);
-  const location = (formData.get("location") as string) || null;
-  const teamId = (formData.get("teamId") as string) || null;
-  const assignedToId = (formData.get("assignedToId") as string) || null;
+  return await withErrorContext(
+    { userId, actionType: "create_deal" },
+    async () => {
+      const name = formData.get("name") as string;
+      const stage = formData.get("stage") as string;
+      const value = parseInt(formData.get("value") as string, 10);
+      const location = (formData.get("location") as string) || null;
+      const teamId = (formData.get("teamId") as string) || null;
+      const assignedToId = (formData.get("assignedToId") as string) || null;
 
-  if (!name || !stage || isNaN(value)) {
-    const errors: Record<string, string> = {};
-    if (!name) errors.name = "Required";
-    if (!stage) errors.stage = "Required";
-    if (isNaN(value)) errors.value = "Required";
-    throw new ValidationError("Missing required fields", errors);
-  }
+      if (!name || !stage || isNaN(value)) {
+        const errors: Record<string, string> = {};
+        if (!name) errors.name = "Required";
+        if (!stage) errors.stage = "Required";
+        if (isNaN(value)) errors.value = "Required";
+        throw new ValidationError("Missing required fields", errors);
+      }
 
-  await enforceDealLimit(userId);
+      await enforceDealLimit(userId);
 
-  if (teamId) {
-    const role = await getUserTeamRole(userId, teamId);
-    if (!role) throw new ForbiddenError("You are not a member of this team");
-  }
+      if (teamId) {
+        const role = await getUserTeamRole(userId, teamId);
+        if (!role) throw new ForbiddenError("You are not a member of this team");
+      }
 
-  const deal = await prisma.deal.create({
-    data: {
-      userId,
-      name,
-      stage,
-      value,
-      location,
-      ...(teamId && { teamId }),
-      ...(assignedToId && { assignedToId }),
-    },
-  });
+      logInfo("Creating deal", {
+        userId,
+        name,
+        stage,
+        value,
+        teamId,
+        assignedToId,
+      });
 
-  await appendDealTimeline(deal.id, "stage_changed", {
-    stage,
-  });
+      const deal = await prisma.deal.create({
+        data: {
+          userId,
+          name,
+          stage,
+          value,
+          location,
+          ...(teamId && { teamId }),
+          ...(assignedToId && { assignedToId }),
+        },
+      });
 
+      await appendDealTimeline(deal.id, "stage_changed", {
+        stage,
+      });
 
-  await invalidateCachePattern(`deals:all:${userId}:*`);
-  await invalidateCachePattern(`deals:team:*:${userId}`);
+      await invalidateCachePattern(`deals:all:${userId}:*`);
+      await invalidateCachePattern(`deals:team:*:${userId}`);
 
-  try {
-    await dispatchWebhookEvent(userId, teamId, "deal.created", {
-      id: deal.id,
-      name: deal.name,
-      value: deal.value,
-      stage: deal.stage,
-    });
-  } catch (e) {
-    console.error("[deals] Webhook dispatch failed:", e);
-  }
+      try {
+        await dispatchWebhookEvent(userId, teamId, "deal.created", {
+          id: deal.id,
+          name: deal.name,
+          value: deal.value,
+          stage: deal.stage,
+        });
+      } catch (e) {
+        logWarn("Webhook dispatch failed", {
+          userId,
+          dealId: deal.id,
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
 
-  const hadDemo = await hasDemoData(userId);
-  if (hadDemo) {
-    await removeDemoDataForUser(userId);
-  }
+      logInfo("Deal created successfully", {
+        userId,
+        dealId: deal.id,
+        name: deal.name,
+        stage: deal.stage,
+        value: deal.value,
+      });
 
-  revalidatePath("/dashboard");
-  if (teamId) revalidatePath(`/teams/${teamId}`);
+      const hadDemo = await hasDemoData(userId);
+      if (hadDemo) {
+        await removeDemoDataForUser(userId);
+      }
 
-  const timeline = await prisma.dealTimeline.findMany({
-    where: { dealId: deal.id },
-    orderBy: { createdAt: "desc" },
-  });
+      revalidatePath("/dashboard");
+      if (teamId) revalidatePath(`/teams/${teamId}`);
 
-  const timelineEventsInput = timeline.map((e) => ({
-    eventType: e.eventType,
-    createdAt: e.createdAt || new Date(),
-    metadata:
-      e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
-        ? (e.metadata as Record<string, unknown>)
-        : null,
-  }));
+      const timeline = await prisma.dealTimeline.findMany({
+        where: { dealId: deal.id },
+        orderBy: { createdAt: "desc" },
+      });
 
-  const riskSettings = await prisma.userRiskSettings.findUnique({
-    where: { userId: deal.userId },
-    select: {
-      inactivityThresholdDays: true,
-      enableCompetitiveSignals: true,
-    },
-  });
+      const timelineEventsInput = timeline.map((e) => ({
+        eventType: e.eventType,
+        createdAt: e.createdAt || new Date(),
+        metadata:
+          e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
+            ? (e.metadata as Record<string, unknown>)
+            : null,
+      }));
 
-  const signals = calculateDealSignals(
-    {
-      stage: deal.stage,
-      value: deal.value,
-      status: "active",
-      createdAt: deal.createdAt,
-    },
-    timelineEventsInput,
-    riskSettings ?? undefined
+      const riskSettings = await prisma.userRiskSettings.findUnique({
+        where: { userId: deal.userId },
+        select: {
+          inactivityThresholdDays: true,
+          enableCompetitiveSignals: true,
+        },
+      });
+
+      const signals = calculateDealSignals(
+        {
+          stage: deal.stage,
+          value: deal.value,
+          status: "active",
+          createdAt: deal.createdAt,
+        },
+        timelineEventsInput,
+        riskSettings ?? undefined
+      );
+
+      return {
+        id: deal.id,
+        userId: deal.userId,
+        teamId: deal.teamId,
+        assignedToId: deal.assignedToId,
+        name: deal.name,
+        stage: deal.stage,
+        value: deal.value,
+        lastActivityAt: signals.lastActivityAt,
+        riskScore: signals.riskScore,
+        riskLevel: formatRiskLevel(signals.riskScore),
+        status: signals.status,
+        nextAction: signals.nextAction,
+        nextActionReason: null,
+        riskReasons: signals.reasons,
+        primaryRiskReason: getPrimaryRiskReason(signals.reasons),
+        recommendedAction: signals.recommendedAction,
+        riskStartedAt: signals.riskStartedAt,
+        riskAgeInDays: signals.riskAgeInDays,
+        actionDueAt: signals.actionDueAt,
+        actionOverdueByDays: signals.actionOverdueByDays,
+        isActionOverdue: signals.isActionOverdue,
+        createdAt: deal.createdAt,
+      };
+    }
   );
-
-  return {
-    id: deal.id,
-    userId: deal.userId,
-    teamId: deal.teamId,
-    assignedToId: deal.assignedToId,
-    name: deal.name,
-    stage: deal.stage,
-    value: deal.value,
-    lastActivityAt: signals.lastActivityAt,
-    riskScore: signals.riskScore,
-    riskLevel: formatRiskLevel(signals.riskScore),
-    status: signals.status,
-    nextAction: signals.nextAction,
-    nextActionReason: null,
-    riskReasons: signals.reasons,
-    primaryRiskReason: getPrimaryRiskReason(signals.reasons),
-    recommendedAction: signals.recommendedAction,
-    riskStartedAt: signals.riskStartedAt,
-    riskAgeInDays: signals.riskAgeInDays,
-    actionDueAt: signals.actionDueAt,
-    actionOverdueByDays: signals.actionOverdueByDays,
-    isActionOverdue: signals.isActionOverdue,
-    createdAt: deal.createdAt,
-  };
 }
 
 export async function getAllDeals(options?: GetDealsOptions) {
@@ -501,117 +528,146 @@ export async function getDealById(dealId: string) {
 export async function updateDealStage(dealId: string, newStage: string) {
   const userId = await getAuthenticatedUserId();
 
-  const deal = await prisma.deal.findUnique({ where: { id: dealId } });
-  if (!deal) throw new NotFoundError("Deal");
+  return await withErrorContext(
+    { userId, actionType: "update_deal_stage", dealId },
+    async () => {
+      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      if (!deal) throw new NotFoundError("Deal");
 
-  const canEdit = await canUserEditDeal(userId, deal);
-  if (!canEdit) throw new ForbiddenError("You cannot edit this deal");
+      const canEdit = await canUserEditDeal(userId, deal);
+      if (!canEdit) throw new ForbiddenError("You cannot edit this deal");
 
-  const oldStage = deal.stage;
+      const oldStage = deal.stage;
 
-  await prisma.deal.update({
-    where: { id: dealId },
-    data: { stage: newStage },
-  });
-
-  await invalidateCachePattern(`deals:all:${userId}:*`);
-  await invalidateCachePattern(`deals:team:*:${userId}`);
-  await invalidateCache(`deal:${dealId}:${userId}`);
-
-  await appendDealTimeline(dealId, "stage_changed", {
-    stage: newStage,
-  });
-
-  revalidatePath(`/deals/${dealId}`);
-  revalidatePath("/dashboard");
-  if (deal.teamId) revalidatePath(`/teams/${deal.teamId}`);
-
-  try {
-    if (oldStage !== newStage) {
-      await triggerStageChangeNotification(
-        { id: deal.id, name: deal.name, userId: deal.userId },
-        oldStage,
-        newStage
-      );
-      await dispatchWebhookEvent(userId, deal.teamId, "deal.stage_changed", {
-        id: deal.id,
-        name: deal.name,
+      logInfo("Updating deal stage", {
+        userId,
+        dealId,
         oldStage,
         newStage,
       });
-      await sendSlackNotification(
-        userId,
-        deal.teamId,
-        "deal.stage_changed",
-        formatStageChangeSlackMessage({
-          name: deal.name,
-          value: deal.value,
-          oldStage,
-          newStage,
-        })
-      );
-    }
-    if (newStage === "closed_won") {
-      await dispatchWebhookEvent(userId, deal.teamId, "deal.closed_won", {
-        id: deal.id,
-        name: deal.name,
-        value: deal.value,
+
+      await prisma.deal.update({
+        where: { id: dealId },
+        data: { stage: newStage },
       });
-      await sendSlackNotification(
-        userId,
-        deal.teamId,
-        "deal.closed_won",
-        formatDealWonSlackMessage({ name: deal.name, value: deal.value })
-      );
-    }
-    const enriched = await getDealById(dealId);
-    const riskLevel = enriched.riskLevel ?? formatRiskLevel(enriched.riskScore);
-    if (
-      riskLevel === "High" ||
-      (riskLevel as string).toLowerCase() === "critical"
-    ) {
-      await triggerDealAtRiskNotification({
-        id: enriched.id,
-        name: enriched.name,
-        userId: enriched.userId,
-        riskLevel: riskLevel as string,
-        primaryRiskReason: enriched.primaryRiskReason ?? undefined,
+
+      await invalidateCachePattern(`deals:all:${userId}:*`);
+      await invalidateCachePattern(`deals:team:*:${userId}`);
+      await invalidateCache(`deal:${dealId}:${userId}`);
+
+      await appendDealTimeline(dealId, "stage_changed", {
+        stage: newStage,
       });
-      await dispatchWebhookEvent(userId, deal.teamId, "deal.at_risk", {
-        id: enriched.id,
-        name: enriched.name,
-        value: enriched.value,
-        stage: enriched.stage,
-        riskLevel: riskLevel as string,
-        primaryRiskReason: enriched.primaryRiskReason ?? undefined,
-      });
-      await sendSlackNotification(
+
+      revalidatePath(`/deals/${dealId}`);
+      revalidatePath("/dashboard");
+      if (deal.teamId) revalidatePath(`/teams/${deal.teamId}`);
+
+      try {
+        if (oldStage !== newStage) {
+          await triggerStageChangeNotification(
+            { id: deal.id, name: deal.name, userId: deal.userId },
+            oldStage,
+            newStage
+          );
+          await dispatchWebhookEvent(userId, deal.teamId, "deal.stage_changed", {
+            id: deal.id,
+            name: deal.name,
+            oldStage,
+            newStage,
+          });
+          await sendSlackNotification(
+            userId,
+            deal.teamId,
+            "deal.stage_changed",
+            formatStageChangeSlackMessage({
+              name: deal.name,
+              value: deal.value,
+              oldStage,
+              newStage,
+            })
+          );
+        }
+        if (newStage === "closed_won") {
+          logInfo("Deal closed won", {
+            userId,
+            dealId: deal.id,
+            dealName: deal.name,
+            value: deal.value,
+          });
+          await dispatchWebhookEvent(userId, deal.teamId, "deal.closed_won", {
+            id: deal.id,
+            name: deal.name,
+            value: deal.value,
+          });
+          await sendSlackNotification(
+            userId,
+            deal.teamId,
+            "deal.closed_won",
+            formatDealWonSlackMessage({ name: deal.name, value: deal.value })
+          );
+        }
+        const enriched = await getDealById(dealId);
+        const riskLevel = enriched.riskLevel ?? formatRiskLevel(enriched.riskScore);
+        if (
+          riskLevel === "High" ||
+          (riskLevel as string).toLowerCase() === "critical"
+        ) {
+          await triggerDealAtRiskNotification({
+            id: enriched.id,
+            name: enriched.name,
+            userId: enriched.userId,
+            riskLevel: riskLevel as string,
+            primaryRiskReason: enriched.primaryRiskReason ?? undefined,
+          });
+          await dispatchWebhookEvent(userId, deal.teamId, "deal.at_risk", {
+            id: enriched.id,
+            name: enriched.name,
+            value: enriched.value,
+            stage: enriched.stage,
+            riskLevel: riskLevel as string,
+            primaryRiskReason: enriched.primaryRiskReason ?? undefined,
+          });
+          await sendSlackNotification(
+            userId,
+            deal.teamId,
+            "deal.at_risk",
+            formatDealAtRiskSlackMessage({
+              name: enriched.name,
+              value: enriched.value,
+              stage: enriched.stage,
+              riskLevel: riskLevel as string,
+              riskReason: enriched.primaryRiskReason ?? undefined,
+            })
+          );
+        }
+        if (
+          enriched.isActionOverdue &&
+          enriched.recommendedAction &&
+          enriched.actionOverdueByDays != null
+        ) {
+          await triggerActionOverdueNotification(
+            { id: enriched.id, name: enriched.name, userId: enriched.userId },
+            enriched.recommendedAction.label,
+            enriched.actionOverdueByDays
+          );
+        }
+      } catch (e) {
+        logWarn("Notification triggers failed", {
+          userId,
+          dealId,
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
+
+      logInfo("Deal stage updated successfully", {
         userId,
-        deal.teamId,
-        "deal.at_risk",
-        formatDealAtRiskSlackMessage({
-          name: enriched.name,
-          value: enriched.value,
-          stage: enriched.stage,
-          riskLevel: riskLevel as string,
-          riskReason: enriched.primaryRiskReason ?? undefined,
-        })
-      );
+        dealId,
+        oldStage,
+        newStage,
+      });
     }
-    if (
-      enriched.isActionOverdue &&
-      enriched.recommendedAction &&
-      enriched.actionOverdueByDays != null
-    ) {
-      await triggerActionOverdueNotification(
-        { id: enriched.id, name: enriched.name, userId: enriched.userId },
-        enriched.recommendedAction.label,
-        enriched.actionOverdueByDays
-      );
-    }
-  } catch (e) {
-    console.error("[deals] Notification triggers failed:", e);
-  }
+  );
 }
 
 export async function assignDeal(
@@ -620,103 +676,137 @@ export async function assignDeal(
 ) {
   const userId = await getAuthenticatedUserId();
 
-  const deal = await prisma.deal.findUnique({ where: { id: dealId } });
-  if (!deal) throw new NotFoundError("Deal");
-  if (!deal.teamId) throw new ForbiddenError("Deal must belong to a team");
+  return await withErrorContext(
+    { userId, actionType: "assign_deal", dealId },
+    async () => {
+      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      if (!deal) throw new NotFoundError("Deal");
+      if (!deal.teamId) throw new ForbiddenError("Deal must belong to a team");
 
-  const myRole = await getUserTeamRole(userId, deal.teamId);
-  if (!myRole) throw new ForbiddenError("You are not a member of this team");
-  if (myRole !== "owner" && myRole !== "admin") {
-    throw new ForbiddenError("Only owners and admins can assign deals");
-  }
+      const myRole = await getUserTeamRole(userId, deal.teamId);
+      if (!myRole) throw new ForbiddenError("You are not a member of this team");
+      if (myRole !== "owner" && myRole !== "admin") {
+        throw new ForbiddenError("Only owners and admins can assign deals");
+      }
 
-  if (assignedToId) {
-    const assigneeMembership = await prisma.teamMember.findUnique({
-      where: { userId_teamId: { userId: assignedToId, teamId: deal.teamId } },
-    });
-    if (!assigneeMembership) {
-      throw new ForbiddenError("Assignee must be a member of the team");
+      if (assignedToId) {
+        const assigneeMembership = await prisma.teamMember.findUnique({
+          where: { userId_teamId: { userId: assignedToId, teamId: deal.teamId } },
+        });
+        if (!assigneeMembership) {
+          throw new ForbiddenError("Assignee must be a member of the team");
+        }
+      }
+
+      logInfo("Assigning deal", {
+        userId,
+        dealId,
+        assignedToId,
+        teamId: deal.teamId,
+      });
+
+      await prisma.deal.update({
+        where: { id: dealId },
+        data: { assignedToId },
+      });
+
+      await invalidateCachePattern(`deals:all:${userId}:*`);
+      await invalidateCachePattern(`deals:team:*:${userId}`);
+      await invalidateCache(`deal:${dealId}:${userId}`);
+
+      await appendDealTimeline(dealId, "activity", {
+        type: "assignment_changed",
+        assignedToId,
+      });
+
+      revalidatePath(`/deals/${dealId}`);
+      revalidatePath(`/teams/${deal.teamId}`);
+      revalidatePath("/dashboard");
     }
-  }
-
-  await prisma.deal.update({
-    where: { id: dealId },
-    data: { assignedToId },
-  });
-
-  await invalidateCachePattern(`deals:all:${userId}:*`);
-  await invalidateCachePattern(`deals:team:*:${userId}`);
-  await invalidateCache(`deal:${dealId}:${userId}`);
-
-  await appendDealTimeline(dealId, "activity", {
-    type: "assignment_changed",
-    assignedToId,
-  });
-
-  revalidatePath(`/deals/${dealId}`);
-  revalidatePath(`/teams/${deal.teamId}`);
-  revalidatePath("/dashboard");
+  );
 }
 
 export async function moveDealToTeam(dealId: string, teamId: string) {
   const userId = await getAuthenticatedUserId();
 
-  const deal = await prisma.deal.findUnique({ where: { id: dealId } });
-  if (!deal) throw new NotFoundError("Deal");
-  if (deal.userId !== userId) throw new ForbiddenError("You do not own this deal");
-  if (deal.teamId) throw new ForbiddenError("Deal is already a team deal");
+  return await withErrorContext(
+    { userId, actionType: "move_deal_to_team", dealId, teamId },
+    async () => {
+      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      if (!deal) throw new NotFoundError("Deal");
+      if (deal.userId !== userId) throw new ForbiddenError("You do not own this deal");
+      if (deal.teamId) throw new ForbiddenError("Deal is already a team deal");
 
-  const role = await getUserTeamRole(userId, teamId);
-  if (!role) throw new ForbiddenError("You are not a member of this team");
+      const role = await getUserTeamRole(userId, teamId);
+      if (!role) throw new ForbiddenError("You are not a member of this team");
 
-  await prisma.deal.update({
-    where: { id: dealId },
-    data: { teamId },
-  });
+      logInfo("Moving deal to team", {
+        userId,
+        dealId,
+        teamId,
+      });
 
-  await invalidateCachePattern(`deals:all:${userId}:*`);
-  await invalidateCachePattern(`deals:team:*:${userId}`);
-  await invalidateCache(`deal:${dealId}:${userId}`);
+      await prisma.deal.update({
+        where: { id: dealId },
+        data: { teamId },
+      });
 
-  await appendDealTimeline(dealId, "activity", {
-    type: "moved_to_team",
-    teamId,
-  });
+      await invalidateCachePattern(`deals:all:${userId}:*`);
+      await invalidateCachePattern(`deals:team:*:${userId}`);
+      await invalidateCache(`deal:${dealId}:${userId}`);
 
-  revalidatePath(`/deals/${dealId}`);
-  revalidatePath(`/teams/${teamId}`);
-  revalidatePath("/dashboard");
+      await appendDealTimeline(dealId, "activity", {
+        type: "moved_to_team",
+        teamId,
+      });
+
+      revalidatePath(`/deals/${dealId}`);
+      revalidatePath(`/teams/${teamId}`);
+      revalidatePath("/dashboard");
+    }
+  );
 }
 
 export async function moveDealToPersonal(dealId: string) {
   const userId = await getAuthenticatedUserId();
 
-  const deal = await prisma.deal.findUnique({ where: { id: dealId } });
-  if (!deal) throw new NotFoundError("Deal");
-  if (!deal.teamId) throw new ForbiddenError("Deal is not a team deal");
+  return await withErrorContext(
+    { userId, actionType: "move_deal_to_personal", dealId },
+    async () => {
+      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      if (!deal) throw new NotFoundError("Deal");
+      if (!deal.teamId) throw new ForbiddenError("Deal is not a team deal");
 
-  const myRole = await getUserTeamRole(userId, deal.teamId);
-  if (!myRole) throw new ForbiddenError("You are not a member of this team");
-  if (myRole !== "owner" && myRole !== "admin") {
-    throw new ForbiddenError("Only owners and admins can move deals to personal");
-  }
+      const myRole = await getUserTeamRole(userId, deal.teamId);
+      if (!myRole) throw new ForbiddenError("You are not a member of this team");
+      if (myRole !== "owner" && myRole !== "admin") {
+        throw new ForbiddenError("Only owners and admins can move deals to personal");
+      }
 
-  await prisma.deal.update({
-    where: { id: dealId },
-    data: { teamId: null, assignedToId: null, userId },
-  });
+      logInfo("Moving deal to personal", {
+        userId,
+        dealId,
+        previousTeamId: deal.teamId,
+      });
 
-  await invalidateCachePattern(`deals:all:${userId}:*`);
-  await invalidateCachePattern(`deals:team:*:${userId}`);
-  await invalidateCache(`deal:${dealId}:${userId}`);
+      await prisma.deal.update({
+        where: { id: dealId },
+        data: { teamId: null, assignedToId: null, userId },
+      });
 
-  await appendDealTimeline(dealId, "activity", {
-    type: "moved_to_personal",
-  });
+      await invalidateCachePattern(`deals:all:${userId}:*`);
+      await invalidateCachePattern(`deals:team:*:${userId}`);
+      await invalidateCache(`deal:${dealId}:${userId}`);
 
-  revalidatePath(`/deals/${dealId}`);
-  revalidatePath(`/teams/${deal.teamId}`);
-  revalidatePath("/dashboard");
+      await appendDealTimeline(dealId, "activity", {
+        type: "moved_to_personal",
+      });
+
+      revalidatePath(`/deals/${dealId}`);
+      revalidatePath(`/teams/${deal.teamId}`);
+      revalidatePath("/dashboard");
+    }
+  );
 }
 
 export async function getFounderRiskOverview(teamId?: string) {

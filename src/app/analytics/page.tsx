@@ -1,14 +1,57 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { Suspense } from "react";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatRevenue } from "@/lib/utils";
 import { DashboardLayout } from "@/components/dashboard-layout";
+import { ExportButton } from "@/components/export-button";
+import { AnalyticsDateFilter } from "@/components/analytics-date-filter";
+import { subDays } from "date-fns";
 
 export const dynamic = "force-dynamic";
 
-export default async function AnalyticsPage() {
+function filterDealsByDateRange(
+  deals: Awaited<ReturnType<typeof getAllDeals>>,
+  range: string
+) {
+  if (range === "all") {
+    return deals;
+  }
+
+  const now = new Date();
+  let cutoffDate: Date;
+
+  switch (range) {
+    case "7d":
+      cutoffDate = subDays(now, 7);
+      break;
+    case "30d":
+      cutoffDate = subDays(now, 30);
+      break;
+    case "90d":
+      cutoffDate = subDays(now, 90);
+      break;
+    default:
+      cutoffDate = subDays(now, 30);
+  }
+
+  return deals.filter((deal) => {
+    const dealDate = new Date(deal.createdAt);
+    return dealDate >= cutoffDate;
+  });
+}
+
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) {
   noStore();
-  const deals = await getAllDeals();
+  const params = await searchParams;
+  const range = params?.range || "30d";
+
+  const allDeals = await getAllDeals();
+  const deals = filterDealsByDateRange(allDeals, range);
 
   const totalDeals = deals.length;
   const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
@@ -51,40 +94,22 @@ export default async function AnalyticsPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 items-end">
-            <button
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white transition-colors w-full sm:w-auto justify-center sm:justify-start"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
+            <ExportButton
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white transition-colors w-full sm:w-auto justify-center sm:justify-start disabled:opacity-50 disabled:cursor-not-allowed bg-white/3 border border-white/8"
+            />
+            <Suspense fallback={
+              <div
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium text-white/60"
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                />
-              </svg>
-              Export
-            </button>
-            <select
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 bg-transparent cursor-pointer"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
-              <option value="all">All time</option>
-            </select>
+                Loading...
+              </div>
+            }>
+              <AnalyticsDateFilter />
+            </Suspense>
           </div>
         </div>
 

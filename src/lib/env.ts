@@ -17,6 +17,16 @@ const envSchema = z.object({
     .string()
     .url()
     .default("http://localhost:3000"),
+
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).optional(),
+
+  RETRY_MAX_RETRIES: z.string().optional(),
+  RETRY_INITIAL_DELAY: z.string().optional(),
+  RETRY_MAX_DELAY: z.string().optional(),
+  RETRY_MULTIPLIER: z.string().optional(),
+
+  CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.string().optional(),
+  CIRCUIT_BREAKER_TIMEOUT: z.string().optional(),
 });
 
 export function validateEnv() {

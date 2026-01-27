@@ -5,12 +5,23 @@ import { successResponse, handleApiError } from "@/lib/api-response";
 import { withRateLimit } from "@/lib/api-rate-limit";
 import { trackPerformance, trackApiCall } from "@/lib/monitoring";
 import { trackApiCall as trackApiMetric } from "@/lib/metrics";
+import { withApiContext } from "@/lib/api-middleware";
+import { withErrorContext } from "@/lib/error-context";
 
-async function notificationsHandler(request: NextRequest) {
+async function notificationsHandler(request: NextRequest, context?: { requestId: string }) {
   const startTime = Date.now();
+  const requestId = context?.requestId || "unknown";
 
   try {
     const userId = await getAuthenticatedUserId();
+
+    await withErrorContext(
+      { userId, requestId, actionType: "get_notifications" },
+      async () => {
+
+      }
+    );
+
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get("limit");
     const skip = searchParams.get("skip");
@@ -38,8 +49,8 @@ async function notificationsHandler(request: NextRequest) {
         : 500;
     trackApiCall("/api/notifications", "GET", duration, statusCode);
     trackApiMetric("/api/notifications", duration, statusCode);
-    return handleApiError(error);
+    return handleApiError(error, requestId);
   }
 }
 
-export const GET = withRateLimit(notificationsHandler, { tier: "normal" });
+export const GET = withRateLimit(withApiContext(notificationsHandler), { tier: "normal" });
