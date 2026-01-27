@@ -15,10 +15,10 @@ export default async function Home() {
     <div className="min-h-screen bg-black text-white antialiased overflow-x-hidden">
       <Navbar />
 
-      <section className="px-4 sm:px-6 lg:px-8 pt-20 sm:pt-32 pb-16 sm:pb-20">
+      <section className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-24 sm:pt-32 lg:pt-40 xl:pt-48 pb-16 sm:pb-20 lg:pb-24">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <svg
-            className="absolute top-16 right-4 sm:top-32 sm:right-32 w-48 h-48 sm:w-[500px] sm:h-[500px] opacity-40"
+            className="absolute top-16 right-4 sm:top-32 sm:right-32 lg:right-24 xl:right-32 w-48 h-48 sm:w-[500px] sm:h-[500px] lg:w-[550px] lg:h-[550px] opacity-40"
             viewBox="0 0 500 500"
             fill="none"
           >
@@ -38,11 +38,11 @@ export default async function Home() {
             />
           </svg>
 
-          <div className="absolute top-24 left-4 sm:top-48 sm:left-24 w-24 h-24 sm:w-40 sm:h-40 bg-red-500 rounded-full opacity-25 blur-2xl"></div>
-          <div className="absolute top-32 left-12 sm:top-64 sm:left-48 w-20 h-20 sm:w-32 sm:h-32 bg-yellow-400 rounded-full opacity-25 blur-2xl"></div>
-          <div className="absolute bottom-24 right-8 sm:bottom-48 sm:right-48 w-28 h-28 sm:w-48 sm:h-48 bg-blue-500 rounded-full opacity-25 blur-2xl"></div>
+          <div className="absolute top-24 left-4 sm:top-48 sm:left-24 lg:left-32 xl:left-40 w-24 h-24 sm:w-40 sm:h-40 lg:w-44 lg:h-44 bg-red-500 rounded-full opacity-25 blur-2xl"></div>
+          <div className="absolute top-32 left-12 sm:top-64 sm:left-48 lg:left-56 xl:left-64 w-20 h-20 sm:w-32 sm:h-32 lg:w-36 lg:h-36 bg-yellow-400 rounded-full opacity-25 blur-2xl"></div>
+          <div className="absolute bottom-24 right-8 sm:bottom-48 sm:right-48 lg:right-56 xl:right-64 w-28 h-28 sm:w-48 sm:h-48 lg:w-52 lg:h-52 bg-blue-500 rounded-full opacity-25 blur-2xl"></div>
 
-          <div className="absolute right-4 sm:right-24 top-1/2 -translate-y-1/2 hidden sm:flex flex-col gap-3 opacity-30">
+          <div className="absolute right-4 sm:right-24 lg:right-32 xl:right-40 top-1/2 -translate-y-1/2 hidden sm:flex flex-col gap-3 opacity-30">
             {Array.from({ length: 7 }).map((_, i) => (
               <svg
                 key={i}
@@ -63,14 +63,14 @@ export default async function Home() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-20 items-center">
             <div className="space-y-6 sm:space-y-8">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-bold leading-tight text-white">
                 Never Lose a Deal to
                 <br />
                 <span className="text-blue-400">Silent Decay.</span>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl">
+              <p className="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl text-white/80 leading-relaxed max-w-2xl">
                 Real-time risk detection that tells you exactly which deals are
                 dying and what to do about it. See why the most innovative sales
                 teams add automated risk alerts, deal-specific action
@@ -103,8 +103,8 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="relative lg:min-h-[600px] min-h-[280px] sm:min-h-[380px]">
-              <div className="relative w-full h-full min-h-[280px] sm:min-h-[380px] lg:min-h-[500px]">
+            <div className="relative lg:min-h-[600px] xl:min-h-[650px] min-h-[280px] sm:min-h-[380px]">
+              <div className="relative w-full h-full min-h-[280px] sm:min-h-[380px] lg:min-h-[550px] xl:min-h-[600px]">
                 <svg
                   viewBox="0 0 600 600"
                   className="w-full h-full"
@@ -932,32 +932,32 @@ export default async function Home() {
                 </svg>
 
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-2 right-2 sm:top-10 sm:right-12 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-2xl max-w-[160px] sm:max-w-[210px] border border-gray-100">
-                    <p className="text-gray-800 text-xs sm:text-sm font-medium leading-snug">
+                  <div className="absolute top-2 right-2 sm:top-10 sm:right-12 lg:top-12 lg:right-16 xl:top-14 xl:right-20 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 lg:px-6 lg:py-4 shadow-2xl max-w-[160px] sm:max-w-[210px] lg:max-w-[240px] border border-gray-100">
+                    <p className="text-gray-800 text-xs sm:text-sm lg:text-base font-medium leading-snug">
                       Ready to protect your revenue with Sentinel?
                     </p>
                   </div>
 
-                  <div className="absolute top-14 right-4 sm:top-28 sm:right-16 bg-blue-500 rounded-2xl rounded-br-none px-4 py-2 sm:px-6 sm:py-3 shadow-2xl max-w-[140px] sm:max-w-none">
-                    <p className="text-white text-xs sm:text-sm font-semibold">
+                  <div className="absolute top-14 right-4 sm:top-28 sm:right-16 lg:top-32 lg:right-20 xl:top-36 xl:right-24 bg-blue-500 rounded-2xl rounded-br-none px-4 py-2 sm:px-6 sm:py-3 lg:px-7 lg:py-3.5 shadow-2xl max-w-[140px] sm:max-w-none">
+                    <p className="text-white text-xs sm:text-sm lg:text-base font-semibold">
                       Absolutely!
                     </p>
                   </div>
 
-                  <div className="absolute top-28 left-2 sm:top-44 sm:left-6 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-2xl max-w-[180px] sm:max-w-[230px] border border-gray-100 sm:block hidden">
-                    <p className="text-gray-800 text-xs sm:text-sm font-medium leading-snug">
+                  <div className="absolute top-28 left-2 sm:top-44 sm:left-6 lg:top-52 lg:left-10 xl:top-56 xl:left-12 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 lg:px-6 lg:py-4 shadow-2xl max-w-[180px] sm:max-w-[230px] lg:max-w-[260px] border border-gray-100 sm:block hidden">
+                    <p className="text-gray-800 text-xs sm:text-sm lg:text-base font-medium leading-snug">
                       Deal at risk: No activity detected in 7 days
                     </p>
                   </div>
 
-                  <div className="absolute top-40 right-2 sm:top-60 sm:right-6 bg-blue-500 rounded-2xl rounded-br-none px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-2xl max-w-[150px] sm:max-w-[190px]">
-                    <p className="text-white text-xs sm:text-sm font-medium leading-snug">
+                  <div className="absolute top-40 right-2 sm:top-60 sm:right-6 lg:top-64 lg:right-10 xl:top-72 xl:right-12 bg-blue-500 rounded-2xl rounded-br-none px-3 py-2.5 sm:px-5 sm:py-3.5 lg:px-6 lg:py-4 shadow-2xl max-w-[150px] sm:max-w-[190px] lg:max-w-[220px]">
+                    <p className="text-white text-xs sm:text-sm lg:text-base font-medium leading-snug">
                       Sending follow-up email now
                     </p>
                   </div>
 
-                  <div className="absolute bottom-4 left-2 sm:bottom-20 sm:left-10 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-2xl max-w-[160px] sm:max-w-[210px] border border-gray-100">
-                    <p className="text-gray-800 text-xs sm:text-sm font-medium leading-snug">
+                  <div className="absolute bottom-4 left-2 sm:bottom-20 sm:left-10 lg:bottom-24 lg:left-14 xl:bottom-28 xl:left-16 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 lg:px-6 lg:py-4 shadow-2xl max-w-[160px] sm:max-w-[210px] lg:max-w-[240px] border border-gray-100">
+                    <p className="text-gray-800 text-xs sm:text-sm lg:text-base font-medium leading-snug">
                       Deal saved! Activity resumed
                     </p>
                   </div>
@@ -970,7 +970,7 @@ export default async function Home() {
 
       <section
         id="features"
-        className="py-20 sm:py-40 px-4 sm:px-6 lg:px-8"
+        className="py-20 sm:py-32 lg:py-40 px-4 sm:px-6 lg:px-8 xl:px-12"
         style={{ backgroundColor: "#000000" }}
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -983,10 +983,10 @@ export default async function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white mb-4 sm:mb-6 leading-tight tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black text-white mb-4 sm:mb-6 leading-tight tracking-tight">
               Ready-made collaborative features.
             </h2>
-            <p className="text-lg md:text-xl text-white/60 leading-relaxed max-w-4xl">
+            <p className="text-lg md:text-xl lg:text-lg xl:text-xl text-white/60 leading-relaxed max-w-4xl">
               Sentinel provides ready-to-use features through{" "}
               <strong className="text-white font-semibold">
                 customizable pre-built components
@@ -1048,7 +1048,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="col-span-12 lg:col-span-5 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+            <div className="sm:col-span-2 lg:col-span-1 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white tracking-tight">
                   Activity Tracking
@@ -1111,7 +1111,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="col-span-12 md:col-span-4 lg:col-span-4">
+            <div className="sm:col-span-2 lg:col-span-1">
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-[#1a1a1a] rounded-xl p-4 border border-white/5 shadow-lg shadow-black/30 hover:border-white/10 transition-all">
                   <div className="text-white/50 text-xs mb-1">
@@ -1146,7 +1146,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="col-span-12 md:col-span-4 lg:col-span-4 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+            <div className="sm:col-span-2 lg:col-span-1 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
               <h3 className="text-lg font-bold text-white mb-4 tracking-tight">
                 Top 5 At-Risk Deals
               </h3>
@@ -1191,7 +1191,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="col-span-12 md:col-span-4 lg:col-span-4 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+            <div className="sm:col-span-2 lg:col-span-1 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
               <h3 className="text-lg font-bold text-white mb-4 tracking-tight">
                 Risk Alerts
               </h3>
@@ -1270,7 +1270,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="col-span-12 md:col-span-6 lg:col-span-6 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+            <div className="sm:col-span-2 lg:col-span-1 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
               <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
                 Action Recommendations
               </h3>
@@ -1336,22 +1336,26 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="col-span-12 md:col-span-6 lg:col-span-6 bg-[#1a1a1a] rounded-2xl p-6 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
-              <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
-                Deal Analytics
-              </h3>
-              <p className="text-white/70 text-sm leading-relaxed mb-6">
-                Deep insights to understand patterns, predict outcomes, and
-                optimize strategy.
-              </p>
-              <div className="bg-[#0f0f0f] rounded-lg p-4 border border-white/5">
-                <div className="space-y-3">
+            <div className="sm:col-span-2 lg:col-span-2 bg-[#1a1a1a] rounded-2xl p-6 lg:p-8 border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-white/10 transition-all duration-300">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
+                <div className="flex-1">
+                  <h3 className="text-xl lg:text-2xl font-bold text-white mb-2 tracking-tight">
+                    Deal Analytics
+                  </h3>
+                  <p className="text-white/70 text-sm leading-relaxed">
+                    Deep insights to understand patterns, predict outcomes, and
+                    optimize strategy.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-[#0f0f0f] rounded-lg p-4 lg:p-6 border border-white/5">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                   <div>
-                    <div className="flex justify-between text-xs text-white/60 mb-1">
+                    <div className="flex justify-between items-center text-sm text-white/60 mb-2">
                       <span>Deal Health</span>
-                      <span>85%</span>
+                      <span className="text-base font-semibold text-white">85%</span>
                     </div>
-                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
                         style={{ width: "85%" }}
@@ -1359,11 +1363,11 @@ export default async function Home() {
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-xs text-white/60 mb-1">
+                    <div className="flex justify-between items-center text-sm text-white/60 mb-2">
                       <span>Win Probability</span>
-                      <span>72%</span>
+                      <span className="text-base font-semibold text-white">72%</span>
                     </div>
-                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
                         style={{ width: "72%" }}
@@ -1371,11 +1375,11 @@ export default async function Home() {
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-xs text-white/60 mb-1">
+                    <div className="flex justify-between items-center text-sm text-white/60 mb-2">
                       <span>Activity Score</span>
-                      <span>45%</span>
+                      <span className="text-base font-semibold text-white">45%</span>
                     </div>
-                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full"
                         style={{ width: "45%" }}
@@ -1390,7 +1394,7 @@ export default async function Home() {
       </section>
 
       <section
-        className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+        className="py-12 sm:py-20 lg:py-24 xl:py-28 px-4 sm:px-6 lg:px-8 xl:px-12 relative overflow-hidden"
         style={{
           backgroundColor: "#000000",
           fontFamily: "Arial, Helvetica, sans-serif",
@@ -1434,7 +1438,7 @@ export default async function Home() {
 
           <div className="mb-10 sm:mb-16">
             <h2
-              className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] xl:text-[14rem] font-black leading-none break-words"
+              className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem] font-black leading-none break-words"
               style={{
                 color: "#5a5a5a",
                 letterSpacing: "-0.02em",
@@ -1452,8 +1456,8 @@ export default async function Home() {
             </h2>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-12 sm:mb-16">
-            <div className="w-full max-w-[320px]">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-12 xl:gap-16 mb-12 sm:mb-16">
+            <div className="w-full max-w-[320px] lg:max-w-[360px]">
               <svg className="w-8 h-8 mb-4" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 22.02L12 18.77L5.82 22.02L7 14.14L2 9.27L9.91 8.26L12 2Z"
@@ -1475,7 +1479,7 @@ export default async function Home() {
             </div>
 
             <div
-              className="relative overflow-hidden w-full max-w-[580px] h-[140px] sm:h-[180px] rounded-[70px] sm:rounded-[90px] border-4 sm:border-[8px] border-[#a3e635] bg-black mx-auto lg:mx-0"
+              className="relative overflow-hidden w-full max-w-[580px] lg:max-w-[600px] xl:max-w-[650px] h-[140px] sm:h-[180px] lg:h-[200px] xl:h-[220px] rounded-[70px] sm:rounded-[90px] lg:rounded-[100px] border-4 sm:border-[8px] border-[#a3e635] bg-black mx-auto lg:mx-0"
             >
               <div
                 className="absolute inset-0"
@@ -1550,7 +1554,7 @@ export default async function Home() {
 
           <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-12 sm:mb-16">
             <div
-              className="relative overflow-hidden w-full max-w-[480px] h-[180px] sm:h-[220px] rounded-[90px] sm:rounded-[110px] bg-[#a855f7] mx-auto lg:mx-0 order-2 lg:order-1"
+              className="relative overflow-hidden w-full max-w-[480px] lg:max-w-[520px] xl:max-w-[580px] h-[180px] sm:h-[220px] lg:h-[240px] xl:h-[260px] rounded-[90px] sm:rounded-[110px] lg:rounded-[120px] bg-[#a855f7] mx-auto lg:mx-0 order-2 lg:order-1"
             >
               <div
                 className="absolute inset-0"
@@ -1590,7 +1594,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="w-full max-w-[320px] text-left lg:text-right order-1 lg:order-2 mx-auto lg:mx-0">
+            <div className="w-full max-w-[320px] lg:max-w-[360px] text-left lg:text-right order-1 lg:order-2 mx-auto lg:mx-0">
               <div className="flex justify-end mb-4">
                 <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
                   <path
@@ -1633,7 +1637,7 @@ export default async function Home() {
             </div>
 
             <div
-              className="relative overflow-hidden w-full max-w-[480px] h-[180px] sm:h-[220px] rounded-[90px] sm:rounded-[110px] border-4 sm:border-[8px] border-[#c9b896] bg-black mx-auto lg:mx-0"
+              className="relative overflow-hidden w-full max-w-[480px] lg:max-w-[520px] xl:max-w-[580px] h-[180px] sm:h-[220px] lg:h-[240px] xl:h-[260px] rounded-[90px] sm:rounded-[110px] lg:rounded-[120px] border-4 sm:border-[8px] border-[#c9b896] bg-black mx-auto lg:mx-0"
             >
               <div
                 className="absolute inset-0"
@@ -1719,7 +1723,7 @@ export default async function Home() {
           <PricingToggle>
             <div className="text-center mb-10 sm:mb-14">
               <h2
-                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-normal text-white mb-4 sm:mb-6 leading-tight tracking-tight px-2"
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-normal text-white mb-4 sm:mb-6 leading-tight tracking-tight px-2"
                 style={{
                   fontFamily: "Georgia, 'Times New Roman', serif",
                   fontStyle: "italic",
@@ -1748,23 +1752,23 @@ export default async function Home() {
       <WorldMapDemo />
 
       <footer
-        className="px-4 sm:px-6 lg:px-10 py-12 sm:py-16"
+        className="px-4 sm:px-6 lg:px-10 xl:px-12 py-12 sm:py-16 lg:py-20"
         style={{ background: "#000000" }}
       >
         <div
-          className="max-w-7xl mx-auto rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12"
+          className="max-w-7xl mx-auto rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 xl:p-14"
           style={{
             background: "#000000",
             boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
           }}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10 sm:mb-16">
-            <div>
-              <h3 className="text-white text-lg font-semibold mb-4">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-6 xl:gap-8 mb-10 sm:mb-16">
+            <div className="lg:col-span-2">
+              <h3 className="text-white text-lg lg:text-xl font-semibold mb-4 lg:mb-6">
                 Join our newsletter to stay up to date on the latest news and
                 updates.
               </h3>
-              <div className="flex flex-col sm:flex-row gap-3 mb-3">
+              <div className="flex flex-col sm:flex-row gap-3 mb-3 lg:mb-4">
                 <input
                   type="email"
                   placeholder="Enter your email"
@@ -1778,172 +1782,82 @@ export default async function Home() {
                   Subscribe
                 </button>
               </div>
-              <p className="text-sm text-white/60 mb-6">
+              <p className="text-sm text-white/60">
                 By subscribing, you agree to our Privacy Policy and consent to
                 receive updates from us.
               </p>
             </div>
 
             <div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
-                <div>
-                  <h4 className="text-white font-semibold mb-4">Product</h4>
-                  <ul className="space-y-2">
-                    <li>
-                      <a
-                        href="/features"
-                        className="text-white/60 hover:text-white transition-colors"
-                      >
-                        Features
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/pricing"
-                        className="text-white/60 hover:text-white transition-colors"
-                      >
-                        Pricing
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="text-white font-semibold mb-4">Resources</h4>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link
-                        href="/docs"
-                        className="text-white/60 hover:text-white transition-colors"
-                      >
-                        Documentation
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/contact"
-                        className="text-white/60 hover:text-white transition-colors"
-                      >
-                        Contact
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="text-white font-semibold mb-4">Company</h4>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link
-                        href="/about"
-                        className="text-white/60 hover:text-white transition-colors"
-                      >
-                        About Us
-                      </Link>
-                    </li>
-                    <li>
-                      <a
-                        href="/privacy"
-                        className="text-white/60 hover:text-white transition-colors"
-                      >
-                        Privacy Policy
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-
-              <div className="flex items-center justify-center sm:justify-start gap-4 lg:ml-[calc(33.333%-2.5rem)]">
-                <a
-                  href="https://x.com/Parbhat03"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
-                  style={{ border: "1px solid rgba(255,255,255,0.2)" }}
-                  aria-label="Twitter"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+              <h4 className="text-white font-semibold mb-4 lg:mb-6">Product</h4>
+              <ul className="space-y-2 lg:space-y-3">
+                <li>
+                  <a
+                    href="/features"
+                    className="text-white/60 hover:text-white transition-colors text-sm lg:text-base"
                   >
-                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-                  </svg>
-                </a>
-                <a
-                  href="https://github.com/parbhatkapila4/Sentinel"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
-                  style={{ border: "1px solid rgba(255,255,255,0.2)" }}
-                  aria-label="GitHub"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/pricing"
+                    className="text-white/60 hover:text-white transition-colors text-sm lg:text-base"
                   >
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-                  </svg>
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/parbhat-kapila/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
-                  style={{ border: "1px solid rgba(255,255,255,0.2)" }}
-                  aria-label="LinkedIn"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    Pricing
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-4 lg:mb-6">Resources</h4>
+              <ul className="space-y-2 lg:space-y-3">
+                <li>
+                  <Link
+                    href="/docs"
+                    className="text-white/60 hover:text-white transition-colors text-sm lg:text-base"
                   >
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                    <rect x="2" y="9" width="4" height="12" />
-                    <circle cx="4" cy="4" r="2" />
-                  </svg>
-                </a>
-                <a
-                  href="https://www.reddit.com/user/Confident-Mistake204/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
-                  style={{ border: "1px solid rgba(255,255,255,0.2)" }}
-                  aria-label="Reddit"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="#ffffff"
+                    Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/contact"
+                    className="text-white/60 hover:text-white transition-colors text-sm lg:text-base"
                   >
-                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
-                  </svg>
-                </a>
-              </div>
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-4 lg:mb-6">Company</h4>
+              <ul className="space-y-2 lg:space-y-3">
+                <li>
+                  <Link
+                    href="/about"
+                    className="text-white/60 hover:text-white transition-colors text-sm lg:text-base"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="/privacy"
+                    className="text-white/60 hover:text-white transition-colors text-sm lg:text-base"
+                  >
+                    Privacy Policy
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
 
           <div className="text-center mt-8 sm:mt-12">
             <span
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold block break-words"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-bold block break-words"
               style={{
                 color: "#ffffff",
                 fontFamily: "'Joyride', sans-serif",
@@ -1963,6 +1877,90 @@ export default async function Home() {
               </span>
               NTINEL
             </span>
+            <div className="flex items-center justify-center gap-4 lg:gap-5 mt-6 lg:mt-8">
+              <a
+                href="https://x.com/Parbhat03"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 lg:w-11 lg:h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                style={{ border: "1px solid rgba(255,255,255,0.2)" }}
+                aria-label="Twitter"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+                </svg>
+              </a>
+              <a
+                href="https://github.com/parbhatkapila4/Sentinel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 lg:w-11 lg:h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                style={{ border: "1px solid rgba(255,255,255,0.2)" }}
+                aria-label="GitHub"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+              </a>
+              <a
+                href="https://www.linkedin.com/in/parbhat-kapila/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 lg:w-11 lg:h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                style={{ border: "1px solid rgba(255,255,255,0.2)" }}
+                aria-label="LinkedIn"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                  <rect x="2" y="9" width="4" height="12" />
+                  <circle cx="4" cy="4" r="2" />
+                </svg>
+              </a>
+              <a
+                href="https://www.reddit.com/user/Confident-Mistake204/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 lg:w-11 lg:h-11 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
+                style={{ border: "1px solid rgba(255,255,255,0.2)" }}
+                aria-label="Reddit"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="#ffffff"
+                >
+                  <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
       </footer>
