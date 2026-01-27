@@ -126,6 +126,14 @@ export async function createDeal(formData: FormData) {
         : null,
   }));
 
+  const riskSettings = await prisma.userRiskSettings.findUnique({
+    where: { userId: deal.userId },
+    select: {
+      inactivityThresholdDays: true,
+      enableCompetitiveSignals: true,
+    },
+  });
+
   const signals = calculateDealSignals(
     {
       stage: deal.stage,
@@ -133,7 +141,8 @@ export async function createDeal(formData: FormData) {
       status: "active",
       createdAt: deal.createdAt,
     },
-    timelineEventsInput
+    timelineEventsInput,
+    riskSettings ?? undefined
   );
 
   return {
@@ -208,6 +217,25 @@ export async function getAllDeals(options?: GetDealsOptions) {
     timelineByDealId.get(event.dealId)!.push(event);
   }
 
+  const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
+  const riskSettingsMap = new Map<string, { inactivityThresholdDays: number; enableCompetitiveSignals: boolean }>();
+  if (uniqueUserIds.length > 0) {
+    const riskSettings = await prisma.userRiskSettings.findMany({
+      where: { userId: { in: uniqueUserIds } },
+      select: {
+        userId: true,
+        inactivityThresholdDays: true,
+        enableCompetitiveSignals: true,
+      },
+    });
+    for (const setting of riskSettings) {
+      riskSettingsMap.set(setting.userId, {
+        inactivityThresholdDays: setting.inactivityThresholdDays,
+        enableCompetitiveSignals: setting.enableCompetitiveSignals,
+      });
+    }
+  }
+
   return deals.map((deal) => {
     assertRiskFieldIntegrity(deal);
 
@@ -224,6 +252,8 @@ export async function getAllDeals(options?: GetDealsOptions) {
           : null,
     }));
 
+    const userRiskSettings = riskSettingsMap.get(deal.userId);
+
     const signals = calculateDealSignals(
       {
         stage: deal.stage,
@@ -231,7 +261,8 @@ export async function getAllDeals(options?: GetDealsOptions) {
         status: "active",
         createdAt: deal.createdAt,
       },
-      timelineEvents
+      timelineEvents,
+      userRiskSettings
     );
 
     return {
@@ -295,6 +326,25 @@ export async function getTeamDeals(teamId: string) {
     timelineByDealId.get(event.dealId)!.push(event);
   }
 
+  const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
+  const riskSettingsMap = new Map<string, { inactivityThresholdDays: number; enableCompetitiveSignals: boolean }>();
+  if (uniqueUserIds.length > 0) {
+    const riskSettings = await prisma.userRiskSettings.findMany({
+      where: { userId: { in: uniqueUserIds } },
+      select: {
+        userId: true,
+        inactivityThresholdDays: true,
+        enableCompetitiveSignals: true,
+      },
+    });
+    for (const setting of riskSettings) {
+      riskSettingsMap.set(setting.userId, {
+        inactivityThresholdDays: setting.inactivityThresholdDays,
+        enableCompetitiveSignals: setting.enableCompetitiveSignals,
+      });
+    }
+  }
+
   return deals.map((deal) => {
     assertRiskFieldIntegrity(deal);
     const dealTimeline = timelineByDealId.get(deal.id) ?? [];
@@ -309,6 +359,8 @@ export async function getTeamDeals(teamId: string) {
           : null,
     }));
 
+    const userRiskSettings = riskSettingsMap.get(deal.userId);
+
     const signals = calculateDealSignals(
       {
         stage: deal.stage,
@@ -316,7 +368,8 @@ export async function getTeamDeals(teamId: string) {
         status: "active",
         createdAt: deal.createdAt,
       },
-      timelineEvents
+      timelineEvents,
+      userRiskSettings ?? undefined
     );
 
     return {
