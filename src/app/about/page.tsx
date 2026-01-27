@@ -264,10 +264,10 @@ export default async function AboutPage() {
                 from revenue professionals. If you have ideas or suggestions, I&apos;d
                 love to hear from you at{" "}
                 <a
-                  href="mailto:parbhat@parbhat.dev"
+                  href="mailto:help@sentinels.in"
                   className="text-blue-400 hover:text-blue-300 underline"
                 >
-                  parbhat@parbhat.dev
+                  help@sentinels.in
                 </a>
                 .
               </p>
