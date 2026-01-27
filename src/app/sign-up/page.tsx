@@ -2,9 +2,14 @@
 
 import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function SignUpPage() {
+function SignUpContent() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email");
+  const token = searchParams.get("token");
+  const afterSignUpUrl = token ? `/invite/${token}` : "/dashboard";
   useEffect(() => {
     const ensureFormVisible = () => {
       const wrapper = document.querySelector('.clerk-sign-up-wrapper');
@@ -586,8 +591,9 @@ export default function SignUpPage() {
                   },
                 }}
                 routing="hash"
-                signInUrl="/sign-in"
-                afterSignUpUrl="/dashboard"
+                signInUrl={token ? `/sign-in?email=${encodeURIComponent(email || "")}&token=${encodeURIComponent(token)}` : "/sign-in"}
+                afterSignUpUrl={afterSignUpUrl}
+                initialValues={email ? { emailAddress: email } : undefined}
               />
             </div>
           </div>
@@ -600,5 +606,17 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#030303]">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <SignUpContent />
+    </Suspense>
   );
 }

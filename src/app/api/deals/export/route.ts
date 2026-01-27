@@ -203,9 +203,8 @@ export async function GET() {
     return new NextResponse(buffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="deals-export-${
-          new Date().toISOString().split("T")[0]
-        }.pdf"`,
+        "Content-Disposition": `attachment; filename="deals-export-${new Date().toISOString().split("T")[0]
+          }.pdf"`,
       },
     });
   } catch (error) {

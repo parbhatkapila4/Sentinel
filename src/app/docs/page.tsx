@@ -5,12 +5,12 @@ export default async function DocsPage() {
   const user = await getAuthenticatedUser();
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="fixed inset-0 bg-black text-white overflow-y-auto">
       <div className="border-b border-white/10 sticky top-0 z-50 bg-black/95 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-4">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-4 flex items-center justify-between flex-wrap gap-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors -ml-76"
+            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors"
           >
             <svg
               className="w-4 h-4"
@@ -27,6 +27,20 @@ export default async function DocsPage() {
             </svg>
             Back
           </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/api-docs"
+              className="text-sm text-white/60 hover:text-white transition-colors"
+            >
+              API Reference
+            </Link>
+            <Link
+              href="/docs/developers"
+              className="text-sm text-white/60 hover:text-white transition-colors"
+            >
+              Developer Docs
+            </Link>
+          </div>
         </div>
       </div>
 

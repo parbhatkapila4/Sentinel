@@ -23,11 +23,6 @@ export default async function AnalyticsPage() {
     (deal) => formatRiskLevel(deal.riskScore) === "Low"
   ).length;
 
-  const stageDistribution = deals.reduce((acc, deal) => {
-    acc[deal.stage] = (acc[deal.stage] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
   const avgRiskScore =
     totalDeals > 0
       ? deals.reduce((sum, deal) => sum + deal.riskScore, 0) / totalDeals
@@ -36,6 +31,11 @@ export default async function AnalyticsPage() {
   const dealsNeedingAction = deals.filter(
     (deal) => deal.recommendedAction?.urgency === "high"
   ).length;
+
+  const won = deals.filter((d) => d.stage === "closed_won").length;
+  const lost = deals.filter((d) => d.stage === "closed_lost").length;
+  const closedTotal = won + lost;
+  const winRate = closedTotal > 0 ? (won / closedTotal) * 100 : 0;
 
   return (
     <DashboardLayout>
@@ -49,9 +49,9 @@ export default async function AnalyticsPage() {
               Track your finances and achieve your financial goals
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 items-end">
             <button
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white transition-colors w-full sm:w-auto justify-center sm:justify-start"
               style={{
                 background: "rgba(255,255,255,0.03)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -73,7 +73,7 @@ export default async function AnalyticsPage() {
               Export
             </button>
             <select
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 bg-transparent cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 bg-transparent cursor-pointer"
               style={{
                 background: "rgba(255,255,255,0.03)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -87,7 +87,7 @@ export default async function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <div
             className="rounded-2xl p-5"
             style={{
@@ -214,16 +214,15 @@ export default async function AnalyticsPage() {
               {dealsNeedingAction}
             </p>
             <p
-              className={`text-xs ${
-                dealsNeedingAction > 0 ? "text-amber-400" : "text-emerald-400"
-              }`}
+              className={`text-xs ${dealsNeedingAction > 0 ? "text-amber-400" : "text-emerald-400"
+                }`}
             >
               {dealsNeedingAction > 0 ? "Urgent" : "None pending"}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6">
           <div
             className="rounded-2xl p-6"
             style={{
@@ -256,9 +255,8 @@ export default async function AnalyticsPage() {
                         fill="none"
                         stroke="#10b981"
                         strokeWidth="12"
-                        strokeDasharray={`${
-                          (lowRiskDeals / totalDeals) * 251.2
-                        } 251.2`}
+                        strokeDasharray={`${(lowRiskDeals / totalDeals) * 251.2
+                          } 251.2`}
                         strokeLinecap="round"
                       />
                       {mediumRiskDeals > 0 && (
@@ -269,9 +267,8 @@ export default async function AnalyticsPage() {
                           fill="none"
                           stroke="#f59e0b"
                           strokeWidth="12"
-                          strokeDasharray={`${
-                            (mediumRiskDeals / totalDeals) * 251.2
-                          } 251.2`}
+                          strokeDasharray={`${(mediumRiskDeals / totalDeals) * 251.2
+                            } 251.2`}
                           strokeDashoffset={
                             -((lowRiskDeals / totalDeals) * 251.2)
                           }
@@ -286,9 +283,8 @@ export default async function AnalyticsPage() {
                           fill="none"
                           stroke="#ef4444"
                           strokeWidth="12"
-                          strokeDasharray={`${
-                            (highRiskDeals / totalDeals) * 251.2
-                          } 251.2`}
+                          strokeDasharray={`${(highRiskDeals / totalDeals) * 251.2
+                            } 251.2`}
                           strokeDashoffset={
                             -(
                               ((lowRiskDeals + mediumRiskDeals) / totalDeals) *
@@ -331,75 +327,74 @@ export default async function AnalyticsPage() {
             </div>
           </div>
 
-          <div
-            className="col-span-2 rounded-2xl p-6"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            <h3 className="text-lg font-semibold text-white mb-6">
-              Pipeline by Stage
-            </h3>
+          <div className="bg-white/5 rounded-xl p-4 lg:p-6 border border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-4">Deals Requiring Attention</h3>
 
-            <div className="space-y-4">
-              {Object.entries(stageDistribution).length > 0 ? (
-                Object.entries(stageDistribution).map(([stage, count], i) => {
-                  const percentage =
-                    totalDeals > 0 ? (count / totalDeals) * 100 : 0;
-                  const colors = [
-                    "from-violet-500 to-violet-400",
-                    "from-blue-500 to-blue-400",
-                    "from-emerald-500 to-emerald-400",
-                    "from-amber-500 to-amber-400",
-                    "from-rose-500 to-rose-400",
-                  ];
+            <div className="space-y-3">
+              {deals
+                .filter((deal) => {
+                  const riskLevel = formatRiskLevel(deal.riskScore);
+                  return riskLevel === "High";
+                })
+                .slice(0, 5)
+                .map((deal) => {
+                  const riskLevel = formatRiskLevel(deal.riskScore);
                   return (
-                    <div key={stage}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-white">
-                          {stage}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-white/60">
-                            {count} deals
-                          </span>
-                          <span className="text-xs text-white/30">
-                            ({percentage.toFixed(0)}%)
-                          </span>
+                    <div
+                      key={deal.id}
+                      className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 hover:border-red-500/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-2 h-2 rounded-full shrink-0 bg-red-500" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{deal.name}</p>
+                          <p className="text-xs text-white/50">{deal.stage} • ${deal.value.toLocaleString()}</p>
                         </div>
                       </div>
-                      <div className="h-3 rounded-full bg-white/5 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full bg-gradient-to-r ${
-                            colors[i % colors.length]
-                          } transition-all duration-500`}
-                          style={{ width: `${percentage}%` }}
-                        />
+                      <div className="shrink-0 ml-3">
+                        <span className="text-xs font-medium px-2 py-1 rounded bg-red-500/20 text-red-400">
+                          {riskLevel}
+                        </span>
                       </div>
                     </div>
                   );
-                })
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-white/40">No stage data available</p>
-                </div>
-              )}
+                })}
+
+              {deals.filter((deal) => {
+                const riskLevel = formatRiskLevel(deal.riskScore);
+                return riskLevel === "High";
+              }).length === 0 && (
+                  <div className="text-center py-8 text-white/40">
+                    <p className="text-sm">No high-risk deals</p>
+                    <p className="text-xs mt-1">All deals are in good health</p>
+                  </div>
+                )}
             </div>
+
+            {deals.filter((deal) => {
+              const riskLevel = formatRiskLevel(deal.riskScore);
+              return riskLevel === "High";
+            }).length > 5 && (
+                <a
+                  href="/risk-overview"
+                  className="block mt-4 text-center text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  View all at-risk deals →
+                </a>
+              )}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6">
           <div
-            className="rounded-2xl p-6"
+            className="rounded-2xl p-4 sm:p-6 min-w-0"
             style={{
               background:
                 "linear-gradient(145deg, rgba(16,185,129,0.05) 0%, rgba(255,255,255,0.01) 100%)",
               border: "1px solid rgba(16,185,129,0.15)",
             }}
           >
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <svg
                 className="w-5 h-5 text-emerald-400"
                 fill="none"
@@ -425,20 +420,20 @@ export default async function AnalyticsPage() {
                   .map((deal, i) => (
                     <div
                       key={deal.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03]"
+                      className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white/3 min-w-0"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-sm font-bold">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-8 h-8 shrink-0 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-sm font-bold">
                           {i + 1}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">
                             {deal.name}
                           </p>
                           <p className="text-xs text-white/40">{deal.stage}</p>
                         </div>
                       </div>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-sm font-semibold text-white shrink-0">
                         ${deal.value.toLocaleString()}
                       </p>
                     </div>
@@ -452,14 +447,14 @@ export default async function AnalyticsPage() {
           </div>
 
           <div
-            className="rounded-2xl p-6"
+            className="rounded-2xl p-4 sm:p-6 min-w-0"
             style={{
               background:
                 "linear-gradient(145deg, rgba(239,68,68,0.05) 0%, rgba(255,255,255,0.01) 100%)",
               border: "1px solid rgba(239,68,68,0.15)",
             }}
           >
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <svg
                 className="w-5 h-5 text-red-400"
                 fill="none"
@@ -485,10 +480,10 @@ export default async function AnalyticsPage() {
                   .map((deal) => (
                     <div
                       key={deal.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03]"
+                      className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white/3 min-w-0"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-8 h-8 shrink-0 rounded-lg bg-red-500/10 flex items-center justify-center">
                           <svg
                             className="w-4 h-4 text-red-400"
                             fill="none"
@@ -503,16 +498,16 @@ export default async function AnalyticsPage() {
                             />
                           </svg>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">
                             {deal.name}
                           </p>
-                          <p className="text-xs text-red-400/70">
+                          <p className="text-xs text-red-400/70 truncate">
                             {deal.recommendedAction?.label || "Needs attention"}
                           </p>
                         </div>
                       </div>
-                      <span className="text-xs font-semibold text-red-400 px-2 py-1 rounded-lg bg-red-500/10">
+                      <span className="text-xs font-semibold text-red-400 px-2 py-1 rounded-lg bg-red-500/10 shrink-0">
                         {(deal.riskScore * 100).toFixed(0)}%
                       </span>
                     </div>
@@ -538,6 +533,85 @@ export default async function AnalyticsPage() {
                 <p className="text-white/40 text-sm">No high-risk deals!</p>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+
+          <div className="bg-white/5 rounded-xl p-4 lg:p-6 border border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-4">Stage Velocity</h3>
+            <div className="space-y-3">
+              {["lead", "qualified", "proposal", "negotiation"].map((stage) => {
+                const stageDeals = deals.filter((d) => d.stage === stage);
+                const avgDays = stageDeals.length > 0
+                  ? Math.round(stageDeals.reduce((acc, d) => {
+                    const days = Math.floor((Date.now() - new Date(d.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+                    return acc + days;
+                  }, 0) / stageDeals.length)
+                  : 0;
+                return (
+                  <div key={stage} className="flex items-center justify-between">
+                    <span className="text-sm text-white/70 capitalize">{stage}</span>
+                    <span className="text-sm font-medium text-white">{avgDays} days avg</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white/5 rounded-xl p-4 lg:p-6 border border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-4">Value by Stage</h3>
+            <div className="space-y-3">
+              {["lead", "qualified", "proposal", "negotiation", "closed_won"].map((stage) => {
+                const stageValue = deals
+                  .filter((d) => d.stage === stage)
+                  .reduce((acc, d) => acc + d.value, 0);
+                const maxValue = Math.max(...["lead", "qualified", "proposal", "negotiation", "closed_won"].map((s) =>
+                  deals.filter((d) => d.stage === s).reduce((acc, d) => acc + d.value, 0)
+                ), 1);
+                const percentage = maxValue > 0 ? (stageValue / maxValue) * 100 : 0;
+                return (
+                  <div key={stage}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-white/60 capitalize">{stage.replace("_", " ")}</span>
+                      <span className="text-xs font-medium text-white">${(stageValue / 1000).toFixed(0)}K</span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white/5 rounded-xl p-4 lg:p-6 border border-white/10">
+            <h3 className="text-lg font-semibold text-white mb-4">Quick Insights</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                <span className="text-sm text-white/70">Win Rate</span>
+                <span className="text-lg font-bold text-green-400">
+                  {closedTotal > 0 ? Math.round(winRate) : 0}%
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                <span className="text-sm text-white/70">Avg Deal Size</span>
+                <span className="text-lg font-bold text-blue-400">
+                  ${deals.length > 0
+                    ? Math.round(deals.reduce((acc, d) => acc + d.value, 0) / deals.length / 1000)
+                    : 0}K
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                <span className="text-sm text-white/70">Active Deals</span>
+                <span className="text-lg font-bold text-purple-400">
+                  {deals.filter((d) => d.status === "active").length}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

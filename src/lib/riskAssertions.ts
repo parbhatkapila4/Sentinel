@@ -15,8 +15,7 @@ export function assertRiskFieldIntegrity(deal: {
   if ("riskLevel" in deal && deal.riskLevel !== undefined) {
     if (!("riskScore" in deal) || deal.riskScore === undefined) {
       warnings.push(
-        `Deal ${
-          (deal.id as string) || "unknown"
+        `Deal ${(deal.id as string) || "unknown"
         }: riskLevel exists without riskScore (may indicate persisted risk field)`
       );
     }
@@ -26,8 +25,7 @@ export function assertRiskFieldIntegrity(deal: {
   for (const field of legacyFields) {
     if (field in deal && deal[field] !== undefined) {
       warnings.push(
-        `Deal ${
-          (deal.id as string) || "unknown"
+        `Deal ${(deal.id as string) || "unknown"
         }: Found legacy persisted field '${field}' (should be removed from DB)`
       );
     }

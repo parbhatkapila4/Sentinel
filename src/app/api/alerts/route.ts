@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { getAuthenticatedUserId } from "@/lib/auth";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
+import { successResponse, handleApiError } from "@/lib/api-response";
 
 export async function GET() {
   try {
@@ -22,13 +21,11 @@ export async function GET() {
       if (deal.primaryRiskReason) {
         message = `${deal.name} - ${deal.primaryRiskReason}`;
       } else if (deal.isActionOverdue && deal.actionOverdueByDays) {
-        message = `${deal.name} - Action overdue by ${
-          deal.actionOverdueByDays
-        } day${deal.actionOverdueByDays > 1 ? "s" : ""}`;
+        message = `${deal.name} - Action overdue by ${deal.actionOverdueByDays
+          } day${deal.actionOverdueByDays > 1 ? "s" : ""}`;
       } else if (deal.riskAgeInDays && deal.riskAgeInDays > 0) {
-        message = `${deal.name} - No activity in ${deal.riskAgeInDays} day${
-          deal.riskAgeInDays > 1 ? "s" : ""
-        }`;
+        message = `${deal.name} - No activity in ${deal.riskAgeInDays} day${deal.riskAgeInDays > 1 ? "s" : ""
+          }`;
       } else {
         message = `${deal.name} - High risk detected`;
       }
@@ -43,9 +40,8 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ alerts });
+    return successResponse({ alerts });
   } catch (error) {
-    console.error("Alerts error:", error);
-    return NextResponse.json({ alerts: [] }, { status: 500 });
+    return handleApiError(error);
   }
 }

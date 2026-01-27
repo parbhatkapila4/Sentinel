@@ -1,3 +1,18 @@
+import type { RiskLevel, Urgency } from "@/types";
+import {
+  HIGH_VALUE_THRESHOLD,
+  HUMAN_ENGAGEMENT_EVENT_TYPES,
+  INACTIVITY_DAYS,
+  RISK_REASONS,
+  RISK_THRESHOLDS,
+  STAGES,
+  URGENCY_DAYS,
+} from "./config";
+import {
+  detectCompetitiveSignals,
+  getCompetitiveRiskAdjustment,
+} from "./competitiveSignals";
+
 type DealInput = {
   stage: string;
   value: number;
@@ -13,14 +28,14 @@ type TimelineEventInput = {
 
 export type DealSignals = {
   riskScore: number;
-  riskLevel: "Low" | "Medium" | "High";
+  riskLevel: RiskLevel;
   status: string;
   nextAction: string | null;
   lastActivityAt: Date;
   reasons: string[];
   recommendedAction: {
     label: string;
-    urgency: "low" | "medium" | "high";
+    urgency: Urgency;
   } | null;
   riskStartedAt: Date | null;
   riskAgeInDays: number | null;
@@ -29,25 +44,29 @@ export type DealSignals = {
   isActionOverdue: boolean;
 };
 
-export function formatRiskLevel(score: number): "Low" | "Medium" | "High" {
-  if (score < 0.4) return "Low";
-  if (score < 0.6) return "Medium";
+export function formatRiskLevel(score: number): RiskLevel {
+  if (score < RISK_THRESHOLDS.LOW_MAX) return "Low";
+  if (score < RISK_THRESHOLDS.MEDIUM_HIGH_BOUNDARY) return "Medium";
   return "High";
 }
 
 export function getPrimaryRiskReason(reasons: string[]): string | null {
   if (reasons.length === 0) return null;
 
-  if (reasons.includes("No activity in last 7 days")) {
-    return "No activity in last 7 days";
+  if (reasons.includes(RISK_REASONS.NO_ACTIVITY)) {
+    return RISK_REASONS.NO_ACTIVITY;
   }
 
-  if (reasons.includes("Negotiation stalled without response")) {
-    return "Negotiation stalled without response";
+  if (reasons.includes(RISK_REASONS.NEGOTIATION_STALLED)) {
+    return RISK_REASONS.NEGOTIATION_STALLED;
   }
 
-  if (reasons.includes("High value deal requires attention")) {
-    return "High value deal requires attention";
+  if (reasons.includes(RISK_REASONS.COMPETITIVE_PRESSURE)) {
+    return RISK_REASONS.COMPETITIVE_PRESSURE;
+  }
+
+  if (reasons.includes(RISK_REASONS.HIGH_VALUE)) {
+    return RISK_REASONS.HIGH_VALUE;
   }
 
   return reasons[0] || null;
@@ -55,21 +74,23 @@ export function getPrimaryRiskReason(reasons: string[]): string | null {
 
 export function calculateDealSignals(
   deal: DealInput,
-  timelineEvents: TimelineEventInput[]
+  timelineEvents: TimelineEventInput[],
+  options?: {
+    inactivityThresholdDays?: number;
+    enableCompetitiveSignals?: boolean;
+  }
 ): DealSignals {
   const now = new Date();
-
-  const HUMAN_ENGAGEMENT_EVENTS = [
-    "email_sent",
-    "email_received",
-    "meeting_held",
-  ];
+  const inactivityThreshold = options?.inactivityThresholdDays ?? INACTIVITY_DAYS;
+  const enableCompetitiveSignals = options?.enableCompetitiveSignals ?? true;
 
   const humanEvents = timelineEvents.filter((e) => {
     if (e.eventType === "event_created") {
       const metadata = e.metadata as Record<string, unknown> | null;
       if (!metadata || !metadata.eventType) return false;
-      return HUMAN_ENGAGEMENT_EVENTS.includes(metadata.eventType as string);
+      return HUMAN_ENGAGEMENT_EVENT_TYPES.includes(
+        metadata.eventType as (typeof HUMAN_ENGAGEMENT_EVENT_TYPES)[number]
+      );
     }
     return false;
   });
@@ -84,9 +105,18 @@ export function calculateDealSignals(
   let riskScore = 0;
   const reasons: string[] = [];
 
-  if (deal.stage === "negotiation") {
+  if (enableCompetitiveSignals) {
+    const competitiveSignal = detectCompetitiveSignals(deal, timelineEvents);
+    if (competitiveSignal.detected) {
+      const adjustment = getCompetitiveRiskAdjustment(competitiveSignal);
+      riskScore += adjustment;
+      reasons.push(RISK_REASONS.COMPETITIVE_PRESSURE);
+    }
+  }
+
+  if (deal.stage === STAGES.NEGOTIATION) {
     riskScore = 0.3;
-  } else if (deal.stage === "discover") {
+  } else if (deal.stage === STAGES.DISCOVER) {
     riskScore = 0.1;
   }
 
@@ -111,7 +141,7 @@ export function calculateDealSignals(
     if (!metadata || metadata.eventType !== "meeting_held") return false;
     const daysAgo =
       (now.getTime() - e.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    return daysAgo <= 7;
+    return daysAgo <= inactivityThreshold;
   });
 
   if (hasRecentEmailSent) {
@@ -126,22 +156,22 @@ export function calculateDealSignals(
     riskScore -= 0.4;
   }
 
-  if (daysSinceLastActivity > 7) {
+  if (daysSinceLastActivity > inactivityThreshold) {
     riskScore += 0.4;
-    reasons.push("No activity in last 7 days");
+    reasons.push(`No activity in last ${inactivityThreshold} days`);
   }
 
-  if (deal.stage === "negotiation") {
+  if (deal.stage === STAGES.NEGOTIATION) {
     const hasRecentEmailActivity = hasRecentEmailSent || hasRecentEmailReceived;
     if (!hasRecentEmailActivity) {
       riskScore += 0.4;
-      reasons.push("Negotiation stalled without response");
+      reasons.push(RISK_REASONS.NEGOTIATION_STALLED);
     }
   }
 
-  if (deal.value > 5000) {
+  if (deal.value > HIGH_VALUE_THRESHOLD) {
     riskScore += 0.2;
-    reasons.push("High value deal requires attention");
+    reasons.push(RISK_REASONS.HIGH_VALUE);
   }
 
   riskScore = Math.max(0, Math.min(riskScore, 1));
@@ -150,26 +180,24 @@ export function calculateDealSignals(
   if (deal.status === "saved" || deal.status === "lost") {
     newStatus = deal.status;
   } else {
-    newStatus = riskScore >= 0.6 ? "at_risk" : "active";
+    newStatus =
+      riskScore >= RISK_THRESHOLDS.MEDIUM_HIGH_BOUNDARY ? "at_risk" : "active";
   }
 
   const primaryRiskReason = getPrimaryRiskReason(reasons);
-  let recommendedAction: {
-    label: string;
-    urgency: "low" | "medium" | "high";
-  } | null = null;
+  let recommendedAction: { label: string; urgency: Urgency } | null = null;
 
-  if (primaryRiskReason === "No activity in last 7 days") {
+  if (primaryRiskReason === RISK_REASONS.NO_ACTIVITY) {
     recommendedAction = {
       label: "Send follow-up email",
       urgency: "high",
     };
-  } else if (primaryRiskReason === "Negotiation stalled without response") {
+  } else if (primaryRiskReason === RISK_REASONS.NEGOTIATION_STALLED) {
     recommendedAction = {
       label: "Nudge for response",
       urgency: "high",
     };
-  } else if (primaryRiskReason === "High value deal requires attention") {
+  } else if (primaryRiskReason === RISK_REASONS.HIGH_VALUE) {
     recommendedAction = {
       label: "Review deal details",
       urgency: "medium",
@@ -197,13 +225,13 @@ export function calculateDealSignals(
 
       const daysSinceActivityAtPoint = Math.floor(
         (pointInTime.getTime() - lastActivityAtPoint.getTime()) /
-          (1000 * 60 * 60 * 24)
+        (1000 * 60 * 60 * 24)
       );
 
       let scoreAtPoint = 0;
-      if (deal.stage === "negotiation") {
+      if (deal.stage === STAGES.NEGOTIATION) {
         scoreAtPoint = 0.3;
-      } else if (deal.stage === "discover") {
+      } else if (deal.stage === STAGES.DISCOVER) {
         scoreAtPoint = 0.1;
       }
 
@@ -231,31 +259,31 @@ export function calculateDealSignals(
         const daysAgo =
           (pointInTime.getTime() - e.createdAt.getTime()) /
           (1000 * 60 * 60 * 24);
-        return daysAgo <= 7;
+        return daysAgo <= inactivityThreshold;
       });
 
       if (hasEmailSentAtPoint) scoreAtPoint -= 0.2;
       if (hasEmailReceivedAtPoint) scoreAtPoint -= 0.3;
       if (hasMeetingAtPoint) scoreAtPoint -= 0.4;
 
-      if (daysSinceActivityAtPoint > 7) {
+      if (daysSinceActivityAtPoint > inactivityThreshold) {
         scoreAtPoint += 0.4;
       }
 
-      if (deal.stage === "negotiation") {
+      if (deal.stage === STAGES.NEGOTIATION) {
         const hasEmailActivity = hasEmailSentAtPoint || hasEmailReceivedAtPoint;
         if (!hasEmailActivity) {
           scoreAtPoint += 0.4;
         }
       }
 
-      if (deal.value > 5000) {
+      if (deal.value > HIGH_VALUE_THRESHOLD) {
         scoreAtPoint += 0.2;
       }
 
       scoreAtPoint = Math.max(0, Math.min(scoreAtPoint, 1));
 
-      if (scoreAtPoint >= 0.6) {
+      if (scoreAtPoint >= RISK_THRESHOLDS.MEDIUM_HIGH_BOUNDARY) {
         riskStartedAt = pointInTime;
         break;
       }
@@ -275,13 +303,7 @@ export function calculateDealSignals(
   let isActionOverdue = false;
 
   if (recommendedAction && riskStartedAt) {
-    const urgencyDays = {
-      high: 1,
-      medium: 3,
-      low: 7,
-    };
-
-    const dueDays = urgencyDays[recommendedAction.urgency];
+    const dueDays = URGENCY_DAYS[recommendedAction.urgency];
     actionDueAt = new Date(
       riskStartedAt.getTime() + dueDays * 24 * 60 * 60 * 1000
     );
@@ -300,7 +322,7 @@ export function calculateDealSignals(
 
   if (isActionOverdue && newStatus === "at_risk" && recommendedAction) {
     const originalUrgency = recommendedAction.urgency;
-    let escalatedUrgency: "low" | "medium" | "high" = originalUrgency;
+    let escalatedUrgency: Urgency = originalUrgency;
 
     if (originalUrgency === "medium") {
       escalatedUrgency = "high";
@@ -319,8 +341,7 @@ export function calculateDealSignals(
       escalatedRiskScore = Math.min(riskScore + escalationDelta, 1.0);
 
       escalatedReasons.push(
-        `Action overdue by ${actionOverdueByDays} day${
-          actionOverdueByDays !== 1 ? "s" : ""
+        `Action overdue by ${actionOverdueByDays} day${actionOverdueByDays !== 1 ? "s" : ""
         }`
       );
     }
@@ -331,7 +352,10 @@ export function calculateDealSignals(
   let finalStatus = newStatus;
 
   if (deal.status !== "saved" && deal.status !== "lost") {
-    finalStatus = finalRiskScore >= 0.6 ? "at_risk" : "active";
+    finalStatus =
+      finalRiskScore >= RISK_THRESHOLDS.MEDIUM_HIGH_BOUNDARY
+        ? "at_risk"
+        : "active";
   }
 
   const finalNextAction = finalStatus === "at_risk" ? "Follow up" : null;

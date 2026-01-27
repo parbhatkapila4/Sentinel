@@ -2,6 +2,7 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
+import { STAGE_UI_CONFIG } from "@/lib/config";
 import { formatDistanceToNow, differenceInDays } from "date-fns";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { PipelineValueCard } from "@/components/pipeline-value-card";
@@ -21,52 +22,8 @@ export default async function DealsByStagePage() {
     return acc;
   }, {} as Record<string, typeof deals>);
 
-  const stageConfig: Record<
-    string,
-    {
-      order: number;
-      color: string;
-      bgColor: string;
-      borderColor: string;
-      iconColor: string;
-    }
-  > = {
-    discover: {
-      order: 1,
-      color: "text-blue-400",
-      bgColor: "bg-blue-500/10",
-      borderColor: "border-blue-500/20",
-      iconColor: "text-blue-400",
-    },
-    qualify: {
-      order: 2,
-      color: "text-cyan-400",
-      bgColor: "bg-cyan-500/10",
-      borderColor: "border-cyan-500/20",
-      iconColor: "text-cyan-400",
-    },
-    proposal: {
-      order: 3,
-      color: "text-violet-400",
-      bgColor: "bg-violet-500/10",
-      borderColor: "border-violet-500/20",
-      iconColor: "text-violet-400",
-    },
-    negotiation: {
-      order: 4,
-      color: "text-amber-400",
-      bgColor: "bg-amber-500/10",
-      borderColor: "border-amber-500/20",
-      iconColor: "text-amber-400",
-    },
-    closed: {
-      order: 5,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-500/10",
-      borderColor: "border-emerald-500/20",
-      iconColor: "text-emerald-400",
-    },
-  };
+  type StageUi = (typeof STAGE_UI_CONFIG)[keyof typeof STAGE_UI_CONFIG];
+  const stageConfig = STAGE_UI_CONFIG as Record<string, StageUi>;
 
   const sortedStages = Object.keys(stageGroups).sort((a, b) => {
     const orderA = stageConfig[a.toLowerCase()]?.order ?? 99;
@@ -96,9 +53,9 @@ export default async function DealsByStagePage() {
     const avgDaysSinceActivity =
       stageDeals.length > 0
         ? stageDeals.reduce((sum, deal) => {
-            const days = differenceInDays(now, new Date(deal.lastActivityAt));
-            return sum + days;
-          }, 0) / stageDeals.length
+          const days = differenceInDays(now, new Date(deal.lastActivityAt));
+          return sum + days;
+        }, 0) / stageDeals.length
         : 0;
 
     return {
@@ -118,7 +75,6 @@ export default async function DealsByStagePage() {
   for (let i = 0; i < sortedStages.length - 1; i++) {
     const currentStage = sortedStages[i];
     const nextStage = sortedStages[i + 1];
-    const currentCount = stageGroups[currentStage]?.length || 0;
     const nextCount = stageGroups[nextStage]?.length || 0;
     const totalAfterCurrent = deals.filter(
       (d) =>
@@ -131,9 +87,6 @@ export default async function DealsByStagePage() {
 
   const highRiskDeals = deals.filter(
     (d) => formatRiskLevel(d.riskScore) === "High"
-  );
-  const activeDeals = deals.filter(
-    (d) => d.status === "active" || d.status === "Active"
   );
   const valueAtRisk = highRiskDeals.reduce((sum, d) => sum + d.value, 0);
 
@@ -152,19 +105,19 @@ export default async function DealsByStagePage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-full p-8 space-y-6 bg-[#0b0b0b]">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1">
+      <div className="p-4 lg:p-6 space-y-6 w-full overflow-x-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
               Deals by Stage
             </h1>
-            <p className="text-sm text-[#8a8a8a]">
+            <p className="text-sm sm:text-base text-white/60">
               Comprehensive pipeline analysis across all stages
             </p>
           </div>
           <Link
             href="/deals/new"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all bg-[#d51024] hover:bg-[#b80e1f]"
+            className="w-full sm:w-auto px-4 py-2.5 bg-red-500 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 flex items-center justify-center gap-2 hover:bg-[#b80e1f] transition-colors"
           >
             <svg
               className="w-4 h-4"
@@ -183,12 +136,12 @@ export default async function DealsByStagePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/10 w-full min-w-0 overflow-hidden">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -201,26 +154,26 @@ export default async function DealsByStagePage() {
                   />
                 </svg>
               </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs text-white/60 uppercase tracking-wide truncate">
                   Total Deals
                 </p>
-                <p className="text-[11px] text-[#5f5f5f]">In pipeline</p>
+                <p className="text-[10px] sm:text-xs text-white/40 mt-1 truncate">In pipeline</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white mb-1">{totalDeals}</p>
-            <p className="text-xs text-[#7d7d7d]">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate">{totalDeals}</p>
+            <p className="text-[10px] sm:text-xs text-white/40 mt-1 truncate">
               {sortedStages.length} active stages
             </p>
           </div>
 
           <PipelineValueCard totalValue={totalValue} />
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#f97316] border border-[#1f1f1f]">
+          <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/10 w-full min-w-0 overflow-hidden">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#151515] text-[#f97316] border border-[#1f1f1f]">
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -233,26 +186,26 @@ export default async function DealsByStagePage() {
                   />
                 </svg>
               </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs text-white/60 uppercase tracking-wide truncate">
                   At Risk
                 </p>
-                <p className="text-[11px] text-[#5f5f5f]">Requires attention</p>
+                <p className="text-[10px] sm:text-xs text-white/40 mt-1 truncate">Requires attention</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white mb-1">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate">
               {highRiskDeals.length}
             </p>
-            <p className="text-xs text-[#f97316]">
+            <p className="text-[10px] sm:text-xs text-white/40 mt-1 truncate">
               {formatRevenue(valueAtRisk)} at risk
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#22c55e] border border-[#1f1f1f]">
+          <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/10 w-full min-w-0 overflow-hidden">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#151515] text-[#22c55e] border border-[#1f1f1f]">
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -265,17 +218,17 @@ export default async function DealsByStagePage() {
                   />
                 </svg>
               </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs text-white/60 uppercase tracking-wide truncate">
                   Avg Deal Size
                 </p>
-                <p className="text-[11px] text-[#5f5f5f]">Per deal</p>
+                <p className="text-[10px] sm:text-xs text-white/40 mt-1 truncate">Per deal</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white mb-1">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate">
               {formatRevenue(avgDealValue)}
             </p>
-            <p className="text-xs text-[#22c55e]">Across all stages</p>
+            <p className="text-[10px] sm:text-xs text-white/40 mt-1 truncate">Across all stages</p>
           </div>
         </div>
 
@@ -323,19 +276,19 @@ export default async function DealsByStagePage() {
           </div>
         ) : (
           <>
-            <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 w-full overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-white">
                     Pipeline Distribution
                   </h3>
-                  <p className="text-sm text-[#8a8a8a]">
+                  <p className="text-xs sm:text-sm text-white/60">
                     Deal count and value across stages
                   </p>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="h-6 rounded-full bg-[#151515] overflow-hidden flex border border-[#1f1f1f]">
+              <div className="space-y-4 w-full max-sm:space-y-3">
+                <div className="h-6 rounded-full bg-[#151515] overflow-hidden flex border border-[#1f1f1f] min-w-0 max-sm:h-4">
                   {sortedStages.map((stage) => {
                     const metric = stageMetrics.find((m) => m.stage === stage);
                     const percentage = metric?.percentage || 0;
@@ -350,14 +303,13 @@ export default async function DealsByStagePage() {
                           "/50"
                         )}`}
                         style={{ width: `${percentage}%` }}
-                        title={`${stage}: ${
-                          metric?.count || 0
-                        } deals (${percentage.toFixed(1)}%)`}
+                        title={`${stage}: ${metric?.count || 0
+                          } deals (${percentage.toFixed(1)}%)`}
                       />
                     );
                   })}
                 </div>
-                <div className="grid grid-cols-5 gap-4">
+                <div className="grid grid-cols-5 gap-4 w-full overflow-x-auto min-w-[300px] sm:min-w-0 px-2 max-sm:grid-cols-2 max-sm:gap-2 max-sm:min-w-0 max-sm:overflow-x-visible max-sm:px-0">
                   {sortedStages.map((stage) => {
                     const metric = stageMetrics.find((m) => m.stage === stage);
                     const config = stageConfig[stage.toLowerCase()] || {
@@ -367,21 +319,21 @@ export default async function DealsByStagePage() {
                     return (
                       <div
                         key={stage}
-                        className="flex flex-col items-center p-3 rounded-xl bg-[#151515] border border-[#1f1f1f]"
+                        className="flex flex-col items-center gap-1 flex-1 min-w-0 p-3 rounded-xl bg-[#151515] border border-[#1f1f1f] max-sm:w-full max-sm:flex-initial max-sm:p-2.5"
                       >
                         <div
-                          className={`w-4 h-4 rounded-full mb-2 ${config.bgColor.replace(
+                          className={`w-4 h-4 rounded-full flex-shrink-0 max-sm:w-3 max-sm:h-3 ${config.bgColor.replace(
                             "/10",
                             "/50"
                           )}`}
                         />
-                        <span className="text-xs text-white/60 mb-1">
+                        <span className="text-[9px] sm:text-xs text-white/60 max-w-full text-center max-sm:text-[10px] max-sm:whitespace-normal max-sm:break-words max-sm:leading-tight">
                           {stage}
                         </span>
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-xs sm:text-sm font-medium text-white max-sm:text-xs max-sm:font-semibold">
                           {metric?.count || 0}
                         </span>
-                        <span className="text-xs text-white/40">
+                        <span className="text-xs sm:text-sm font-medium text-white/40 max-sm:text-[10px] max-sm:truncate max-sm:max-w-full">
                           {formatRevenue(metric?.value || 0)}
                         </span>
                       </div>
@@ -392,7 +344,7 @@ export default async function DealsByStagePage() {
             </div>
 
             <div
-              className="grid gap-6"
+              className="grid gap-6 max-sm:flex max-sm:flex-col max-sm:gap-4"
               style={{
                 gridTemplateColumns: `repeat(${Math.min(
                   sortedStages.length,
@@ -415,53 +367,53 @@ export default async function DealsByStagePage() {
                 return (
                   <div
                     key={stage}
-                    className={`rounded-2xl border ${config.borderColor} bg-[#111111] shadow-[0_10px_40px_rgba(0,0,0,0.35)] overflow-hidden`}
+                    className={`rounded-2xl border ${config.borderColor} bg-[#111111] shadow-[0_10px_40px_rgba(0,0,0,0.35)] overflow-hidden max-sm:w-full max-sm:min-w-0`}
                   >
-                    <div className="p-5 border-b border-[#1f1f1f] bg-gradient-to-br from-[#151515] to-[#111111]">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
+                    <div className="p-5 border-b border-[#1f1f1f] bg-gradient-to-br from-[#151515] to-[#111111] max-sm:p-4">
+                      <div className="flex items-center justify-between mb-3 max-sm:mb-2 max-sm:gap-2">
+                        <div className="flex items-center gap-2 max-sm:min-w-0 max-sm:flex-1">
                           <div
-                            className={`w-2 h-2 rounded-full ${config.bgColor.replace(
+                            className={`w-2 h-2 rounded-full flex-shrink-0 ${config.bgColor.replace(
                               "/10",
                               "/50"
                             )}`}
                           />
                           <h3
-                            className={`text-base font-semibold ${config.color} capitalize`}
+                            className={`text-base font-semibold ${config.color} capitalize max-sm:text-sm max-sm:truncate max-sm:min-w-0`}
                           >
                             {stage}
                           </h3>
                         </div>
                         <span
-                          className={`text-xs font-medium px-2.5 py-1 rounded-lg ${config.bgColor} ${config.color}`}
+                          className={`text-xs font-medium px-2.5 py-1 rounded-lg ${config.bgColor} ${config.color} max-sm:shrink-0`}
                         >
                           {stageDeals.length}
                         </span>
                       </div>
-                      <div className="space-y-2">
-                        <div>
-                          <p className="text-xs text-[#7d7d7d] mb-1">
+                      <div className="space-y-2 max-sm:space-y-2">
+                        <div className="max-sm:min-w-0 max-sm:overflow-hidden">
+                          <p className="text-xs text-[#7d7d7d] mb-1 max-sm:text-[10px] max-sm:mb-0.5 max-sm:truncate">
                             Stage Value
                           </p>
-                          <p className="text-2xl font-bold text-white">
+                          <p className="text-2xl font-bold text-white max-sm:text-xl max-sm:truncate">
                             ${formatted.value}
                             {formatted.suffix}
                           </p>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#1f1f1f]">
-                          <div>
-                            <p className="text-[10px] text-[#7d7d7d] mb-0.5">
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#1f1f1f] max-sm:gap-1.5 max-sm:pt-1.5">
+                          <div className="max-sm:min-w-0 max-sm:overflow-hidden">
+                            <p className="text-[10px] text-[#7d7d7d] mb-0.5 max-sm:text-[9px] max-sm:truncate">
                               Avg Deal
                             </p>
-                            <p className="text-sm font-semibold text-white">
+                            <p className="text-sm font-semibold text-white max-sm:text-xs max-sm:truncate">
                               {formatRevenue(metric?.avgValue || 0)}
                             </p>
                           </div>
-                          <div>
-                            <p className="text-[10px] text-[#7d7d7d] mb-0.5">
+                          <div className="max-sm:min-w-0 max-sm:overflow-hidden">
+                            <p className="text-[10px] text-[#7d7d7d] mb-0.5 max-sm:text-[9px] max-sm:truncate">
                               Avg Days
                             </p>
-                            <p className="text-sm font-semibold text-white">
+                            <p className="text-sm font-semibold text-white max-sm:text-xs max-sm:truncate">
                               {metric?.avgDaysSinceActivity?.toFixed(0) || "0"}d
                             </p>
                           </div>
@@ -469,37 +421,37 @@ export default async function DealsByStagePage() {
                       </div>
                     </div>
 
-                    <div className="px-5 py-3 bg-[#151515] border-b border-[#1f1f1f]">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-red-500/50" />
-                            <span className="text-[#7d7d7d]">
+                    <div className="px-5 py-3 bg-[#151515] border-b border-[#1f1f1f] max-sm:px-4 max-sm:py-2">
+                      <div className="flex items-center justify-between text-xs max-sm:flex-wrap max-sm:gap-2 max-sm:text-[10px]">
+                        <div className="flex items-center gap-3 max-sm:gap-2 max-sm:flex-wrap">
+                          <div className="flex items-center gap-1 max-sm:shrink-0">
+                            <div className="w-2 h-2 rounded-full bg-red-500/50 flex-shrink-0" />
+                            <span className="text-[#7d7d7d] max-sm:text-[9px]">
                               {metric?.highRiskCount || 0}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-amber-500/50" />
-                            <span className="text-[#7d7d7d]">
+                          <div className="flex items-center gap-1 max-sm:shrink-0">
+                            <div className="w-2 h-2 rounded-full bg-amber-500/50 flex-shrink-0" />
+                            <span className="text-[#7d7d7d] max-sm:text-[9px]">
                               {metric?.mediumRiskCount || 0}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500/50" />
-                            <span className="text-[#7d7d7d]">
+                          <div className="flex items-center gap-1 max-sm:shrink-0">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500/50 flex-shrink-0" />
+                            <span className="text-[#7d7d7d] max-sm:text-[9px]">
                               {metric?.lowRiskCount || 0}
                             </span>
                           </div>
                         </div>
                         {conversionRates[stage] !== undefined && (
-                          <span className="text-[#7d7d7d]">
+                          <span className="text-[#7d7d7d] max-sm:shrink-0 max-sm:text-[9px]">
                             →{conversionRates[stage].toFixed(0)}%
                           </span>
                         )}
                       </div>
                     </div>
 
-                    <div className="p-4 space-y-2 max-h-[500px] overflow-y-auto">
+                    <div className="p-4 space-y-2 max-h-[500px] overflow-y-auto max-sm:p-3 max-sm:space-y-1.5 max-sm:max-h-[400px]">
                       {stageDeals.length === 0 ? (
                         <div className="text-center py-8">
                           <p className="text-sm text-[#7d7d7d]">No deals</p>
@@ -511,29 +463,28 @@ export default async function DealsByStagePage() {
                             <Link
                               key={deal.id}
                               href={`/deals/${deal.id}`}
-                              className="block p-3 rounded-xl bg-[#151515] border border-[#1f1f1f] hover:bg-[#1a1a1a] hover:border-[#2a2a2a] transition-all group"
+                              className="block p-3 rounded-xl bg-[#151515] border border-[#1f1f1f] hover:bg-[#1a1a1a] hover:border-[#2a2a2a] transition-all group max-sm:p-2.5 max-sm:min-w-0 max-sm:overflow-hidden"
                             >
-                              <div className="flex items-start justify-between mb-2">
-                                <p className="text-sm font-medium text-white truncate flex-1 group-hover:text-[#0ea5e9] transition-colors">
+                              <div className="flex items-start justify-between mb-2 max-sm:mb-1.5 max-sm:gap-2 max-sm:min-w-0">
+                                <p className="text-sm font-medium text-white truncate flex-1 min-w-0 group-hover:text-[#0ea5e9] transition-colors max-sm:text-xs">
                                   {deal.name}
                                 </p>
                                 <span
-                                  className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                                    riskLevel === "High"
-                                      ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                      : riskLevel === "Medium"
+                                  className={`text-[10px] font-medium px-2 py-0.5 rounded flex-shrink-0 ${riskLevel === "High"
+                                    ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                    : riskLevel === "Medium"
                                       ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                                       : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                                  }`}
+                                    }`}
                                 >
                                   {riskLevel}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-white">
+                              <div className="flex items-center justify-between max-sm:gap-2 max-sm:min-w-0">
+                                <span className="text-xs font-semibold text-white max-sm:text-[10px] max-sm:truncate max-sm:min-w-0">
                                   {formatRevenue(deal.value)}
                                 </span>
-                                <span className="text-[10px] text-[#7d7d7d]">
+                                <span className="text-[10px] text-[#7d7d7d] max-sm:text-[9px] max-sm:shrink-0">
                                   {formatDistanceToNow(
                                     new Date(deal.lastActivityAt),
                                     {
@@ -543,8 +494,8 @@ export default async function DealsByStagePage() {
                                 </span>
                               </div>
                               {deal.recommendedAction && (
-                                <div className="mt-2 pt-2 border-t border-[#1f1f1f]">
-                                  <p className="text-[10px] text-[#7d7d7d] truncate">
+                                <div className="mt-2 pt-2 border-t border-[#1f1f1f] max-sm:mt-1.5 max-sm:pt-1.5">
+                                  <p className="text-[10px] text-[#7d7d7d] truncate max-sm:text-[9px]">
                                     {deal.recommendedAction.label}
                                   </p>
                                 </div>

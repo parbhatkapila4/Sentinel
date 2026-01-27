@@ -178,7 +178,7 @@ export const SidebarLink = ({
 }) => {
   const { open, animate } = useSidebar();
   const isExternal = link.href.startsWith("http");
-  
+
   const linkContent = (
     <>
       {link.icon}

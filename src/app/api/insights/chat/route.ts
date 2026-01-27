@@ -1,8 +1,25 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { routeToAI, analyzeTaskType } from "@/lib/ai-router";
-import { getAllDeals } from "@/app/actions/deals";
-import { formatRiskLevel } from "@/lib/dealRisk";
+import { enforceApiCallLimit } from "@/lib/plan-enforcement";
+import { getAllDeals, getDealById } from "@/app/actions/deals";
+import {
+  formatContextForAI,
+  formatPredictionsForAI,
+  findMentionedDeals,
+  resolveDealReference,
+  formatDealDetailForAI,
+} from "@/lib/ai-context";
+import type { DealForContext, DealWithTimeline } from "@/lib/ai-context";
+import { generateFollowUpEmail } from "@/app/actions/ai";
+import { AppError, ValidationError } from "@/lib/errors";
+import { successResponse, handleApiError } from "@/lib/api-response";
+
+const FOLLOW_UP_EMAIL_PATTERN =
+  /\b(write|draft|generate|compose)\s+(a\s+)?(follow-up\s+)?email\s+for\b|\bfollow-up\s+email\s+for\s+/i;
+
+const PREDICTIONS_QUERY_PATTERN =
+  /\b(outlook|forecast|predict|prediction|win\s+probability|days\s+to\s+close|pipeline\s+forecast|deal\s+outcome)\b/i;
 
 export const maxDuration = 60;
 export const runtime = "nodejs";
@@ -38,112 +55,60 @@ function formatFileSize(bytes: number): string {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("=== Chat API Request Started ===");
-
     const userId = await getAuthenticatedUserId();
-    console.log("User authenticated:", userId);
+
+    await enforceApiCallLimit(userId);
 
     let body: RequestBody;
     try {
       const contentType = request.headers.get("content-type");
-      console.log("Content-Type:", contentType);
-
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Invalid Content-Type:", contentType);
-        return NextResponse.json(
-          { error: "Content-Type must be application/json" },
-          { status: 400 }
-        );
+      if (!contentType?.includes("application/json")) {
+        throw new ValidationError("Content-Type must be application/json");
       }
-
-      console.log("Parsing request body...");
       body = (await request.json()) as RequestBody;
-      console.log("Request body parsed successfully");
-      console.log("Body keys:", Object.keys(body));
-      console.log("Messages count:", body?.messages?.length);
-      console.log("Attachments count:", body?.attachments?.length || 0);
     } catch (parseError) {
-      console.error("=== Failed to parse request body ===");
-      console.error("Error:", parseError);
-      const errorMsg =
+      const msg =
         parseError instanceof Error ? parseError.message : String(parseError);
-      console.error("Error message:", errorMsg);
-      console.error(
-        "Error stack:",
-        parseError instanceof Error ? parseError.stack : "No stack"
-      );
-
       if (
-        errorMsg.includes("too large") ||
-        errorMsg.includes("size") ||
-        errorMsg.includes("limit") ||
-        errorMsg.includes("413")
+        msg.includes("too large") ||
+        msg.includes("size") ||
+        msg.includes("limit") ||
+        msg.includes("413")
       ) {
-        return NextResponse.json(
-          {
-            error:
-              "Request body is too large. Maximum file size for attachments is 10MB. Please select smaller files.",
-            details:
-              "The request body exceeds the maximum allowed size. We only store file metadata, not the actual file content.",
-          },
-          { status: 413 }
+        throw new AppError(
+          "Request body is too large. Maximum file size for attachments is 10MB. Please select smaller files.",
+          { statusCode: 413, code: "PAYLOAD_TOO_LARGE" }
         );
       }
-
-      return NextResponse.json(
-        {
-          error:
-            "Invalid request body format. Please check the console for details.",
-          details:
-            process.env.NODE_ENV === "development"
-              ? errorMsg
-              : "Request body could not be parsed",
-        },
-        { status: 400 }
+      if (parseError instanceof ValidationError) throw parseError;
+      throw new ValidationError(
+        process.env.NODE_ENV === "development"
+          ? msg
+          : "Invalid request body format"
       );
     }
 
     const messages = body?.messages;
     const attachments = body?.attachments;
 
-    console.log("Validating messages...");
-    if (!messages) {
-      console.error("Messages are missing");
-      return NextResponse.json(
-        { error: "Messages are required" },
-        { status: 400 }
-      );
-    }
-
+    if (!messages) throw new ValidationError("Messages are required");
     if (!Array.isArray(messages)) {
-      console.error("Messages is not an array:", typeof messages);
-      return NextResponse.json(
-        { error: "Messages must be an array" },
-        { status: 400 }
-      );
+      throw new ValidationError("Messages must be an array");
     }
-
     if (messages.length === 0) {
-      console.error("Messages array is empty");
-      return NextResponse.json(
-        { error: "At least one message is required" },
-        { status: 400 }
-      );
+      throw new ValidationError("At least one message is required");
     }
 
-    console.log("Messages validation passed");
-
-    console.log("Processing messages...");
     let processedMessages: Message[];
     try {
       processedMessages = messages.map((msg: Message, index: number) => {
         if (!msg || typeof msg !== "object") {
-          throw new Error(
+          throw new ValidationError(
             `Invalid message at index ${index}: must be an object`
           );
         }
         if (!msg.role || typeof msg.role !== "string") {
-          throw new Error(
+          throw new ValidationError(
             `Invalid message at index ${index}: 'role' is required and must be a string`
           );
         }
@@ -151,16 +116,13 @@ export async function POST(request: NextRequest) {
           msg.content === null || msg.content === undefined
             ? ""
             : String(msg.content);
-
-        return {
-          role: String(msg.role),
-          content: content,
-        };
+        return { role: String(msg.role), content };
       });
-      console.log("Messages processed successfully");
-    } catch (msgError) {
-      console.error("Error processing messages:", msgError);
-      throw msgError;
+    } catch (e) {
+      if (e instanceof ValidationError) throw e;
+      throw new ValidationError(
+        e instanceof Error ? e.message : "Invalid messages"
+      );
     }
 
     if (attachments && Array.isArray(attachments) && attachments.length > 0) {
@@ -172,7 +134,6 @@ export async function POST(request: NextRequest) {
             break;
           }
         }
-
         if (lastUserIndex >= 0) {
           const attachmentInfo = attachments
             .filter(
@@ -186,7 +147,6 @@ export async function POST(request: NextRequest) {
               return `[Attachment: ${name} (${type}, ${formatFileSize(size)})]`;
             })
             .join("\n");
-
           if (attachmentInfo) {
             const originalContent =
               processedMessages[lastUserIndex].content || "";
@@ -197,8 +157,8 @@ export async function POST(request: NextRequest) {
               "\n\nNote: I can see you've attached files. Please describe what you'd like me to help you with regarding these files, as I cannot directly process file contents in this version.";
           }
         }
-      } catch (attachmentError) {
-        console.error("Error processing attachments:", attachmentError);
+      } catch {
+
       }
     }
 
@@ -210,99 +170,79 @@ export async function POST(request: NextRequest) {
 
     const taskType = analyzeTaskType(lastUserMessage);
 
-    let enhancedMessages = [...processedMessages];
-    if (taskType === "financial_reasoning") {
-      try {
-        const deals = await getAllDeals();
-        const totalValue = deals.reduce((sum, d) => sum + d.value, 0);
-        const totalDeals = deals.length;
-        const highRiskDeals = deals.filter(
-          (d) => formatRiskLevel(d.riskScore) === "High"
-        ).length;
-        const stageDistribution = deals.reduce((acc, deal) => {
-          acc[deal.stage] = (acc[deal.stage] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>);
+    let dealContext: string | undefined;
+    try {
+      const deals = await getAllDeals();
+      const dealsForContext = deals as unknown as DealForContext[];
 
-        const contextMessage = `Context about the user's sales pipeline:
-- Total Pipeline Value: $${totalValue.toLocaleString()}
-- Total Deals: ${totalDeals}
-- High Risk Deals: ${highRiskDeals}
-- Stage Distribution: ${JSON.stringify(stageDistribution)}
-- Recent deals: ${deals
-          .slice(0, 5)
-          .map(
-            (d) =>
-              `${d.name} (${
-                d.stage
-              }, $${d.value.toLocaleString()}, ${formatRiskLevel(
-                d.riskScore
-              )} risk)`
-          )
-          .join(", ")}
+      if (deals.length > 0) {
+        const baseContext = formatContextForAI(dealsForContext);
 
-Use this context to provide accurate, data-driven insights about their pipeline, deals, revenue, and risk.`;
+        const resolved = resolveDealReference(processedMessages, dealsForContext);
+        const mentioned = findMentionedDeals(lastUserMessage, dealsForContext);
+        const dealsToEnrich = resolved ? [resolved] : mentioned;
 
-        enhancedMessages = [
-          ...processedMessages.slice(0, -1),
-          {
-            role: "system",
-            content: contextMessage,
-          },
-          processedMessages[processedMessages.length - 1],
-        ];
-      } catch (error) {
-        console.error("Error fetching deals for context:", error);
+        let detailBlock = "";
+        if (taskType === "deal_specific" && dealsToEnrich.length > 0) {
+          const enriched: DealWithTimeline[] = [];
+          for (const d of dealsToEnrich.slice(0, 3)) {
+            try {
+              const full = await getDealById(d.id);
+              const timeline = (full as { timeline?: Array<{ eventType: string; createdAt: Date; metadata?: Record<string, unknown> | null }> }).timeline;
+              enriched.push({
+                ...d,
+                timeline: timeline?.map((e) => ({
+                  eventType: e.eventType,
+                  createdAt: e.createdAt ?? new Date(),
+                  metadata: (e.metadata as Record<string, unknown> | null) ?? null,
+                })),
+              });
+            } catch {
+              enriched.push({ ...d });
+            }
+          }
+          detailBlock = "\n\nSPECIFIC DEAL(S) USER ASKED ABOUT:\n" + enriched.map((d) => formatDealDetailForAI(d)).join("\n\n");
+        }
+
+        let emailBlock = "";
+        const wantsFollowUpEmail = FOLLOW_UP_EMAIL_PATTERN.test(lastUserMessage);
+        const emailDeal = wantsFollowUpEmail && dealsToEnrich.length === 1 ? dealsToEnrich[0] : null;
+        if (emailDeal) {
+          try {
+            const generated = await generateFollowUpEmail(emailDeal.id, "professional", {
+              logToTimeline: true,
+            });
+            emailBlock =
+              "\n\nGENERATED FOLLOW-UP EMAIL (user asked for this):\n" +
+              `Deal: ${emailDeal.name}\n` +
+              `Subject: ${generated.subject}\n\n` +
+              `Body:\n${generated.body}\n\n` +
+              "Present this email clearly in your response (subject + body). Offer to help with modifications (e.g. different tone, shorter, more urgent).";
+          } catch (err) {
+            console.error("Error generating follow-up email in chat:", err);
+          }
+        }
+
+        let predictionsBlock = "";
+        if (PREDICTIONS_QUERY_PATTERN.test(lastUserMessage)) {
+          predictionsBlock = "\n\n" + formatPredictionsForAI(dealsForContext);
+        }
+        dealContext = baseContext + detailBlock + emailBlock + predictionsBlock;
       }
+    } catch (error) {
+      console.error("Error building deal context for AI:", error);
     }
 
-    const aiMessages = enhancedMessages.map((m) => ({
+    const aiMessages = processedMessages.map((m) => ({
       role: m.role,
       content: m.content,
     }));
 
-    let content;
-    try {
-      content = await routeToAI(aiMessages, lastUserMessage);
-    } catch (aiError) {
-      console.error("routeToAI error:", aiError);
-      throw aiError;
-    }
-
-    return NextResponse.json({
-      content,
-      taskType,
+    const content = await routeToAI(aiMessages, lastUserMessage, {
+      dealContext: dealContext ?? undefined,
     });
+    return successResponse({ content, taskType });
   } catch (error) {
-    console.error("Chat API error:", error);
-    console.error(
-      "Error stack:",
-      error instanceof Error ? error.stack : "No stack"
-    );
-
-    const errorMessage =
-      error instanceof Error ? error.message : "Internal server error";
-
-    let statusCode = 500;
-    if (
-      errorMessage.includes("Invalid") ||
-      errorMessage.includes("required") ||
-      errorMessage.includes("must be")
-    ) {
-      statusCode = 400;
-    }
-
-    return NextResponse.json(
-      {
-        error: errorMessage,
-        details:
-          process.env.NODE_ENV === "development"
-            ? error instanceof Error
-              ? error.stack
-              : String(error)
-            : undefined,
-      },
-      { status: statusCode }
-    );
+    return handleApiError(error);
   }
 }

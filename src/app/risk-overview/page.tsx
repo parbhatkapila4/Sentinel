@@ -96,24 +96,24 @@ export default async function RiskOverviewPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-full p-8 space-y-6 bg-[#0b0b0b]">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1">
+      <div className="p-4 lg:p-6 space-y-6 w-full overflow-x-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
               Risk Overview
             </h1>
-            <p className="text-sm text-[#8a8a8a]">
+            <p className="text-sm sm:text-base text-white/60">
               Comprehensive risk analysis and management across your pipeline
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
-          <div className="rounded-2xl border border-[#2a0f12] bg-gradient-to-br from-[#1f0b0d] via-[#181013] to-[#0e0d0d] p-5 shadow-[0_25px_80px_rgba(239,68,68,0.25)]">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d1115] text-[#f87171] border border-[#3a1418]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="rounded-2xl border border-[#2a0f12] bg-gradient-to-br from-[#1f0b0d] via-[#181013] to-[#0e0d0d] p-5 shadow-[0_25px_80px_rgba(239,68,68,0.25)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <div className="flex items-center gap-3 mb-4 max-sm:gap-2 max-sm:mb-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d1115] text-[#f87171] border border-[#3a1418] max-sm:h-8 max-sm:w-8 flex-shrink-0">
                 <svg
-                  className="w-5 h-5"
+                  className="w-5 h-5 max-sm:w-4 max-sm:h-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -126,26 +126,26 @@ export default async function RiskOverviewPage() {
                   />
                 </svg>
               </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#fca5a5]">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs uppercase tracking-[0.08em] text-[#fca5a5] max-sm:text-[10px] max-sm:truncate">
                   High Risk Deals
                 </p>
-                <p className="text-[11px] text-[#9f6168]">Requires attention</p>
+                <p className="text-[11px] text-[#9f6168] max-sm:text-[10px] max-sm:truncate">Requires attention</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white mb-1">
+            <p className="text-3xl font-bold text-white mb-1 max-sm:text-2xl max-sm:truncate">
               {riskOverview.atRiskDealsCount}
             </p>
-            <p className="text-xs text-[#fca5a5]">
+            <p className="text-xs text-[#fca5a5] max-sm:text-[10px] max-sm:truncate">
               {formatRevenue(highRiskValue)} at risk
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#f97316] border border-[#1f1f1f]">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <div className="flex items-center gap-3 mb-4 max-sm:gap-2 max-sm:mb-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#f97316] border border-[#1f1f1f] max-sm:h-8 max-sm:w-8 flex-shrink-0">
                 <svg
-                  className="w-5 h-5"
+                  className="w-5 h-5 max-sm:w-4 max-sm:h-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -158,26 +158,26 @@ export default async function RiskOverviewPage() {
                   />
                 </svg>
               </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d] max-sm:text-[10px] max-sm:truncate">
                   Overdue Actions
                 </p>
-                <p className="text-[11px] text-[#5f5f5f]">Past due date</p>
+                <p className="text-[11px] text-[#5f5f5f] max-sm:text-[10px] max-sm:truncate">Past due date</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white mb-1">
+            <p className="text-3xl font-bold text-white mb-1 max-sm:text-2xl max-sm:truncate">
               {riskOverview.overdueDealsCount}
             </p>
-            <p className="text-xs text-[#f97316]">
+            <p className="text-xs text-[#f97316] max-sm:text-[10px] max-sm:truncate">
               Avg {avgOverdueDays.toFixed(0)} days overdue
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <div className="flex items-center gap-3 mb-4 max-sm:gap-2 max-sm:mb-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f] max-sm:h-8 max-sm:w-8 flex-shrink-0">
                 <svg
-                  className="w-5 h-5"
+                  className="w-5 h-5 max-sm:w-4 max-sm:h-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -190,26 +190,26 @@ export default async function RiskOverviewPage() {
                   />
                 </svg>
               </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d] max-sm:text-[10px] max-sm:truncate">
                   High Urgency
                 </p>
-                <p className="text-[11px] text-[#5f5f5f]">Immediate action</p>
+                <p className="text-[11px] text-[#5f5f5f] max-sm:text-[10px] max-sm:truncate">Immediate action</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white mb-1">
+            <p className="text-3xl font-bold text-white mb-1 max-sm:text-2xl max-sm:truncate">
               {riskOverview.highUrgencyDealsCount}
             </p>
-            <p className="text-xs text-[#8b5cf6]">
+            <p className="text-xs text-[#8b5cf6] max-sm:text-[10px] max-sm:truncate">
               {recentEscalations} escalated this week
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#22c55e] border border-[#1f1f1f]">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <div className="flex items-center gap-3 mb-4 max-sm:gap-2 max-sm:mb-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#22c55e] border border-[#1f1f1f] max-sm:h-8 max-sm:w-8 flex-shrink-0">
                 <svg
-                  className="w-5 h-5"
+                  className="w-5 h-5 max-sm:w-4 max-sm:h-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -222,17 +222,17 @@ export default async function RiskOverviewPage() {
                   />
                 </svg>
               </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d] max-sm:text-[10px] max-sm:truncate">
                   Avg Risk Score
                 </p>
-                <p className="text-[11px] text-[#5f5f5f]">Pipeline health</p>
+                <p className="text-[11px] text-[#5f5f5f] max-sm:text-[10px] max-sm:truncate">Pipeline health</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white mb-1">
+            <p className="text-3xl font-bold text-white mb-1 max-sm:text-2xl max-sm:truncate">
               {(avgRiskScore * 100).toFixed(0)}%
             </p>
-            <p className="text-xs text-[#22c55e]">
+            <p className="text-xs text-[#22c55e] max-sm:text-[10px] max-sm:truncate">
               {avgRiskScore < 0.4
                 ? "Healthy"
                 : avgRiskScore < 0.6
@@ -242,19 +242,19 @@ export default async function RiskOverviewPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
-            <h3 className="text-lg font-semibold text-white mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <h3 className="text-lg font-semibold text-white mb-6 max-sm:text-base max-sm:mb-4">
               Risk Distribution
             </h3>
             {deals.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-white/40">No deals to analyze</p>
+                <p className="text-white/40 max-sm:text-sm">No deals to analyze</p>
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-center mb-6">
-                  <div className="relative w-48 h-48">
+                <div className="flex items-center justify-center mb-6 max-sm:mb-4">
+                  <div className="relative w-48 h-48 max-sm:w-32 max-sm:h-32">
                     <svg
                       viewBox="0 0 100 100"
                       className="w-full h-full -rotate-90"
@@ -324,52 +324,52 @@ export default async function RiskOverviewPage() {
                       )}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-3xl font-bold text-white">
+                      <span className="text-3xl font-bold text-white max-sm:text-2xl">
                         {deals.length}
                       </span>
-                      <span className="text-xs text-white/40">Total Deals</span>
+                      <span className="text-xs text-white/40 max-sm:text-[10px]">Total Deals</span>
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                    <p className="text-2xl font-bold text-emerald-400">
+                <div className="grid grid-cols-3 gap-3 max-sm:gap-2">
+                  <div className="text-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 max-sm:p-2">
+                    <p className="text-2xl font-bold text-emerald-400 max-sm:text-xl">
                       {lowRiskDeals.length}
                     </p>
-                    <p className="text-xs text-white/40">Low Risk</p>
+                    <p className="text-xs text-white/40 max-sm:text-[10px] max-sm:truncate">Low Risk</p>
                   </div>
-                  <div className="text-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                    <p className="text-2xl font-bold text-amber-400">
+                  <div className="text-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 max-sm:p-2">
+                    <p className="text-2xl font-bold text-amber-400 max-sm:text-xl">
                       {mediumRiskDeals.length}
                     </p>
-                    <p className="text-xs text-white/40">Medium</p>
+                    <p className="text-xs text-white/40 max-sm:text-[10px] max-sm:truncate">Medium</p>
                   </div>
-                  <div className="text-center p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                    <p className="text-2xl font-bold text-red-400">
+                  <div className="text-center p-3 rounded-xl bg-red-500/10 border border-red-500/20 max-sm:p-2">
+                    <p className="text-2xl font-bold text-red-400 max-sm:text-xl">
                       {highRiskDeals.length}
                     </p>
-                    <p className="text-xs text-white/40">High</p>
+                    <p className="text-xs text-white/40 max-sm:text-[10px] max-sm:truncate">High</p>
                   </div>
                 </div>
               </>
             )}
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
-            <h3 className="text-lg font-semibold text-white mb-6">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <h3 className="text-lg font-semibold text-white mb-6 max-sm:text-base max-sm:mb-4">
               Value at Risk
             </h3>
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-[#8a8a8a]">
+            <div className="space-y-4 max-sm:space-y-3">
+              <div className="max-sm:min-w-0 max-sm:overflow-hidden">
+                <div className="flex items-center justify-between mb-2 max-sm:gap-2 max-sm:mb-1.5">
+                  <span className="text-sm text-[#8a8a8a] max-sm:text-xs max-sm:truncate max-sm:min-w-0">
                     High Risk Value
                   </span>
-                  <span className="text-lg font-bold text-red-400">
+                  <span className="text-lg font-bold text-red-400 max-sm:text-base max-sm:shrink-0">
                     {formatRevenue(highRiskValue)}
                   </span>
                 </div>
-                <div className="h-3 rounded-full bg-[#151515] overflow-hidden">
+                <div className="h-3 rounded-full bg-[#151515] overflow-hidden max-sm:h-2">
                   <div
                     className="h-full bg-gradient-to-r from-red-600 to-red-500 rounded-full"
                     style={{
@@ -377,26 +377,26 @@ export default async function RiskOverviewPage() {
                     }}
                   />
                 </div>
-                <p className="text-xs text-[#7d7d7d] mt-1">
+                <p className="text-xs text-[#7d7d7d] mt-1 max-sm:text-[10px] max-sm:truncate">
                   {valueAtRiskPercentage.toFixed(1)}% of total pipeline
                 </p>
               </div>
-              <div className="pt-4 border-t border-[#1f1f1f] space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#8a8a8a]">Medium Risk</span>
-                  <span className="text-sm font-semibold text-white">
+              <div className="pt-4 border-t border-[#1f1f1f] space-y-3 max-sm:pt-3 max-sm:space-y-2">
+                <div className="flex items-center justify-between max-sm:gap-2 max-sm:min-w-0">
+                  <span className="text-sm text-[#8a8a8a] max-sm:text-xs max-sm:truncate max-sm:min-w-0">Medium Risk</span>
+                  <span className="text-sm font-semibold text-white max-sm:text-xs max-sm:shrink-0">
                     {formatRevenue(mediumRiskValue)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#8a8a8a]">Low Risk</span>
-                  <span className="text-sm font-semibold text-white">
+                <div className="flex items-center justify-between max-sm:gap-2 max-sm:min-w-0">
+                  <span className="text-sm text-[#8a8a8a] max-sm:text-xs max-sm:truncate max-sm:min-w-0">Low Risk</span>
+                  <span className="text-sm font-semibold text-white max-sm:text-xs max-sm:shrink-0">
                     {formatRevenue(lowRiskValue)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-[#1f1f1f]">
-                  <span className="text-sm text-[#8a8a8a]">Total Pipeline</span>
-                  <span className="text-sm font-semibold text-white">
+                <div className="flex items-center justify-between pt-2 border-t border-[#1f1f1f] max-sm:pt-1.5 max-sm:gap-2 max-sm:min-w-0">
+                  <span className="text-sm text-[#8a8a8a] max-sm:text-xs max-sm:truncate max-sm:min-w-0">Total Pipeline</span>
+                  <span className="text-sm font-semibold text-white max-sm:text-xs max-sm:shrink-0">
                     {formatRevenue(totalValue)}
                   </span>
                 </div>
@@ -404,43 +404,43 @@ export default async function RiskOverviewPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
-            <h3 className="text-lg font-semibold text-white mb-6">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <h3 className="text-lg font-semibold text-white mb-6 max-sm:text-base max-sm:mb-4">
               Risk Insights
             </h3>
-            <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-[#151515] border border-[#1f1f1f]">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-[#8a8a8a]">Avg Risk Age</span>
-                  <span className="text-sm font-semibold text-white">
+            <div className="space-y-4 max-sm:space-y-3">
+              <div className="p-3 rounded-lg bg-[#151515] border border-[#1f1f1f] max-sm:p-2.5 max-sm:min-w-0 max-sm:overflow-hidden">
+                <div className="flex items-center justify-between mb-1 max-sm:gap-2 max-sm:mb-0.5 max-sm:min-w-0">
+                  <span className="text-sm text-[#8a8a8a] max-sm:text-xs max-sm:truncate max-sm:min-w-0">Avg Risk Age</span>
+                  <span className="text-sm font-semibold text-white max-sm:text-xs max-sm:shrink-0">
                     {avgRiskAge.toFixed(0)} days
                   </span>
                 </div>
-                <p className="text-xs text-[#7d7d7d]">
+                <p className="text-xs text-[#7d7d7d] max-sm:text-[10px] max-sm:truncate">
                   Average time deals have been at risk
                 </p>
               </div>
-              <div className="p-3 rounded-lg bg-[#151515] border border-[#1f1f1f]">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-[#8a8a8a]">Overdue Value</span>
-                  <span className="text-sm font-semibold text-[#f97316]">
+              <div className="p-3 rounded-lg bg-[#151515] border border-[#1f1f1f] max-sm:p-2.5 max-sm:min-w-0 max-sm:overflow-hidden">
+                <div className="flex items-center justify-between mb-1 max-sm:gap-2 max-sm:mb-0.5 max-sm:min-w-0">
+                  <span className="text-sm text-[#8a8a8a] max-sm:text-xs max-sm:truncate max-sm:min-w-0">Overdue Value</span>
+                  <span className="text-sm font-semibold text-[#f97316] max-sm:text-xs max-sm:shrink-0">
                     {formatRevenue(overdueValue)}
                   </span>
                 </div>
-                <p className="text-xs text-[#7d7d7d]">
+                <p className="text-xs text-[#7d7d7d] max-sm:text-[10px] max-sm:truncate">
                   Value in deals with overdue actions
                 </p>
               </div>
-              <div className="p-3 rounded-lg bg-[#151515] border border-[#1f1f1f]">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-[#8a8a8a]">
+              <div className="p-3 rounded-lg bg-[#151515] border border-[#1f1f1f] max-sm:p-2.5 max-sm:min-w-0 max-sm:overflow-hidden">
+                <div className="flex items-center justify-between mb-1 max-sm:gap-2 max-sm:mb-0.5 max-sm:min-w-0">
+                  <span className="text-sm text-[#8a8a8a] max-sm:text-xs max-sm:truncate max-sm:min-w-0">
                     Recent Escalations
                   </span>
-                  <span className="text-sm font-semibold text-[#8b5cf6]">
+                  <span className="text-sm font-semibold text-[#8b5cf6] max-sm:text-xs max-sm:shrink-0">
                     {recentEscalations}
                   </span>
                 </div>
-                <p className="text-xs text-[#7d7d7d]">
+                <p className="text-xs text-[#7d7d7d] max-sm:text-[10px] max-sm:truncate">
                   Deals that became at-risk this week
                 </p>
               </div>
@@ -448,9 +448,9 @@ export default async function RiskOverviewPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-[#2a0f12] bg-gradient-to-br from-[#1f0b0d] via-[#181013] to-[#0e0d0d] p-6 shadow-[0_18px_60px_rgba(239,68,68,0.25)]">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          <div className="rounded-2xl border border-[#2a0f12] bg-gradient-to-br from-[#1f0b0d] via-[#181013] to-[#0e0d0d] p-6 shadow-[0_18px_60px_rgba(239,68,68,0.25)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2 max-sm:text-base max-sm:mb-3 max-sm:truncate">
               <svg
                 className="w-5 h-5 text-red-400"
                 fill="none"
@@ -538,8 +538,8 @@ export default async function RiskOverviewPage() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
-            <h3 className="text-lg font-semibold text-white mb-4">
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+            <h3 className="text-lg font-semibold text-white mb-4 max-sm:text-base max-sm:mb-3 max-sm:truncate">
               Top Risk Reasons
             </h3>
             {Object.keys(riskReasonsCount).length === 0 ? (
@@ -586,11 +586,11 @@ export default async function RiskOverviewPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
-          <h3 className="text-lg font-semibold text-white mb-6">
+        <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
+          <h3 className="text-lg font-semibold text-white mb-6 max-sm:text-base max-sm:mb-4 max-sm:truncate">
             Risk by Stage
           </h3>
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             {Object.entries(stageRiskDistribution)
               .sort(([, a], [, b]) => b.total - a.total)
               .map(([stage, distribution]) => {
@@ -652,11 +652,11 @@ export default async function RiskOverviewPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-[#2a0f12] bg-gradient-to-br from-[#1f0b0d] via-[#181013] to-[#0e0d0d] shadow-[0_18px_60px_rgba(239,68,68,0.25)]">
-            <div className="p-5 border-b border-red-500/20">
-              <h3 className="text-base font-semibold text-red-400 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div className="rounded-2xl border border-[#2a0f12] bg-gradient-to-br from-[#1f0b0d] via-[#181013] to-[#0e0d0d] shadow-[0_18px_60px_rgba(239,68,68,0.25)] max-sm:w-full max-sm:min-w-0 max-sm:overflow-hidden">
+            <div className="p-5 border-b border-red-500/20 max-sm:p-4">
+              <h3 className="text-base font-semibold text-red-400 flex items-center gap-2 max-sm:text-sm max-sm:truncate">
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse flex-shrink-0" />
                 Urgent
               </h3>
               <p className="text-xs text-[#9f6168] mt-1">
@@ -703,10 +703,10 @@ export default async function RiskOverviewPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="p-5 border-b border-[#1f1f1f]">
-              <h3 className="text-base font-semibold text-amber-400 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] shadow-[0_10px_40px_rgba(0,0,0,0.35)] max-sm:w-full max-sm:min-w-0 max-sm:overflow-hidden">
+            <div className="p-5 border-b border-[#1f1f1f] max-sm:p-4">
+              <h3 className="text-base font-semibold text-amber-400 flex items-center gap-2 max-sm:text-sm max-sm:truncate">
+                <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
                 Important
               </h3>
               <p className="text-xs text-[#7d7d7d] mt-1">
@@ -747,10 +747,10 @@ export default async function RiskOverviewPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="p-5 border-b border-[#1f1f1f]">
-              <h3 className="text-base font-semibold text-emerald-400 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] shadow-[0_10px_40px_rgba(0,0,0,0.35)] max-sm:w-full max-sm:min-w-0 max-sm:overflow-hidden">
+            <div className="p-5 border-b border-[#1f1f1f] max-sm:p-4">
+              <h3 className="text-base font-semibold text-emerald-400 flex items-center gap-2 max-sm:text-sm max-sm:truncate">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
                 On Track
               </h3>
               <p className="text-xs text-[#7d7d7d] mt-1">

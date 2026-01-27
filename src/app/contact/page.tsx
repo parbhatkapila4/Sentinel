@@ -1,9 +1,6 @@
 import Link from "next/link";
-import { getAuthenticatedUser } from "@/lib/auth";
 
 export default async function ContactPage() {
-  const user = await getAuthenticatedUser();
-
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="border-b border-white/10 sticky top-0 z-50 bg-black/95 backdrop-blur-sm">

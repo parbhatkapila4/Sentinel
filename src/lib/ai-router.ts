@@ -1,6 +1,12 @@
+import {
+  AI_CONFIG,
+  AI_EMBEDDING_SEARCH_CHAT_MODEL,
+} from "./config";
+
 export type TaskType =
   | "embedding_search"
   | "financial_reasoning"
+  | "deal_specific"
   | "code_sql_generation"
   | "planning_multimodal"
   | "general";
@@ -26,22 +32,47 @@ export function analyzeTaskType(query: string): TaskType {
     return "embedding_search";
   }
 
-  if (
-    lowerQuery.includes("revenue") ||
-    lowerQuery.includes("pipeline") ||
-    lowerQuery.includes("deal") ||
-    lowerQuery.includes("value") ||
-    lowerQuery.includes("risk") ||
-    lowerQuery.includes("forecast") ||
-    lowerQuery.includes("summary") ||
-    lowerQuery.includes("analyze") ||
-    lowerQuery.includes("insight") ||
-    lowerQuery.includes("financial") ||
-    lowerQuery.includes("sales") ||
-    lowerQuery.includes("profit") ||
-    lowerQuery.includes("loss") ||
-    lowerQuery.includes("budget")
-  ) {
+  const dealPipelineTerms = [
+    "revenue",
+    "pipeline",
+    "deal",
+    "value",
+    "risk",
+    "forecast",
+    "summary",
+    "analyze",
+    "insight",
+    "financial",
+    "sales",
+    "profit",
+    "loss",
+    "budget",
+    "attention",
+    "stalled",
+    "negotiation",
+    "performance",
+    "compare",
+    "month",
+    "probability",
+    "outlook",
+    "status",
+    "chances",
+  ];
+  if (dealPipelineTerms.some((t) => lowerQuery.includes(t))) {
+    const dealSpecificPatterns = [
+      /\b(tell me about|how is|what about|info on|details on|update on)\s+(the\s+)?[\w\s]+/i,
+      /\b(the\s+)?[\w]+\s+deal\b/i,
+      /\bdeal\s+(with|for|named?|called?)\s+[\w\s]+/i,
+      /\b(write|draft|generate|compose)\s+(a\s+)?(follow-up\s+)?email\s+for\b/i,
+      /\bfollow-up\s+email\s+for\s+/i,
+      /\b(win\s+probability|probability|outlook|forecast|prediction|status|risk|chances?)\s+(for|of|on)\s+[\w\s]+/i,
+      /\bhow\s+likely\s+(is|are|will)\s+[\w\s]+\s+(to\s+)?(close|win|convert)/i,
+      /\b(will|can)\s+(we\s+)?(close|win)\s+[\w\s]+/i,
+      /\b[\w]+('s|s')\s+(win\s+probability|status|risk|outlook|forecast)/i,
+    ];
+    if (dealSpecificPatterns.some((p) => p.test(lowerQuery))) {
+      return "deal_specific";
+    }
     return "financial_reasoning";
   }
 
@@ -82,57 +113,40 @@ export function analyzeTaskType(query: string): TaskType {
 }
 
 export function getModelConfig(taskType: TaskType): ModelConfig {
-  switch (taskType) {
-    case "embedding_search":
-      return {
-        model: "text-embedding-3-large",
-        temperature: 0.1,
-        maxTokens: 1000,
-        provider: "openrouter",
-      };
-
-    case "financial_reasoning":
-      return {
-        model: "anthropic/claude-3.5-sonnet",
-        temperature: 0.3,
-        maxTokens: 2000,
-        provider: "openrouter",
-      };
-
-    case "code_sql_generation":
-      return {
-        model: "openai/gpt-4o",
-        temperature: 0.2,
-        maxTokens: 2000,
-        provider: "openrouter",
-      };
-
-    case "planning_multimodal":
-      return {
-        model: "google/gemini-pro",
-        temperature: 0.4,
-        maxTokens: 2000,
-        provider: "openrouter",
-      };
-
-    default:
-      return {
-        model: "openai/gpt-4-turbo",
-        temperature: 0.7,
-        maxTokens: 1000,
-        provider: "openrouter",
-      };
+  const base =
+    taskType in AI_CONFIG
+      ? AI_CONFIG[taskType as keyof typeof AI_CONFIG]
+      : AI_CONFIG.general;
+  if (taskType === "deal_specific") {
+    return { ...(AI_CONFIG.financial_reasoning ?? base) };
   }
+  return { ...base };
 }
 
 function getSystemPrompt(taskType: TaskType): string | null {
   switch (taskType) {
     case "financial_reasoning":
-      return `You are an expert sales pipeline analyst for Revenue Sentinel. You help users analyze their sales pipeline, deals, revenue forecasts, and risk assessments. Provide clear, actionable insights based on the data. Focus on:
-- Pipeline value and deal progression
-- Risk analysis and deal health
+      return `You are an expert sales pipeline analyst for Sentinel, a revenue intelligence platform. Use the PIPELINE OVERVIEW, URGENT ATTENTION, STAGE DISTRIBUTION, and RECENT ACTIVITY context provided in the conversation to give accurate, data-driven answers.
+
+Focus on:
+- Pipeline value, deal progression, and stage distribution
+- Risk analysis, at-risk deals, and overdue actions
 - Revenue forecasting and trends
-- Actionable recommendations for improving deal outcomes`;
+- Specific, actionable recommendations (e.g. which deals to follow up on, why pipeline health is changing)
+
+Example good responses:
+- "You have 3 overdue actions. Prioritize [Deal X] — follow-up overdue by 5 days."
+- "Pipeline health is declining: 2 fewer new deals this week. Focus on top-of-funnel."
+- "Your negotiation stage has 5 deals ($200K). [Deal A] has been stuck 14 days — recommend a check-in."`;
+
+    case "deal_specific":
+      return `You are an expert sales advisor for Sentinel. The user is asking about one or more specific deals. Use the "SPECIFIC DEAL(S) USER ASKED ABOUT" context (including timeline when provided) to answer precisely.
+
+Do the following:
+- Summarize the deal(s): value, stage, status, risk, last activity
+- Explain why it's at risk or stalled if applicable
+- Recommend concrete next steps (e.g. send follow-up, schedule call, escalate)
+- Reference timeline events when relevant (e.g. "No activity since X")`;
 
     case "code_sql_generation":
       return `You are an expert database and code assistant. Generate accurate SQL queries for PostgreSQL and clean, efficient code. Always:
@@ -152,16 +166,29 @@ function getSystemPrompt(taskType: TaskType): string | null {
   }
 }
 
+export interface RouteToAIOptions {
+  dealContext?: string;
+}
+
 export async function routeToAI(
   messages: Array<{ role: string; content: string }>,
-  query: string
+  query: string,
+  options?: RouteToAIOptions
 ): Promise<string> {
   const taskType = analyzeTaskType(query);
   const modelConfig = getModelConfig(taskType);
-  const systemPrompt = getSystemPrompt(taskType);
+  let systemPrompt = getSystemPrompt(taskType);
+  const dealContext = options?.dealContext;
+
+  if (dealContext) {
+    const contextBlock = `\n\n---\nDEAL & PIPELINE CONTEXT (use this for accurate, data-driven answers):\n${dealContext}`;
+    systemPrompt = systemPrompt
+      ? systemPrompt + contextBlock
+      : `You are a helpful assistant for Sentinel, a revenue intelligence platform. Use the following context when relevant to the user's question.${contextBlock}`;
+  }
 
   if (taskType === "embedding_search") {
-    modelConfig.model = "openai/gpt-4-turbo";
+    modelConfig.model = AI_EMBEDDING_SEARCH_CHAT_MODEL;
   }
 
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
@@ -173,16 +200,16 @@ export async function routeToAI(
 
   const formattedMessages = systemPrompt
     ? [
-        { role: "system", content: systemPrompt },
-        ...messages.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
-      ]
-    : messages.map((m) => ({
+      { role: "system" as const, content: systemPrompt },
+      ...messages.map((m) => ({
         role: m.role,
         content: m.content,
-      }));
+      })),
+    ]
+    : messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
 
   try {
     const response = await fetch(
@@ -194,7 +221,7 @@ export async function routeToAI(
           "Content-Type": "application/json",
           "HTTP-Referer":
             process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-          "X-Title": "Revenue Sentinel",
+          "X-Title": "Sentinel",
         },
         body: JSON.stringify({
           model: modelConfig.model,
@@ -232,4 +259,56 @@ export async function routeToAI(
     }
     throw new Error("Unknown error occurred while calling AI service");
   }
+}
+
+export async function callOpenRouterForGeneration(
+  systemPrompt: string,
+  userMessage: string,
+  options?: { model?: string; temperature?: number; maxTokens?: number }
+): Promise<string> {
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+  if (!openRouterApiKey) {
+    throw new Error("AI service is not configured. Please contact support.");
+  }
+  const model = options?.model ?? AI_CONFIG.financial_reasoning.model;
+  const temperature = options?.temperature ?? 0.3;
+  const maxTokens = options?.maxTokens ?? 2000;
+
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openRouterApiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer":
+          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+        "X-Title": "Sentinel",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage },
+        ],
+        temperature,
+        max_tokens: maxTokens,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.text();
+    console.error("OpenRouter generation error:", response.status, err);
+    throw new Error(`AI service error: ${response.status}`);
+  }
+
+  const data = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  const content = data.choices?.[0]?.message?.content;
+  if (typeof content !== "string") {
+    throw new Error("Invalid response from AI service");
+  }
+  return content;
 }

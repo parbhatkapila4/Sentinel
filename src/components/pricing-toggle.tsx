@@ -7,7 +7,7 @@ const PricingContext = createContext<{
   setIsAnnual: (value: boolean) => void;
 }>({
   isAnnual: false,
-  setIsAnnual: () => {},
+  setIsAnnual: () => { },
 });
 
 export function PricingToggle({ children }: { children?: React.ReactNode }) {
@@ -32,11 +32,10 @@ export function PricingToggleDisplay() {
       }}
     >
       <span
-        className={`text-sm transition-colors duration-300 ${
-          !isAnnual ? "text-white font-medium" : "text-white/50"
-        }`}
+        className={`text-sm transition-colors duration-300 ${!isAnnual ? "text-white font-medium" : "text-white/50"
+          }`}
       >
-        Weekly
+        Monthly
       </span>
       <div
         className="relative w-12 h-6 rounded-full cursor-pointer transition-all duration-300"
@@ -46,17 +45,15 @@ export function PricingToggleDisplay() {
         onClick={() => setIsAnnual(!isAnnual)}
       >
         <div
-          className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ease-in-out shadow-md ${
-            isAnnual ? "right-1" : "left-1"
-          }`}
+          className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ease-in-out shadow-md ${isAnnual ? "right-1" : "left-1"
+            }`}
         ></div>
       </div>
       <span
-        className={`text-sm transition-colors duration-300 ${
-          isAnnual ? "text-white font-medium" : "text-white/50"
-        }`}
+        className={`text-sm transition-colors duration-300 ${isAnnual ? "text-white font-medium" : "text-white/50"
+          }`}
       >
-        Annual
+        Annually
       </span>
       <span
         className="text-xs font-medium px-3 py-1 rounded-full"
@@ -66,7 +63,7 @@ export function PricingToggleDisplay() {
           border: "1px solid rgba(74, 222, 128, 0.3)",
         }}
       >
-        Save 80%
+        Save 34%
       </span>
     </div>
   );

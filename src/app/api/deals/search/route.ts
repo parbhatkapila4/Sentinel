@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { successResponse, handleApiError } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get("q");
 
     if (!query || query.trim().length === 0) {
-      return NextResponse.json({ deals: [] });
+      return successResponse({ deals: [] });
     }
 
     const deals = await prisma.deal.findMany({
@@ -30,9 +31,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ deals });
+    return successResponse({ deals });
   } catch (error) {
-    console.error("Search error:", error);
-    return NextResponse.json({ deals: [] }, { status: 500 });
+    return handleApiError(error);
   }
 }

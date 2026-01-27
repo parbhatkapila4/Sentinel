@@ -36,11 +36,19 @@ export function PricingCards() {
   ];
 
   const getProPrice = () => {
-    return isAnnual ? "$99" : "$149";
+    return isAnnual ? "$19" : "$29";
   };
 
   const getProOriginalPrice = () => {
-    return isAnnual ? "$199" : "$249";
+    return isAnnual ? "$29" : "$29";
+  };
+
+  const getEnterprisePrice = () => {
+    return isAnnual ? "$59" : "$79";
+  };
+
+  const getEnterpriseOriginalPrice = () => {
+    return isAnnual ? "$79" : "$79";
   };
 
   return (
@@ -162,9 +170,11 @@ export function PricingCards() {
             </p>
 
             <div className="flex items-baseline gap-2">
-              <span className="text-white/40 line-through text-base">
-                {getProOriginalPrice()}
-              </span>
+              {isAnnual && (
+                <span className="text-white/40 line-through text-base">
+                  {getProOriginalPrice()}
+                </span>
+              )}
               <span className="text-white font-bold text-4xl">
                 {getProPrice()}
               </span>
@@ -185,9 +195,8 @@ export function PricingCards() {
               {proFeatures.map((feature, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <svg
-                    className={`w-5 h-5 shrink-0 mt-0.5 ${
-                      feature.included ? "text-[#6b7fd6]" : "text-white/30"
-                    }`}
+                    className={`w-5 h-5 shrink-0 mt-0.5 ${feature.included ? "text-[#6b7fd6]" : "text-white/30"
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -238,8 +247,16 @@ export function PricingCards() {
             custom integrations, and dedicated support.
           </p>
 
-          <div>
-            <span className="text-white font-bold text-2xl">Contact Sales</span>
+          <div className="flex items-baseline gap-2">
+            {isAnnual && (
+              <span className="text-white/40 line-through text-base">
+                {getEnterpriseOriginalPrice()}
+              </span>
+            )}
+            <span className="text-white font-bold text-4xl">
+              {getEnterprisePrice()}
+            </span>
+            <span className="text-white/40 text-sm">/month</span>
           </div>
         </div>
 
@@ -279,7 +296,7 @@ export function PricingCards() {
               color: "rgba(255, 255, 255, 0.7)",
             }}
           >
-            Contact Sales
+            Get Started
           </button>
         </div>
       </div>

@@ -3,20 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser, useClerk } from "@clerk/nextjs";
 
 export function AnimatedNav() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data) => {
-        setIsSignedIn(!!data.user);
-      })
-      .catch(() => setIsSignedIn(false));
-  }, []);
+  const { isSignedIn } = useUser();
+  const { signOut } = useClerk();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,11 +22,10 @@ export function AnimatedNav() {
 
   return (
     <nav
-      className={`fixed top-0 z-50 w-full border-b transition-all duration-300 ${
-        scrolled
-          ? "border-white/10 bg-black/95 backdrop-blur-xl"
-          : "border-white/10 bg-black/80 backdrop-blur-xl"
-      }`}
+      className={`fixed top-0 z-50 w-full border-b transition-all duration-300 ${scrolled
+        ? "border-white/10 bg-black/95 backdrop-blur-xl"
+        : "border-white/10 bg-black/80 backdrop-blur-xl"
+        }`}
     >
       <div className="mx-auto max-w-7xl px-6 py-4 lg:px-8">
         <div className="flex items-center justify-between">
@@ -90,8 +82,7 @@ export function AnimatedNav() {
                 </Link>
                 <button
                   onClick={async () => {
-                    await fetch("/api/auth/logout", { method: "POST" });
-                    setIsSignedIn(false);
+                    await signOut();
                     router.push("/");
                     router.refresh();
                   }}

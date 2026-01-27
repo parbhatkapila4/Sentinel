@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { getDealById } from "@/app/actions/deals";
+import { getDealById, getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatDistanceToNow } from "date-fns";
 import { notFound } from "next/navigation";
 import { AddEventButtons } from "./add-event-buttons";
+import { EmailGenerator } from "@/components/email-generator";
+import { DealSummaryCard } from "@/components/deal-summary-card";
+import { DealPredictions } from "@/components/deal-predictions";
+import { StageSelector } from "@/components/stage-selector";
+import { DealMeetings } from "@/components/deal-meetings";
 
 export default async function DealDetailPage({
   params,
@@ -20,10 +25,18 @@ export default async function DealDetailPage({
   }
 
   const riskLevel = formatRiskLevel(deal.riskScore);
+  let allDeals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  try {
+    allDeals = await getAllDeals();
+  } catch {
+
+  }
+  const dealInAll = allDeals.some((d) => d.id === deal.id);
+  const dealsForPredictions = dealInAll ? allDeals : [deal, ...allDeals];
 
   return (
-    <div className="min-h-screen bg-[#030303]">
-      <div className="fixed inset-0 pointer-events-none">
+    <div className="fixed inset-0 bg-[#030303] overflow-y-auto">
+      <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-20"
           style={{
@@ -50,19 +63,30 @@ export default async function DealDetailPage({
           borderColor: "rgba(255,255,255,0.06)",
         }}
       >
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-                  boxShadow: "0 4px 14px rgba(59, 130, 246, 0.3)",
-                }}
+              <svg
+                className="w-10 h-10"
+                viewBox="0 0 36 36"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <span className="text-white text-sm font-bold">RS</span>
-              </div>
+                <rect width="36" height="36" rx="10" fill="#10B981" />
+                <path
+                  d="M18 8V28"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M22 12C22 12 20.5 10 18 10C15.5 10 13 11.5 13 14C13 16.5 15 17 18 18C21 19 23 19.5 23 22C23 24.5 20.5 26 18 26C15.5 26 14 24 14 24"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
               <span className="text-white font-semibold text-lg tracking-tight hidden sm:block">
                 Sentinel
               </span>
@@ -90,19 +114,28 @@ export default async function DealDetailPage({
         </div>
       </header>
 
-      <main className="relative z-10 max-w-5xl mx-auto px-6 py-8">
-        <div
-          className="rounded-2xl p-8 mb-6"
-          style={{
-            background:
-              "linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <div className="flex items-start justify-between mb-6">
-            <h1 className="text-3xl font-bold text-white tracking-tight">
-              {deal.name}
-            </h1>
+      <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">
+                {deal.name}
+              </h1>
+              {deal.source && (
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium ${deal.source === "salesforce"
+                      ? "bg-blue-500/20 text-blue-400"
+                      : deal.source === "hubspot"
+                        ? "bg-orange-500/20 text-orange-400"
+                        : "bg-white/10 text-white/60"
+                    }`}
+                >
+                  {deal.source === "salesforce" && "☁️ Synced from Salesforce"}
+                  {deal.source === "hubspot" && "🔶 Synced from HubSpot"}
+                  {deal.source !== "salesforce" && deal.source !== "hubspot" && `📥 ${deal.source}`}
+                </span>
+              )}
+            </div>
             <span
               className={`inline-flex px-3 py-1.5 rounded-xl text-sm font-medium ${riskLevel === "High"
                 ? "bg-red-500/15 text-red-400 border border-red-500/20"
@@ -115,49 +148,62 @@ export default async function DealDetailPage({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {[
-              { label: "Stage", value: deal.stage },
-              { label: "Value", value: `$${deal.value.toLocaleString()}` },
-              { label: "Status", value: deal.status },
-              {
-                label: "Last Activity",
-                value: formatDistanceToNow(new Date(deal.lastActivityAt), {
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div>
+              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
+                Stage
+              </p>
+              <StageSelector dealId={deal.id} currentStage={deal.stage} />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
+                Value
+              </p>
+              <p className="text-lg font-semibold text-white">
+                ${deal.value.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
+                Status
+              </p>
+              <p className="text-lg font-semibold text-white">{deal.status}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
+                Last Activity
+              </p>
+              <p className="text-lg font-semibold text-white">
+                {formatDistanceToNow(new Date(deal.lastActivityAt), {
                   addSuffix: true,
-                }),
-              },
-            ].map((item, i) => (
-              <div key={i}>
-                <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
-                  {item.label}
-                </p>
-                <p className="text-lg font-semibold text-white">{item.value}</p>
-              </div>
-            ))}
+                })}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 mb-6">
-          <div
-            className="rounded-2xl p-6"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10">
             <h2 className="text-lg font-semibold text-white mb-5 flex items-center gap-2">
               <svg
                 className="w-5 h-5 text-white/40"
+                viewBox="0 0 36 36"
                 fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="1.5"
+                xmlns="http://www.w3.org/2000/svg"
               >
+                <rect width="36" height="36" rx="8" fill="#10B981" />
                 <path
+                  d="M18 8V28"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M22 12C22 12 20.5 10 18 10C15.5 10 13 11.5 13 14C13 16.5 15 17 18 18C21 19 23 19.5 23 22C23 24.5 20.5 26 18 26C15.5 26 14 24 14 24"
+                  stroke="white"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
                 />
               </svg>
               Risk & Action
@@ -304,7 +350,7 @@ export default async function DealDetailPage({
             </div>
           ) : (
             <div
-              className="rounded-2xl p-6"
+              className="space-y-4 rounded-2xl p-4 sm:p-6"
               style={{
                 background:
                   "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
@@ -356,16 +402,17 @@ export default async function DealDetailPage({
           )}
         </div>
 
-        <div
-          className="rounded-2xl p-6 mb-6"
-          style={{
-            background:
-              "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-            border: "1px solid rgba(255,255,255,0.06)",
-          }}
-        >
+        <div className="mt-6 lg:mt-8 mb-6">
+          <DealPredictions deal={deal} allDeals={dealsForPredictions} />
+        </div>
+
+        <div className="mb-6">
+          <DealSummaryCard dealId={deal.id} />
+        </div>
+
+        <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
               <svg
                 className="w-5 h-5 text-white/40"
                 fill="none"
@@ -381,7 +428,15 @@ export default async function DealDetailPage({
               </svg>
               Events
             </h2>
-            <AddEventButtons dealId={deal.id} />
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 flex-wrap">
+              <EmailGenerator
+                dealId={deal.id}
+                dealName={deal.name}
+                dealValue={deal.value}
+                dealStage={deal.stage}
+              />
+              <AddEventButtons dealId={deal.id} />
+            </div>
           </div>
 
           {deal.events.length === 0 ? (
@@ -526,7 +581,9 @@ export default async function DealDetailPage({
                               ? `Stage changed to ${((entry.metadata as Record<string, unknown>)
                                 ?.stage as string) || ""
                               }`
-                              : entry.eventType}
+                              : entry.eventType === "email_drafted"
+                                ? `Follow-up email drafted${((entry.metadata as Record<string, unknown>)?.subject as string) ? `: "${String((entry.metadata as Record<string, unknown>)?.subject).slice(0, 40)}..."` : ""}`
+                                : entry.eventType}
                       </p>
                       <p className="text-xs text-white/40 mt-1">
                         {entry.createdAt
@@ -560,6 +617,10 @@ export default async function DealDetailPage({
               <p className="text-white/40 text-sm">No timeline entries yet</p>
             </div>
           )}
+        </div>
+
+        <div className="mt-6">
+          <DealMeetings dealId={deal.id} dealName={deal.name} />
         </div>
       </main>
     </div>

@@ -2,9 +2,14 @@
 
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function SignInPage() {
+function SignInContent() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email");
+  const token = searchParams.get("token");
+  const afterSignInUrl = token ? `/invite/${token}` : "/dashboard";
   useEffect(() => {
     const makeAppleLogoWhite = () => {
       const appleButton = document.querySelector(
@@ -346,10 +351,10 @@ export default function SignInPage() {
                       </span>
                       <span
                         className={`text-xs font-semibold ${metric.color === "red"
+                          ? "text-emerald-400"
+                          : metric.color === "emerald"
                             ? "text-emerald-400"
-                            : metric.color === "emerald"
-                              ? "text-emerald-400"
-                              : "text-blue-400"
+                            : "text-blue-400"
                           }`}
                       >
                         {metric.trend}
@@ -614,8 +619,9 @@ export default function SignInPage() {
                   },
                 }}
                 routing="hash"
-                signUpUrl="/sign-up"
-                afterSignInUrl="/dashboard"
+                signUpUrl={token ? `/sign-up?email=${encodeURIComponent(email || "")}&token=${encodeURIComponent(token)}` : "/sign-up"}
+                afterSignInUrl={afterSignInUrl}
+                initialValues={email ? { emailAddress: email } : undefined}
               />
             </div>
           </div>
@@ -628,5 +634,17 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#030303]">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   );
 }

@@ -2,66 +2,15 @@
 
 import Link from "next/link";
 import { createDeal } from "@/app/actions/deals";
+import { getTeamMembers } from "@/app/actions/teams";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { COUNTRIES } from "@/lib/countries";
+import { STAGE_FORM_OPTIONS } from "@/lib/config";
+import { toast } from "sonner";
 
-const stages = [
-  {
-    value: "Discovery",
-    label: "Discovery",
-    icon: "🔍",
-    color: "from-blue-500 to-cyan-400",
-    bgColor: "bg-blue-500/10",
-    borderColor: "border-blue-500/30",
-    description: "Initial research & outreach",
-  },
-  {
-    value: "Qualification",
-    label: "Qualification",
-    icon: "✓",
-    color: "from-cyan-500 to-teal-400",
-    bgColor: "bg-cyan-500/10",
-    borderColor: "border-cyan-500/30",
-    description: "Assessing fit & budget",
-  },
-  {
-    value: "Proposal",
-    label: "Proposal",
-    icon: "📄",
-    color: "from-violet-500 to-purple-400",
-    bgColor: "bg-violet-500/10",
-    borderColor: "border-violet-500/30",
-    description: "Presenting the solution",
-  },
-  {
-    value: "Negotiation",
-    label: "Negotiation",
-    icon: "🤝",
-    color: "from-amber-500 to-orange-400",
-    bgColor: "bg-amber-500/10",
-    borderColor: "border-amber-500/30",
-    description: "Terms & pricing discussion",
-  },
-  {
-    value: "Closed Won",
-    label: "Closed Won",
-    icon: "🎉",
-    color: "from-emerald-500 to-green-400",
-    bgColor: "bg-emerald-500/10",
-    borderColor: "border-emerald-500/30",
-    description: "Deal successfully closed",
-  },
-  {
-    value: "Closed Lost",
-    label: "Closed Lost",
-    icon: "❌",
-    color: "from-red-500 to-rose-400",
-    bgColor: "bg-red-500/10",
-    borderColor: "border-red-500/30",
-    description: "Deal did not proceed",
-  },
-];
+type TeamItem = { id: string; name: string; slug: string; memberCount: number; myRole: string };
+type MemberItem = { id: string; userId: string; role: string; user: { id: string; name: string | null; surname: string | null; email: string } };
 
 export default function NewDealPage() {
   const router = useRouter();
@@ -71,8 +20,36 @@ export default function NewDealPage() {
   const [dealValue, setDealValue] = useState("");
   const [location, setLocation] = useState("");
   const [error, setError] = useState("");
+  const [teams, setTeams] = useState<TeamItem[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+  const [members, setMembers] = useState<MemberItem[]>([]);
+  const [assignedToId, setAssignedToId] = useState<string>("");
 
-  const selectedStageData = stages.find((s) => s.value === selectedStage);
+  const selectedStageData = STAGE_FORM_OPTIONS.find((s) => s.value === selectedStage);
+
+  useEffect(() => {
+    fetch("/api/teams/me")
+      .then((r) => r.ok ? r.json() : null)
+      .then((json) => {
+        const payload = json?.data ?? json;
+        setTeams((payload?.teams ?? []) as TeamItem[]);
+      })
+      .catch(() => setTeams([]));
+  }, []);
+
+  useEffect(() => {
+    if (!selectedTeamId) {
+      queueMicrotask(() => {
+        setMembers([]);
+        setAssignedToId("");
+      });
+      return;
+    }
+    queueMicrotask(() => setAssignedToId(""));
+    getTeamMembers(selectedTeamId)
+      .then(setMembers as (m: MemberItem[]) => void)
+      .catch(() => setMembers([]));
+  }, [selectedTeamId]);
 
   const formatCurrency = (value: string) => {
     const num = parseInt(value.replace(/,/g, ""), 10);
@@ -108,23 +85,25 @@ export default function NewDealPage() {
     formData.append("name", dealName.trim());
     formData.append("stage", selectedStage);
     formData.append("value", dealValue);
-    if (location) {
-      formData.append("location", location);
-    }
+    if (location) formData.append("location", location);
+    if (selectedTeamId) formData.append("teamId", selectedTeamId);
+    if (assignedToId) formData.append("assignedToId", assignedToId);
 
     startTransition(async () => {
       try {
         await createDeal(formData);
         router.push("/dashboard");
-      } catch {
-        setError("Failed to create deal. Please try again.");
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to create deal. Please try again.";
+        setError(msg);
+        toast.error(msg);
       }
     });
   }
 
   return (
-    <div className="min-h-screen bg-[#030303]">
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 bg-[#030303] overflow-y-auto">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute top-[-30%] right-[-20%] w-[800px] h-[800px] rounded-full animate-pulse"
           style={{
@@ -137,7 +116,7 @@ export default function NewDealPage() {
           className="absolute bottom-[-30%] left-[-20%] w-[700px] h-[700px] rounded-full animate-pulse"
           style={{
             background:
-              "radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 50%)",
+              "radial-gradient(circle, rgba(139,26,26,0.06) 0%, transparent 50%)",
             filter: "blur(80px)",
             animationDelay: "1s",
           }}
@@ -160,16 +139,30 @@ export default function NewDealPage() {
           borderColor: "rgba(255,255,255,0.05)",
         }}
       >
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-3 group">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
-              style={{
-                background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-                boxShadow: "0 4px 20px rgba(59, 130, 246, 0.3)",
-              }}
-            >
-              <span className="text-white text-sm font-bold">RS</span>
+            <div className="transition-transform group-hover:scale-105">
+              <svg
+                className="w-10 h-10"
+                viewBox="0 0 36 36"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="36" height="36" rx="10" fill="#10B981" />
+                <path
+                  d="M18 8V28"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M22 12C22 12 20.5 10 18 10C15.5 10 13 11.5 13 14C13 16.5 15 17 18 18C21 19 23 19.5 23 22C23 24.5 20.5 26 18 26C15.5 26 14 24 14 24"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
             <span className="text-white font-semibold text-lg tracking-tight hidden sm:block">
               Sentinel
@@ -197,25 +190,25 @@ export default function NewDealPage() {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-6xl mx-auto px-6 py-8 lg:py-12">
-        <div className="grid lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-3">
-            <div className="mb-8">
+      <main className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <div className="grid lg:grid-cols-5 gap-6 lg:gap-8 items-start">
+          <div className="lg:col-span-3 space-y-6">
+            <div className="mb-6 lg:mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
                 <span className="text-xs font-medium text-blue-400">
                   New Deal
                 </span>
               </div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight mb-3">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-3">
                 Create a New Deal
               </h1>
-              <p className="text-white/40 text-lg">
+              <p className="text-white/40 text-base sm:text-lg">
                 Track your pipeline and never miss an opportunity
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-sm font-medium text-white/70">
                   <svg
@@ -245,7 +238,7 @@ export default function NewDealPage() {
               <div className="space-y-4">
                 <label className="flex items-center gap-2 text-sm font-medium text-white/70">
                   <svg
-                    className="w-4 h-4 text-violet-400"
+                    className="w-4 h-4 text-red-400"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -259,27 +252,25 @@ export default function NewDealPage() {
                   </svg>
                   Select Stage
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {stages.map((stage) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:gap-4">
+                  {STAGE_FORM_OPTIONS.map((stage) => (
                     <button
                       key={stage.value}
                       type="button"
                       onClick={() => setSelectedStage(stage.value)}
-                      className={`relative group p-4 rounded-2xl border transition-all duration-300 text-left ${
-                        selectedStage === stage.value
-                          ? `${stage.bgColor} ${stage.borderColor} border-2`
-                          : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
-                      }`}
+                      className={`relative group p-4 rounded-2xl border transition-all duration-300 text-left ${selectedStage === stage.value
+                        ? `${stage.bgColor} ${stage.borderColor} border-2`
+                        : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
+                        }`}
                     >
                       <div className="flex items-start gap-3">
                         <span className="text-xl">{stage.icon}</span>
                         <div className="flex-1 min-w-0">
                           <p
-                            className={`font-medium text-sm ${
-                              selectedStage === stage.value
-                                ? "text-white"
-                                : "text-white/70 group-hover:text-white"
-                            }`}
+                            className={`font-medium text-sm ${selectedStage === stage.value
+                              ? "text-white"
+                              : "text-white/70 group-hover:text-white"
+                              }`}
                           >
                             {stage.label}
                           </p>
@@ -367,25 +358,92 @@ export default function NewDealPage() {
                   </svg>
                   Location (Optional)
                 </label>
-                <select
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.05] transition-all text-base"
-                >
-                  <option value="" className="bg-[#030303]">
-                    Select a country...
-                  </option>
-                  {COUNTRIES.map((country) => (
-                    <option
-                      key={country}
-                      value={country}
-                      className="bg-[#030303]"
-                    >
-                      {country}
+                <div className="relative">
+                  <select
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="w-full pl-5 pr-14 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.05] transition-all text-base appearance-none"
+                  >
+                    <option value="" className="bg-[#030303]">
+                      Select a country...
                     </option>
-                  ))}
-                </select>
+                    {COUNTRIES.map((country) => (
+                      <option
+                        key={country}
+                        value={country}
+                        className="bg-[#030303]"
+                      >
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                  <svg
+                    className="absolute right-5 top-1/2 w-5 h-5 -translate-y-1/2 pointer-events-none text-white/70"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
+
+              {teams.length > 0 && (
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-white/70">
+                    <svg
+                      className="w-4 h-4 text-red-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    Team (Optional)
+                  </label>
+                  <select
+                    value={selectedTeamId}
+                    onChange={(e) => setSelectedTeamId(e.target.value)}
+                    className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white focus:outline-none focus:border-red-500/50 focus:bg-white/[0.05] transition-all text-base"
+                  >
+                    <option value="" className="bg-[#030303]">Personal</option>
+                    {teams.map((t) => (
+                      <option key={t.id} value={t.id} className="bg-[#030303]">
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {selectedTeamId && members.length > 0 && (
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-white/70">
+                    Assign to (Optional)
+                  </label>
+                  <select
+                    value={assignedToId}
+                    onChange={(e) => setAssignedToId(e.target.value)}
+                    className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white focus:outline-none focus:border-red-500/50 focus:bg-white/[0.05] transition-all text-base"
+                  >
+                    <option value="" className="bg-[#030303]">—</option>
+                    {members.map((m) => {
+                      const display = [m.user.name, m.user.surname].filter(Boolean).join(" ") || m.user.email;
+                      return (
+                        <option key={m.id} value={m.userId} className="bg-[#030303]">
+                          {display}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
 
               {error && (
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
@@ -406,16 +464,16 @@ export default function NewDealPage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-4 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-base font-semibold transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base font-semibold transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed group min-h-[44px]"
                   style={{
                     background:
-                      "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                      "linear-gradient(135deg, #3b82f6 0%, #8b1a1a 100%)",
                     boxShadow:
-                      "0 8px 32px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(255,255,255,0.1) inset",
+                      "0 8px 32px rgba(139, 26, 26, 0.25), 0 0 0 1px rgba(255,255,255,0.1) inset",
                   }}
                 >
                   {isPending ? (
@@ -462,7 +520,7 @@ export default function NewDealPage() {
                 </button>
                 <Link
                   href="/dashboard"
-                  className="px-6 py-4 rounded-2xl text-base font-medium text-white/50 hover:text-white hover:bg-white/[0.05] transition-all border border-white/[0.06] hover:border-white/[0.12]"
+                  className="flex-1 sm:flex-none flex items-center justify-center px-6 py-3 sm:py-4 rounded-2xl text-base font-medium text-white/50 hover:text-white hover:bg-white/[0.05] transition-all border border-white/[0.06] hover:border-white/[0.12] min-h-[44px]"
                 >
                   Cancel
                 </Link>
@@ -471,7 +529,7 @@ export default function NewDealPage() {
           </div>
 
           <div className="lg:col-span-2">
-            <div className="lg:sticky lg:top-28">
+            <div className="lg:sticky lg:top-24 space-y-6">
               <p className="text-sm font-medium text-white/40 mb-4 flex items-center gap-2">
                 <svg
                   className="w-4 h-4"
@@ -510,11 +568,10 @@ export default function NewDealPage() {
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
                     <div
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${
-                        selectedStageData
-                          ? selectedStageData.bgColor
-                          : "bg-white/5"
-                      }`}
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${selectedStageData
+                        ? selectedStageData.bgColor
+                        : "bg-white/5"
+                        }`}
                     >
                       {selectedStageData?.icon || "📋"}
                     </div>
@@ -546,8 +603,8 @@ export default function NewDealPage() {
                         Pipeline Stage
                       </p>
                       <div className="flex items-center gap-1">
-                        {stages.slice(0, 4).map((stage, index) => {
-                          const currentIndex = stages.findIndex(
+                        {STAGE_FORM_OPTIONS.slice(0, 4).map((stage, index) => {
+                          const currentIndex = STAGE_FORM_OPTIONS.findIndex(
                             (s) => s.value === selectedStage
                           );
                           const isActive = index <= currentIndex;
@@ -555,13 +612,12 @@ export default function NewDealPage() {
                           return (
                             <div key={stage.value} className="flex-1">
                               <div
-                                className={`h-2 rounded-full transition-all ${
-                                  isActive
-                                    ? isCurrent
-                                      ? `bg-gradient-to-r ${selectedStageData?.color}`
-                                      : "bg-white/30"
-                                    : "bg-white/10"
-                                }`}
+                                className={`h-2 rounded-full transition-all ${isActive
+                                  ? isCurrent
+                                    ? `bg-gradient-to-r ${selectedStageData?.color}`
+                                    : "bg-white/30"
+                                  : "bg-white/10"
+                                  }`}
                               />
                             </div>
                           );
@@ -601,7 +657,7 @@ export default function NewDealPage() {
                 </div>
               </div>
 
-              <div className="mt-6 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
                     <svg
