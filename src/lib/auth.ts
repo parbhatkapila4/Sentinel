@@ -1,41 +1,74 @@
 import { prisma } from "./prisma";
-import { getSession } from "./session";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { UnauthorizedError } from "./errors";
 
 export async function getAuthenticatedUserId(): Promise<string> {
-  const session = await getSession();
+  const { userId } = await auth();
 
-  if (!session) {
-    throw new Error("Unauthorized");
+  if (!userId) {
+    throw new UnauthorizedError();
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-  });
+  try {
+    const clerkUser = await currentUser();
 
-  if (!user) {
-    throw new Error("User not found");
+    if (clerkUser) {
+
+      await prisma.user.upsert({
+        where: { id: userId },
+        update: {},
+        create: {
+          id: userId,
+          name: clerkUser.firstName || clerkUser.username || "User",
+          surname: clerkUser.lastName || "",
+          email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+          password: "",
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Error ensuring user exists:", error);
   }
 
-  return session.userId;
+  return userId;
 }
 
 export async function getAuthenticatedUser() {
-  const session = await getSession();
+  const { userId } = await auth();
 
-  if (!session) {
+  if (!userId) {
     return null;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    select: {
-      id: true,
-      name: true,
-      surname: true,
-      email: true,
-      createdAt: true,
-    },
-  });
+  try {
+    const clerkUser = await currentUser();
 
-  return user;
+    if (clerkUser) {
+      const user = await prisma.user.upsert({
+        where: { id: userId },
+        update: {},
+        create: {
+          id: userId,
+          name: clerkUser.firstName || clerkUser.username || "User",
+          surname: clerkUser.lastName || "",
+          email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+          password: "",
+        },
+        select: {
+          id: true,
+          name: true,
+          surname: true,
+          email: true,
+          createdAt: true,
+        },
+      });
+
+      return user;
+    }
+  } catch (error) {
+    console.error("Error in getAuthenticatedUser:", error);
+    return null;
+  }
+
+  return null;
 }
