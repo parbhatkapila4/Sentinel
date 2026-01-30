@@ -79,7 +79,7 @@ export default async function DocsPage() {
               you need, or read it start to finish for a comprehensive
               understanding.
             </p>
-            <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl p-6 border border-blue-500/20">
+            <div className="bg-gradient-to-br from-blue-500/10 to-red-600/10 rounded-xl p-6 border border-blue-500/20">
               <h3 className="text-xl font-semibold text-white mb-3">
                 How to Use This Documentation
               </h3>

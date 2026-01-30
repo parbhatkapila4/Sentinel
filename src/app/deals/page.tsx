@@ -11,6 +11,7 @@ import { DealsFilter } from "@/components/deals-filter";
 import { DealsScopeFilter } from "@/components/deals-scope-filter";
 import { PipelineValueCard } from "@/components/pipeline-value-card";
 import { DemoBanner } from "@/components/demo-banner";
+import { DeleteDealButton } from "@/components/delete-deal-button";
 import { seedDemoDataForUser, hasDemoData } from "@/lib/demo-data";
 
 export const dynamic = "force-dynamic";
@@ -140,7 +141,7 @@ export default async function DealsPage({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-4 lg:p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
             <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b1a1a] border border-[#1f1f1f]">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -332,7 +333,7 @@ export default async function DealsPage({
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-xl bg-[#151515] border border-[#1f1f1f] flex items-center justify-center">
                                 <svg
-                                  className="w-5 h-5 text-[#8b5cf6]"
+                                  className="w-5 h-5 text-[#8b1a1a]"
                                   fill="none"
                                   viewBox="0 0 24 24"
                                   stroke="currentColor"
@@ -403,12 +404,23 @@ export default async function DealsPage({
                             </span>
                           </td>
                           <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <Link
-                              href={`/deals/${deal.id}`}
-                              className="text-sm text-[#8b5cf6] hover:text-[#7c3aed] transition-colors font-medium"
-                            >
-                              View →
-                            </Link>
+                            <div className="flex items-center gap-3">
+                              <Link
+                                href={`/deals/${deal.id}`}
+                                className="text-sm text-[#8b1a1a] hover:text-[#6b0f0f] transition-colors font-medium"
+                              >
+                                View →
+                              </Link>
+                              {!deal.isDemo && (
+                                <DeleteDealButton
+                                  dealId={deal.id}
+                                  dealName={deal.name}
+                                  variant="link"
+                                  redirectTo="/dashboard"
+                                  className="text-sm text-red-400 hover:text-red-300"
+                                />
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -443,10 +455,10 @@ export default async function DealsPage({
                         )}
                         <span
                           className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${riskLevel === "High"
-                              ? "bg-red-500/20 text-red-400"
-                              : riskLevel === "Medium"
-                                ? "bg-amber-500/20 text-amber-400"
-                                : "bg-emerald-500/20 text-emerald-400"
+                            ? "bg-red-500/20 text-red-400"
+                            : riskLevel === "Medium"
+                              ? "bg-amber-500/20 text-amber-400"
+                              : "bg-emerald-500/20 text-emerald-400"
                             }`}
                         >
                           {riskLevel}

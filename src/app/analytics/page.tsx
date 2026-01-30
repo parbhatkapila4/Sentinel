@@ -220,9 +220,9 @@ export default async function AnalyticsPage({
           >
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm text-white/40">Needs Action</p>
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-red-600/10 flex items-center justify-center">
                 <svg
-                  className="w-4 h-4 text-violet-400"
+                  className="w-4 h-4 text-red-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -631,9 +631,9 @@ export default async function AnalyticsPage({
                     : 0}K
                 </span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+              <div className="flex items-center justify-between p-3 bg-red-600/10 rounded-lg border border-red-600/20">
                 <span className="text-sm text-white/70">Active Deals</span>
-                <span className="text-lg font-bold text-purple-400">
+                <span className="text-lg font-bold text-red-400">
                   {deals.filter((d) => d.status === "active").length}
                 </span>
               </div>

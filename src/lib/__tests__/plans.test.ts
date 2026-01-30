@@ -50,16 +50,16 @@ describe("Plans", () => {
   });
 
   describe("getOrCreateUserPlan", () => {
-    it("should create free plan for new user", async () => {
+    it("should create starter plan for new user", async () => {
       const plan = await getOrCreateUserPlan(testUserId);
-      expect(plan.planType).toBe("free");
-      expect(plan.maxDeals).toBe(25);
+      expect(plan.planType).toBe("starter");
+      expect(plan.maxDeals).toBe(100);
     });
 
     it("should return existing plan if exists", async () => {
       await getOrCreateUserPlan(testUserId);
       const plan2 = await getOrCreateUserPlan(testUserId);
-      expect(plan2.planType).toBe("free");
+      expect(plan2.planType).toBe("starter");
     });
   });
 
@@ -68,7 +68,7 @@ describe("Plans", () => {
       await getOrCreateUserPlan(testUserId);
       const check = await checkUsageLimit(testUserId, "deals");
       expect(check.allowed).toBe(true);
-      expect(check.limit).toBe(25);
+      expect(check.limit).toBe(100);
       expect(check.current).toBe(0);
     });
   });

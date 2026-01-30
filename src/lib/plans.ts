@@ -92,6 +92,13 @@ export const PLAN_DEFINITIONS: Record<PlanType, PlanDefinition> = {
   },
 };
 
+export const PLAN_MONTHLY_PRICES: Record<PlanType, number | null> = {
+  free: null,
+  starter: null,
+  pro: 99,
+  enterprise: -1,
+};
+
 export function getPlanLimits(planType: PlanType): PlanLimits {
   const plan = PLAN_DEFINITIONS[planType];
   if (!plan) {
@@ -120,18 +127,18 @@ export async function getOrCreateUserPlan(userId: string) {
   });
 
   if (!plan) {
-    const freePlan = PLAN_DEFINITIONS.free;
+    const starterPlan = PLAN_DEFINITIONS.starter;
     plan = await prisma.userPlan.create({
       data: {
         userId,
-        planType: freePlan.planType,
-        planName: freePlan.planName,
-        maxDeals: freePlan.limits.maxDeals,
-        maxTeamMembers: freePlan.limits.maxTeamMembers,
-        maxApiCalls: freePlan.limits.maxApiCalls,
-        maxWebhooks: freePlan.limits.maxWebhooks,
-        maxIntegrations: freePlan.limits.maxIntegrations,
-        features: freePlan.limits.features,
+        planType: starterPlan.planType,
+        planName: starterPlan.planName,
+        maxDeals: starterPlan.limits.maxDeals,
+        maxTeamMembers: starterPlan.limits.maxTeamMembers,
+        maxApiCalls: starterPlan.limits.maxApiCalls,
+        maxWebhooks: starterPlan.limits.maxWebhooks,
+        maxIntegrations: starterPlan.limits.maxIntegrations,
+        features: starterPlan.limits.features,
       },
     });
   }

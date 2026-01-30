@@ -68,13 +68,13 @@ export default function NewTeamPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Sales Team"
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-violet-500/50 transition-colors mb-6"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-red-600/50 transition-colors mb-6"
             />
             <div className="flex items-center gap-3 max-sm:flex-col max-sm:gap-2">
               <button
                 type="submit"
                 disabled={isPending}
-                className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 border border-violet-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-sm:w-full max-sm:min-h-[44px]"
+                className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-600/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-sm:w-full max-sm:min-h-[44px]"
               >
                 {isPending ? "Creating…" : "Create team"}
               </button>

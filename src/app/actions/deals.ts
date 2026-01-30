@@ -27,12 +27,41 @@ import {
   formatDealWonSlackMessage,
   formatStageChangeSlackMessage,
 } from "@/lib/slack";
-import { removeDemoDataForUser, hasDemoData } from "@/lib/demo-data";
+import { removeDemoDataForUser, hasDemoData, seedDemoDataForUser } from "@/lib/demo-data";
 import { NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
 import { getUserTeamRole } from "@/lib/team-utils";
 import { enforceDealLimit } from "@/lib/plan-enforcement";
 import { withCache, invalidateCachePattern, invalidateCache } from "@/lib/cache";
 import type { GetDealsOptions } from "@/types";
+import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
+import { notifyRealtimeEvent } from "@/lib/realtime";
+
+const DEAL_VALUE_AUDIT_THRESHOLD = 100000;
+
+async function logDealValueChangeIfNeeded(
+  userId: string,
+  dealId: string,
+  oldValue: number,
+  newValue: number
+): Promise<void> {
+  if (
+    (oldValue >= DEAL_VALUE_AUDIT_THRESHOLD || newValue >= DEAL_VALUE_AUDIT_THRESHOLD) &&
+    oldValue !== newValue
+  ) {
+    await logAuditEvent(
+      userId,
+      AUDIT_ACTIONS.DEAL_VALUE_CHANGED,
+      "deal",
+      dealId,
+      {
+        oldValue,
+        newValue,
+        change: newValue - oldValue,
+        changePercent: oldValue > 0 ? ((newValue - oldValue) / oldValue) * 100 : 0,
+      }
+    );
+  }
+}
 
 export async function canUserAccessDeal(
   userId: string,
@@ -134,12 +163,20 @@ export async function createDeal(formData: FormData) {
         value: deal.value,
       });
 
+      try {
+        await notifyRealtimeEvent(userId, { type: "deal.created", dealId: deal.id });
+      } catch {
+      }
+
       const hadDemo = await hasDemoData(userId);
       if (hadDemo) {
         await removeDemoDataForUser(userId);
+        await invalidateCachePattern(`deals:all:${userId}:*`);
+        await invalidateCachePattern(`deals:team:*:${userId}`);
       }
 
       revalidatePath("/dashboard");
+      revalidatePath("/deals");
       if (teamId) revalidatePath(`/teams/${teamId}`);
 
       const timeline = await prisma.dealTimeline.findMany({
@@ -207,6 +244,7 @@ export async function getAllDeals(options?: GetDealsOptions) {
   noStore();
   const userId = await getAuthenticatedUserId();
 
+  await seedDemoDataForUser(userId);
 
   const cacheKey = `deals:all:${userId}:${JSON.stringify(options ?? {})}`;
 
@@ -517,12 +555,60 @@ export async function getDealById(dealId: string) {
       actionOverdueByDays: signals.actionOverdueByDays,
       isActionOverdue: signals.isActionOverdue,
       createdAt: deal.createdAt,
+      isDemo: deal.isDemo,
       events,
       timeline,
       team: deal.team ?? undefined,
       assignedTo: deal.assignedTo ?? undefined,
     };
   });
+}
+
+export async function deleteDeal(dealId: string) {
+  const userId = await getAuthenticatedUserId();
+
+  return await withErrorContext(
+    { userId, actionType: "delete_deal", dealId },
+    async () => {
+      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      if (!deal) throw new NotFoundError("Deal");
+
+      const canEdit = await canUserEditDeal(userId, deal);
+      if (!canEdit) throw new ForbiddenError("You cannot delete this deal");
+
+      if (deal.isDemo) throw new ValidationError("Cannot delete demo deals; they are removed when you add your first real deal.");
+
+      await prisma.dealTimeline.deleteMany({ where: { dealId } });
+      await prisma.dealEvent.deleteMany({ where: { dealId } });
+      await prisma.action.deleteMany({ where: { dealId } });
+      await prisma.deal.delete({ where: { id: dealId } });
+
+      await invalidateCachePattern(`deals:all:${userId}:*`);
+      await invalidateCachePattern(`deals:team:*:${userId}`);
+      await invalidateCache(`deal:${dealId}:${userId}`);
+
+      const remainingCount = await prisma.deal.count({ where: { userId } });
+      if (remainingCount === 0) {
+        await seedDemoDataForUser(userId);
+        await invalidateCachePattern(`deals:all:${userId}:*`);
+        await invalidateCachePattern(`deals:team:*:${userId}`);
+      }
+
+      revalidatePath("/dashboard");
+      revalidatePath("/deals");
+      revalidatePath(`/deals/${dealId}`);
+      if (deal.teamId) revalidatePath(`/teams/${deal.teamId}`);
+
+      try {
+        await notifyRealtimeEvent(userId, { type: "deal.deleted", dealId });
+      } catch {
+      }
+
+      logInfo("Deal deleted", { userId, dealId, dealName: deal.name });
+
+      return { success: true };
+    }
+  );
 }
 
 export async function updateDealStage(dealId: string, newStage: string) {
@@ -651,6 +737,20 @@ export async function updateDealStage(dealId: string, newStage: string) {
             enriched.recommendedAction.label,
             enriched.actionOverdueByDays
           );
+        }
+        try {
+          await notifyRealtimeEvent(userId, {
+            type: "deal.updated",
+            dealId,
+            stage: newStage,
+          });
+          if (
+            riskLevel === "High" ||
+            (riskLevel as string).toLowerCase() === "critical"
+          ) {
+            await notifyRealtimeEvent(userId, { type: "deal.at_risk", dealId });
+          }
+        } catch {
         }
       } catch (e) {
         logWarn("Notification triggers failed", {

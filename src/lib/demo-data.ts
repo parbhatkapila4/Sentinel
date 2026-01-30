@@ -41,66 +41,77 @@ function subtractDays(date: Date, days: number): Date {
 }
 
 export async function seedDemoDataForUser(userId: string): Promise<void> {
-  const existingDeals = await prisma.deal.count({
-    where: { userId },
-  });
-
-  if (existingDeals > 0) {
+  const hasReal = await hasRealDeals(userId);
+  if (hasReal) {
+    await removeDemoDataForUser(userId);
     return;
   }
 
-  const now = new Date();
-
-  for (const company of DEMO_COMPANIES) {
-    const createdAt = subtractDays(
-      now,
-      company.daysAgo + Math.floor(Math.random() * 30) + 10
-    );
-
-    const deal = await prisma.deal.create({
-      data: {
-        name: company.name,
-        value: company.value,
-        stage: company.stage,
-        location: getRandomItem(LOCATIONS),
-        userId,
-        isDemo: true,
-        createdAt,
-      },
+  const didSeed = await prisma.$transaction(async (tx) => {
+    const existingDeals = await tx.deal.count({
+      where: { userId },
     });
 
-    await prisma.dealTimeline.create({
-      data: {
-        dealId: deal.id,
-        eventType: "stage_changed",
-        metadata: { stage: company.stage } as Prisma.InputJsonValue,
-        createdAt,
-      },
-    });
+    if (existingDeals > 0) {
+      return false;
+    }
 
-    const eventCount = 2 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < eventCount; i++) {
-      const ev = getRandomItem(TIMELINE_EVENTS);
-      const eventDate = subtractDays(
+    const now = new Date();
+
+    for (const company of DEMO_COMPANIES) {
+      const createdAt = subtractDays(
         now,
-        company.daysAgo + i * 2 + Math.floor(Math.random() * 3)
+        company.daysAgo + Math.floor(Math.random() * 30) + 10
       );
 
-      await prisma.dealTimeline.create({
+      const deal = await tx.deal.create({
         data: {
-          dealId: deal.id,
-          eventType: "event_created",
-          metadata: {
-            eventType: ev.eventType,
-            note: ev.note,
-          } as Prisma.InputJsonValue,
-          createdAt: eventDate,
+          name: company.name,
+          value: company.value,
+          stage: company.stage,
+          location: getRandomItem(LOCATIONS),
+          userId,
+          isDemo: true,
+          createdAt,
         },
       });
-    }
-  }
 
-  console.log(`[Demo] Seeded ${DEMO_COMPANIES.length} demo deals for user ${userId}`);
+      await tx.dealTimeline.create({
+        data: {
+          dealId: deal.id,
+          eventType: "stage_changed",
+          metadata: { stage: company.stage } as Prisma.InputJsonValue,
+          createdAt,
+        },
+      });
+
+      const eventCount = 2 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < eventCount; i++) {
+        const ev = getRandomItem(TIMELINE_EVENTS);
+        const eventDate = subtractDays(
+          now,
+          company.daysAgo + i * 2 + Math.floor(Math.random() * 3)
+        );
+
+        await tx.dealTimeline.create({
+          data: {
+            dealId: deal.id,
+            eventType: "event_created",
+            metadata: {
+              eventType: ev.eventType,
+              note: ev.note,
+            } as Prisma.InputJsonValue,
+            createdAt: eventDate,
+          },
+        });
+      }
+    }
+    return true;
+  });
+
+  if (didSeed) {
+    console.log(`[Demo] Seeded ${DEMO_COMPANIES.length} demo deals for user ${userId}`);
+  }
 }
 
 export async function removeDemoDataForUser(userId: string): Promise<number> {

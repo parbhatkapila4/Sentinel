@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { AppError, ValidationError, CircuitBreakerError, ExternalServiceError, RateLimitError } from "@/lib/errors";
 import { logError } from "./logger";
 import { getErrorContext } from "./error-context";
+import { sanitizeString } from "./security";
 
 export function successResponse<T>(data: T, statusCode = 200) {
   return NextResponse.json({ success: true, data }, { status: statusCode });
@@ -73,15 +74,33 @@ export function errorResponse(error: unknown, requestId?: string): NextResponse 
   const context = getErrorContext();
   const finalRequestId = requestId || context?.requestId || getRequestId();
 
+
+  const isProduction = process.env.NODE_ENV === "production";
+  let sanitizedMessage = sanitizeString(message);
+
+
+  if (isProduction && status === 500) {
+    sanitizedMessage = "An internal error occurred. Please try again later.";
+  }
+
+
+  let sanitizedErrors: Record<string, string> | undefined;
+  if (error instanceof ValidationError && error.errors) {
+    sanitizedErrors = {};
+    for (const [key, value] of Object.entries(error.errors)) {
+      sanitizedErrors[sanitizeString(key)] = sanitizeString(value);
+    }
+  }
+
   const body: ErrorBody = {
     success: false,
-    error: message,
+    error: sanitizedMessage,
     code,
     requestId: finalRequestId,
   };
 
-  if (error instanceof ValidationError && error.errors) {
-    body.errors = error.errors;
+  if (sanitizedErrors) {
+    body.errors = sanitizedErrors;
   }
 
   if (retryAfter !== undefined) {
@@ -89,11 +108,12 @@ export function errorResponse(error: unknown, requestId?: string): NextResponse 
   }
 
   if (service) {
-    body.service = service;
+    body.service = sanitizeString(service);
   }
 
+
   if (process.env.NODE_ENV === "development" && error instanceof Error && error.stack) {
-    body.stack = error.stack;
+    body.stack = sanitizeString(error.stack);
   }
 
   const errorContext = {
@@ -103,6 +123,7 @@ export function errorResponse(error: unknown, requestId?: string): NextResponse 
     errorCode: code,
     ...(service && { service }),
   };
+
 
   logError(`API Error: ${message}`, error instanceof Error ? error : undefined, errorContext);
 

@@ -139,7 +139,7 @@ export default async function DealsByStagePage() {
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/10 w-full min-w-0 overflow-hidden">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
+              <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#151515] text-[#8b1a1a] border border-[#1f1f1f]">
                 <svg
                   className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"

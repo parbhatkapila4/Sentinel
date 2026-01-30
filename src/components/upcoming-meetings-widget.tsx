@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { getUpcomingMeetings, getGoogleCalendarStatus } from "@/app/actions/google-calendar";
-import { formatDate, formatTime, formatRelativeTime } from "@/lib/utils";
+import { formatDate, formatTime } from "@/lib/utils";
 
 interface Meeting {
   id: string;
@@ -16,10 +16,50 @@ interface Meeting {
   dealId: string | null;
 }
 
+function getDemoMeetings(limit: number): Meeting[] {
+  const now = new Date();
+  const in1h = new Date(now.getTime() + 60 * 60 * 1000);
+  const in3h = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const in26h = new Date(now.getTime() + 26 * 60 * 60 * 1000);
+  const in48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+
+  const slots: { start: Date; durationMins: number }[] = [
+    { start: in1h, durationMins: 30 },
+    { start: in3h, durationMins: 45 },
+    { start: in24h, durationMins: 30 },
+    { start: in26h, durationMins: 60 },
+    { start: in48h, durationMins: 45 },
+  ];
+
+  const titles = [
+    "Discovery call - Acme Corporation",
+    "Product demo - TechStart Inc",
+    "Follow-up - Global Systems Ltd",
+    "Contract review - Pinnacle Solutions",
+    "Kickoff - Horizon Dynamics",
+  ];
+
+  return slots.slice(0, Math.min(limit, titles.length)).map((slot, i) => {
+    const end = new Date(slot.start.getTime() + slot.durationMins * 60 * 1000);
+    return {
+      id: `demo-meeting-${i}`,
+      title: titles[i],
+      startTime: slot.start,
+      endTime: end,
+      attendees: ["Demo"],
+      location: "Video call",
+      meetingLink: null,
+      dealId: null,
+    };
+  });
+}
+
 export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
+  const demoMeetings = useMemo(() => getDemoMeetings(limit), [limit]);
 
   useEffect(() => {
     async function loadMeetings() {
@@ -57,22 +97,58 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
 
   if (!connected) {
     return (
-      <div className="flex flex-col" style={{ minHeight: "300px" }}>
+      <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-white">Upcoming Meetings</h3>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center text-center mt-8">
-          <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-            <span className="text-2xl">📅</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs px-2 py-0.5 rounded-md bg-white/10 text-white/50">Demo</span>
+            <Link
+              href="/settings"
+              className="text-sm text-white/40 hover:text-white transition-colors"
+            >
+              Connect Calendar →
+            </Link>
           </div>
-          <p className="text-white/40 text-sm mb-2">Connect Google Calendar</p>
-          <p className="text-white/30 text-xs mb-4">Sync your meetings and schedule events</p>
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-[#8b1a1a]/20 text-red-400 hover:bg-[#8b1a1a]/30 transition-colors"
-          >
-            Connect Calendar
-          </Link>
+        </div>
+        <div className="space-y-3">
+          {demoMeetings.map((meeting) => {
+            const isToday = new Date(meeting.startTime).toDateString() === new Date().toDateString();
+            const isTomorrow =
+              new Date(meeting.startTime).toDateString() ===
+              new Date(Date.now() + 86400000).toDateString();
+
+            return (
+              <div
+                key={meeting.id}
+                className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{meeting.title}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-md ${
+                          isToday
+                            ? "bg-red-500/20 text-red-400"
+                            : isTomorrow
+                              ? "bg-amber-500/20 text-amber-400"
+                              : "bg-white/10 text-white/60"
+                        }`}
+                      >
+                        {isToday ? "Today" : isTomorrow ? "Tomorrow" : formatDate(meeting.startTime)}
+                      </span>
+                      <span className="text-xs text-white/40">
+                        {formatTime(meeting.startTime)} - {formatTime(meeting.endTime)}
+                      </span>
+                    </div>
+                    {meeting.location && (
+                      <p className="text-xs text-white/40 mt-1">{meeting.location}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     );

@@ -157,7 +157,7 @@ export default async function TopDealsPage() {
 
           <div className="bg-white/5 rounded-xl p-4 border border-white/10 w-full min-w-0 flex flex-col space-y-2 overflow-hidden">
             <div className="flex items-center gap-3 flex-shrink-0">
-              <span className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
+              <span className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#151515] text-[#8b1a1a] border border-[#1f1f1f]">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -286,7 +286,7 @@ export default async function TopDealsPage() {
                 </div>
                 <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#8b5cf6] to-[#6366f1] rounded-full"
+                    className="h-full bg-gradient-to-r from-[#8b1a1a] to-[#6b0f0f] rounded-full"
                     style={{ width: `${top20PercentPercentage}%` }}
                   />
                 </div>
@@ -449,18 +449,18 @@ export default async function TopDealsPage() {
                     key={deal.id}
                     href={`/deals/${deal.id}`}
                     className={`group flex items-center gap-6 p-5 rounded-xl border transition-all max-sm:overflow-hidden max-sm:gap-3 max-sm:p-4 ${isTop3
-                        ? "bg-gradient-to-r from-[#151515] to-[#1a1a1a] border-[#2a2a2a] hover:border-[#3a3a3a]"
-                        : "bg-[#151515] border-[#1f1f1f] hover:bg-[#1a1a1a] hover:border-[#2a2a2a]"
+                      ? "bg-gradient-to-r from-[#151515] to-[#1a1a1a] border-[#2a2a2a] hover:border-[#3a3a3a]"
+                      : "bg-[#151515] border-[#1f1f1f] hover:bg-[#1a1a1a] hover:border-[#2a2a2a]"
                       }`}
                   >
                     <div
                       className={`w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 max-sm:w-10 max-sm:h-10 max-sm:text-sm ${index === 0
-                          ? "bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] text-[#0b0b0b] shadow-lg shadow-[#fbbf24]/20"
-                          : index === 1
-                            ? "bg-gradient-to-br from-[#e5e7eb] to-[#9ca3af] text-[#0b0b0b] shadow-lg shadow-white/10"
-                            : index === 2
-                              ? "bg-gradient-to-br from-[#f97316] to-[#ea580c] text-white shadow-lg shadow-[#f97316]/20"
-                              : "bg-[#1f1f1f] text-[#7d7d7d] border border-[#2a2a2a]"
+                        ? "bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] text-[#0b0b0b] shadow-lg shadow-[#fbbf24]/20"
+                        : index === 1
+                          ? "bg-gradient-to-br from-[#e5e7eb] to-[#9ca3af] text-[#0b0b0b] shadow-lg shadow-white/10"
+                          : index === 2
+                            ? "bg-gradient-to-br from-[#f97316] to-[#ea580c] text-white shadow-lg shadow-[#f97316]/20"
+                            : "bg-[#1f1f1f] text-[#7d7d7d] border border-[#2a2a2a]"
                         }`}
                     >
                       #{index + 1}
@@ -473,10 +473,10 @@ export default async function TopDealsPage() {
                         </p>
                         <span
                           className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${riskLevel === "High"
-                              ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                              : riskLevel === "Medium"
-                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                                : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                            ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                            : riskLevel === "Medium"
+                              ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                              : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                             }`}
                         >
                           {riskLevel}
@@ -510,8 +510,8 @@ export default async function TopDealsPage() {
                         <div className="w-32 h-2 rounded-full bg-[#151515] overflow-hidden border border-[#1f1f1f] max-sm:w-16">
                           <div
                             className={`h-full rounded-full ${isTop3
-                                ? "bg-gradient-to-r from-[#8b5cf6] to-[#6366f1]"
-                                : "bg-gradient-to-r from-[#6366f1] to-[#3b82f6]"
+                              ? "bg-gradient-to-r from-[#8b1a1a] to-[#6b0f0f]"
+                              : "bg-gradient-to-r from-[#b91c1c] to-[#8b1a1a]"
                               }`}
                             style={{
                               width: `${Math.min(percentOfTotal, 100)}%`,
@@ -567,7 +567,7 @@ export default async function TopDealsPage() {
                         </div>
                         <div className="h-2 rounded-full bg-[#151515] overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-[#8b5cf6] to-[#6366f1] rounded-full"
+                            className="h-full bg-gradient-to-r from-[#8b1a1a] to-[#6b0f0f] rounded-full"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>

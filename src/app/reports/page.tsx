@@ -169,7 +169,7 @@ export default async function ReportsPage() {
 
               <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b1a1a] border border-[#1f1f1f]">
                     <svg
                       className="w-5 h-5"
                       fill="none"
@@ -194,7 +194,7 @@ export default async function ReportsPage() {
                 <p className="text-3xl font-bold text-white mb-1">
                   {totalDeals}
                 </p>
-                <p className="text-xs text-[#8b5cf6]">
+                <p className="text-xs text-[#8b1a1a]">
                   {recentDeals.length} new this week
                 </p>
               </div>
@@ -802,7 +802,7 @@ export default async function ReportsPage() {
                           <td className="px-6 py-4">
                             <Link
                               href={`/deals/${deal.id}`}
-                              className="text-sm font-medium text-white hover:text-[#8b5cf6] transition-colors"
+                              className="text-sm font-medium text-white hover:text-[#8b1a1a] transition-colors"
                             >
                               {deal.name}
                             </Link>

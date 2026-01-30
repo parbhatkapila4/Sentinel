@@ -66,7 +66,7 @@ export function TeamMemberCard({
   return (
     <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors max-sm:flex-col max-sm:items-stretch max-sm:gap-3">
       <div className="flex items-center gap-4 max-sm:min-w-0">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8b1a1a] to-[#6b0f0f] flex items-center justify-center text-white text-sm font-bold shrink-0">
           {initials(member.user.name, member.user.surname)}
         </div>
         <div className="min-w-0">

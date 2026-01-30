@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
 
 export async function DELETE() {
   try {
@@ -75,6 +76,17 @@ export async function DELETE() {
     await prisma.user.delete({
       where: { id: userId },
     });
+
+    await logAuditEvent(
+      userId,
+      AUDIT_ACTIONS.USER_DELETED,
+      "user",
+      userId,
+      {
+        timestamp: new Date().toISOString(),
+        deletedAt: new Date().toISOString(),
+      }
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

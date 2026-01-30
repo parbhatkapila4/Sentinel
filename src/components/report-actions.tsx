@@ -88,7 +88,7 @@ export function ReportActions() {
       <button
         onClick={handleGenerateReport}
         disabled={isGenerating}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all bg-[#8b5cf6] hover:bg-[#7c3aed] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all bg-[#8b1a1a] hover:bg-[#6b0f0f] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
       >
         {isGenerating ? (
           <>

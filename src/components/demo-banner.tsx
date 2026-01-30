@@ -12,7 +12,7 @@ export function DemoBanner({ onDismiss }: DemoBannerProps) {
   if (dismissed) return null;
 
   return (
-    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-4 mb-4 sm:mb-6">
+    <div className="bg-gradient-to-r from-blue-500/10 to-red-600/10 border border-blue-500/20 rounded-xl p-4 mb-4 sm:mb-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex-1 min-w-0 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">

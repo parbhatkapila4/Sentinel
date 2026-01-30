@@ -96,7 +96,7 @@ export default function WebhooksSettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowForm(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 transition-colors max-sm:min-h-[44px]"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] transition-colors max-sm:min-h-[44px]"
               >
                 <span className="text-lg">+</span>
                 Add Webhook
@@ -148,7 +148,7 @@ export default function WebhooksSettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(true)}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 transition-colors max-sm:min-h-[44px]"
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] transition-colors max-sm:min-h-[44px]"
                 >
                   Add Webhook
                 </button>
@@ -166,8 +166,8 @@ export default function WebhooksSettingsPage() {
                       <p className="font-medium text-white truncate">{w.name}</p>
                       <span
                         className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium ${w.isActive
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : "bg-white/10 text-white/50"
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : "bg-white/10 text-white/50"
                           }`}
                       >
                         {w.isActive ? "Active" : "Inactive"}

@@ -175,7 +175,7 @@ export default async function RiskOverviewPage() {
 
           <div className="rounded-2xl border border-[#1f1f1f] bg-[#111111] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)] max-sm:w-full max-sm:min-w-0 max-sm:p-4 max-sm:overflow-hidden">
             <div className="flex items-center gap-3 mb-4 max-sm:gap-2 max-sm:mb-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b5cf6] border border-[#1f1f1f] max-sm:h-8 max-sm:w-8 flex-shrink-0">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#151515] text-[#8b1a1a] border border-[#1f1f1f] max-sm:h-8 max-sm:w-8 flex-shrink-0">
                 <svg
                   className="w-5 h-5 max-sm:w-4 max-sm:h-4"
                   fill="none"
@@ -200,7 +200,7 @@ export default async function RiskOverviewPage() {
             <p className="text-3xl font-bold text-white mb-1 max-sm:text-2xl max-sm:truncate">
               {riskOverview.highUrgencyDealsCount}
             </p>
-            <p className="text-xs text-[#8b5cf6] max-sm:text-[10px] max-sm:truncate">
+            <p className="text-xs text-[#8b1a1a] max-sm:text-[10px] max-sm:truncate">
               {recentEscalations} escalated this week
             </p>
           </div>
@@ -436,7 +436,7 @@ export default async function RiskOverviewPage() {
                   <span className="text-sm text-[#8a8a8a] max-sm:text-xs max-sm:truncate max-sm:min-w-0">
                     Recent Escalations
                   </span>
-                  <span className="text-sm font-semibold text-[#8b5cf6] max-sm:text-xs max-sm:shrink-0">
+                  <span className="text-sm font-semibold text-[#8b1a1a] max-sm:text-xs max-sm:shrink-0">
                     {recentEscalations}
                   </span>
                 </div>

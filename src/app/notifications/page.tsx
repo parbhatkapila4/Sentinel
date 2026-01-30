@@ -140,7 +140,7 @@ export default function NotificationsPage() {
               onChange={(e) =>
                 setFilter(e.target.value as "all" | "unread")
               }
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none"
+              className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-white/5 border border-white/10 focus:border-red-600/50 focus:outline-none"
             >
               <option value="all">All</option>
               <option value="unread">Unread only</option>
@@ -149,7 +149,7 @@ export default function NotificationsPage() {
               <button
                 type="button"
                 onClick={markAllRead}
-                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 border border-violet-500/30 transition-colors"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-600/30 transition-colors"
               >
                 Mark all read
               </button>

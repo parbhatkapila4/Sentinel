@@ -68,10 +68,10 @@ export const STAGE_UI_CONFIG = {
   },
   proposal: {
     order: 3,
-    color: "text-violet-400",
-    bgColor: "bg-violet-500/10",
-    borderColor: "border-violet-500/20",
-    iconColor: "text-violet-400",
+    color: "text-red-400",
+    bgColor: "bg-red-600/10",
+    borderColor: "border-red-600/20",
+    iconColor: "text-red-400",
   },
   negotiation: {
     order: 4,
@@ -197,9 +197,9 @@ export const STAGE_FORM_OPTIONS = [
     value: STAGES.PROPOSAL,
     label: "Proposal",
     icon: STAGE_ICONS.proposal,
-    color: "from-violet-500 to-purple-400",
-    bgColor: "bg-violet-500/10",
-    borderColor: "border-violet-500/30",
+    color: "from-red-600 to-red-500",
+    bgColor: "bg-red-600/10",
+    borderColor: "border-red-600/30",
     description: "Presenting the solution",
   },
   {

@@ -1,10 +1,18 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.string().url().refine(
+    (url) => {
+      return !url.includes("localhost") || process.env.NODE_ENV === "development";
+    },
+    { message: "Invalid database URL" }
+  ),
 
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
-  CLERK_SECRET_KEY: z.string().min(1),
+  CLERK_SECRET_KEY: z.string().min(1).refine(
+    (key) => key.length >= 32,
+    { message: "CLERK_SECRET_KEY must be at least 32 characters" }
+  ),
 
   OPENROUTER_API_KEY: z.string().min(1),
 
@@ -27,6 +35,9 @@ const envSchema = z.object({
 
   CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.string().optional(),
   CIRCUIT_BREAKER_TIMEOUT: z.string().optional(),
+
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  SENTRY_PERFORMANCE_SAMPLE_RATE: z.string().optional(),
 });
 
 export function validateEnv() {

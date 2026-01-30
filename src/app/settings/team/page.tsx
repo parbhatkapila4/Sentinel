@@ -31,7 +31,7 @@ export default async function TeamSettingsPage() {
           </div>
           <Link
             href="/settings/team/new"
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 border border-violet-500/30 max-sm:w-full max-sm:min-h-[44px] max-sm:shrink-0"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-600/30 max-sm:w-full max-sm:min-h-[44px] max-sm:shrink-0"
           >
             <svg
               className="w-4 h-4"
@@ -82,7 +82,7 @@ export default async function TeamSettingsPage() {
             </p>
             <Link
               href="/settings/team/new"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 border border-violet-500/30 transition-colors max-sm:w-full max-sm:min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-600/30 transition-colors max-sm:w-full max-sm:min-h-[44px]"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -103,7 +103,7 @@ export default async function TeamSettingsPage() {
                 }}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-lg font-bold">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#8b1a1a] to-[#6b0f0f] flex items-center justify-center text-white text-lg font-bold">
                     {t.name.slice(0, 2).toUpperCase()}
                   </div>
                   <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/10 text-white/70">

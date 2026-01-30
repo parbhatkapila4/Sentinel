@@ -360,35 +360,41 @@ export async function createMeetingForDeal(
 }
 
 export async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
-  const userId = await getAuthenticatedUserId();
-
-  const integration = await db.googleCalendarIntegration.findUnique({
-    where: { userId },
-  });
-
-  if (!integration || !integration.isActive) {
-    return {
-      connected: false,
-      lastSyncAt: null,
-      lastSyncStatus: null,
-      syncEnabled: false,
-      calendarId: null,
-    };
-  }
-
-  const maskedCalendarId = integration.calendarId.includes("@")
-    ? integration.calendarId.split("@")[0].slice(0, 4) + "...@" + integration.calendarId.split("@")[1]
-    : integration.calendarId === "primary"
-      ? "primary"
-      : integration.calendarId.slice(0, 8) + "...";
-
-  return {
-    connected: true,
-    lastSyncAt: integration.lastSyncAt,
-    lastSyncStatus: integration.lastSyncStatus,
-    syncEnabled: integration.syncEnabled,
-    calendarId: maskedCalendarId,
+  const fallback: GoogleCalendarStatus = {
+    connected: false,
+    lastSyncAt: null,
+    lastSyncStatus: null,
+    syncEnabled: false,
+    calendarId: null,
   };
+
+  try {
+    const userId = await getAuthenticatedUserId();
+
+    const integration = await db.googleCalendarIntegration.findFirst({
+      where: { userId },
+    });
+
+    if (!integration || !integration.isActive) {
+      return fallback;
+    }
+
+    const maskedCalendarId = integration.calendarId.includes("@")
+      ? integration.calendarId.split("@")[0].slice(0, 4) + "...@" + integration.calendarId.split("@")[1]
+      : integration.calendarId === "primary"
+        ? "primary"
+        : integration.calendarId.slice(0, 8) + "...";
+
+    return {
+      connected: true,
+      lastSyncAt: integration.lastSyncAt,
+      lastSyncStatus: integration.lastSyncStatus,
+      syncEnabled: integration.syncEnabled,
+      calendarId: maskedCalendarId,
+    };
+  } catch {
+    return fallback;
+  }
 }
 
 export async function updateGoogleCalendarSettings(settings: {

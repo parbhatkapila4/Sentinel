@@ -107,7 +107,7 @@ export default function IntegrationsSettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowForm(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 transition-colors max-sm:min-h-[44px] max-sm:order-2"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] transition-colors max-sm:min-h-[44px] max-sm:order-2"
               >
                 <span className="text-lg">+</span>
                 Connect Slack
@@ -167,7 +167,7 @@ export default function IntegrationsSettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(true)}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 transition-colors max-sm:min-h-[44px]"
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] transition-colors max-sm:min-h-[44px]"
                 >
                   Connect Slack
                 </button>

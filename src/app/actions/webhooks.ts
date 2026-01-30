@@ -11,6 +11,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { enforceWebhookLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
+import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
 
 export async function createWebhook(data: {
   name: string;
@@ -34,6 +35,18 @@ export async function createWebhook(data: {
   });
 
   await incrementUsage(userId, "webhooks", 1);
+
+  await logAuditEvent(
+    userId,
+    AUDIT_ACTIONS.WEBHOOK_CREATED,
+    "webhook",
+    webhook.id,
+    {
+      name: webhook.name,
+      url: webhook.url.replace(/^(https?:\/\/[^\/]+).*$/, "$1/***"), 
+      events: webhook.events,
+    }
+  );
 
   revalidatePath("/settings/webhooks");
   return webhook;
@@ -76,10 +89,29 @@ export async function updateWebhook(
 ) {
   const userId = await getAuthenticatedUserId();
 
+  const webhook = await prisma.webhook.findFirst({
+    where: { id, userId },
+  });
+
+  if (!webhook) {
+    throw new Error("Webhook not found");
+  }
+
   const result = await prisma.webhook.updateMany({
     where: { id, userId },
     data,
   });
+
+  await logAuditEvent(
+    userId,
+    AUDIT_ACTIONS.WEBHOOK_UPDATED,
+    "webhook",
+    id,
+    {
+      name: data.name || webhook.name,
+      changes: Object.keys(data),
+    }
+  );
 
   revalidatePath("/settings/webhooks");
   return result;
@@ -88,9 +120,25 @@ export async function updateWebhook(
 export async function deleteWebhook(id: string) {
   const userId = await getAuthenticatedUserId();
 
+  const webhook = await prisma.webhook.findFirst({
+    where: { id, userId },
+  });
+
   await prisma.webhook.deleteMany({
     where: { id, userId },
   });
+
+  if (webhook) {
+    await logAuditEvent(
+      userId,
+      AUDIT_ACTIONS.WEBHOOK_DELETED,
+      "webhook",
+      id,
+      {
+        name: webhook.name,
+      }
+    );
+  }
 
   revalidatePath("/settings/webhooks");
 }
@@ -104,6 +152,16 @@ export async function regenerateWebhookSecret(id: string) {
     where: { id, userId },
     data: { secret: newSecret },
   });
+
+  await logAuditEvent(
+    userId,
+    AUDIT_ACTIONS.WEBHOOK_SECRET_REGENERATED,
+    "webhook",
+    id,
+    {
+      timestamp: new Date().toISOString(),
+    }
+  );
 
   revalidatePath("/settings/webhooks");
   return newSecret;

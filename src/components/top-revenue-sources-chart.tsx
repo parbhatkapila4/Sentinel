@@ -82,8 +82,10 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
 
   const getTooltipPosition = (index: number) => {
     const barX = getBarX(index);
+    const barCenterPct = ((barX + barWidth / 2) / chartWidth) * 100;
+    const clampedPct = Math.max(15, Math.min(85, barCenterPct));
     return {
-      left: `${(barX / chartWidth) * 100}%`,
+      left: `${clampedPct}%`,
       transform: "translateX(-50%)",
     };
   };

@@ -9,6 +9,7 @@ import { DealSummaryCard } from "@/components/deal-summary-card";
 import { DealPredictions } from "@/components/deal-predictions";
 import { StageSelector } from "@/components/stage-selector";
 import { DealMeetings } from "@/components/deal-meetings";
+import { DeleteDealButton } from "@/components/delete-deal-button";
 
 export default async function DealDetailPage({
   params,
@@ -65,7 +66,7 @@ export default async function DealDetailPage({
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3 shrink-0">
               <svg
                 className="w-10 h-10"
                 viewBox="0 0 36 36"
@@ -92,25 +93,35 @@ export default async function DealDetailPage({
               </span>
             </Link>
           </div>
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              <span>Back to Dashboard</span>
+            </Link>
+            {!deal.isDemo && (
+              <DeleteDealButton
+                dealId={deal.id}
+                dealName={deal.name}
+                variant="button"
+                redirectTo="/dashboard"
               />
-            </svg>
-            <span>Back to Dashboard</span>
-          </Link>
+            )}
+          </div>
         </div>
       </header>
 
@@ -489,7 +500,7 @@ export default async function DealDetailPage({
                       </svg>
                     ) : (
                       <svg
-                        className="w-5 h-5 text-violet-400"
+                        className="w-5 h-5 text-red-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"

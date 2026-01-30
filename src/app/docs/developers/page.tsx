@@ -70,9 +70,9 @@ export default function DeveloperDocsPage() {
               </Link>
 
               <div className="p-6 rounded-2xl bg-[#1a1a1a] border border-white/10">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-xl bg-red-600/20 flex items-center justify-center mb-4">
                   <svg
-                    className="w-6 h-6 text-purple-400"
+                    className="w-6 h-6 text-red-400"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

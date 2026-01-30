@@ -383,7 +383,7 @@ function SignUpContent() {
                 <div className="flex items-end gap-2 h-20 mb-3">
                   {[
                     { h: 100, color: "from-blue-500 to-blue-600", label: "12" },
-                    { h: 75, color: "from-violet-500 to-violet-600", label: "8" },
+                    { h: 75, color: "from-red-600 to-red-700", label: "8" },
                     { h: 50, color: "from-amber-500 to-amber-600", label: "5" },
                     { h: 35, color: "from-emerald-500 to-emerald-600", label: "3" },
                   ].map((bar, i) => (

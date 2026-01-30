@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import { TeamSelector } from "@/components/team-selector";
 import { NotificationsDropdown } from "@/components/notifications-dropdown";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useRealtime } from "@/hooks/use-realtime";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -29,6 +30,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
+  const [showVideoTutorial, setShowVideoTutorial] = useState(false);
   interface SearchResult {
     id: string;
     name: string;
@@ -63,6 +65,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
   const [teams, setTeams] = useState<TeamItem[]>([]);
 
+  useRealtime({
+    onEvent(ev) {
+      if (
+        ev.type === "deal.updated" ||
+        ev.type === "deal.created" ||
+        ev.type === "deal.deleted" ||
+        ev.type === "deal.at_risk"
+      ) {
+        router.refresh();
+      }
+    },
+  });
+
   const navItems: NavItem[] = [
     {
       label: "Dashboard",
@@ -76,7 +91,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     },
     { label: "Forecast", href: "/deals", icon: "forecast" },
     { label: "Expenses", href: "/deals-by-stage", icon: "expenses" },
-    { label: "Income", href: "/top-deals", icon: "income" },
     { label: "Alerts", href: "/risk-overview", icon: "alerts" },
     { label: "AI", href: "/insights", icon: "ai" },
     { label: "Reports", href: "/reports", icon: "reports" },
@@ -967,13 +981,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       </a>
                       <button
                         onClick={() => {
-                          window.open("https://sentinel.com/help", "_blank");
+                          setShowVideoTutorial(true);
                           setShowHelp(false);
                         }}
                         className="w-full text-left px-4 py-3 hover:bg-[#1a1a1a] transition-colors"
                       >
                         <div className="text-sm font-medium text-white">
-                          Video Tutorials
+                          Video tutorial
                         </div>
                         <div className="text-xs text-[#8a8a8a] mt-1">
                           Watch step-by-step guides
@@ -1090,6 +1104,46 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0b0b0b] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           {children}
         </main>
+
+        {showVideoTutorial && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setShowVideoTutorial(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Video tutorial"
+          >
+            <div
+              className="relative w-full max-w-4xl bg-[#131313] rounded-xl border border-[#1f1f1f] overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[#1f1f1f]">
+                <h3 className="text-sm font-semibold text-white">
+                  Video Tutorial
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowVideoTutorial(false)}
+                  className="p-2 rounded-full text-[#8a8a8a] hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Close"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <video
+                src="/Sentinel-tutorial.mp4"
+                controls
+                autoPlay
+                className="w-full aspect-video"
+                onEnded={() => setShowVideoTutorial(false)}
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

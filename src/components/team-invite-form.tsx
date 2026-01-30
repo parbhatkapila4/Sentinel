@@ -59,7 +59,7 @@ export function TeamInviteForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="colleague@example.com"
-          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-violet-500/50 transition-colors"
+          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-red-600/50 transition-colors"
         />
       </div>
       <div className="w-36 max-sm:w-full">
@@ -73,7 +73,7 @@ export function TeamInviteForm({
           id="invite-role"
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-violet-500/50 transition-colors"
+          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-red-600/50 transition-colors"
         >
           {ROLE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value} className="bg-[#131313]">
@@ -85,7 +85,7 @@ export function TeamInviteForm({
       <button
         type="submit"
         disabled={pending}
-        className="px-4 py-3 rounded-xl text-sm font-medium bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-sm:min-h-[44px]"
+        className="px-4 py-3 rounded-xl text-sm font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-sm:min-h-[44px]"
       >
         {pending ? "Sending…" : "Send Invite"}
       </button>

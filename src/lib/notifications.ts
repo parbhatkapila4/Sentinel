@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { redis } from "./redis";
+import { notifyRealtimeEvent } from "./realtime";
 
 const EMAIL_QUEUE = "email_queue";
 
@@ -48,6 +49,14 @@ export async function createNotification(
       teamId: data.teamId ?? null,
     },
   });
+
+  try {
+    await notifyRealtimeEvent(notification.userId, {
+      type: "notification.new",
+      notificationId: notification.id,
+    });
+  } catch {
+  }
 
   if (data.sendEmail && redis) {
     const settings = await prisma.userNotificationSettings.findUnique({

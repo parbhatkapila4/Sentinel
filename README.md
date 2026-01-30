@@ -46,14 +46,14 @@ Natural-language queries over your deals and pipeline. Example prompts:
 
 The AI router maps query intent to specialized models:
 
-| Query type       | Model                    | Use case                          |
-|------------------|--------------------------|-----------------------------------|
-| Semantic search  | OpenAI GPT-4 Turbo       | Find, similar, match, embedding   |
-| Financial / deal | Anthropic Claude 3.5     | Pipeline, revenue, risk, forecast |
-| Deal-specific    | Anthropic Claude 3.5     | Single-deal detail, follow-ups    |
-| Code / SQL       | OpenAI GPT-4o            | Queries, scripts, database        |
-| Planning / docs  | Google Gemini Pro        | Strategy, roadmap, multimodal     |
-| General          | OpenAI GPT-4 Turbo       | Everything else                   |
+| Query type       | Model                | Use case                          |
+| ---------------- | -------------------- | --------------------------------- |
+| Semantic search  | OpenAI GPT-4 Turbo   | Find, similar, match, embedding   |
+| Financial / deal | Anthropic Claude 3.5 | Pipeline, revenue, risk, forecast |
+| Deal-specific    | Anthropic Claude 3.5 | Single-deal detail, follow-ups    |
+| Code / SQL       | OpenAI GPT-4o        | Queries, scripts, database        |
+| Planning / docs  | Google Gemini Pro    | Strategy, roadmap, multimodal     |
+| General          | OpenAI GPT-4 Turbo   | Everything else                   |
 
 ---
 
@@ -110,6 +110,7 @@ Sentinel integrates with popular CRM and calendar platforms to sync deals, conta
 Sync opportunities and contacts from Salesforce into Sentinel.
 
 **Features:**
+
 - **Bidirectional sync**: Import Salesforce opportunities as deals
 - **Stage mapping**: Automatic mapping of Salesforce stages to Sentinel stages
 - **Auto-sync**: Configurable periodic sync (every 6 hours via cron)
@@ -117,6 +118,7 @@ Sync opportunities and contacts from Salesforce into Sentinel.
 - **Activity logging**: All sync actions are logged for audit trails
 
 **Setup:**
+
 1. Navigate to Settings → Integrations
 2. Click "Connect" on the Salesforce card
 3. Enter your Salesforce Instance URL (e.g., `https://yourcompany.salesforce.com`)
@@ -124,6 +126,7 @@ Sync opportunities and contacts from Salesforce into Sentinel.
 5. Credentials are validated before saving
 
 **Stage Mapping:**
+
 - `Prospecting`, `Qualification`, `Needs Analysis` → `Discovery`
 - `Value Proposition`, `Proposal/Price Quote` → `Proposal`
 - `Negotiation/Review` → `Negotiation`
@@ -131,6 +134,7 @@ Sync opportunities and contacts from Salesforce into Sentinel.
 - `Closed Lost` → `Closed Lost`
 
 **API Endpoints:**
+
 - `POST /api/integrations/salesforce/sync` - Manual sync trigger
 
 #### HubSpot Integration
@@ -138,6 +142,7 @@ Sync opportunities and contacts from Salesforce into Sentinel.
 Import deals and contacts from HubSpot CRM.
 
 **Features:**
+
 - **Deal sync**: Import HubSpot deals with automatic stage mapping
 - **Portal detection**: Automatically detects and stores HubSpot Portal ID
 - **Pagination support**: Handles large deal lists (up to 500 deals per sync)
@@ -145,12 +150,14 @@ Import deals and contacts from HubSpot CRM.
 - **Manual sync**: On-demand sync from Settings
 
 **Setup:**
+
 1. Create a Private App in HubSpot (Settings → Integrations → Private Apps)
 2. Generate an Access Token with CRM read permissions
 3. In Sentinel Settings → Integrations, click "Connect" on HubSpot
 4. Paste your Private App Access Token
 
 **Stage Mapping:**
+
 - `appointmentscheduled`, `qualifiedtobuy` → `Discovery`
 - `presentationscheduled`, `decisionmakerboughtin` → `Proposal`
 - `contractsent` → `Negotiation`
@@ -158,6 +165,7 @@ Import deals and contacts from HubSpot CRM.
 - `closedlost` → `Closed Lost`
 
 **API Endpoints:**
+
 - `POST /api/integrations/hubspot/sync` - Manual sync trigger
 
 #### Google Calendar Integration
@@ -165,6 +173,7 @@ Import deals and contacts from HubSpot CRM.
 Sync meetings and calendar events, automatically link them to deals.
 
 **Features:**
+
 - **Event sync**: Import calendar events as meetings (next 30 days)
 - **Auto-linking**: Intelligently matches meetings to deals based on:
   - Meeting title containing deal name
@@ -175,17 +184,20 @@ Sync meetings and calendar events, automatically link them to deals.
 - **Deal integration**: See meetings directly on deal detail pages
 
 **Setup:**
+
 1. Get a Google Calendar API key from Google Cloud Console
 2. Enable Calendar API for your project
 3. In Sentinel Settings → Integrations, click "Connect" on Google Calendar
 4. Enter your API Key and Calendar ID (use `primary` for main calendar)
 
 **API Endpoints:**
+
 - `POST /api/integrations/google-calendar/sync` - Manual sync trigger
 - `GET /api/integrations/google-calendar/events?dealId=xxx` - Get meetings for a deal
 - `POST /api/integrations/google-calendar/events` - Create a new meeting
 
 **Sync Behavior:**
+
 - **Deal deduplication**: Deals are matched by `externalId` to prevent duplicates. If a deal with the same `externalId` exists, it's updated; otherwise, a new deal is created.
 - **Source tracking**: Synced deals are tagged with `source: "salesforce"` or `source: "hubspot"` and display a badge on the deal page.
 - **Stage mapping**: CRM stages are automatically mapped to Sentinel's stage system.
@@ -200,12 +212,14 @@ Sync meetings and calendar events, automatically link them to deals.
 Receive real-time notifications in Slack channels.
 
 **Features:**
+
 - **Multiple channels**: Connect multiple Slack webhooks
 - **Event filtering**: Choose which events to receive (deal at risk, stage changes, etc.)
 - **Rich formatting**: Formatted messages with deal details and links
 - **Test messages**: Verify webhook configuration before saving
 
 **Setup:**
+
 1. Create a Slack Incoming Webhook (Slack App → Incoming Webhooks)
 2. Navigate to Settings → Integrations → Slack
 3. Add webhook URL and configure notification preferences
@@ -240,6 +254,7 @@ Add to `vercel.json`:
 ```
 
 **What it does:**
+
 - Syncs all Salesforce integrations with `syncEnabled: true`
 - Syncs all HubSpot integrations with `syncEnabled: true`
 - Syncs all Google Calendar integrations with `syncEnabled: true`
@@ -259,10 +274,12 @@ curl -X GET "https://your-domain.com/api/cron/sync-integrations" \
 ### Connect Salesforce
 
 1. **Get your Salesforce credentials:**
+
    - Instance URL: Your Salesforce org URL (e.g., `https://yourcompany.salesforce.com`)
    - API Key: Create a Connected App in Salesforce and generate an access token
 
 2. **Connect in Sentinel:**
+
    - Go to Settings → Integrations
    - Click "Connect" on the Salesforce card
    - Enter your Instance URL and API Key
@@ -275,11 +292,13 @@ curl -X GET "https://your-domain.com/api/cron/sync-integrations" \
 ### Connect HubSpot
 
 1. **Create a Private App:**
+
    - Go to HubSpot Settings → Integrations → Private Apps
    - Create a new app with CRM read permissions
    - Copy the Access Token
 
 2. **Connect in Sentinel:**
+
    - Go to Settings → Integrations
    - Click "Connect" on the HubSpot card
    - Paste your Access Token
@@ -291,11 +310,13 @@ curl -X GET "https://your-domain.com/api/cron/sync-integrations" \
 ### Connect Google Calendar
 
 1. **Get API credentials:**
+
    - Go to Google Cloud Console
    - Enable Calendar API
    - Create an API Key (or use OAuth for write access)
 
 2. **Connect in Sentinel:**
+
    - Go to Settings → Integrations
    - Click "Connect" on the Google Calendar card
    - Enter your API Key and Calendar ID (`primary` for main calendar)
@@ -309,6 +330,7 @@ curl -X GET "https://your-domain.com/api/cron/sync-integrations" \
 ### View Integration Status
 
 All integrations show:
+
 - Connection status (Connected/Not Connected)
 - Last sync time and status
 - Total items synced
@@ -469,17 +491,59 @@ model IntegrationLog {
 
 ## Technology Decisions
 
-| Component     | Choice            | Rationale                                              |
-|---------------|-------------------|--------------------------------------------------------|
-| Framework     | Next.js 16        | App Router, RSC, Server Actions, Vercel-ready          |
-| Language      | TypeScript 5      | Type safety, Prisma alignment, editor support          |
-| Database      | PostgreSQL        | ACID, JSON, scaling; Supabase/Railway-friendly         |
-| ORM           | Prisma            | Type-safe queries, migrations, generated client        |
-| Authentication| Clerk             | MFA, sessions, OAuth; minimal backend code             |
-| AI            | OpenRouter        | Multi-model routing; Claude, GPT, Gemini via one API   |
-| Queue         | Upstash Redis     | Optional email/webhook queue; serverless-friendly      |
-| Email         | Resend            | Transactional email; simple API, deliverability        |
-| Testing       | Vitest, Playwright| Unit + E2E; fast feedback, CI integration              |
+| Component      | Choice             | Rationale                                            |
+| -------------- | ------------------ | ---------------------------------------------------- |
+| Framework      | Next.js 16         | App Router, RSC, Server Actions, Vercel-ready        |
+| Language       | TypeScript 5       | Type safety, Prisma alignment, editor support        |
+| Database       | PostgreSQL         | ACID, JSON, scaling; Supabase/Railway-friendly       |
+| ORM            | Prisma             | Type-safe queries, migrations, generated client      |
+| Authentication | Clerk              | MFA, sessions, OAuth; minimal backend code           |
+| AI             | OpenRouter         | Multi-model routing; Claude, GPT, Gemini via one API |
+| Queue          | Upstash Redis      | Optional email/webhook queue; serverless-friendly    |
+| Email          | Resend             | Transactional email; simple API, deliverability      |
+| Testing        | Vitest, Playwright | Unit + E2E; fast feedback, CI integration            |
+
+---
+
+## Design Philosophy
+
+The system is built around a few core choices.
+
+**Risk scoring over raw metrics.** Pipeline data alone is noisy; stage and value tell you what exists, not what is at risk. We compute a composite risk score from temporal decay, stage velocity, and engagement so the UI can prioritize. The model is deterministic and auditable — no black box. Recommendations (e.g. “schedule a follow-up”) are derived from the same signals so reasoning is traceable.
+
+**PostgreSQL + Prisma, no separate vector store.** Deals, teams, and notifications live in one database. The AI assistant uses the same relational data via structured queries and controlled context, not a separate embedding index. That keeps the stack simple, avoids sync and consistency issues, and fits Vercel/serverless. If we later need semantic search over large corpora, we’d add it explicitly rather than preemptively.
+
+**OpenRouter for multi-model routing.** Different tasks map to different models: summarization and strategy to Gemini, deal and revenue reasoning to Claude, code/SQL to GPT-4o. A single API and key simplifies operations and lets us swap models per route without changing client code. Fallback and rate handling live in one layer.
+
+**Real-time via SSE, not WebSockets.** Notifications and deal updates are pushed over a single GET stream (`/api/events`) with Redis-backed delivery. SSE works with serverless, keeps auth as standard HTTP cookies, and avoids a long-lived WebSocket server. We only need server→client push; bidirectional chat is request/response.
+
+**Server Actions + API routes.** Mutations and auth-heavy flows use Server Actions; external callbacks (webhooks, cron, third-party) use API routes. Clear boundary: internal UI and server logic in actions, external contracts in API. Middleware handles auth so both paths share the same guarantees.
+
+**Clerk for auth.** We don’t store passwords or build session logic. Clerk gives us MFA, OAuth, and session handling so we can focus on domain logic and RBAC (team roles, deal access).
+
+**Redis optional.** Queues (email, real-time events) use Redis when available. Without it, the app still runs: notifications are created and read via API, real-time degrades to polling. Optional infra keeps the default path simple for small deployments.
+
+**Developer cognition.** The codebase is split by domain (deals, integrations, notifications, real-time) rather than by layer. You open `actions/deals.ts` or `lib/realtime.ts` and see one slice of the system. That reduces context-switching and makes ownership obvious.
+
+---
+
+## Engineering Constraints & Tradeoffs
+
+**Risk score accuracy vs latency.** The risk engine runs on every deal list and detail load. We use a single pass over timeline events and config (inactivity threshold, competitive signals) so responses stay fast. More sophisticated models (e.g. per-deal ML) would require async jobs and caching; we traded that for predictable latency and simplicity.
+
+**AI context vs cost and limits.** The chat endpoint builds context from the current user’s deals and metadata. We cap context size and summarize where needed so we stay within model limits and cost. More context improves answers but increases tokens and latency; we tune the balance per use case.
+
+**Chunk size and retrieval.** When we send deal data to the model, we structure it (e.g. key fields, stage, value, last activity) rather than dumping raw records. That keeps prompts small and reduces hallucination risk. Tradeoff: very detailed, narrative-style answers would need more context and cost.
+
+**Sync frequency vs API limits.** CRM and calendar syncs run on a schedule (e.g. cron every 6 hours) plus manual trigger. Higher frequency would improve freshness but hit provider rate limits and increase failure surface. We log sync state and errors so operators can adjust or retry.
+
+**Real-time vs serverless.** The SSE route polls Redis on an interval and sends heartbeats so the connection stays active within typical function timeouts. True long-lived connections would need a dedicated runtime or edge; for our scale, polling + heartbeat is a deliberate tradeoff for deployment simplicity.
+
+**Database performance.** Deal and notification queries are scoped by `userId` or team; we rely on indexes on `userId`, `teamId`, `dealId`, and `createdAt`. Heavy analytics (e.g. cross-tenant reporting) would need separate read paths or read replicas; the current design optimizes for single-tenant, per-user views.
+
+**API rate limiting.** We don’t enforce rate limits in-app by default; we assume Vercel or a reverse proxy handles abuse. For stricter control, we’d add a rate-limit layer in front of chat and sync endpoints.
+
+**Model unpredictability.** LLM outputs vary. We treat the AI assistant as an aid, not the source of truth; critical actions (e.g. deal stage changes) stay in the main app with explicit user steps. We avoid letting the model drive irreversible state changes without confirmation.
 
 ---
 
@@ -560,44 +624,44 @@ curl -X GET "https://your-domain.com/api/deals" \
 
 #### Deals
 
-| Method | Endpoint               | Description                          |
-|--------|------------------------|--------------------------------------|
-| GET    | `/api/deals`           | List deals (optional `stage`, `limit`) |
-| POST   | `/api/deals`           | Create deal                          |
-| GET    | `/api/deals/:id`       | Get deal by ID                       |
-| PATCH  | `/api/deals/:id`       | Update deal                          |
-| GET    | `/api/deals/search`    | Search deals (query params)          |
-| POST   | `/api/deals/export`    | Export deals as CSV/JSON             |
+| Method | Endpoint            | Description                            |
+| ------ | ------------------- | -------------------------------------- |
+| GET    | `/api/deals`        | List deals (optional `stage`, `limit`) |
+| POST   | `/api/deals`        | Create deal                            |
+| GET    | `/api/deals/:id`    | Get deal by ID                         |
+| PATCH  | `/api/deals/:id`    | Update deal                            |
+| GET    | `/api/deals/search` | Search deals (query params)            |
+| POST   | `/api/deals/export` | Export deals as CSV/JSON               |
 
 #### AI & Insights
 
-| Method | Endpoint               | Description                          |
-|--------|------------------------|--------------------------------------|
-| POST   | `/api/insights/chat`   | AI chat (body: `{ messages }`)       |
+| Method | Endpoint             | Description                    |
+| ------ | -------------------- | ------------------------------ |
+| POST   | `/api/insights/chat` | AI chat (body: `{ messages }`) |
 
 #### Notifications
 
-| Method | Endpoint               | Description                          |
-|--------|------------------------|--------------------------------------|
-| GET    | `/api/notifications`   | List notifications                   |
-| POST   | `/api/notifications/read-all` | Mark all as read              |
+| Method | Endpoint                      | Description        |
+| ------ | ----------------------------- | ------------------ |
+| GET    | `/api/notifications`          | List notifications |
+| POST   | `/api/notifications/read-all` | Mark all as read   |
 
 #### Authentication
 
-| Method | Endpoint               | Description                          |
-|--------|------------------------|--------------------------------------|
-| GET    | `/api/auth/me`         | Current user                         |
+| Method | Endpoint       | Description  |
+| ------ | -------------- | ------------ |
+| GET    | `/api/auth/me` | Current user |
 
 #### Integrations
 
-| Method | Endpoint                                    | Description                          |
-|--------|---------------------------------------------|--------------------------------------|
-| POST   | `/api/integrations/salesforce/sync`         | Manually sync Salesforce deals       |
-| POST   | `/api/integrations/hubspot/sync`            | Manually sync HubSpot deals          |
-| POST   | `/api/integrations/google-calendar/sync`    | Manually sync Google Calendar events |
-| GET    | `/api/integrations/google-calendar/events`  | Get upcoming meetings (optional `?dealId=xxx`) |
-| POST   | `/api/integrations/google-calendar/events`  | Create a new meeting                 |
-| GET    | `/api/cron/sync-integrations`              | Auto-sync all integrations (cron)    |
+| Method | Endpoint                                   | Description                                    |
+| ------ | ------------------------------------------ | ---------------------------------------------- |
+| POST   | `/api/integrations/salesforce/sync`        | Manually sync Salesforce deals                 |
+| POST   | `/api/integrations/hubspot/sync`           | Manually sync HubSpot deals                    |
+| POST   | `/api/integrations/google-calendar/sync`   | Manually sync Google Calendar events           |
+| GET    | `/api/integrations/google-calendar/events` | Get upcoming meetings (optional `?dealId=xxx`) |
+| POST   | `/api/integrations/google-calendar/events` | Create a new meeting                           |
+| GET    | `/api/cron/sync-integrations`              | Auto-sync all integrations (cron)              |
 
 #### Example: Sync Salesforce
 
@@ -608,6 +672,7 @@ curl -X POST "https://your-domain.com/api/integrations/salesforce/sync" \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -625,6 +690,7 @@ curl -X GET "https://your-domain.com/api/integrations/google-calendar/events?dea
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -717,12 +783,12 @@ src/
 
 ## Testing
 
-| Command           | Description                    |
-|-------------------|--------------------------------|
-| `npm run test`    | Vitest watch mode              |
-| `npm run test:run`| Unit tests (CI)                |
-| `npm run test:coverage` | Coverage report          |
-| `npm run test:e2e`| Playwright E2E                 |
+| Command                 | Description       |
+| ----------------------- | ----------------- |
+| `npm run test`          | Vitest watch mode |
+| `npm run test:run`      | Unit tests (CI)   |
+| `npm run test:coverage` | Coverage report   |
+| `npm run test:e2e`      | Playwright E2E    |
 
 Unit tests live in `src/app/actions/__tests__` and `src/lib/__tests__`. E2E specs are in `e2e/` (home, dashboard, deals). Use `src/test/mocks` for auth and Prisma in tests.
 
@@ -792,19 +858,71 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 
 ## Performance
 
-| Metric        | Target  |
-|---------------|---------|
-| Lighthouse    | 98      |
-| FCP           | 0.8 s   |
-| TTI           | 1.2 s   |
-| LCP           | < 1.5 s |
-| CLS           | < 0.1   |
+| Metric     | Target  |
+| ---------- | ------- |
+| Lighthouse | 98      |
+| FCP        | 0.8 s   |
+| TTI        | 1.2 s   |
+| LCP        | < 1.5 s |
+| CLS        | < 0.1   |
 
 - React Server Components and Server Actions to reduce client JS.
 - Dynamic imports for heavy UI (e.g. Swagger, charts).
 - Prisma query tuning; indexed access on `userId`, `teamId`, `dealId`.
 - Optional Redis for queue and caching.
 - Image optimization via `next/image` where used.
+
+---
+
+## Production Lessons
+
+**Early sync failures.** Initial CRM syncs failed silently when provider APIs returned non-standard errors or rate limits. We added structured logging, per-integration status (`lastSyncAt`, `lastSyncStatus`, `syncErrors`), and retry with backoff. Failures are now visible in Settings and logs; operators can trigger manual sync or fix credentials.
+
+**AI hallucinations on deal detail.** The assistant sometimes invented deal attributes or stages that didn’t exist when context was too small or stale. We tightened context construction: we only include deals and fields the user can access, and we pass explicit schema (stage list, field names) so the model stays grounded. We also avoid letting the model perform mutations; it suggests, the user acts.
+
+**Retrieval mistakes.** When chat pulled “similar” deals by keyword alone, it sometimes surfaced the wrong deal or missed the one the user meant. We improved by always scoping to the current user (and team when relevant) and by including deal IDs in context so the model can refer to specific records. We still don’t do semantic search over a large corpus; we keep retrieval deterministic and narrow.
+
+**Real-time and serverless.** The first real-time design assumed a long-lived connection; serverless timeouts and cold starts made it unreliable. We switched to SSE with Redis-backed events and a polling loop inside the stream, plus heartbeats. Connections stay within function limits; when Redis is missing, we fall back to polling so the app still works.
+
+**Scaling concerns.** Deal list and risk computation run on every request for that view. For users with thousands of deals, we’d need pagination, caching, or background risk precomputation. We’ve kept the current design for “normal” pipeline sizes and documented that heavy usage would require read replicas or async jobs.
+
+**What required redesign.** Sync status and errors were initially buried in logs. We introduced `IntegrationLog` and per-integration status fields so the UI can show last sync time, status, and recent errors. That single change made operations and support much easier.
+
+**What improved performance the most.** Indexing `userId`, `teamId`, `dealId`, and `createdAt` on the main query paths; keeping AI context small and structured; and using Server Components for initial deal list so the client doesn’t refetch everything on load.
+
+---
+
+## If Running at Scale
+
+**Async ingestion.** CRM and calendar syncs are today triggered by cron or manual action. At scale, we’d move to a queue: cron or webhook enqueues a sync job; a worker (or serverless function) runs the sync and updates status. That isolates long-running syncs from request timeouts and allows retries and backpressure.
+
+**Queue-based indexing and notifications.** Real-time events are pushed via Redis list and consumed by the SSE route. At higher volume, we’d consider a proper queue (e.g. Upstash Kafka, SQS) with per-user or per-team channels, dead-letter handling, and at-least-once delivery for critical notifications.
+
+**Caching layers.** Deal lists and risk summaries could be cached per user with short TTLs (e.g. 60s) so repeated navigations don’t hit the DB every time. Cache keys would include `userId` (and `teamId` when relevant). Invalidation would happen on deal/team mutations and optionally on real-time events.
+
+**Shardable storage.** PostgreSQL and Prisma scale with connection pooling and read replicas. If deal volume grew into the millions, we’d consider sharding by `userId` or tenant and routing reads/writes accordingly. Vector search, if added later, would be a separate store with its own scaling story.
+
+**Background workers.** Risk precomputation, heavy analytics, and bulk exports would move to background jobs so the request path stays fast. Same for summarization or embedding if we ever add semantic search.
+
+**Observability and metrics.** We’d add metrics for: sync duration and success rate per integration, AI request latency and token usage, SSE connection count and event delivery latency, and error rates per route. Logs are structured; we’d ship them to a central store and set alerts on sync failures and API errors.
+
+**Cost control.** AI cost is dominated by token usage. We’d cap context size per request, set per-user or per-org limits, and optionally cache frequent queries. Sync and real-time costs are bounded by cron frequency and connection count; we’d monitor and tune those knobs.
+
+**Fault tolerance.** Integrations fail; we already log and surface status. At scale we’d add circuit breakers per provider, automatic backoff on repeated failures, and clear degradation (e.g. “Salesforce sync paused due to errors”). Real-time degrades to polling when Redis or the stream fails; we’d extend that pattern to other optional services.
+
+---
+
+## Impact on Engineering Teams
+
+**Onboarding.** New engineers see a single repo with clear domains: `actions/deals.ts`, `lib/dealRisk.ts`, `app/api/events/route.ts`. Auth, DB, and external services are centralized (Clerk, Prisma, OpenRouter, Redis). A new dev can run the app locally, read one slice (e.g. deals or integrations), and make a small change without touching the whole stack.
+
+**Reduced tribal knowledge.** Risk logic, AI routing, and sync behavior live in code and README, not only in someone’s head. Technology Decisions and Design Philosophy sections explain why we chose PostgreSQL, OpenRouter, SSE, and optional Redis. New joiners can reason about tradeoffs without hunting for design docs.
+
+**Code reviews.** Server Actions and API routes have a clear contract: actions for app-driven mutations, API for webhooks and cron. Reviewers can check auth, scoping (userId/teamId), and error handling in one place. Integration code is isolated (e.g. `salesforce.ts`, `hubspot.ts`), so changes to one provider don’t ripple everywhere.
+
+**Documentation automation.** API routes are documented in the README and exposed via OpenAPI at `/api-docs`. Webhook payloads and env vars are specified in one file. That reduces “how do I call X?” questions and keeps docs close to the code.
+
+**Architectural clarity.** The stack diagram and project structure show where presentation, application, and services sit. Real-time, notifications, and deal risk are additive modules with clear entry points. That makes it easier to extend (e.g. a new integration or a new event type) without reworking the core.
 
 ---
 

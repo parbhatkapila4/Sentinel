@@ -86,9 +86,9 @@ export default async function ResourcesPage() {
                 className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                  <div className="w-10 h-10 rounded-lg bg-red-600/20 flex items-center justify-center group-hover:bg-red-600/30 transition-colors">
                     <svg
-                      className="w-5 h-5 text-purple-400"
+                      className="w-5 h-5 text-red-400"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

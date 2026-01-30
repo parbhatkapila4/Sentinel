@@ -14,6 +14,7 @@ import { TEAM_ROLES } from "@/lib/config";
 import { generateSlug, getUserTeamRole } from "@/lib/team-utils";
 import { enforceTeamMemberLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
+import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
 
 const ROLE_ORDER: Record<string, number> = {
   [TEAM_ROLES.OWNER]: 0,
@@ -298,6 +299,17 @@ export async function acceptInvite(token: string) {
 
   await incrementUsage(user.id, "teamMembers", 1);
 
+  await logAuditEvent(
+    user.id,
+    AUDIT_ACTIONS.TEAM_MEMBER_ADDED,
+    "team",
+    invite.teamId,
+    {
+      memberId: user.id,
+      role: invite.role,
+    }
+  );
+
   revalidatePath("/teams");
   revalidatePath("/settings/team");
   revalidatePath(`/teams/${invite.teamId}`);
@@ -331,6 +343,17 @@ export async function removeTeamMember(teamId: string, memberId: string) {
   }
 
   await prisma.teamMember.delete({ where: { id: memberId } });
+
+  await logAuditEvent(
+    userId,
+    AUDIT_ACTIONS.TEAM_MEMBER_REMOVED,
+    "team",
+    teamId,
+    {
+      removedMemberId: target.userId,
+      removedMemberRole: target.role,
+    }
+  );
 
   revalidatePath(`/teams/${teamId}`);
   revalidatePath(`/settings/team/${teamId}`);
@@ -366,6 +389,18 @@ export async function updateMemberRole(
     where: { id: memberId },
     data: { role: validRole },
   });
+
+  await logAuditEvent(
+    userId,
+    AUDIT_ACTIONS.TEAM_MEMBER_ROLE_UPDATED,
+    "team",
+    teamId,
+    {
+      memberId: target.userId,
+      oldRole: target.role,
+      newRole: validRole,
+    }
+  );
 
   revalidatePath(`/teams/${teamId}`);
   revalidatePath(`/settings/team/${teamId}`);

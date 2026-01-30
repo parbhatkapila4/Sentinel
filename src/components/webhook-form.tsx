@@ -98,7 +98,7 @@ export function WebhookForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Production webhook"
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none"
+          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-red-600/50 focus:outline-none"
         />
       </div>
       <div>
@@ -108,7 +108,7 @@ export function WebhookForm({
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://your-endpoint.com/webhook"
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-violet-500/50 focus:outline-none"
+          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-red-600/50 focus:outline-none"
         />
       </div>
       <div>
@@ -125,7 +125,7 @@ export function WebhookForm({
                 type="checkbox"
                 checked={events.has(ev.value)}
                 onChange={() => toggleEvent(ev.value)}
-                className="rounded border-white/20 bg-white/5 text-violet-500 focus:ring-violet-500/50"
+                className="rounded border-white/20 bg-white/5 text-red-500 focus:ring-red-600/50"
               />
               <span className="text-sm text-white/80">{ev.label}</span>
             </label>
@@ -139,7 +139,7 @@ export function WebhookForm({
             id="webhook-active"
             checked={isActive}
             onChange={(e) => setIsActive(e.target.checked)}
-            className="rounded border-white/20 bg-white/5 text-violet-500 focus:ring-violet-500/50"
+            className="rounded border-white/20 bg-white/5 text-red-500 focus:ring-red-600/50"
           />
           <label htmlFor="webhook-active" className="text-sm text-white/80">
             Active
@@ -150,7 +150,7 @@ export function WebhookForm({
         <button
           type="submit"
           disabled={saving}
-          className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 disabled:opacity-50 transition-colors max-sm:min-h-[44px]"
+          className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] disabled:opacity-50 transition-colors max-sm:min-h-[44px]"
         >
           {saving ? "Saving…" : edit ? "Update" : "Create"}
         </button>

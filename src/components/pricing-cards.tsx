@@ -47,19 +47,19 @@ export function PricingCards() {
   ];
 
   const getProPrice = () => {
-    return isAnnual ? "$19" : "$29";
+    return isAnnual ? "$20" : "$31";
   };
 
   const getProOriginalPrice = () => {
-    return isAnnual ? "$29" : "$29";
+    return isAnnual ? "$31" : "$31";
   };
 
   const getEnterprisePrice = () => {
-    return isAnnual ? "$59" : "$79";
+    return isAnnual ? "$56" : "$85";
   };
 
   const getEnterpriseOriginalPrice = () => {
-    return isAnnual ? "$79" : "$79";
+    return isAnnual ? "$85" : "$85";
   };
 
   return (
@@ -138,13 +138,13 @@ export function PricingCards() {
       <div
         className="relative rounded-3xl p-[2px] flex flex-col"
         style={{
-          background: "linear-gradient(180deg, #7c8dea 0%, #a78bfa 100%)",
+          background: "linear-gradient(180deg, #b91c1c 0%, #8b1a1a 100%)",
         }}
       >
         <div
           className="absolute -top-3 left-1/2 -translate-x-1/2 z-20"
           style={{
-            background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+            background: "linear-gradient(135deg, #991b1b 0%, #8b1a1a 100%)",
             padding: "6px 20px",
             borderRadius: "9999px",
             boxShadow: "0 4px 12px rgba(99, 102, 241, 0.4)",
@@ -191,6 +191,12 @@ export function PricingCards() {
               </span>
               <span className="text-white/40 text-sm">/month</span>
             </div>
+            <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-white/10 text-white/70 text-xs font-medium">
+              <svg className="w-3.5 h-3.5 text-emerald-400/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Tax included
+            </span>
           </div>
 
           <div className="px-2 flex-1 flex flex-col">
@@ -206,7 +212,7 @@ export function PricingCards() {
               {proFeatures.map((feature, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <svg
-                    className={`w-5 h-5 shrink-0 mt-0.5 ${feature.included ? "text-[#6b7fd6]" : "text-white/30"
+                    className={`w-5 h-5 shrink-0 mt-0.5 ${feature.included ? "text-[#b91c1c]" : "text-white/30"
                       }`}
                     fill="none"
                     viewBox="0 0 24 24"
@@ -224,14 +230,31 @@ export function PricingCards() {
               ))}
             </ul>
 
-            <button
-              className="w-full py-3.5 rounded-xl text-sm font-medium text-white transition-colors"
-              style={{
-                background: "linear-gradient(135deg, #5b6fd6 0%, #7b8ce8 100%)",
-              }}
-            >
-              Start 7-Day Free Trial
-            </button>
+            {!isAnnual ? (
+              <a
+                href="https://www.paypal.com/ncp/payment/VMD5RE6KLUJUE"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 rounded-xl text-sm font-medium text-white transition-colors inline-flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg, #991b1b 0%, #b91c1c 100%)",
+                }}
+              >
+                Subscribe now
+              </a>
+            ) : (
+              <a
+                href="https://www.paypal.com/ncp/payment/ZVFF5ALD7ZYMJ"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 rounded-xl text-sm font-medium text-white transition-colors inline-flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg, #991b1b 0%, #b91c1c 100%)",
+                }}
+              >
+                Subscribe now
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -269,6 +292,12 @@ export function PricingCards() {
             </span>
             <span className="text-white/40 text-sm">/month</span>
           </div>
+          <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-white/10 text-white/70 text-xs font-medium">
+            <svg className="w-3.5 h-3.5 text-emerald-400/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Tax included
+          </span>
         </div>
 
         <div className="px-2 flex-1 flex flex-col">
@@ -299,16 +328,35 @@ export function PricingCards() {
             ))}
           </ul>
 
-          <button
-            className="w-full py-3.5 rounded-xl text-sm font-medium transition-colors"
-            style={{
-              background: "transparent",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              color: "rgba(255, 255, 255, 0.7)",
-            }}
-          >
-            Get Started
-          </button>
+          {!isAnnual ? (
+            <a
+              href="https://www.paypal.com/ncp/payment/X6JYZYK6WBRBA"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3.5 rounded-xl text-sm font-medium transition-colors inline-flex items-center justify-center"
+              style={{
+                background: "transparent",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                color: "rgba(255, 255, 255, 0.7)",
+              }}
+            >
+              Get Started
+            </a>
+          ) : (
+            <a
+              href="https://www.paypal.com/ncp/payment/RD8DBKTWRS8EY"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3.5 rounded-xl text-sm font-medium transition-colors inline-flex items-center justify-center"
+              style={{
+                background: "transparent",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                color: "rgba(255, 255, 255, 0.7)",
+              }}
+            >
+              Get Started
+            </a>
+          )}
         </div>
       </div>
     </div>

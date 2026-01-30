@@ -101,9 +101,9 @@ export default function AcceptInvitePage() {
             </>
           ) : (
             <>
-              <div className="w-16 h-16 rounded-2xl bg-violet-500/20 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-red-600/20 flex items-center justify-center mx-auto mb-4">
                 <svg
-                  className="w-8 h-8 text-violet-400"
+                  className="w-8 h-8 text-red-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -132,7 +132,7 @@ export default function AcceptInvitePage() {
                   type="button"
                   onClick={handleAccept}
                   disabled={accepting}
-                  className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 border border-violet-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-sm:w-full max-sm:min-h-[44px]"
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-600/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-sm:w-full max-sm:min-h-[44px]"
                 >
                   {accepting ? "Joining…" : "Accept invite"}
                 </button>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRealtime } from "@/hooks/use-realtime";
 
 interface NotificationItem {
   id: string;
@@ -28,6 +29,7 @@ export function NotificationsDropdown() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const fetchRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   async function fetchNotifications() {
     try {
@@ -43,6 +45,14 @@ export function NotificationsDropdown() {
       setLoading(false);
     }
   }
+
+  fetchRef.current = fetchNotifications;
+
+  useRealtime({
+    onEvent(ev) {
+      if (ev.type === "notification.new") fetchRef.current();
+    },
+  });
 
   useEffect(() => {
     fetchNotifications();

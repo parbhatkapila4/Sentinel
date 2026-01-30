@@ -31,13 +31,13 @@ export function FAQAccordion({ items }: FAQAccordionProps) {
           >
             <div
               className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-500 ${isOpen
-                  ? "bg-gradient-to-b from-blue-500 via-purple-500 to-blue-500 opacity-100"
+                  ? "bg-gradient-to-b from-blue-500 via-red-600 to-blue-500 opacity-100"
                   : "bg-gradient-to-b from-gray-700 to-gray-800 opacity-0 group-hover:opacity-50"
                 }`}
             ></div>
 
             {isOpen && (
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-blue-500/5 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-red-600/5 to-blue-500/5 pointer-events-none"></div>
             )}
 
             <button
@@ -95,7 +95,7 @@ export function FAQAccordion({ items }: FAQAccordionProps) {
                 }`}
             >
               <div className="px-5 pb-5 pt-2 relative">
-                <div className="absolute left-5 top-0 bottom-5 w-px bg-gradient-to-b from-blue-500/30 via-purple-500/30 to-transparent"></div>
+                <div className="absolute left-5 top-0 bottom-5 w-px bg-gradient-to-b from-blue-500/30 via-red-600/30 to-transparent"></div>
                 <p
                   className="text-white/70 leading-relaxed pl-4 relative"
                   style={{

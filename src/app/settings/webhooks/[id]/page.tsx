@@ -128,7 +128,7 @@ export default function WebhookDetailPage() {
               type="button"
               onClick={handleTest}
               disabled={testing}
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-500 hover:bg-violet-600 disabled:opacity-50 transition-colors max-sm:min-h-[44px]"
+              className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] disabled:opacity-50 transition-colors max-sm:min-h-[44px]"
             >
               {testing ? "Sending…" : "Test"}
             </button>
@@ -185,7 +185,7 @@ export default function WebhookDetailPage() {
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors max-sm:min-h-[44px] max-sm:flex max-sm:items-center"
+                className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors max-sm:min-h-[44px] max-sm:flex max-sm:items-center"
               >
                 Edit
               </button>

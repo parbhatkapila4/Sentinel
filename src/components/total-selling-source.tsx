@@ -16,7 +16,7 @@ interface TotalSellingSourceProps {
 
 const defaultData: SellingSource[] = [
   { name: "E-Commerce", value: 1376, percentage: 40, color: "#06b6d4" },
-  { name: "Website", value: 234, percentage: 38.6, color: "#8b5cf6" },
+  { name: "Website", value: 234, percentage: 38.6, color: "#8b1a1a" },
   { name: "Social Media", value: 850, percentage: 27.4, color: "#404040" },
 ];
 

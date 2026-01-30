@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = prisma as any;
@@ -217,6 +218,10 @@ export async function createSalesforceIntegration(data: {
 }) {
   const userId = await getAuthenticatedUserId();
 
+  const existing = await db.salesforceIntegration.findUnique({
+    where: { userId },
+  });
+
   const integration = await db.salesforceIntegration.upsert({
     where: { userId },
     create: {
@@ -231,15 +236,45 @@ export async function createSalesforceIntegration(data: {
     },
   });
 
+
+  await logAuditEvent(
+    userId,
+    existing ? AUDIT_ACTIONS.INTEGRATION_UPDATED : AUDIT_ACTIONS.INTEGRATION_CONNECTED,
+    "integration",
+    integration.id,
+    {
+      integrationType: "salesforce",
+      instanceUrl: data.instanceUrl.replace(/^(https?:\/\/[^.]+)\..*$/, "$1.***"), // Mask instance URL
+    }
+  );
+
   revalidatePath("/settings");
   return integration;
 }
 
 export async function deleteSalesforceIntegration() {
   const userId = await getAuthenticatedUserId();
+  const integration = await db.salesforceIntegration.findUnique({
+    where: { userId },
+  });
+
   await db.salesforceIntegration.delete({
     where: { userId },
   }).catch(() => { });
+
+
+  if (integration) {
+    await logAuditEvent(
+      userId,
+      AUDIT_ACTIONS.INTEGRATION_DISCONNECTED,
+      "integration",
+      integration.id,
+      {
+        integrationType: "salesforce",
+      }
+    );
+  }
+
   revalidatePath("/settings");
 }
 
@@ -256,6 +291,10 @@ export async function createHubSpotIntegration(data: {
 }) {
   const userId = await getAuthenticatedUserId();
 
+  const existing = await db.hubSpotIntegration.findUnique({
+    where: { userId },
+  });
+
   const integration = await db.hubSpotIntegration.upsert({
     where: { userId },
     create: {
@@ -270,15 +309,45 @@ export async function createHubSpotIntegration(data: {
     },
   });
 
+
+  await logAuditEvent(
+    userId,
+    existing ? AUDIT_ACTIONS.INTEGRATION_UPDATED : AUDIT_ACTIONS.INTEGRATION_CONNECTED,
+    "integration",
+    integration.id,
+    {
+      integrationType: "hubspot",
+      portalId: data.portalId,
+    }
+  );
+
   revalidatePath("/settings");
   return integration;
 }
 
 export async function deleteHubSpotIntegration() {
   const userId = await getAuthenticatedUserId();
+  const integration = await db.hubSpotIntegration.findUnique({
+    where: { userId },
+  });
+
   await db.hubSpotIntegration.delete({
     where: { userId },
   }).catch(() => { });
+
+
+  if (integration) {
+    await logAuditEvent(
+      userId,
+      AUDIT_ACTIONS.INTEGRATION_DISCONNECTED,
+      "integration",
+      integration.id,
+      {
+        integrationType: "hubspot",
+      }
+    );
+  }
+
   revalidatePath("/settings");
 }
 
@@ -295,6 +364,10 @@ export async function createGoogleCalendarIntegration(data: {
 }) {
   const userId = await getAuthenticatedUserId();
 
+  const existing = await db.googleCalendarIntegration.findUnique({
+    where: { userId },
+  });
+
   const integration = await db.googleCalendarIntegration.upsert({
     where: { userId },
     create: {
@@ -309,14 +382,119 @@ export async function createGoogleCalendarIntegration(data: {
     },
   });
 
+
+  await logAuditEvent(
+    userId,
+    existing ? AUDIT_ACTIONS.INTEGRATION_UPDATED : AUDIT_ACTIONS.INTEGRATION_CONNECTED,
+    "integration",
+    integration.id,
+    {
+      integrationType: "google_calendar",
+      calendarId: data.calendarId || "primary",
+    }
+  );
+
   revalidatePath("/settings");
   return integration;
 }
 
 export async function deleteGoogleCalendarIntegration() {
   const userId = await getAuthenticatedUserId();
+  const integration = await db.googleCalendarIntegration.findUnique({
+    where: { userId },
+  });
+
   await db.googleCalendarIntegration.delete({
     where: { userId },
   }).catch(() => { });
+
+
+  if (integration) {
+    await logAuditEvent(
+      userId,
+      AUDIT_ACTIONS.INTEGRATION_DISCONNECTED,
+      "integration",
+      integration.id,
+      {
+        integrationType: "google_calendar",
+      }
+    );
+  }
+
   revalidatePath("/settings");
+}
+
+
+export async function markIntegrationKeyRotated(
+  integrationType: "salesforce" | "hubspot" | "google_calendar"
+): Promise<void> {
+  const userId = await getAuthenticatedUserId();
+
+  try {
+    switch (integrationType) {
+      case "salesforce":
+        await db.salesforceIntegration.update({
+          where: { userId },
+          data: { rotatedAt: new Date() },
+        });
+        break;
+      case "hubspot":
+        await db.hubSpotIntegration.update({
+          where: { userId },
+          data: { rotatedAt: new Date() },
+        });
+        break;
+      case "google_calendar":
+        await db.googleCalendarIntegration.update({
+          where: { userId },
+          data: { rotatedAt: new Date() },
+        });
+        break;
+    }
+  } catch (error) {
+
+    console.error(`Failed to mark ${integrationType} key as rotated:`, error);
+  }
+}
+
+
+export async function isIntegrationKeyOld(
+  integrationType: "salesforce" | "hubspot" | "google_calendar"
+): Promise<boolean> {
+  const userId = await getAuthenticatedUserId();
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+  try {
+    let integration: { rotatedAt: Date | null; createdAt: Date } | null = null;
+
+    switch (integrationType) {
+      case "salesforce":
+        integration = await db.salesforceIntegration.findUnique({
+          where: { userId },
+          select: { rotatedAt: true, createdAt: true },
+        });
+        break;
+      case "hubspot":
+        integration = await db.hubSpotIntegration.findUnique({
+          where: { userId },
+          select: { rotatedAt: true, createdAt: true },
+        });
+        break;
+      case "google_calendar":
+        integration = await db.googleCalendarIntegration.findUnique({
+          where: { userId },
+          select: { rotatedAt: true, createdAt: true },
+        });
+        break;
+    }
+
+    if (!integration) return false;
+
+
+    const checkDate = integration.rotatedAt || integration.createdAt;
+    return checkDate < ninetyDaysAgo;
+  } catch {
+    return false;
+  }
 }

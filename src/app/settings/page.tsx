@@ -47,6 +47,7 @@ import {
   removePaymentMethod,
   setDefaultPaymentMethod,
 } from "@/app/actions/payment-methods";
+import { getCurrentUserPlan, type UserPlanInfo } from "@/app/actions/plans";
 import { CARD_BRANDS, type PaymentMethodItem } from "@/lib/payment-methods";
 import { formatRelativeTime } from "@/lib/utils";
 
@@ -112,6 +113,7 @@ export default function SettingsPage() {
   const [isSavingPayment, setIsSavingPayment] = useState(false);
   const [showRemovePaymentDialog, setShowRemovePaymentDialog] = useState(false);
   const [removingPaymentId, setRemovingPaymentId] = useState<string | null>(null);
+  const [userPlan, setUserPlan] = useState<UserPlanInfo | null>(null);
 
   const tabs = [
     { id: "general", label: "General", icon: "⚙️" },
@@ -125,26 +127,29 @@ export default function SettingsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const deals = await getAllDeals();
+        const [deals, teams, plan, profileData] = await Promise.all([
+          getAllDeals(),
+          getMyTeams(),
+          getCurrentUserPlan(),
+          getUserProfile(),
+        ]);
         const nonDemoDeals = deals.filter((deal) => !deal.isDemo);
         setDealsCount(nonDemoDeals.length);
-
-        const teams = await getMyTeams();
         const totalMembers = teams.reduce((sum, team) => sum + team.memberCount, 0);
         setTeamMembersCount(totalMembers);
+        setUserPlan(plan ?? null);
 
-        const profile = await getUserProfile();
-        if (profile) {
+        if (profileData) {
           setUserData({
-            name: profile.name || "",
-            surname: profile.surname || "",
-            email: profile.email || "",
-            company: profile.company || "",
-            role: profile.role || "admin",
-            imageUrl: profile.imageUrl || "",
+            name: profileData.name || "",
+            surname: profileData.surname || "",
+            email: profileData.email || "",
+            company: profileData.company || "",
+            role: profileData.role || "admin",
+            imageUrl: profileData.imageUrl || "",
           });
-          if (profile.imageUrl) {
-            setAvatarPreview(profile.imageUrl);
+          if (profileData.imageUrl) {
+            setAvatarPreview(profileData.imageUrl);
           }
         }
 
@@ -591,9 +596,12 @@ export default function SettingsPage() {
     return (first + last).toUpperCase() || "U";
   };
 
-  const DEAL_LIMIT = 500;
-  const TEAM_MEMBER_LIMIT = 10;
-  const dealsPercentage = (dealsCount / DEAL_LIMIT) * 100;
+  const DEAL_LIMIT = userPlan?.maxDeals ?? 100;
+  const TEAM_MEMBER_LIMIT = userPlan?.maxTeamMembers ?? 3;
+  const dealsPercentage = DEAL_LIMIT > 0 ? (dealsCount / DEAL_LIMIT) * 100 : 0;
+  const planPriceDisplay = userPlan?.priceDisplay ?? "Free";
+  const isPaidPlan = userPlan?.isPaidPlan ?? false;
+  const apiCallsDisplay = userPlan?.apiCallsDisplay ?? "1K";
 
   return (
     <DashboardLayout>
@@ -638,7 +646,7 @@ export default function SettingsPage() {
                     {getInitials()}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white">Pro Plan</p>
+                    <p className="text-sm font-semibold text-white">{userPlan?.planName ?? "Starter"}</p>
                     <p className="text-xs text-white/40">{dealsCount} / {DEAL_LIMIT} deals</p>
                   </div>
                 </div>
@@ -1040,8 +1048,8 @@ export default function SettingsPage() {
                             }
                           }}
                           className={`w-full px-4 py-3 rounded-xl bg-white/5 border text-white placeholder-white/30 focus:outline-none transition-colors ${riskSettingsError
-                              ? "border-red-500/50 focus:border-red-500"
-                              : "border-white/10 focus:border-[#8b1a1a]/50"
+                            ? "border-red-500/50 focus:border-red-500"
+                            : "border-white/10 focus:border-[#8b1a1a]/50"
                             }`}
                         />
                         {riskSettingsError ? (
@@ -1183,7 +1191,7 @@ export default function SettingsPage() {
                           name="Slack"
                           description="Get notifications in Slack"
                           icon="💬"
-                          iconBg="bg-purple-500/20"
+                          iconBg="bg-red-600/20"
                           connected={integrationStatuses?.slack?.connected || false}
                           channelCount={integrationStatuses?.slack?.channelCount}
                           onConnect={() => router.push("/settings/integrations")}
@@ -1363,15 +1371,23 @@ export default function SettingsPage() {
                             Current Plan
                           </span>
                           <h3 className="text-2xl font-bold text-white">
-                            Professional
+                            {userPlan?.planName ?? "Starter"}
                           </h3>
                           <p className="text-white/40 mt-1">
-                            Perfect for growing sales teams
+                            {userPlan?.planType === "starter"
+                              ? "Perfect for getting started"
+                              : userPlan?.planType === "pro"
+                                ? "Perfect for growing sales teams"
+                                : userPlan?.planType === "enterprise"
+                                  ? "For large organizations"
+                                  : "Your current plan"}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-white">$149</p>
-                          <p className="text-sm text-white/40">/month</p>
+                          <p className="text-3xl font-bold text-white">{planPriceDisplay}</p>
+                          {userPlan?.isPaidPlan && userPlan?.priceDisplay !== "Contact us" && (
+                            <p className="text-sm text-white/40">/month</p>
+                          )}
                         </div>
                       </div>
 
@@ -1379,7 +1395,7 @@ export default function SettingsPage() {
                         {[
                           { label: "Deals", value: `${dealsCount} / ${DEAL_LIMIT}` },
                           { label: "Team Members", value: `${teamMembersCount} / ${TEAM_MEMBER_LIMIT}` },
-                          { label: "API Calls", value: "5K / 50K" },
+                          { label: "API Calls", value: `— / ${apiCallsDisplay}` },
                         ].map((item) => (
                           <div
                             key={item.label}
@@ -1402,12 +1418,14 @@ export default function SettingsPage() {
                         >
                           Change Plan
                         </button>
-                        <button
-                          onClick={() => setShowCancelDialog(true)}
-                          className="px-5 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white transition-colors"
-                        >
-                          Cancel Subscription
-                        </button>
+                        {isPaidPlan && (
+                          <button
+                            onClick={() => setShowCancelDialog(true)}
+                            className="px-5 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white transition-colors"
+                          >
+                            Cancel Subscription
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
