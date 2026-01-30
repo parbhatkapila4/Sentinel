@@ -35,6 +35,7 @@ model User {
   plan                      UserPlan?
   usageTracking             UsageTracking[]
   paymentMethods            PaymentMethod[]
+  auditLogs                 AuditLog[]
 }
 
 model Deal {
@@ -284,6 +285,7 @@ model SalesforceIntegration {
   lastSyncStatus String?
   syncErrors     String?
   totalSynced    Int       @default(0)
+  rotatedAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -302,6 +304,7 @@ model HubSpotIntegration {
   lastSyncStatus String?
   syncErrors     String?
   totalSynced    Int       @default(0)
+  rotatedAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -319,6 +322,7 @@ model GoogleCalendarIntegration {
   syncEnabled    Boolean   @default(true)
   lastSyncAt     DateTime?
   lastSyncStatus String?
+  rotatedAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -433,4 +437,20 @@ model UsageTracking {
   @@index([userId, metricType])
   @@index([userId, periodStart])
   @@index([periodEnd])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([resource, resourceId])
 }
