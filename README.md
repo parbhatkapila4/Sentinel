@@ -1,15 +1,18 @@
 # Sentinel
 
-**AI-Powered Revenue Intelligence Platform**
+**AI-powered revenue intelligence for sales and revenue teams.** Early warning for pipeline risk—predictions, recommendations, and real-time visibility so you never lose a deal to silent decay.
 
-Early warning for pipeline risk. Predictions, recommendations, and real-time visibility.
+**Live demo:** [https://www.sentinel.parbhat.dev](https://www.sentinel.parbhat.dev) · [API Reference](https://www.sentinel.parbhat.dev/api-docs) · [Documentation](https://www.sentinel.parbhat.dev/docs/developers)
 
-[Demo](https://www.sentinel.parbhat.dev) · [API Reference](https://www.sentinel.parbhat.dev/api-docs) · [Documentation](https://www.sentinel.parbhat.dev/docs/developers)
+**Tech stack:** Next.js, TypeScript, PostgreSQL, Prisma, Clerk, OpenRouter (AI), Upstash Redis, Sentry.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-Latest-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?style=flat-square&logo=clerk)](https://clerk.com/)
+[![Upstash Redis](https://img.shields.io/badge/Redis-Upstash-DC382D?style=flat-square&logo=redis)](https://upstash.com/)
+[![Sentry](https://img.shields.io/badge/Sentry-Monitoring-362D59?style=flat-square&logo=sentry)](https://sentry.io/)
 
 ---
 
@@ -371,24 +374,25 @@ Core models (Prisma):
 
 ```prisma
 model Deal {
-  id           String    @id @default(cuid())
-  userId       String
-  teamId       String?
-  assignedToId String?
-  name         String
-  stage        String
-  value        Int
-  location     String?
-  source       String?      // "salesforce", "hubspot", or null
-  externalId   String?      // External CRM deal ID
-  createdAt    DateTime  @default(now())
-  user         User      @relation("CreatedDeals", ...)
-  team         Team?     @relation(...)
-  assignedTo   User?     @relation("AssignedDeals", ...)
-  events       DealEvent[]
-  timeline     DealTimeline[]
+  id            String         @id @default(cuid())
+  userId        String
+  teamId        String?
+  assignedToId  String?
+  name          String
+  stage         String
+  value         Int
+  location      String?
+  isDemo        Boolean        @default(false)
+  source        String?        // "salesforce", "hubspot", or null
+  externalId    String?        // External CRM deal ID
+  createdAt     DateTime       @default(now())
+  user          User           @relation("CreatedDeals", ...)
+  team          Team?          @relation(...)
+  assignedTo    User?          @relation("AssignedDeals", ...)
+  events        DealEvent[]
+  timeline      DealTimeline[]
   notifications Notification[]
-  meetings     Meeting[]
+  meetings      Meeting[]
 
   @@index([userId, createdAt])
   @@index([userId, stage])
@@ -491,17 +495,19 @@ model IntegrationLog {
 
 ## Technology Decisions
 
-| Component      | Choice             | Rationale                                            |
-| -------------- | ------------------ | ---------------------------------------------------- |
-| Framework      | Next.js 16         | App Router, RSC, Server Actions, Vercel-ready        |
-| Language       | TypeScript 5       | Type safety, Prisma alignment, editor support        |
-| Database       | PostgreSQL         | ACID, JSON, scaling; Supabase/Railway-friendly       |
-| ORM            | Prisma             | Type-safe queries, migrations, generated client      |
-| Authentication | Clerk              | MFA, sessions, OAuth; minimal backend code           |
-| AI             | OpenRouter         | Multi-model routing; Claude, GPT, Gemini via one API |
-| Queue          | Upstash Redis      | Optional email/webhook queue; serverless-friendly    |
-| Email          | Resend             | Transactional email; simple API, deliverability      |
-| Testing        | Vitest, Playwright | Unit + E2E; fast feedback, CI integration            |
+| Component      | Choice             | Rationale                                                           |
+| -------------- | ------------------ | ------------------------------------------------------------------- |
+| Framework      | Next.js 16         | App Router, RSC, Server Actions, Vercel-ready                       |
+| Language       | TypeScript 5       | Type safety, Prisma alignment, editor support                       |
+| Database       | PostgreSQL         | ACID, JSON, scaling; Supabase/Railway-friendly                      |
+| ORM            | Prisma             | Type-safe queries, migrations, generated client                     |
+| Authentication | Clerk              | MFA, sessions, OAuth; minimal backend code                          |
+| AI             | OpenRouter         | Multi-model routing; Claude, GPT, Gemini via one API                |
+| Queue          | Upstash Redis      | Optional email/webhook queue; rate limit state; serverless-friendly |
+| Email          | Resend             | Transactional email; simple API, deliverability                     |
+| Monitoring     | Sentry             | Error tracking, performance; optional, fail-safe                    |
+| Rate limiting  | Redis + in-app     | Per-user/IP tiers; graceful degradation when Redis null             |
+| Testing        | Vitest, Playwright | Unit + E2E; fast feedback, CI integration                           |
 
 ---
 
@@ -521,7 +527,9 @@ The system is built around a few core choices.
 
 **Clerk for auth.** We don’t store passwords or build session logic. Clerk gives us MFA, OAuth, and session handling so we can focus on domain logic and RBAC (team roles, deal access).
 
-**Redis optional.** Queues (email, real-time events) use Redis when available. Without it, the app still runs: notifications are created and read via API, real-time degrades to polling. Optional infra keeps the default path simple for small deployments.
+**Redis optional.** Queues (email, real-time events), rate limiting, and caching use Redis when available. Without it, the app still runs: rate limits bypass gracefully, notifications work via API, real-time degrades to polling. Optional infra keeps the default path simple for small deployments.
+
+**Rate limiting and circuit breakers.** API routes use Redis-backed rate limits with per-user and per-IP tiers. External calls (CRM syncs, AI) use retry with backoff and circuit breakers so a failing provider doesn’t cascade. When Redis is null, we skip rate limiting rather than block requests.
 
 **Developer cognition.** The codebase is split by domain (deals, integrations, notifications, real-time) rather than by layer. You open `actions/deals.ts` or `lib/realtime.ts` and see one slice of the system. That reduces context-switching and makes ownership obvious.
 
@@ -541,21 +549,15 @@ The system is built around a few core choices.
 
 **Database performance.** Deal and notification queries are scoped by `userId` or team; we rely on indexes on `userId`, `teamId`, `dealId`, and `createdAt`. Heavy analytics (e.g. cross-tenant reporting) would need separate read paths or read replicas; the current design optimizes for single-tenant, per-user views.
 
-**API rate limiting.** We don’t enforce rate limits in-app by default; we assume Vercel or a reverse proxy handles abuse. For stricter control, we’d add a rate-limit layer in front of chat and sync endpoints.
+**API rate limiting.** We enforce Redis-backed rate limits on chat, search, export, and analytics. When Redis is unavailable, limits bypass so the app stays usable. Chat and sync get stricter tiers; analytics gets per-IP limits. Edge or CDN rate limiting remains recommended for abuse protection. We don’t enforce rate limits in-app by default; we assume Vercel or a reverse proxy handles abuse. For stricter control, we’d add a rate-limit layer in front of chat and sync endpoints.
 
 **Model unpredictability.** LLM outputs vary. We treat the AI assistant as an aid, not the source of truth; critical actions (e.g. deal stage changes) stay in the main app with explicit user steps. We avoid letting the model drive irreversible state changes without confirmation.
 
 ---
 
-## Local Development
+## Run Locally
 
-### Prerequisites
-
-- **Node.js** >= 18
-- **PostgreSQL** >= 12 (or Supabase)
-- **npm** >= 9
-
-### Setup
+**Quick start:**
 
 ```bash
 git clone https://github.com/parbhatkapila4/Sentinel.git
@@ -564,15 +566,17 @@ npm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with required variables (see below). Then:
+Edit `.env.local` with required variables (see [Required Environment Variables](#required-environment-variables) below). Then:
 
 ```bash
-npm run db:generate
-npm run db:push
+npx prisma generate
+npx prisma migrate dev
 npm run dev
 ```
 
 App runs at `http://localhost:3000`.
+
+For full setup (env vars, Docker, Vercel deployment), see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
 
 ---
 
@@ -596,12 +600,25 @@ UPSTASH_REDIS_REST_TOKEN=...
 
 # Email
 RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=notifications@yourdomain.com
 
 # App Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Cron Jobs
-CRON_SECRET=your-secret-key-here  # Required for /api/cron/* endpoints
+# Cron Jobs (required for /api/cron/*)
+CRON_SECRET=your-secret-key-here
+
+# Analytics (privacy-compliant; fail-safe)
+NEXT_PUBLIC_ANALYTICS_ENABLED=true
+ANALYTICS_API_KEY=optional-key-for-metrics-summary
+
+# Sentry
+NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/...
+SENTRY_PERFORMANCE_SAMPLE_RATE=0.1
+
+# Rate Limiting (Redis required; defaults apply if unset)
+RATE_LIMIT_STRICT=30
+RATE_LIMIT_LENIENT=200
 ```
 
 **Note:** Integration API keys (Salesforce, HubSpot, Google Calendar) are stored per-user in the database and configured through the Settings UI, not as environment variables.
@@ -612,11 +629,11 @@ CRON_SECRET=your-secret-key-here  # Required for /api/cron/* endpoints
 
 ### Authentication
 
-All API requests use Bearer auth. Include the token in the `Authorization` header:
+Browser requests use Clerk session cookies automatically. For API clients, send a Bearer token in the `Authorization` header when the route supports it. Some routes (e.g. cron) expect `Authorization: Bearer CRON_SECRET`.
 
 ```bash
-curl -X GET "https://your-domain.com/api/deals" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+curl -X GET "https://your-domain.com/api/deals/search?q=Acme" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
   -H "Content-Type: application/json"
 ```
 
@@ -652,6 +669,15 @@ curl -X GET "https://your-domain.com/api/deals" \
 | ------ | -------------- | ------------ |
 | GET    | `/api/auth/me` | Current user |
 
+#### Alerts, Analytics, Metrics
+
+| Method | Endpoint                   | Description                                    |
+| ------ | -------------------------- | ---------------------------------------------- |
+| GET    | `/api/alerts`              | Deal alerts / at-risk summary                  |
+| POST   | `/api/analytics/track`     | Client analytics events (rate-limited; no PII) |
+| GET    | `/api/metrics/performance` | Performance metrics                            |
+| GET    | `/api/metrics/summary`     | Aggregate business metrics (x-api-key or auth) |
+
 #### Integrations
 
 | Method | Endpoint                                   | Description                                    |
@@ -661,7 +687,21 @@ curl -X GET "https://your-domain.com/api/deals" \
 | POST   | `/api/integrations/google-calendar/sync`   | Manually sync Google Calendar events           |
 | GET    | `/api/integrations/google-calendar/events` | Get upcoming meetings (optional `?dealId=xxx`) |
 | POST   | `/api/integrations/google-calendar/events` | Create a new meeting                           |
-| GET    | `/api/cron/sync-integrations`              | Auto-sync all integrations (cron)              |
+
+#### Cron (Bearer CRON_SECRET)
+
+| Method | Endpoint                      | Description                    |
+| ------ | ----------------------------- | ------------------------------ |
+| GET    | `/api/cron/sync-integrations` | Auto-sync all integrations     |
+| GET    | `/api/cron/process-webhooks`  | Process webhook delivery queue |
+| GET    | `/api/cron/process-emails`    | Process email queue            |
+
+#### Other
+
+| Method | Endpoint           | Description          |
+| ------ | ------------------ | -------------------- |
+| POST   | `/api/deals/bulk`  | Bulk deal operations |
+| DELETE | `/api/user/delete` | Delete current user  |
 
 #### Example: Sync Salesforce
 
@@ -765,15 +805,29 @@ src/
 │   ├── insights-panel.tsx
 │   └── ui/                 # Shared primitives (sidebar, skeleton, etc.)
 ├── lib/                    # Core logic
+│   ├── auth.ts            # Authentication helpers
+│   ├── prisma.ts          # DB client singleton
+│   ├── redis.ts           # Upstash Redis (optional)
+│   ├── dealRisk.ts        # Risk calculation
+│   ├── ai-router.ts       # AI model routing
+│   ├── ai-context.ts      # AI context building
+│   ├── rate-limit.ts      # Redis-backed rate limiter
+│   ├── api-rate-limit.ts  # API route rate-limit wrapper
+│   ├── cache.ts           # Caching (withCache, invalidate)
+│   ├── retry.ts           # Retry with backoff
+│   ├── circuit-breaker.ts # Circuit breaker for external calls
+│   ├── realtime.ts        # SSE event publish
+│   ├── audit-log.ts       # Audit logging
 │   ├── salesforce.ts      # Salesforce API client
 │   ├── hubspot.ts         # HubSpot API client
 │   ├── google-calendar.ts # Google Calendar API client
 │   ├── slack.ts           # Slack webhook utilities
-│   ├── auth.ts            # Authentication helpers
-│   ├── dealRisk.ts        # Risk calculation
-│   ├── ai-router.ts       # AI model routing
+│   ├── analytics-client.ts# Client-side analytics
+│   ├── business-metrics.ts# Server-side metrics (Redis)
 │   └── utils.ts           # Utility functions
 ├── hooks/                  # React hooks
+│   ├── use-realtime.ts    # SSE client for real-time updates
+│   └── use-keyboard-shortcuts.ts
 ├── types/                  # Shared TypeScript types
 ├── test/                   # Mocks and Vitest setup
 └── middleware.ts           # Auth boundary
@@ -790,7 +844,7 @@ src/
 | `npm run test:coverage` | Coverage report   |
 | `npm run test:e2e`      | Playwright E2E    |
 
-Unit tests live in `src/app/actions/__tests__` and `src/lib/__tests__`. E2E specs are in `e2e/` (home, dashboard, deals). Use `src/test/mocks` for auth and Prisma in tests.
+Unit tests live in `src/app/actions/__tests__`, `src/app/api/__tests__`, and `src/lib/__tests__`. E2E specs are in `e2e/` (home, dashboard, deals). Use `src/test/mocks` for auth and Prisma in tests. Run `npx playwright install` before E2E if browsers are not installed.
 
 ---
 
@@ -850,9 +904,10 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 - **RBAC**: Team roles (owner, admin, member, viewer); scope enforced in Server Actions and API.
 - **Row-level security**: All deal/list queries filtered by `userId` or team membership.
 - **Webhooks**: HMAC-SHA256 signatures; verify `X-Webhook-Signature` before processing.
-- **Headers**: HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy via `next.config`.
+- **Headers**: HSTS, X-Frame-Options, X-Content-Type-Options, CSP, Referrer-Policy via `next.config`.
 - **Input validation**: Zod in `src/lib/env`; validate request bodies in API routes.
-- **Rate limiting**: Recommended at edge/CDN for production (e.g. Vercel, Cloudflare).
+- **Rate limiting**: Redis-backed (`src/lib/api-rate-limit.ts`); per-user/IP tiers for chat, export, search. Graceful degradation when Redis unavailable.
+- **Request size**: Middleware caps body size (10MB) for POST/PUT/PATCH.
 
 ---
 
@@ -890,6 +945,8 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 
 **What improved performance the most.** Indexing `userId`, `teamId`, `dealId`, and `createdAt` on the main query paths; keeping AI context small and structured; and using Server Components for initial deal list so the client doesn’t refetch everything on load.
 
+**Rate limiting and optional Redis.** Early on, missing Redis caused runtime errors in rate-limit and cache code. We refactored to null-check Redis everywhere and bypass gracefully. That let us deploy without Redis for small setups while still using it when available for production hardening.
+
 ---
 
 ## If Running at Scale
@@ -920,15 +977,27 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 
 **Code reviews.** Server Actions and API routes have a clear contract: actions for app-driven mutations, API for webhooks and cron. Reviewers can check auth, scoping (userId/teamId), and error handling in one place. Integration code is isolated (e.g. `salesforce.ts`, `hubspot.ts`), so changes to one provider don’t ripple everywhere.
 
-**Documentation automation.** API routes are documented in the README and exposed via OpenAPI at `/api-docs`. Webhook payloads and env vars are specified in one file. That reduces “how do I call X?” questions and keeps docs close to the code.
+**Documentation automation.** API routes are documented in the README and exposed via OpenAPI at `/api-docs`. Webhook payloads and env vars are specified in one file. That reduces “how do I call X?” questions and keeps docs close to the code. Real-time updates are delivered via SSE at `/api/events` and the `useRealtime` hook; deal and team actions are recorded in an immutable audit trail.
 
 **Architectural clarity.** The stack diagram and project structure show where presentation, application, and services sit. Real-time, notifications, and deal risk are additive modules with clear entry points. That makes it easier to extend (e.g. a new integration or a new event type) without reworking the core.
 
 ---
 
+## Documentation
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — System overview, tech stack, directory structure, data flow, caching, security
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** — Prerequisites, local setup, Vercel deployment, env vars
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — How to run locally, branch naming, PR checks, code style
+- **[docs/API.md](docs/API.md)** — API index and links to full OpenAPI spec
+- **[CHANGELOG.md](CHANGELOG.md)** — Version history and notable changes
+
+In-app: [API Reference](/api-docs) (OpenAPI/Swagger), [Developer Docs](/docs/developers).
+
+---
+
 ## Contributing
 
-We welcome contributions. Please read our contributing guidelines before submitting a pull request.
+We welcome contributions. Please read our [contributing guidelines](CONTRIBUTING.md) before submitting a pull request.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/new-feature`)
