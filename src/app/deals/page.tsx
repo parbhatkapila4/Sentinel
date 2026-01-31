@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { unstable_noStore as noStore } from "next/cache";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
-import { formatDistanceToNow } from "date-fns";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ExportButton } from "@/components/export-button";
@@ -11,7 +10,7 @@ import { DealsFilter } from "@/components/deals-filter";
 import { DealsScopeFilter } from "@/components/deals-scope-filter";
 import { PipelineValueCard } from "@/components/pipeline-value-card";
 import { DemoBanner } from "@/components/demo-banner";
-import { DeleteDealButton } from "@/components/delete-deal-button";
+import { DealsTableWithBulk } from "@/components/deals-table-with-bulk";
 import { seedDemoDataForUser, hasDemoData } from "@/lib/demo-data";
 
 export const dynamic = "force-dynamic";
@@ -115,7 +114,11 @@ export default async function DealsPage({
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <ExportButton className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-[#8a8a8a] hover:text-white transition-colors bg-[#131313] border border-[#1f1f1f] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]" />
+            <ExportButton
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-[#8a8a8a] hover:text-white transition-colors bg-[#131313] border border-[#1f1f1f] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+              teamId={teamId}
+              includeTeamDeals={scope === "all"}
+            />
             <Link
               href="/deals/new"
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors"
@@ -233,7 +236,7 @@ export default async function DealsPage({
         <div className="rounded-2xl border border-[#1f1f1f] bg-[#101010] p-4 lg:p-6 shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[#1a1a1a] pb-5">
             <h3 className="text-lg font-semibold text-white">Deal Pipeline</h3>
-            <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+            <div className="flex flex-col sm:flex-row gap-3 flex-wrap max-md:gap-2">
               <Suspense fallback={<div className="h-8 w-24 bg-[#151515] rounded-xl animate-pulse" />}>
                 <DealsScopeFilter currentScope={scope} />
               </Suspense>
@@ -292,183 +295,19 @@ export default async function DealsPage({
               </Link>
             </div>
           ) : (
-            <>
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <table className="w-full min-w-[700px]">
-                  <thead>
-                    <tr className="border-b border-[#1a1a1a]">
-                      <th className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                        Deal
-                      </th>
-                      <th className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                        Value
-                      </th>
-                      <th className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                        Stage
-                      </th>
-                      <th className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                        Risk
-                      </th>
-                      <th className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                        Assigned to
-                      </th>
-                      <th className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                        Next Action
-                      </th>
-                      <th className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                        Last Activity
-                      </th>
-                      <th className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedDeals.map((deal) => {
-                      const riskLevel = formatRiskLevel(deal.riskScore);
-                      return (
-                        <tr
-                          key={deal.id}
-                          className="border-b border-[#1a1a1a] last:border-0 hover:bg-[#151515] transition-colors"
-                        >
-                          <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-[#151515] border border-[#1f1f1f] flex items-center justify-center">
-                                <svg
-                                  className="w-5 h-5 text-[#8b1a1a]"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"
-                                  />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium text-white">
-                                {deal.name}
-                              </span>
-                              {deal.isDemo && (
-                                <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/20 text-blue-400 rounded">
-                                  DEMO
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <span className="text-sm font-semibold text-white">
-                              ${deal.value.toLocaleString("en-US")}
-                            </span>
-                          </td>
-                          <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <span className="text-sm text-[#8a8a8a]">
-                              {deal.stage}
-                            </span>
-                          </td>
-                          <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <span
-                              className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${riskLevel === "High"
-                                ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                : riskLevel === "Medium"
-                                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                                  : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                                }`}
-                            >
-                              {riskLevel}
-                            </span>
-                          </td>
-                          <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <span className="text-sm text-[#8a8a8a]">
-                              {deal.assignedTo
-                                ? [deal.assignedTo.name, deal.assignedTo.surname]
-                                  .filter(Boolean)
-                                  .join(" ") || "—"
-                                : "—"}
-                            </span>
-                          </td>
-                          <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <span className="text-sm text-[#8a8a8a]">
-                              {deal.recommendedAction?.label ||
-                                "No action needed"}
-                            </span>
-                          </td>
-                          <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <span className="text-sm text-[#8a8a8a]">
-                              {formatDistanceToNow(
-                                new Date(deal.lastActivityAt),
-                                {
-                                  addSuffix: true,
-                                }
-                              )}
-                            </span>
-                          </td>
-                          <td className="py-3 sm:py-4 px-3 sm:px-4">
-                            <div className="flex items-center gap-3">
-                              <Link
-                                href={`/deals/${deal.id}`}
-                                className="text-sm text-[#8b1a1a] hover:text-[#6b0f0f] transition-colors font-medium"
-                              >
-                                View →
-                              </Link>
-                              {!deal.isDemo && (
-                                <DeleteDealButton
-                                  dealId={deal.id}
-                                  dealName={deal.name}
-                                  variant="link"
-                                  redirectTo="/dashboard"
-                                  className="text-sm text-red-400 hover:text-red-300"
-                                />
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="sm:hidden space-y-3">
-                {sortedDeals.map((deal) => {
-                  const riskLevel = formatRiskLevel(deal.riskScore);
-                  return (
-                    <Link
-                      key={deal.id}
-                      href={`/deals/${deal.id}`}
-                      className="block bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/[0.07] transition-colors"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-white">{deal.name}</span>
-                        <span className="text-sm text-white/60">
-                          ${deal.value.toLocaleString("en-US")}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-white/50 flex-wrap">
-                        <span className="px-2 py-0.5 rounded-full bg-white/10">
-                          {deal.stage}
-                        </span>
-                        <span>—</span>
-                        {deal.isDemo && (
-                          <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/20 text-blue-400 rounded">
-                            DEMO
-                          </span>
-                        )}
-                        <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${riskLevel === "High"
-                            ? "bg-red-500/20 text-red-400"
-                            : riskLevel === "Medium"
-                              ? "bg-amber-500/20 text-amber-400"
-                              : "bg-emerald-500/20 text-emerald-400"
-                            }`}
-                        >
-                          {riskLevel}
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </>
+            <DealsTableWithBulk
+              deals={sortedDeals.map((d) => ({
+                id: d.id,
+                name: d.name,
+                value: d.value,
+                stage: d.stage,
+                riskScore: d.riskScore,
+                assignedTo: d.assignedTo ?? null,
+                recommendedAction: d.recommendedAction ?? null,
+                lastActivityAt: d.lastActivityAt,
+                isDemo: d.isDemo,
+              }))}
+            />
           )}
         </div>
       </div>

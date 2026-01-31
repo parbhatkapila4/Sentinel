@@ -9,6 +9,7 @@ import { TeamSelector } from "@/components/team-selector";
 import { NotificationsDropdown } from "@/components/notifications-dropdown";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useRealtime } from "@/hooks/use-realtime";
+import { trackPageView } from "@/lib/analytics-client";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -77,6 +78,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       }
     },
   });
+
+  useEffect(() => {
+    if (pathname) trackPageView(pathname);
+  }, [pathname]);
 
   const navItems: NavItem[] = [
     {
@@ -382,6 +387,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowHelp(false);
+        setShowAlerts(false);
+        setShowSearchResults(false);
+        setShowVideoTutorial(false);
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, []);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -404,6 +422,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           )}
           <aside
             className={`fixed inset-y-0 left-0 z-50 ${isSidebarCollapsed ? "w-16" : "w-64"} bg-[#0a0a0a] border-r border-white/10 transform transition-all duration-300 lg:static lg:translate-x-0 flex flex-col h-screen overflow-hidden ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
+            aria-label="Main navigation"
           >
             <button
               onClick={() => setMobileMenuOpen(false)}
@@ -445,7 +464,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     Main
                   </p>
                 )}
-                <nav className="space-y-1">
+                <nav className="space-y-1" aria-label="Primary navigation">
                   {navItems.map((item) => {
                     const isActive = isActiveRoute(item.href);
                     const isExpanded = expandedItems.has(item.label);
@@ -455,11 +474,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       <div key={item.label}>
                         {hasSubItems ? (
                           <div
+                            role="button"
+                            tabIndex={0}
+                            aria-expanded={isExpanded}
+                            aria-label={`${item.label} ${isExpanded ? "collapse" : "expand"} submenu`}
                             className={`group flex items-center ${isSidebarCollapsed ? "justify-center px-2" : "gap-3 px-3"} py-2.5 rounded-xl transition-all cursor-pointer ${isActive
                               ? "bg-white/10 text-white shadow-sm"
                               : "text-white/70 hover:text-white hover:bg-white/5"
                               }`}
                             onClick={() => toggleExpand(item.label)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                toggleExpand(item.label);
+                              }
+                            }}
                           >
                             <span
                               className={`shrink-0 ${isActive ? "text-white" : "text-white/60"
@@ -795,11 +824,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {!isInsightsPage && (
-          <header className="flex-shrink-0 sticky top-0 z-30 flex items-center justify-between gap-3 px-4 lg:px-6 py-3 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-white/10 min-w-0">
+          <header className="flex-shrink-0 sticky top-0 z-30 flex items-center justify-between gap-3 px-4 lg:px-6 py-3 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-white/10 min-w-0 max-md:flex-wrap max-md:gap-2" role="banner">
             <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0">
               <button
                 type="button"
-                className="lg:hidden p-2 rounded-lg hover:bg-white/10"
+                className="lg:hidden p-2 rounded-lg hover:bg-white/10 max-lg:min-h-[44px] max-lg:min-w-[44px] max-lg:flex max-lg:items-center max-lg:justify-center"
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Open menu"
               >
@@ -849,12 +878,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     />
                   </svg>
                   <input
-                    type="text"
+                    type="search"
                     placeholder="Search deals, companies..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => searchQuery && setShowSearchResults(true)}
                     className="bg-transparent text-sm text-white placeholder-[#6b6b6b] placeholder:opacity-0 sm:placeholder:opacity-100 outline-none flex-1 min-w-0"
+                    aria-label="Search deals and companies"
+                    autoComplete="off"
                   />
                   <span className="text-xs text-white/30 ml-1 sm:ml-2 shrink-0 hidden sm:inline">⌘K</span>
                   {searchQuery && (
@@ -865,6 +896,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                         setShowSearchResults(false);
                       }}
                       className="text-[#6b6b6b] hover:text-white hidden sm:inline-flex shrink-0"
+                      aria-label="Clear search"
                     >
                       <svg
                         className="w-4 h-4"
@@ -919,6 +951,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     setShowAlerts(false);
                   }}
                   className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-[#131313] border border-[#1f1f1f] flex items-center justify-center text-[#8a8a8a] hover:text-white hover:border-white/20 transition-all"
+                  aria-label="Help and support"
+                  aria-expanded={showHelp}
+                  aria-haspopup="true"
                 >
                   <svg
                     className="w-5 h-5"
@@ -936,9 +971,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </button>
 
                 {showHelp && (
-                  <div className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,18rem)] sm:w-72 bg-[#131313] border border-[#1f1f1f] rounded-xl shadow-2xl z-50 max-h-[70vh] overflow-y-auto">
+                  <div
+                    className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,18rem)] sm:w-72 bg-[#131313] border border-[#1f1f1f] rounded-xl shadow-2xl z-50 max-h-[70vh] overflow-y-auto"
+                    role="menu"
+                    aria-label="Help and support menu"
+                  >
                     <div className="px-4 py-3 border-b border-[#1f1f1f]">
-                      <h3 className="text-sm font-semibold text-white">
+                      <h3 id="help-menu-title" className="text-sm font-semibold text-white">
                         Help & Support
                       </h3>
                     </div>
@@ -1006,6 +1045,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     setShowHelp(false);
                   }}
                   className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-[#131313] border border-[#1f1f1f] flex items-center justify-center text-[#8a8a8a] hover:text-white hover:border-white/20 transition-all relative"
+                  aria-label={`Risk alerts${alerts.length > 0 ? `, ${alerts.length} unread` : ""}`}
+                  aria-expanded={showAlerts}
+                  aria-haspopup="true"
                 >
                   <svg
                     className="w-5 h-5"
@@ -1028,7 +1070,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </button>
 
                 {showAlerts && (
-                  <div className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,20rem)] sm:w-80 bg-[#131313] border border-[#1f1f1f] rounded-xl shadow-2xl z-50 max-h-[70vh] sm:max-h-96 overflow-y-auto">
+                  <div
+                    className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,20rem)] sm:w-80 bg-[#131313] border border-[#1f1f1f] rounded-xl shadow-2xl z-50 max-h-[70vh] sm:max-h-96 overflow-y-auto"
+                    role="menu"
+                    aria-label="Risk alerts"
+                  >
                     <div className="px-4 py-3 border-b border-[#1f1f1f] flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-white">
                         Risk Alerts
@@ -1101,7 +1147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
         )}
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0b0b0b] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0b0b0b] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent" tabIndex={-1}>
           {children}
         </main>
 
@@ -1111,14 +1157,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             onClick={() => setShowVideoTutorial(false)}
             role="dialog"
             aria-modal="true"
-            aria-label="Video tutorial"
+            aria-labelledby="video-tutorial-title"
           >
             <div
               className="relative w-full max-w-4xl bg-[#131313] rounded-xl border border-[#1f1f1f] overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-[#1f1f1f]">
-                <h3 className="text-sm font-semibold text-white">
+                <h3 id="video-tutorial-title" className="text-sm font-semibold text-white">
                   Video Tutorial
                 </h3>
                 <button
@@ -1138,6 +1184,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 autoPlay
                 className="w-full aspect-video"
                 onEnded={() => setShowVideoTutorial(false)}
+                aria-label="Sentinel tutorial video"
               >
                 Your browser does not support the video tag.
               </video>

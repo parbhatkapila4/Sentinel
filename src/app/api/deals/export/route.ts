@@ -1,23 +1,118 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatDistanceToNow } from "date-fns";
+import { handleApiError } from "@/lib/api-response";
+import { withRateLimit } from "@/lib/api-rate-limit";
+import { ValidationError } from "@/lib/errors";
 
-export async function GET() {
+const EXPORT_LIMIT = 5000;
+
+type DealExport = Awaited<ReturnType<typeof getAllDeals>>[number];
+
+function escapeCsvValue(val: string): string {
+  if (val.includes(",") || val.includes('"') || val.includes("\n")) {
+    return `"${val.replace(/"/g, '""')}"`;
+  }
+  return val;
+}
+
+function toExportRow(deal: DealExport) {
+  const assignedTo = deal.assignedTo
+    ? [deal.assignedTo.name, deal.assignedTo.surname].filter(Boolean).join(" ") || ""
+    : "";
+  return {
+    name: deal.name,
+    stage: deal.stage,
+    value: deal.value,
+    company: (deal as DealExport & { location?: string | null }).location ?? "",
+    createdAt: new Date(deal.createdAt).toISOString(),
+    lastActivityAt: new Date(deal.lastActivityAt).toISOString(),
+    riskScore: deal.riskScore,
+    primaryRiskReason: deal.primaryRiskReason ?? "",
+    assignedTo,
+  };
+}
+
+async function exportHandler(request: NextRequest) {
   try {
-    const deals = await getAllDeals();
+    const { searchParams } = request.nextUrl;
+    const format = (searchParams.get("format") || "pdf").toLowerCase();
+    const teamId = searchParams.get("teamId") ?? undefined;
+    const includeTeamDeals = searchParams.get("includeTeamDeals") === "true";
+
+    const validFormats = ["csv", "json", "pdf"];
+    if (!validFormats.includes(format)) {
+      throw new ValidationError(`Invalid format. Use: ${validFormats.join(", ")}`, {
+        format: `Must be one of: ${validFormats.join(", ")}`,
+      });
+    }
+
+    const options =
+      teamId ? { teamId } : includeTeamDeals ? { includeTeamDeals: true } : undefined;
+    const deals = await getAllDeals(options);
+
+    if (deals.length > EXPORT_LIMIT) {
+      throw new ValidationError(
+        `Export limit exceeded. Maximum ${EXPORT_LIMIT} deals per export.`,
+        { limit: `Reduce scope or filters. Current: ${deals.length} deals.` }
+      );
+    }
 
     if (deals.length === 0) {
       return NextResponse.json({ error: "No deals found" }, { status: 404 });
     }
 
+    if (format === "csv") {
+      const headers = [
+        "name",
+        "stage",
+        "value",
+        "company",
+        "createdAt",
+        "lastActivityAt",
+        "riskScore",
+        "primaryRiskReason",
+        "assignedTo",
+      ];
+      const rows = deals.map((d) => toExportRow(d));
+      const csvLines = [
+        headers.join(","),
+        ...rows.map((r) =>
+          headers
+            .map((h) => escapeCsvValue(String((r as Record<string, unknown>)[h] ?? "")))
+            .join(",")
+        ),
+      ];
+      const csv = csvLines.join("\n");
+
+      return new NextResponse(csv, {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="deals-export-${new Date().toISOString().split("T")[0]}.csv"`,
+        },
+      });
+    }
+
+    if (format === "json") {
+      const data = deals.map((d) => toExportRow(d));
+      const json = JSON.stringify(data, null, 2);
+
+      return new NextResponse(json, {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Content-Disposition": `attachment; filename="deals-export-${new Date().toISOString().split("T")[0]}.json"`,
+        },
+      });
+    }
+
     const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF();
 
     const textPrimary: [number, number, number] = [51, 51, 51];
     const textSecondary: [number, number, number] = [102, 102, 102];
     const borderColor: [number, number, number] = [200, 200, 200];
 
+    const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 20;
@@ -203,15 +298,12 @@ export async function GET() {
     return new NextResponse(buffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="deals-export-${new Date().toISOString().split("T")[0]
-          }.pdf"`,
+        "Content-Disposition": `attachment; filename="deals-export-${new Date().toISOString().split("T")[0]}.pdf"`,
       },
     });
   } catch (error) {
-    console.error("Error generating PDF:", error);
-    return NextResponse.json(
-      { error: "Failed to generate PDF" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
+
+export const GET = withRateLimit(exportHandler, { tier: "export" });

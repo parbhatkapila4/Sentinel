@@ -1,4 +1,5 @@
 import { unstable_noStore as noStore } from "next/cache";
+import nextDynamic from "next/dynamic";
 import { getAllDeals } from "@/app/actions/deals";
 import {
   calculatePipelineMetrics,
@@ -10,17 +11,46 @@ import {
 } from "@/lib/analytics";
 import { forecastPipelineValue } from "@/lib/predictions";
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { BusinessPerformanceTrends } from "@/components/business-performance-trends";
-import { TopRevenueSourcesChart } from "@/components/top-revenue-sources-chart";
 import { TopDeals } from "@/components/top-deals";
-import { CustomerByCountry } from "@/components/customer-by-country";
-import { PipelineForecastChart } from "@/components/pipeline-forecast";
 import { InsightsPanel } from "@/components/insights-panel";
 import { DemoBanner } from "@/components/demo-banner";
 import { UpcomingMeetingsWidget } from "@/components/upcoming-meetings-widget";
+import { ChartSkeleton } from "@/components/ui/skeleton";
 import { formatRevenue } from "@/lib/utils";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { seedDemoDataForUser, hasDemoData } from "@/lib/demo-data";
+
+const BusinessPerformanceTrends = nextDynamic(
+  () =>
+    import("@/components/business-performance-trends").then((m) => ({
+      default: m.BusinessPerformanceTrends,
+    })),
+  { loading: () => <ChartSkeleton /> }
+);
+
+const TopRevenueSourcesChart = nextDynamic(
+  () =>
+    import("@/components/top-revenue-sources-chart").then((m) => ({
+      default: m.TopRevenueSourcesChart,
+    })),
+  { loading: () => <ChartSkeleton className="min-h-[280px] lg:min-h-[320px] xl:min-h-[350px]" /> }
+);
+
+const CustomerByCountry = nextDynamic(
+  () =>
+    import("@/components/customer-by-country").then((m) => ({
+      default: m.CustomerByCountry,
+    })),
+  { loading: () => <ChartSkeleton className="min-h-[240px]" /> }
+);
+
+const PipelineForecastChart = nextDynamic(
+  () =>
+    import("@/components/pipeline-forecast").then((m) => ({
+      default: m.PipelineForecastChart,
+    })),
+  { loading: () => <ChartSkeleton /> }
+);
 
 export const dynamic = "force-dynamic";
 

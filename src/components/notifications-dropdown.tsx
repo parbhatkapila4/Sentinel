@@ -70,6 +70,16 @@ export function NotificationsDropdown() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    if (open) {
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
+    }
+  }, [open]);
+
   async function markRead(id: string) {
     try {
       await fetch(`/api/notifications/${id}/read`, { method: "POST" });
@@ -108,7 +118,9 @@ export function NotificationsDropdown() {
         type="button"
         onClick={() => setOpen(!open)}
         className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-[#131313] border border-[#1f1f1f] flex items-center justify-center text-[#8a8a8a] hover:text-white hover:border-white/20 transition-all relative"
-        aria-label="Notifications"
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+        aria-expanded={open}
+        aria-haspopup="true"
       >
         <svg
           className="w-5 h-5"
@@ -131,7 +143,11 @@ export function NotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-[#1a1a1a] rounded-xl border border-white/10 shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col">
+        <div
+          className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-[#1a1a1a] rounded-xl border border-white/10 shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col"
+          role="menu"
+          aria-label="Notifications"
+        >
           <div className="px-4 py-3 border-b border-[#1f1f1f] flex items-center justify-between shrink-0">
             <h3 className="text-sm font-semibold text-white">Notifications</h3>
             {unreadCount > 0 && (
@@ -139,6 +155,7 @@ export function NotificationsDropdown() {
                 type="button"
                 onClick={markAllRead}
                 className="text-xs text-[#8a8a8a] hover:text-white transition-colors"
+                aria-label="Mark all notifications as read"
               >
                 Mark all read
               </button>

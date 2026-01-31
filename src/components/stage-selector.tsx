@@ -24,6 +24,7 @@ export function StageSelector({ dealId, currentStage }: StageSelectorProps) {
       return;
     }
 
+    setIsOpen(false);
     setIsLoading(true);
     try {
       await updateDealStage(dealId, newStage);
@@ -34,7 +35,6 @@ export function StageSelector({ dealId, currentStage }: StageSelectorProps) {
       toast.error("Failed to update stage");
     } finally {
       setIsLoading(false);
-      setIsOpen(false);
     }
   }
 
@@ -43,18 +43,36 @@ export function StageSelector({ dealId, currentStage }: StageSelectorProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-50"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-50 disabled:cursor-wait min-w-[140px] justify-between"
       >
-        <span className="capitalize">{currentStage.replace(/_/g, " ")}</span>
-        <svg
-          className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        {isLoading ? (
+          <>
+            <span className="text-white/80 animate-pulse">Changing stage, hang on...</span>
+            <svg
+              className="w-4 h-4 animate-spin shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </>
+        ) : (
+          <>
+            <span className="capitalize">{currentStage.replace(/_/g, " ")}</span>
+            <svg
+              className={`w-4 h-4 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </>
+        )}
       </button>
 
       {isOpen && (

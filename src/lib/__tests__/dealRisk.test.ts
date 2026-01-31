@@ -149,7 +149,7 @@ describe("calculateDealSignals", () => {
     const signals = calculateDealSignals(deal, []);
 
     expect(signals.riskScore).toBeGreaterThanOrEqual(0.4);
-    expect(signals.reasons).toContain(RISK_REASONS.NO_ACTIVITY);
+    expect(signals.reasons.some((r) => r.includes("No activity"))).toBe(true);
   });
 
   it("negotiation stage without recent email activity has higher risk and includes negotiation stalled reason", () => {

@@ -8,6 +8,7 @@ import { useState, useTransition, useEffect } from "react";
 import { COUNTRIES } from "@/lib/countries";
 import { STAGE_FORM_OPTIONS } from "@/lib/config";
 import { toast } from "sonner";
+import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics-client";
 
 type TeamItem = { id: string; name: string; slug: string; memberCount: number; myRole: string };
 type MemberItem = { id: string; userId: string; role: string; user: { id: string; name: string | null; surname: string | null; email: string } };
@@ -92,6 +93,7 @@ export default function NewDealPage() {
     startTransition(async () => {
       try {
         await createDeal(formData);
+        trackEvent(ANALYTICS_EVENTS.DEAL_CREATED);
         router.push("/dashboard");
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to create deal. Please try again.";
@@ -210,7 +212,7 @@ export default function NewDealPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
               <div className="space-y-3">
-                <label className="flex items-center gap-2 text-sm font-medium text-white/70">
+                <label htmlFor="deal-name" className="flex items-center gap-2 text-sm font-medium text-white/70">
                   <svg
                     className="w-4 h-4 text-blue-400"
                     fill="none"
@@ -227,16 +229,18 @@ export default function NewDealPage() {
                   Deal Name
                 </label>
                 <input
+                  id="deal-name"
                   type="text"
                   value={dealName}
                   onChange={(e) => setDealName(e.target.value)}
                   placeholder="e.g., Acme Corp - Enterprise License"
                   className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/25 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.05] transition-all text-base"
+                  aria-describedby={error ? "deal-error" : undefined}
                 />
               </div>
 
-              <div className="space-y-4">
-                <label className="flex items-center gap-2 text-sm font-medium text-white/70">
+              <div className="space-y-4" role="group" aria-labelledby="stage-label">
+                <div id="stage-label" className="flex items-center gap-2 text-sm font-medium text-white/70">
                   <svg
                     className="w-4 h-4 text-red-400"
                     fill="none"
@@ -251,13 +255,14 @@ export default function NewDealPage() {
                     />
                   </svg>
                   Select Stage
-                </label>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:gap-4">
                   {STAGE_FORM_OPTIONS.map((stage) => (
                     <button
                       key={stage.value}
                       type="button"
                       onClick={() => setSelectedStage(stage.value)}
+                      aria-pressed={selectedStage === stage.value}
                       className={`relative group p-4 rounded-2xl border transition-all duration-300 text-left ${selectedStage === stage.value
                         ? `${stage.bgColor} ${stage.borderColor} border-2`
                         : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
@@ -300,7 +305,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-center gap-2 text-sm font-medium text-white/70">
+                <label htmlFor="deal-value" className="flex items-center gap-2 text-sm font-medium text-white/70">
                   <svg
                     className="w-4 h-4 text-emerald-400"
                     fill="none"
@@ -317,10 +322,11 @@ export default function NewDealPage() {
                   Deal Value
                 </label>
                 <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-400 font-semibold text-lg">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-400 font-semibold text-lg" aria-hidden="true">
                     $
                   </span>
                   <input
+                    id="deal-value"
                     type="text"
                     inputMode="numeric"
                     value={formatCurrency(dealValue)}
@@ -337,7 +343,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-center gap-2 text-sm font-medium text-white/70">
+                <label htmlFor="deal-location" className="flex items-center gap-2 text-sm font-medium text-white/70">
                   <svg
                     className="w-4 h-4 text-cyan-400"
                     fill="none"
@@ -360,9 +366,11 @@ export default function NewDealPage() {
                 </label>
                 <div className="relative">
                   <select
+                    id="deal-location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     className="w-full pl-5 pr-14 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-white focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.05] transition-all text-base appearance-none"
+                    aria-label="Location (optional)"
                   >
                     <option value="" className="bg-[#030303]">
                       Select a country...
@@ -446,7 +454,7 @@ export default function NewDealPage() {
               )}
 
               {error && (
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                <div id="deal-error" role="alert" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
                   <svg
                     className="w-5 h-5 text-red-400 flex-shrink-0"
                     fill="none"

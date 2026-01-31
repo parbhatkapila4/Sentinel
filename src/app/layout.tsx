@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { ClerkProvider } from "@clerk/nextjs";
 import { CommandPalette } from "@/components/command-palette";
 import { WebVitalsTracker } from "@/components/web-vitals-tracker";
+import { SkipLink } from "@/components/skip-link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <SkipLink />
           <WebVitalsTracker />
           <Providers>
             <CommandPalette />

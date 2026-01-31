@@ -6,6 +6,11 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/",
+  "/features",
+  "/pricing",
+  "/privacy",
+  "/about",
+  "/contact",
 ]);
 
 const MAX_REQUEST_SIZE = 10 * 1024 * 1024;

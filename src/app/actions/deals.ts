@@ -35,6 +35,7 @@ import { withCache, invalidateCachePattern, invalidateCache } from "@/lib/cache"
 import type { GetDealsOptions } from "@/types";
 import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
 import { notifyRealtimeEvent } from "@/lib/realtime";
+import { incrementMetric } from "@/lib/business-metrics";
 
 const DEAL_VALUE_AUDIT_THRESHOLD = 100000;
 
@@ -162,6 +163,8 @@ export async function createDeal(formData: FormData) {
         stage: deal.stage,
         value: deal.value,
       });
+
+      void incrementMetric("deal_created");
 
       try {
         await notifyRealtimeEvent(userId, { type: "deal.created", dealId: deal.id });
@@ -350,6 +353,7 @@ export async function getAllDeals(options?: GetDealsOptions) {
         name: deal.name,
         stage: deal.stage,
         value: deal.value,
+        location: deal.location,
         isDemo: deal.isDemo,
         lastActivityAt: signals.lastActivityAt,
         riskScore: signals.riskScore,

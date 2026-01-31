@@ -84,6 +84,17 @@ function Navbar({ className }: { className?: string }) {
     }
   }, [showUserMenu, mobileNavOpen]);
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowUserMenu(false);
+        setMobileNavOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
   return (
     <div
       className={cn(
@@ -123,7 +134,7 @@ function Navbar({ className }: { className?: string }) {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 relative rounded-full border border-white/[0.2] bg-black shadow-input justify-center space-x-4 px-6 lg:px-8 py-4 lg:py-6 ml-4 lg:ml-20 flex-shrink-0">
+        <nav className="hidden md:flex items-center gap-6 relative rounded-full border border-white/[0.2] bg-black shadow-input justify-center space-x-4 px-6 lg:px-8 py-4 lg:py-6 ml-4 lg:ml-20 flex-shrink-0" aria-label="Main navigation">
           <Link
             href="/features"
             className="cursor-pointer text-white hover:opacity-[0.9] transition-opacity whitespace-nowrap"
@@ -131,7 +142,7 @@ function Navbar({ className }: { className?: string }) {
             Features
           </Link>
           <Link
-            href="#pricing"
+            href="/#pricing"
             className="cursor-pointer text-white hover:opacity-[0.9] transition-opacity whitespace-nowrap"
           >
             Pricing
@@ -168,7 +179,7 @@ function Navbar({ className }: { className?: string }) {
                 </Link>
               )}
               <Link href="/features" onClick={() => setMobileNavOpen(false)} className="block px-4 py-3 text-white hover:bg-white/10 transition-colors">Features</Link>
-              <Link href="#pricing" onClick={() => setMobileNavOpen(false)} className="block px-4 py-3 text-white hover:bg-white/10 transition-colors">Pricing</Link>
+              <Link href="/#pricing" onClick={() => setMobileNavOpen(false)} className="block px-4 py-3 text-white hover:bg-white/10 transition-colors">Pricing</Link>
               <Link href="/resources" onClick={() => setMobileNavOpen(false)} className="block px-4 py-3 text-white hover:bg-white/10 transition-colors">Resources</Link>
             </div>
           )}
@@ -185,6 +196,9 @@ function Navbar({ className }: { className?: string }) {
                   type="button"
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-2xl bg-[#131313] border border-[#1f1f1f] hover:bg-[#1a1a1a] transition-colors cursor-pointer min-h-[44px]"
+                  aria-label="User menu"
+                  aria-expanded={showUserMenu}
+                  aria-haspopup="true"
                 >
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#303030] to-[#161616] flex items-center justify-center border border-[#2a2a2a] shrink-0">
                     <span className="text-white text-sm font-semibold">

@@ -6,9 +6,12 @@ import {
   ValidationError,
   ForbiddenError,
   ConflictError,
+  RateLimitError,
+  RetryableError,
+  CircuitBreakerError,
   isAppError,
 } from "@/lib/errors";
-import { errorResponse, successResponse } from "@/lib/api-response";
+import { errorResponse, successResponse, handleApiError } from "@/lib/api-response";
 
 describe("AppError", () => {
   it("has default statusCode 500 and code INTERNAL_ERROR", () => {
@@ -169,5 +172,61 @@ describe("errorResponse", () => {
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.error).toBe("string error");
+  });
+
+  it("formats RateLimitError with status 429 and retryAfter", async () => {
+    const err = new RateLimitError("Too many requests");
+    const res = errorResponse(err);
+    expect(res.status).toBe(429);
+    const body = await res.json();
+    expect(body.code).toBe("RATE_LIMIT_EXCEEDED");
+    expect(body.retryAfter).toBe(60);
+  });
+
+  it("formats CircuitBreakerError with generic message", async () => {
+    const err = new CircuitBreakerError("Circuit open", { failures: 5 });
+    const res = errorResponse(err);
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.error).toContain("temporarily unavailable");
+  });
+});
+
+describe("RateLimitError", () => {
+  it("sets message, statusCode 429, code RATE_LIMIT_EXCEEDED", () => {
+    const err = new RateLimitError();
+    expect(err.message).toBe("Rate limit exceeded");
+    expect(err.statusCode).toBe(429);
+    expect(err.code).toBe("RATE_LIMIT_EXCEEDED");
+  });
+});
+
+describe("RetryableError", () => {
+  it("sets message, statusCode 503, code RETRYABLE_ERROR", () => {
+    const err = new RetryableError("Service busy");
+    expect(err.message).toBe("Service busy");
+    expect(err.statusCode).toBe(503);
+    expect(err.code).toBe("RETRYABLE_ERROR");
+  });
+});
+
+describe("CircuitBreakerError", () => {
+  it("sets message, statusCode 503, code CIRCUIT_BREAKER_OPEN and metadata", () => {
+    const err = new CircuitBreakerError("Open", { failures: 5 });
+    expect(err.message).toBe("Open");
+    expect(err.statusCode).toBe(503);
+    expect(err.code).toBe("CIRCUIT_BREAKER_OPEN");
+    expect(err.metadata).toEqual({ failures: 5 });
+  });
+});
+
+describe("handleApiError", () => {
+  it("returns same response shape as errorResponse", async () => {
+    const err = new NotFoundError("Deal");
+    const res = handleApiError(err);
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.success).toBe(false);
+    expect(body.error).toBe("Deal not found");
   });
 });

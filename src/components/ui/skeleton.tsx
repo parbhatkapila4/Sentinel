@@ -35,6 +35,48 @@ export function TableRowSkeleton() {
   );
 }
 
+export function ChartSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`rounded-2xl border border-white/10 bg-white/5 p-4 lg:p-6 min-h-[280px] lg:min-h-[320px] flex flex-col ${className}`}
+    >
+      <Skeleton className="h-5 w-40 mb-4" />
+      <div className="flex-1 flex items-end gap-2 pt-4">
+        {[40, 65, 45, 80, 55, 70, 50].map((h, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-t min-h-[4px] min-w-0"
+            style={{ height: `${h}%` }}
+          >
+            <Skeleton className="w-full h-full rounded-t" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+export function DealListRowSkeleton() {
+  return (
+    <tr className="border-b border-[#1a1a1a]">
+      <td className="py-3 sm:py-4 px-3 sm:px-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+      </td>
+      <td className="py-3 sm:py-4 px-3 sm:px-4"><Skeleton className="h-4 w-16" /></td>
+      <td className="py-3 sm:py-4 px-3 sm:px-4"><Skeleton className="h-4 w-24" /></td>
+      <td className="py-3 sm:py-4 px-3 sm:px-4"><Skeleton className="h-6 w-14 rounded-full" /></td>
+      <td className="py-3 sm:py-4 px-3 sm:px-4"><Skeleton className="h-4 w-20" /></td>
+      <td className="py-3 sm:py-4 px-3 sm:px-4"><Skeleton className="h-4 w-24" /></td>
+      <td className="py-3 sm:py-4 px-3 sm:px-4"><Skeleton className="h-4 w-20" /></td>
+      <td className="py-3 sm:py-4 px-3 sm:px-4"><Skeleton className="h-4 w-12" /></td>
+    </tr>
+  );
+}
+
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6 max-sm:space-y-4">

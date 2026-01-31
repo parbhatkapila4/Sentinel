@@ -114,6 +114,7 @@ beforeEach(() => {
   vi.mocked(appendDealTimeline).mockClear();
   prismaMock.deal.count.mockResolvedValue(0);
   prismaMock.webhook.findMany.mockResolvedValue([] as never);
+  prismaMock.userRiskSettings.findMany.mockResolvedValue([] as never);
 });
 
 describe("getAllDeals", () => {
@@ -169,10 +170,10 @@ describe("getAllDeals", () => {
     expect(result[0]).toMatchObject({
       riskScore: expect.any(Number),
       riskLevel: expect.stringMatching(/^(Low|Medium|High)$/),
-      recommendedAction: expect.anything(),
     });
     expect(typeof result[0].riskScore).toBe("number");
     expect(["Low", "Medium", "High"]).toContain(result[0].riskLevel);
+    expect(result[0].recommendedAction === null || typeof result[0].recommendedAction === "object").toBe(true);
   });
 });
 

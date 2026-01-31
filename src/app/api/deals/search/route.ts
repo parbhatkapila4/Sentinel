@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { successResponse, handleApiError } from "@/lib/api-response";
 import { withRateLimit } from "@/lib/api-rate-limit";
 import { trackPerformance, trackApiCall } from "@/lib/monitoring";
 import { trackApiCall as trackApiMetric } from "@/lib/metrics";
 import { withCache } from "@/lib/cache";
+import { searchDeals } from "@/lib/search";
 
 async function searchHandler(request: NextRequest) {
   const startTime = Date.now();
@@ -14,6 +14,10 @@ async function searchHandler(request: NextRequest) {
     const userId = await getAuthenticatedUserId();
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("q");
+    const limitParam = searchParams.get("limit");
+    const fullText = searchParams.get("fullText") === "true";
+    const teamId = searchParams.get("teamId") ?? undefined;
+    const includeTeamDeals = searchParams.get("includeTeamDeals") === "true";
 
     if (!query || query.trim().length === 0) {
       const duration = Date.now() - startTime;
@@ -22,26 +26,18 @@ async function searchHandler(request: NextRequest) {
       return successResponse({ deals: [] });
     }
 
+    const limit = limitParam ? Math.min(100, Math.max(1, parseInt(limitParam, 10) || 20)) : 20;
+    const cacheKey = `deals:search:${userId}:${query.trim().toLowerCase()}:${limit}:${fullText}:${teamId ?? ""}:${includeTeamDeals}`;
 
-    const cacheKey = `deals:search:${userId}:${query.trim().toLowerCase()}`;
     const deals = await withCache(cacheKey, 15, async () => {
       return await trackPerformance("deals.search", async () => {
-        return await prisma.deal.findMany({
-          where: {
-            userId,
-            name: {
-              contains: query,
-              mode: "insensitive",
-            },
-          },
-          take: 10,
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            name: true,
-            stage: true,
-            value: true,
-          },
+        return await searchDeals({
+          userId,
+          query,
+          limit,
+          fullText,
+          teamId,
+          includeTeamDeals: includeTeamDeals || undefined,
         });
       });
     });

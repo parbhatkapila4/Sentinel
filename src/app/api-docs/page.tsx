@@ -5,7 +5,14 @@ import Link from "next/link";
 import "swagger-ui-react/swagger-ui.css";
 import { openApiSpec } from "@/lib/openapi";
 
-const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
+const SwaggerUI = dynamic(() => import("swagger-ui-react"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center min-h-[400px] text-white/60">
+      <p>Loading API docs…</p>
+    </div>
+  ),
+});
 
 export default function ApiDocsPage() {
   return (

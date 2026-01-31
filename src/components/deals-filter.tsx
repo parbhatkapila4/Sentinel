@@ -29,16 +29,17 @@ export function DealsFilter({ currentFilter }: { currentFilter: FilterType }) {
   const filters: FilterType[] = ["all", "active", "at-risk", "closed"];
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 max-sm:flex-wrap max-sm:gap-1.5" role="group" aria-label="Filter deals">
       {filters.map((filterValue) => {
         const isActive = currentFilter === filterValue;
         return (
           <button
             key={filterValue}
             onClick={() => handleFilterChange(filterValue)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${isActive
-                ? "bg-[#181818] border border-[#2a2a2a] text-white"
-                : "text-[#8a8a8a] hover:text-white hover:bg-[#151515] border border-[#1f1f1f]"
+            aria-pressed={isActive}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all max-sm:min-h-[44px] ${isActive
+              ? "bg-[#181818] border border-[#2a2a2a] text-white"
+              : "text-[#8a8a8a] hover:text-white hover:bg-[#151515] border border-[#1f1f1f]"
               }`}
           >
             {filterLabels[filterValue]}

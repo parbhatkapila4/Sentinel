@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import {
@@ -804,8 +805,8 @@ export function ChatInterface() {
                   </div>
                   <span className="text-sm font-medium">Home</span>
                 </a>
-                <a
-                  href="#"
+                <Link
+                  href="/deals"
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all group"
                 >
                   <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-colors">
@@ -824,7 +825,7 @@ export function ChatInterface() {
                     </svg>
                   </div>
                   <span className="text-sm font-medium">All Deals</span>
-                </a>
+                </Link>
               </nav>
             </div>
 
