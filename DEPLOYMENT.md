@@ -34,7 +34,10 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
    - `CRON_SECRET` (optional; for cron routes like sync-integrations, process-emails, process-webhooks)
 3. **Postgres**: Use [Vercel Postgres](https://vercel.com/storage/postgres) or attach an external PostgreSQL database and set `DATABASE_URL`.
 4. **Migrations**: Run `npx prisma migrate deploy` as part of the build (e.g. in a custom build script) or in a one-off step after first deploy. The default `npm run build` runs `prisma generate`; add a postinstall or build step for `prisma migrate deploy` if you deploy migrations from Vercel.
-5. **Crons**: The `vercel.json` defines cron schedules for sync-integrations (every 6h), process-webhooks and process-emails (every 15 min). Set `CRON_SECRET` in the Vercel dashboard for cron auth; crons appear under the project’s Cron Jobs after deploy.
+5. **Crons**: Cron jobs are not defined in `vercel.json` by default. **Vercel plan limits:** On **Hobby**, cron can run only **once per day** with hourly precision (no every-5-min or every-15-min). On **Pro**, you can use per-minute intervals. To enable Vercel Cron:
+   - **Hobby**: Add a single cron that runs once per day, e.g. `"schedule": "0 0 * * *"` (midnight UTC) for `/api/cron/sync-integrations`.
+   - **Pro**: You can add multiple crons with finer schedules (e.g. every 6 h for sync, every 15 min for process-emails/process-webhooks).
+   - **Any plan**: For more frequent runs on Hobby (e.g. every 5 or 15 minutes), use an **external scheduler** (e.g. [cron-job.org](https://cron-job.org), GitHub Actions) and call the endpoints with `Authorization: Bearer <CRON_SECRET>`. See [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) for limits. Set `CRON_SECRET` in the Vercel dashboard for auth. An example once-daily cron config is in `vercel.crons.example.json` (copy the `crons` array into `vercel.json`).
 6. **Deploy** — Vercel will run `npm run build` and serve the app.
 
 ## Environment Variables

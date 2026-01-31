@@ -231,7 +231,7 @@ Receive real-time notifications in Slack channels.
 
 ### Automatic Sync (Cron Job)
 
-Sentinel includes a cron job endpoint that automatically syncs all active integrations every 6 hours.
+Sentinel includes a cron job endpoint that automatically syncs all active integrations. You can run it on a schedule (Vercel Cron or external scheduler).
 
 **Endpoint:** `GET /api/cron/sync-integrations`
 
@@ -241,20 +241,22 @@ Sentinel includes a cron job endpoint that automatically syncs all active integr
 CRON_SECRET=your-secret-key-here
 ```
 
-**Vercel Cron Configuration:**
+**Vercel Cron (plan limits):** On **Hobby**, Vercel allows only **one run per day** with hourly precision (no every-5-min or every-15-min). On **Pro**, you can use per-minute schedules. For more frequent runs on Hobby, use an external scheduler (e.g. [cron-job.org](https://cron-job.org), GitHub Actions) and call the URL with `Authorization: Bearer <CRON_SECRET>`.
 
-Add to `vercel.json`:
+**Example – Hobby (once per day):** Add to `vercel.json`:
 
 ```json
 {
   "crons": [
     {
       "path": "/api/cron/sync-integrations",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
 ```
+
+Runs at midnight UTC once per day. For **Pro**, you can use e.g. `"schedule": "0 */6 * * *"` to run every 6 hours.
 
 **What it does:**
 
