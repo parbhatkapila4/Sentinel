@@ -16,7 +16,7 @@ export const URGENCY_VALUES = ["low", "medium", "high"] as const;
 
 export type Urgency = (typeof URGENCY_VALUES)[number];
 
-export const DEAL_STATUS_VALUES = ["active", "at_risk", "saved", "lost"] as const;
+export const DEAL_STATUS_VALUES = ["active", "at_risk", "saved", "lost", "closed"] as const;
 
 export type DealStatus = (typeof DEAL_STATUS_VALUES)[number];
 

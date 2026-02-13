@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import { redirect } from "next/navigation";
 import {
   getAllDeals,
   getFounderRiskOverview,
@@ -8,14 +9,39 @@ import {
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { formatRevenue, formatValueInMillions } from "@/lib/utils";
+import { UnauthorizedError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
 export default async function RiskOverviewPage() {
   noStore();
-  const deals = await getAllDeals();
-  const riskOverview = await getFounderRiskOverview();
-  const actionQueue = await getFounderActionQueue();
+  let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  let riskOverview: Awaited<ReturnType<typeof getFounderRiskOverview>> = {
+    totalDeals: 0,
+    atRiskDealsCount: 0,
+    overdueDealsCount: 0,
+    highUrgencyDealsCount: 0,
+    dealsOverdueMoreThan3Days: 0,
+    top3MostCriticalDeals: [],
+  };
+  let actionQueue: Awaited<ReturnType<typeof getFounderActionQueue>> = {
+    urgent: [],
+    important: [],
+    safe: [],
+  };
+  let dataError = false;
+  try {
+    [deals, riskOverview, actionQueue] = await Promise.all([
+      getAllDeals(),
+      getFounderRiskOverview(),
+      getFounderActionQueue(),
+    ]);
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      redirect("/sign-in?redirect=/risk-overview");
+    }
+    dataError = true;
+  }
 
   const highRiskDeals = deals.filter(
     (d) => formatRiskLevel(d.riskScore) === "High"
@@ -48,7 +74,7 @@ export default async function RiskOverviewPage() {
   const avgRiskAge =
     highRiskWithAge.length > 0
       ? highRiskWithAge.reduce((sum, d) => sum + d.riskAge, 0) /
-        highRiskWithAge.length
+      highRiskWithAge.length
       : 0;
 
   const stageRiskDistribution: Record<
@@ -84,7 +110,7 @@ export default async function RiskOverviewPage() {
   const avgOverdueDays =
     overdueDeals.length > 0
       ? overdueDeals.reduce((sum, d) => sum + (d.actionOverdueByDays || 0), 0) /
-        overdueDeals.length
+      overdueDeals.length
       : 0;
 
   const sevenDaysAgo = new Date();
@@ -97,6 +123,12 @@ export default async function RiskOverviewPage() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-6 space-y-6 w-full overflow-x-hidden">
+        {dataError && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+            <p className="text-sm font-medium text-amber-200">Data temporarily unavailable</p>
+            <p className="text-xs text-amber-200/70 mt-1">Check your connection and try again.</p>
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div className="space-y-1">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
@@ -236,8 +268,8 @@ export default async function RiskOverviewPage() {
               {avgRiskScore < 0.4
                 ? "Healthy"
                 : avgRiskScore < 0.6
-                ? "Moderate"
-                : "Critical"}
+                  ? "Moderate"
+                  : "Critical"}
             </p>
           </div>
         </div>
@@ -276,9 +308,8 @@ export default async function RiskOverviewPage() {
                             fill="none"
                             stroke="#10b981"
                             strokeWidth="12"
-                            strokeDasharray={`${
-                              (lowRiskDeals.length / deals.length) * 251.2
-                            } 251.2`}
+                            strokeDasharray={`${(lowRiskDeals.length / deals.length) * 251.2
+                              } 251.2`}
                             strokeLinecap="round"
                           />
                           {mediumRiskDeals.length > 0 && (
@@ -289,9 +320,8 @@ export default async function RiskOverviewPage() {
                               fill="none"
                               stroke="#f59e0b"
                               strokeWidth="12"
-                              strokeDasharray={`${
-                                (mediumRiskDeals.length / deals.length) * 251.2
-                              } 251.2`}
+                              strokeDasharray={`${(mediumRiskDeals.length / deals.length) * 251.2
+                                } 251.2`}
                               strokeDashoffset={
                                 -((lowRiskDeals.length / deals.length) * 251.2)
                               }
@@ -306,9 +336,8 @@ export default async function RiskOverviewPage() {
                               fill="none"
                               stroke="#ef4444"
                               strokeWidth="12"
-                              strokeDasharray={`${
-                                (highRiskDeals.length / deals.length) * 251.2
-                              } 251.2`}
+                              strokeDasharray={`${(highRiskDeals.length / deals.length) * 251.2
+                                } 251.2`}
                               strokeDashoffset={
                                 -(
                                   ((lowRiskDeals.length +

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import { redirect } from "next/navigation";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { STAGE_ORDER } from "@/lib/config";
@@ -14,13 +15,24 @@ import {
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { PipelineValueCard } from "@/components/pipeline-value-card";
 import { ReportActions } from "@/components/report-actions";
+import { QuickReports } from "@/components/quick-reports";
 import { formatRevenue } from "@/lib/utils";
+import { UnauthorizedError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
   noStore();
-  const deals = await getAllDeals();
+  let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  let dataError = false;
+  try {
+    deals = await getAllDeals();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      redirect("/sign-in?redirect=/reports");
+    }
+    dataError = true;
+  }
 
   const { totalDeals, totalValue, avgDealValue } =
     calculatePipelineMetrics(deals);
@@ -86,9 +98,36 @@ export default async function ReportsPage() {
 
   const { low: lowRisk, medium: mediumRisk, high: highRisk } = riskDist;
 
+  const wonDeals = deals.filter((d) => d.stage === "closed_won");
+  const pipelineStageCounts = activeDeals.reduce((acc, d) => {
+    acc[d.stage] = (acc[d.stage] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const quickReportsSummary = {
+    pipeline: {
+      activeCount: activeDeals.length,
+      totalValue: activeDeals.reduce((s, d) => s + d.value, 0),
+      stageCounts: pipelineStageCounts,
+    },
+    won: {
+      count: wonDeals.length,
+      totalValue: wonDeals.reduce((s, d) => s + d.value, 0),
+    },
+    atRisk: {
+      count: atRiskDeals.length,
+      totalValue: atRiskDeals.reduce((s, d) => s + d.value, 0),
+    },
+  };
+
   return (
     <DashboardLayout>
       <div className="min-h-full p-4 lg:p-6 space-y-6 bg-[#0b0b0b]">
+        {dataError && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+            <p className="text-sm font-medium text-amber-200">Data temporarily unavailable</p>
+            <p className="text-xs text-amber-200/70 mt-1">Check your connection and try again.</p>
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1">Reports</h1>
@@ -703,58 +742,7 @@ export default async function ReportsPage() {
 
               <div className="bg-white/5 rounded-xl p-4 lg:p-6 border border-white/10">
                 <h3 className="text-lg font-semibold text-white mb-4">Quick Reports</h3>
-                <div className="space-y-3">
-                  <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 hover:border-blue-500/30 hover:bg-white/10 transition-all text-left">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">Pipeline Summary</p>
-                        <p className="text-xs text-white/50">All active deals overview</p>
-                      </div>
-                    </div>
-                    <svg className="w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-
-                  <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 hover:border-green-500/30 hover:bg-white/10 transition-all text-left">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">Won Deals Report</p>
-                        <p className="text-xs text-white/50">Closed deals this month</p>
-                      </div>
-                    </div>
-                    <svg className="w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-
-                  <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 hover:border-red-500/30 hover:bg-white/10 transition-all text-left">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">At-Risk Analysis</p>
-                        <p className="text-xs text-white/50">Deals needing attention</p>
-                      </div>
-                    </div>
-                    <svg className="w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
+                <QuickReports summary={quickReportsSummary} />
               </div>
             </div>
 
@@ -815,18 +803,22 @@ export default async function ReportsPage() {
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span
-                              className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${riskLevel === "High"
-                                ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                : riskLevel === "Medium"
-                                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                                  : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                              className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${deal.status === "closed"
+                                ? "bg-white/10 text-white/70 border border-white/20"
+                                : riskLevel === "High"
+                                  ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                  : riskLevel === "Medium"
+                                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                    : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                                 }`}
                             >
-                              {riskLevel}
+                              {deal.status === "closed" ? "Closed" : riskLevel}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            {deal.status === "at_risk" ? (
+                            {deal.status === "closed" ? (
+                              <span className="text-white/60">Closed</span>
+                            ) : deal.status === "at_risk" ? (
                               <span className="text-red-400">At Risk</span>
                             ) : (
                               <span className="text-emerald-400">Active</span>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import { redirect } from "next/navigation";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { STAGE_UI_CONFIG } from "@/lib/config";
@@ -7,12 +8,22 @@ import { formatDistanceToNow, differenceInDays } from "date-fns";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { PipelineValueCard } from "@/components/pipeline-value-card";
 import { formatValueInMillions, formatRevenue } from "@/lib/utils";
+import { UnauthorizedError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
 export default async function DealsByStagePage() {
   noStore();
-  const deals = await getAllDeals();
+  let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  let dataError = false;
+  try {
+    deals = await getAllDeals();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      redirect("/sign-in?redirect=/deals-by-stage");
+    }
+    dataError = true;
+  }
 
   const stageGroups = deals.reduce((acc, deal) => {
     if (!acc[deal.stage]) {
@@ -106,6 +117,12 @@ export default async function DealsByStagePage() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-6 space-y-6 w-full overflow-x-hidden">
+        {dataError && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+            <p className="text-sm font-medium text-amber-200">Data temporarily unavailable</p>
+            <p className="text-xs text-amber-200/70 mt-1">Check your connection and try again.</p>
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div className="space-y-1">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">

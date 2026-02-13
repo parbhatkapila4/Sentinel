@@ -14,6 +14,7 @@ export type DealRow = {
   name: string;
   value: number;
   stage: string;
+  status?: string;
   riskScore: number;
   assignedTo: { id: string; name: string | null; surname: string | null } | null;
   recommendedAction?: { label: string } | null;
@@ -221,7 +222,7 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
 
       {showDeleteConfirm && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
           onClick={() => !isBulkLoading && setShowDeleteConfirm(false)}
           role="dialog"
           aria-modal="true"
@@ -354,14 +355,16 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                   </td>
                   <td className="py-3 sm:py-4 px-3 sm:px-4">
                     <span
-                      className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${riskLevel === "High"
+                      className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${deal.status === "closed"
+                        ? "bg-white/10 text-white/70 border border-white/20"
+                        : riskLevel === "High"
                           ? "bg-red-500/20 text-red-400 border border-red-500/30"
                           : riskLevel === "Medium"
                             ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                             : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                         }`}
                     >
-                      {riskLevel}
+                      {deal.status === "closed" ? "Closed" : riskLevel}
                     </span>
                   </td>
                   <td className="py-3 sm:py-4 px-3 sm:px-4">
@@ -437,14 +440,16 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                   </span>
                 )}
                 <span
-                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${riskLevel === "High"
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${deal.status === "closed"
+                    ? "bg-white/10 text-white/70"
+                    : riskLevel === "High"
                       ? "bg-red-500/20 text-red-400"
                       : riskLevel === "Medium"
                         ? "bg-amber-500/20 text-amber-400"
                         : "bg-emerald-500/20 text-emerald-400"
                     }`}
                 >
-                  {riskLevel}
+                  {deal.status === "closed" ? "Closed" : riskLevel}
                 </span>
               </div>
             </Link>

@@ -1,5 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatRevenue } from "@/lib/utils";
@@ -7,6 +8,7 @@ import { DashboardLayout } from "@/components/dashboard-layout";
 import { ExportButton } from "@/components/export-button";
 import { AnalyticsDateFilter } from "@/components/analytics-date-filter";
 import { subDays } from "date-fns";
+import { UnauthorizedError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +52,16 @@ export default async function AnalyticsPage({
   const params = await searchParams;
   const range = params?.range || "30d";
 
-  const allDeals = await getAllDeals();
+  let allDeals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  let dataError = false;
+  try {
+    allDeals = await getAllDeals();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      redirect("/sign-in?redirect=" + encodeURIComponent("/analytics?range=" + (range || "30d")));
+    }
+    dataError = true;
+  }
   const deals = filterDealsByDateRange(allDeals, range);
 
   const totalDeals = deals.length;
@@ -84,6 +95,12 @@ export default async function AnalyticsPage({
   return (
     <DashboardLayout>
       <div className="p-6 min-h-full" style={{ background: "#0a0a0f" }}>
+        {dataError && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+            <p className="text-sm font-medium text-amber-200">Data temporarily unavailable</p>
+            <p className="text-xs text-amber-200/70 mt-1">Check your connection and try again.</p>
+          </div>
+        )}
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-white mb-1">

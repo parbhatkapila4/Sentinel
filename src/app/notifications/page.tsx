@@ -114,7 +114,7 @@ export default function NotificationsPage() {
 
   function formatTime(createdAt: string) {
     const d = new Date(createdAt);
-    return d.toLocaleDateString(undefined, {
+    return d.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",

@@ -72,6 +72,10 @@ export function getPrimaryRiskReason(reasons: string[]): string | null {
   return reasons[0] || null;
 }
 
+function isClosedStage(stage: string): boolean {
+  return stage === STAGES.CLOSED_WON || stage === STAGES.CLOSED_LOST || stage === "Closed Won" || stage === "Closed Lost";
+}
+
 export function calculateDealSignals(
   deal: DealInput,
   timelineEvents: TimelineEventInput[],
@@ -81,6 +85,28 @@ export function calculateDealSignals(
   }
 ): DealSignals {
   const now = new Date();
+
+  if (isClosedStage(deal.stage)) {
+    const lastActivityAt =
+      timelineEvents.length > 0
+        ? new Date(Math.max(...timelineEvents.map((e) => e.createdAt.getTime())))
+        : deal.createdAt;
+    return {
+      riskScore: 0,
+      riskLevel: "Low",
+      status: "closed",
+      nextAction: null,
+      lastActivityAt,
+      reasons: [],
+      recommendedAction: null,
+      riskStartedAt: null,
+      riskAgeInDays: null,
+      actionDueAt: null,
+      actionOverdueByDays: null,
+      isActionOverdue: false,
+    };
+  }
+
   const inactivityThreshold = options?.inactivityThresholdDays ?? INACTIVITY_DAYS;
   const enableCompetitiveSignals = options?.enableCompetitiveSignals ?? true;
 

@@ -1,5 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 import nextDynamic from "next/dynamic";
+import { redirect } from "next/navigation";
 import { getAllDeals } from "@/app/actions/deals";
 import {
   calculatePipelineMetrics,
@@ -60,12 +61,31 @@ const isClosed = (stage: string) =>
   stage === "Closed Lost" ||
   stage === "closed_lost";
 
+function isClosedWonStage(stage: string): boolean {
+  const s = stage.toLowerCase().replace(/\s+/g, "_");
+  return s === "closed_won" || s === "closed";
+}
+
 export default async function DashboardPage() {
   noStore();
-  const userId = await getAuthenticatedUserId();
-  await seedDemoDataForUser(userId);
-  const showDemoBanner = await hasDemoData(userId);
-  const deals = await getAllDeals();
+  let userId: string;
+  try {
+    userId = await getAuthenticatedUserId();
+  } catch {
+    redirect("/sign-in?redirect=/dashboard");
+  }
+
+  let showDemoBanner = false;
+  let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  let dbUnavailable = false;
+
+  try {
+    await seedDemoDataForUser(userId);
+    showDemoBanner = await hasDemoData(userId);
+    deals = await getAllDeals();
+  } catch {
+    dbUnavailable = true;
+  }
 
   const { totalValue, totalDeals } = calculatePipelineMetrics(deals);
   const { growthPercent: revenueGrowthPercent } =
@@ -75,8 +95,10 @@ export default async function DashboardPage() {
   const stageDist = getStageDistribution(deals);
   const { avgDealAge } = calculateDealActivity(deals);
 
-  const closedWonCount =
-    (stageDist["Closed Won"] ?? 0) + (stageDist["closed_won"] ?? 0);
+  const closedWonCount = Object.entries(stageDist).reduce(
+    (sum, [stage, count]) => sum + (isClosedWonStage(stage) ? count : 0),
+    0
+  );
   const dataAccuracy =
     totalDeals > 0 ? (closedWonCount / totalDeals) * 100 : 0;
 
@@ -104,6 +126,16 @@ export default async function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-6 xl:p-8 space-y-4 sm:space-y-6 w-full">
+        {dbUnavailable && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4 sm:mb-6">
+            <p className="text-sm font-medium text-amber-200">
+              Database temporarily unavailable
+            </p>
+            <p className="text-xs text-amber-200/70 mt-1">
+              Check your <code className="bg-white/10 px-1 rounded">DATABASE_URL</code> and that your database (e.g. Neon branch) is active. Dashboard is showing empty data.
+            </p>
+          </div>
+        )}
         {showDemoBanner && <DemoBanner />}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           <div className="bg-white/5 rounded-xl p-4 sm:p-5 border border-white/10 flex-1 min-w-0">
@@ -168,7 +200,9 @@ export default async function DashboardPage() {
             <p className="text-2xl sm:text-3xl font-bold text-white mb-1">
               {dataAccuracy.toFixed(1)}%
             </p>
-            <p className="text-xs text-[#7d7d7d]">Live</p>
+            <p className="text-xs text-[#7d7d7d]" title="Share of all deals that are closed won">
+              {closedWonCount === 0 && totalDeals > 0 ? "Close deals to see %" : "Live"}
+            </p>
           </div>
 
           <div className="bg-white/5 rounded-xl p-4 sm:p-5 border border-white/10 flex-1 min-w-0">

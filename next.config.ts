@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 
 const getCSP = () => {
@@ -6,7 +7,8 @@ const getCSP = () => {
 
   const directives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://browser.sentry-cdn.com",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://browser.sentry-cdn.com",
+    "worker-src 'self' blob:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' data: https://fonts.gstatic.com",
@@ -44,6 +46,17 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
+
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.resolve = config.resolve ?? {};
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        "node:inspector": path.resolve(process.cwd(), "src/lib/stub-inspector.js"),
+      };
+    }
+    return config;
+  },
   images: {
     remotePatterns: [
       {

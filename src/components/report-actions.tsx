@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export function ReportActions() {
   const [isExporting, setIsExporting] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const router = useRouter();
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -32,14 +29,6 @@ export function ReportActions() {
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const handleGenerateReport = () => {
-    setIsGenerating(true);
-    router.refresh();
-    setTimeout(() => {
-      setIsGenerating(false);
-    }, 500);
   };
 
   return (
@@ -82,47 +71,6 @@ export function ReportActions() {
               />
             </svg>
             Export PDF
-          </>
-        )}
-      </button>
-      <button
-        onClick={handleGenerateReport}
-        disabled={isGenerating}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all bg-[#8b1a1a] hover:bg-[#6b0f0f] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-      >
-        {isGenerating ? (
-          <>
-            <svg
-              className="w-4 h-4 animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            Generating...
-          </>
-        ) : (
-          <>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Generate Report
           </>
         )}
       </button>

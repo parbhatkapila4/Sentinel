@@ -167,12 +167,56 @@ export function identifyDealPatterns(deals: DealForPrediction[]): DealPatterns {
   const active = deals.filter((d) => !isClosed(d.stage));
 
   if (won.length + lost.length === 0) {
+    if (active.length === 0) {
+      insights.push({
+        type: "data",
+        description: "Add your first deal to start tracking your pipeline and get insights.",
+        impact: "neutral",
+      });
+      recommendations.push("Create a deal to unlock pipeline insights and recommendations.");
+      return { insights, recommendations };
+    }
+    const totalValue = active.reduce((s, d) => s + d.value, 0);
     insights.push({
-      type: "data",
-      description: "No closed deals yet; patterns will emerge as you close more.",
-      impact: "neutral",
+      type: "pipeline",
+      description: `You have ${active.length} active deal(s) worth $${totalValue.toLocaleString("en-US")} in your pipeline.`,
+      impact: "positive",
     });
-    recommendations.push("Close more deals to unlock pattern-based insights.");
+    const byStage = active.reduce((acc, d) => {
+      acc[d.stage] = (acc[d.stage] ?? 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const topStage = Object.entries(byStage).sort((a, b) => b[1] - a[1])[0];
+    if (topStage && topStage[1] >= 2) {
+      const stageLabel = topStage[0].replace(/_/g, " ");
+      insights.push({
+        type: "stage",
+        description: `Most deals (${topStage[1]}) are in ${stageLabel}; consider moving some to the next stage.`,
+        impact: "neutral",
+      });
+      recommendations.push("Move deals to the next stage to keep your pipeline flowing.");
+    }
+    const stuck = active.filter((d) => daysSinceActivity(d) > 14);
+    if (stuck.length > 0) {
+      insights.push({
+        type: "activity",
+        description: `${stuck.length} deal(s) with no activity in 14+ days — re-engage to avoid going cold.`,
+        impact: "negative",
+      });
+      recommendations.push("Add timeline events or follow up on inactive deals to improve close likelihood.");
+    }
+    const highRisk = active.filter((d) => (d.riskLevel ?? formatRiskLevel(d.riskScore)) === "High");
+    if (highRisk.length > 0) {
+      insights.push({
+        type: "risk",
+        description: `${highRisk.length} deal(s) flagged as high risk; address signals early to improve outcomes.`,
+        impact: "negative",
+      });
+      recommendations.push("Review at-risk deals and add next actions to reduce risk.");
+    }
+    if (recommendations.length === 0) {
+      recommendations.push("Add timeline events to your deals so risk and recommendations stay accurate.");
+    }
     return { insights, recommendations };
   }
 

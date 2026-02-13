@@ -2,7 +2,8 @@ import Link from "next/link";
 import { getDealById, getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatDistanceToNow } from "date-fns";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { UnauthorizedError } from "@/lib/errors";
 import { AddEventButtons } from "./add-event-buttons";
 import { EmailGenerator } from "@/components/email-generator";
 import { DealSummaryCard } from "@/components/deal-summary-card";
@@ -21,7 +22,10 @@ export default async function DealDetailPage({
   let deal;
   try {
     deal = await getDealById(id);
-  } catch {
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      redirect("/sign-in?redirect=" + encodeURIComponent("/deals/" + id));
+    }
     notFound();
   }
 
@@ -178,7 +182,7 @@ export default async function DealDetailPage({
               <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
                 Status
               </p>
-              <p className="text-lg font-semibold text-white">{deal.status}</p>
+              <p className="text-lg font-semibold text-white">{deal.status ? deal.status.charAt(0).toUpperCase() + deal.status.slice(1).replace(/_/g, " ") : "—"}</p>
             </div>
             <div>
               <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">

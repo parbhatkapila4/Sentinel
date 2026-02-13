@@ -261,6 +261,15 @@ async function chatHandler(request: NextRequest) {
         : 500;
     trackApiCall("/api/insights/chat", "POST", duration, statusCode);
     trackApiMetric("/api/insights/chat", duration, statusCode);
+    const is500 = statusCode === 500;
+    if (process.env.NODE_ENV === "production" && is500) {
+      return handleApiError(
+        new AppError(
+          "AI assistant is temporarily unavailable. Please try again.",
+          { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+        )
+      );
+    }
     return handleApiError(error);
   }
 }

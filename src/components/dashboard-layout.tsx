@@ -457,7 +457,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </svg>
             </button>
 
-            <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
               <div className={`pt-16 pb-4 ${isSidebarCollapsed ? "px-2" : "px-3"}`}>
                 {!isSidebarCollapsed && (
                   <p className="text-xs text-white/40 uppercase tracking-wider mb-4 px-3">
@@ -1147,7 +1147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
         )}
 
-        <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0b0b0b] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent" tabIndex={-1}>
+        <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0b0b0b] scrollbar-hide" tabIndex={-1}>
           {children}
         </main>
 

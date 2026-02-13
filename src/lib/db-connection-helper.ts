@@ -1,5 +1,5 @@
-
 import { logWarn } from "./logger";
+
 export function isConnectionPoolExhausted(error: unknown): boolean {
   if (error instanceof Error) {
     return (
@@ -10,6 +10,18 @@ export function isConnectionPoolExhausted(error: unknown): boolean {
     );
   }
   return false;
+}
+
+
+export function isDatabaseUnavailable(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error);
+  return (
+    msg.includes("Tenant or user not found") ||
+    msg.includes("FATAL:") ||
+    msg.includes("connection refused") ||
+    msg.includes("ENOTFOUND") ||
+    msg.includes("getaddrinfo")
+  );
 }
 
 export async function withDbRetry<T>(

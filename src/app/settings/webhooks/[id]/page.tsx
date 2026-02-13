@@ -275,7 +275,7 @@ export default function WebhookDetailPage() {
                     </p>
                     <p className="text-xs text-white/40">
                       {d.createdAt
-                        ? new Date(d.createdAt).toLocaleString()
+                        ? new Date(d.createdAt).toLocaleString("en-US")
                         : "—"}
                     </p>
                   </div>
@@ -283,8 +283,8 @@ export default function WebhookDetailPage() {
                     {d.statusCode != null && (
                       <span
                         className={`px-2 py-0.5 rounded text-xs font-medium ${d.success
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : "bg-red-500/20 text-red-400"
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : "bg-red-500/20 text-red-400"
                           }`}
                       >
                         {d.statusCode}

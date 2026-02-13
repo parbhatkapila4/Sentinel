@@ -98,7 +98,7 @@ function Navbar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-4",
+        "fixed top-0 left-0 right-0 z-50 pl-10 sm:pl-14 lg:pl-20 pr-4 sm:pr-6 lg:pr-8 py-4",
         isVisible
           ? "translate-y-0 opacity-100 pointer-events-auto"
           : "-translate-y-[120%] opacity-0 pointer-events-none",

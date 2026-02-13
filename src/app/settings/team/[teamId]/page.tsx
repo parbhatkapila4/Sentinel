@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getTeamById, getTeamInvites } from "@/app/actions/teams";
 import { getAuthenticatedUserId } from "@/lib/auth";
@@ -34,7 +34,7 @@ export default async function TeamDetailPage({
   try {
     currentUserId = await getAuthenticatedUserId();
   } catch {
-    notFound();
+    redirect("/sign-in?redirect=" + encodeURIComponent("/settings/team/" + teamId));
   }
 
   if (team.myRole === TEAM_ROLES.OWNER || team.myRole === TEAM_ROLES.ADMIN) {

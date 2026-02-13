@@ -8,6 +8,8 @@ import {
 } from "@/components/pricing-toggle";
 import Navbar from "@/components/revenue-navbar";
 
+export const dynamic = "force-dynamic";
+
 const WorldMapDemo = nextDynamic(
   () => import("@/components/world-map-demo").then((m) => ({ default: m.WorldMapDemo })),
   {
@@ -27,96 +29,127 @@ export default async function Home() {
       <Navbar />
 
       <main id="main-content" tabIndex={-1}>
-        <section className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-24 sm:pt-32 lg:pt-40 xl:pt-48 pb-16 sm:pb-20 lg:pb-24">
+
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes mesh-drift {
+            0%   { transform: rotate(-8deg) scaleX(1.15) translate(0, 0); }
+            25%  { transform: rotate(-6deg) scaleX(1.18) translate(2%, -1%); }
+            50%  { transform: rotate(-9deg) scaleX(1.12) translate(-1%, 2%); }
+            75%  { transform: rotate(-5deg) scaleX(1.16) translate(1%, -2%); }
+            100% { transform: rotate(-8deg) scaleX(1.15) translate(0, 0); }
+          }
+          @keyframes color-cycle {
+            0%   { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+          }
+          @keyframes warm-pulse {
+            0%, 100% { opacity: 0.7; transform: translate(0, 0) scale(1); }
+            50%      { opacity: 0.5; transform: translate(-3%, 2%) scale(1.08); }
+          }
+          @keyframes cool-pulse {
+            0%, 100% { opacity: 0.6; transform: translate(0, 0) scale(1); }
+            50%      { opacity: 0.45; transform: translate(3%, -2%) scale(1.06); }
+          }
+        `}} />
+
+        <section className="relative overflow-hidden" style={{ backgroundColor: "#000" }}>
+
+
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <svg
-              className="absolute top-16 right-4 sm:top-32 sm:right-32 lg:right-24 xl:right-32 w-48 h-48 sm:w-[500px] sm:h-[500px] lg:w-[550px] lg:h-[550px] opacity-40"
-              viewBox="0 0 500 500"
-              fill="none"
+
+            <div
+              className="absolute left-[-10%] right-[-10%] top-[8%] bottom-[15%]"
+              style={{ filter: "blur(70px)", animation: "color-cycle 25s linear infinite" }}
             >
-              <path
-                d="M 50 250 Q 250 50 450 250 T 50 250"
-                stroke="#fbbf24"
-                strokeWidth="2"
-                fill="none"
-                opacity="0.6"
-              />
-              <path
-                d="M 100 250 Q 250 100 400 250 T 100 250"
-                stroke="#f59e0b"
-                strokeWidth="2"
-                fill="none"
-                opacity="0.5"
-              />
-            </svg>
 
-            <div className="absolute top-24 left-4 sm:top-48 sm:left-24 lg:left-32 xl:left-40 w-24 h-24 sm:w-40 sm:h-40 lg:w-44 lg:h-44 bg-red-500 rounded-full opacity-25 blur-2xl"></div>
-            <div className="absolute top-32 left-12 sm:top-64 sm:left-48 lg:left-56 xl:left-64 w-20 h-20 sm:w-32 sm:h-32 lg:w-36 lg:h-36 bg-yellow-400 rounded-full opacity-25 blur-2xl"></div>
-            <div className="absolute bottom-24 right-8 sm:bottom-48 sm:right-48 lg:right-56 xl:right-64 w-28 h-28 sm:w-48 sm:h-48 lg:w-52 lg:h-52 bg-blue-500 rounded-full opacity-25 blur-2xl"></div>
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(105deg, #1e3a8a 0%, #4338ca 12%, #7c3aed 22%, #a855f7 32%, #d946ef 42%, #ec4899 52%, #f43f5e 62%, #f97316 74%, #eab308 86%, #fbbf24 100%)",
+                  borderRadius: "40% 60% 55% 45% / 55% 40% 60% 45%",
+                  opacity: 0.4,
+                  animation: "mesh-drift 20s ease-in-out infinite",
+                }}
+              />
 
-            <div className="absolute right-4 sm:right-24 lg:right-32 xl:right-40 top-1/2 -translate-y-1/2 hidden sm:flex flex-col gap-3 opacity-30">
-              {Array.from({ length: 7 }).map((_, i) => (
-                <svg
-                  key={i}
-                  className="w-10 h-10 text-blue-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              ))}
+              <div
+                className="absolute top-[5%] right-0 w-[55%] h-[75%] rounded-full"
+                style={{
+                  background: "radial-gradient(ellipse, rgba(251,191,36,0.7) 0%, rgba(249,115,22,0.35) 40%, transparent 70%)",
+                  animation: "warm-pulse 15s ease-in-out infinite",
+                }}
+              />
+
+              <div
+                className="absolute bottom-[5%] left-0 w-[45%] h-[65%] rounded-full"
+                style={{
+                  background: "radial-gradient(ellipse, rgba(79,70,229,0.6) 0%, rgba(67,56,202,0.3) 40%, transparent 70%)",
+                  animation: "cool-pulse 18s ease-in-out infinite",
+                }}
+              />
             </div>
+
+
+            <svg className="absolute inset-0 w-full h-full opacity-[0.025]" xmlns="http://www.w3.org/2000/svg">
+              <filter id="heroGrain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" /></filter>
+              <rect width="100%" height="100%" filter="url(#heroGrain)" />
+            </svg>
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-20 items-center">
-              <div className="space-y-6 sm:space-y-8">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-bold leading-tight text-white">
-                  Never Lose a Deal to
-                  <br />
-                  <span className="text-blue-400">Silent Decay.</span>
-                </h1>
-                <p className="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl text-white/80 leading-relaxed max-w-2xl">
-                  Real-time risk detection that tells you exactly which deals are
-                  dying and what to do about it. See why the most innovative sales
-                  teams add automated risk alerts, deal-specific action
-                  recommendations and intelligent activity tracking on top of
-                  conventional CRM systems. You won&apos;t go back.
-                </p>
+          <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 lg:pt-48">
 
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
-                  {!user && (
-                    <Link
-                      href="/sign-up"
-                      className="px-6 sm:px-8 py-3 sm:py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 whitespace-nowrap min-h-[44px]"
-                    >
-                      Sign Up
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2.5}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </Link>
-                  )}
-                </div>
+            <div className="max-w-4xl mx-auto text-center mb-16 sm:mb-20">
+
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-black/40 backdrop-blur-md px-4 py-1.5 mb-10 sm:mb-12">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                </span>
+                <span className="text-[13px] font-medium text-white/60">Now with AI-powered risk scoring</span>
               </div>
 
-              <div className="relative lg:min-h-[600px] xl:min-h-[650px] min-h-[280px] sm:min-h-[380px]">
-                <div className="relative w-full h-full min-h-[280px] sm:min-h-[380px] lg:min-h-[550px] xl:min-h-[600px]">
+              <h1 className="text-4xl leading-[1.1] sm:text-[3.5rem] md:text-[4.25rem] lg:text-[5rem] font-bold tracking-[-0.04em] mb-7 sm:mb-9">
+                <span className="text-white">Never lose a deal to</span>
+                <br />
+                <span
+                  className="bg-clip-text text-transparent"
+                  style={{ backgroundImage: "linear-gradient(90deg, #a78bfa, #e879f9, #fb923c, #fbbf24)" }}
+                >
+                  silent decay.
+                </span>
+              </h1>
+
+              <p className="text-lg sm:text-xl text-white/50 leading-relaxed max-w-xl mx-auto mb-10 sm:mb-12">
+                Sentinel uses AI to detect at-risk deals, diagnose why they&apos;re stalling, and tell your team exactly what to do next.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                {!user ? (
+                  <>
+                    <Link
+                      href="/sign-up"
+                      className="group inline-flex items-center gap-2.5 rounded-lg bg-white px-6 py-3 text-[15px] font-semibold text-black transition-all hover:-translate-y-px hover:shadow-[0_0_30px_rgba(255,255,255,0.12)]"
+                    >
+                      Get started
+                      <svg className="w-4 h-4 opacity-40 transition-all group-hover:translate-x-0.5 group-hover:opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </Link>
+                    <Link
+                      href="#features"
+                      className="group inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/40 backdrop-blur-md px-6 py-3 text-[15px] font-medium text-white/60 transition-all hover:border-white/20 hover:text-white/80"
+                    >
+                      Learn more
+                    </Link>
+                  </>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="relative max-w-5xl mx-auto pb-4">
+              <div className="rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl p-2 sm:p-3">
+                <div className="relative rounded-xl overflow-hidden bg-black min-h-[280px] sm:min-h-[380px] lg:min-h-[460px]">
                   <svg
                     viewBox="0 0 600 600"
                     className="w-full h-full"
@@ -977,20 +1010,36 @@ export default async function Home() {
                 </div>
               </div>
             </div>
+
+            {user && (
+              <div className="flex justify-center mt-10 sm:mt-12">
+                <Link
+                  href="/dashboard"
+                  className="group relative inline-flex items-center gap-2.5 rounded-lg bg-white px-6 py-3 text-[15px] font-semibold text-black transition-all hover:-translate-y-px hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                >
+                  Go to Dashboard
+                  <svg className="w-4 h-4 opacity-40 transition-all group-hover:translate-x-0.5 group-hover:opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+              </div>
+            )}
+
+            <div className="h-32 sm:h-48" />
           </div>
         </section>
 
         <section
           id="features"
-          className="py-20 sm:py-32 lg:py-40 px-4 sm:px-6 lg:px-8 xl:px-12"
+          className="py-20 sm:py-32 lg:py-40 px-4 sm:px-6 lg:px-8 xl:px-12 relative"
           style={{ backgroundColor: "#000000" }}
         >
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
             <div
               className="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl animate-pulse"
               style={{ animationDelay: "1s" }}
-            ></div>
+            />
           </div>
 
           <div className="relative z-10 max-w-7xl mx-auto">

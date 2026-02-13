@@ -2,6 +2,7 @@ import {
   AI_CONFIG,
   AI_EMBEDDING_SEARCH_CHAT_MODEL,
 } from "./config";
+import { AppError } from "./errors";
 
 export type TaskType =
   | "embedding_search"
@@ -195,7 +196,10 @@ export async function routeToAI(
 
   if (!openRouterApiKey) {
     console.error("OPENROUTER_API_KEY is not set in environment variables");
-    throw new Error("AI service is not configured. Please contact support.");
+    throw new AppError(
+      "AI assistant is not configured for this environment. Please set OPENROUTER_API_KEY in your deployment settings.",
+      { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+    );
   }
 
   const formattedMessages = systemPrompt
@@ -239,25 +243,43 @@ export async function routeToAI(
         statusText: response.statusText,
         error: errorData,
       });
-      throw new Error(
-        `AI service error: ${response.status} ${response.statusText}`
-      );
+      const status = response.status;
+      const message =
+        status === 401
+          ? "AI service configuration issue. Please check your provider settings."
+          : status === 429
+            ? "AI service is busy. Please try again in a moment."
+            : status >= 500
+              ? "AI service is temporarily unavailable. Please try again in a moment."
+              : "AI assistant is temporarily unavailable. Please try again.";
+      throw new AppError(message, {
+        statusCode: 503,
+        code: "SERVICE_UNAVAILABLE",
+      });
     }
 
     const data = await response.json();
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       console.error("Invalid OpenRouter response:", data);
-      throw new Error("Invalid response from AI service");
+      throw new AppError(
+        "AI assistant is temporarily unavailable. Please try again.",
+        { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+      );
     }
 
     return data.choices[0].message.content;
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("routeToAI fetch error:", error.message);
+    if (error instanceof AppError) {
       throw error;
     }
-    throw new Error("Unknown error occurred while calling AI service");
+    if (error instanceof Error) {
+      console.error("routeToAI fetch error:", error.message);
+    }
+    throw new AppError(
+      "AI assistant is temporarily unavailable. Please try again.",
+      { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+    );
   }
 }
 
@@ -268,7 +290,10 @@ export async function callOpenRouterForGeneration(
 ): Promise<string> {
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
   if (!openRouterApiKey) {
-    throw new Error("AI service is not configured. Please contact support.");
+    throw new AppError(
+      "AI assistant is not configured for this environment. Please set OPENROUTER_API_KEY in your deployment settings.",
+      { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+    );
   }
   const model = options?.model ?? AI_CONFIG.financial_reasoning.model;
   const temperature = options?.temperature ?? 0.3;
@@ -300,7 +325,19 @@ export async function callOpenRouterForGeneration(
   if (!response.ok) {
     const err = await response.text();
     console.error("OpenRouter generation error:", response.status, err);
-    throw new Error(`AI service error: ${response.status}`);
+    const status = response.status;
+    const message =
+      status === 401
+        ? "AI service configuration issue. Please check your provider settings."
+        : status === 429
+          ? "AI service is busy. Please try again in a moment."
+          : status >= 500
+            ? "AI service is temporarily unavailable. Please try again in a moment."
+            : "AI assistant is temporarily unavailable. Please try again.";
+    throw new AppError(message, {
+      statusCode: 503,
+      code: "SERVICE_UNAVAILABLE",
+    });
   }
 
   const data = (await response.json()) as {
@@ -308,7 +345,10 @@ export async function callOpenRouterForGeneration(
   };
   const content = data.choices?.[0]?.message?.content;
   if (typeof content !== "string") {
-    throw new Error("Invalid response from AI service");
+    throw new AppError(
+      "AI assistant is temporarily unavailable. Please try again.",
+      { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+    );
   }
   return content;
 }

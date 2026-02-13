@@ -385,14 +385,27 @@ export function ChatInterface() {
         }
 
         if (!response.ok) {
-          throw new Error("Failed to get response");
+          const errBody = await response.json().catch(() => ({}));
+          const errMessage =
+            typeof errBody?.error === "string"
+              ? errBody.error
+              : response.status === 401
+                ? "Please sign in again to use the AI assistant."
+                : response.status === 429
+                  ? "Too many requests. Please wait a moment and try again."
+                  : "Sorry, I couldn't complete that. Please try again.";
+          throw new Error(errMessage);
         }
 
-        const json = await response.json();
-        const payload = json.data ?? json;
+        const json = await response.json().catch(() => ({}));
+        const payload = json?.data ?? json;
+        const content =
+          payload?.content != null && String(payload.content).trim() !== ""
+            ? String(payload.content)
+            : "I couldn't generate a response for that. Please try again.";
         const assistantMessage = {
           role: "assistant" as const,
-          content: payload.content,
+          content,
           timestamp: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -402,7 +415,7 @@ export function ChatInterface() {
 
         if (chatId) {
           try {
-            await saveChatMessage(chatId, "assistant", payload.content);
+            await saveChatMessage(chatId, "assistant", content);
             await loadChatsAndFolders();
           } catch (error) {
             console.error("Error saving message:", error);
@@ -413,11 +426,13 @@ export function ChatInterface() {
       throw new Error("Failed to get response");
     } catch (error) {
       console.error("Error:", error);
+      const userMessage =
+        error instanceof Error ? error.message : "Sorry, I encountered an error. Please try again later.";
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Sorry, I encountered an error. Please try again later.",
+          content: userMessage,
           timestamp: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -1292,7 +1307,7 @@ export function ChatInterface() {
                           ),
                         }}
                       >
-                        {message.content}
+                        {message.content ?? ""}
                       </ReactMarkdown>
                     </div>
                     {message.attachments && message.attachments.length > 0 && (

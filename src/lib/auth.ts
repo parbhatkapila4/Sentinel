@@ -2,7 +2,7 @@ import { prisma } from "./prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { UnauthorizedError } from "./errors";
 import { logError, logWarn } from "./logger";
-import { isConnectionPoolExhausted, withDbRetry } from "./db-connection-helper";
+import { isConnectionPoolExhausted, isDatabaseUnavailable, withDbRetry } from "./db-connection-helper";
 
 const userCache = new Map<string, { timestamp: number }>();
 const CACHE_TTL = 60000;
@@ -80,6 +80,12 @@ export async function getAuthenticatedUserId(): Promise<string> {
         error: error instanceof Error ? error.message : String(error),
       });
       setCached(userId);
+    } else if (isDatabaseUnavailable(error)) {
+      logWarn("Database unavailable (e.g. tenant not found), skipping user verification", {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      setCached(userId);
     } else {
       logError("Error ensuring user exists", error, { userId });
     }
@@ -144,8 +150,8 @@ export async function getAuthenticatedUser() {
       return user;
     }
   } catch (error) {
-    if (isConnectionPoolExhausted(error)) {
-      logWarn("Database connection pool exhausted in getAuthenticatedUser", {
+    if (isConnectionPoolExhausted(error) || isDatabaseUnavailable(error)) {
+      logWarn("Database unavailable in getAuthenticatedUser", {
         userId,
         error: error instanceof Error ? error.message : String(error),
       });

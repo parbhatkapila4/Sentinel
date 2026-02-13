@@ -59,7 +59,12 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
-  const demoMeetings = useMemo(() => getDemoMeetings(limit), [limit]);
+  const [mounted, setMounted] = useState(false);
+  const demoMeetings = useMemo(() => (mounted ? getDemoMeetings(limit) : []), [limit, mounted]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function loadMeetings() {
@@ -111,7 +116,14 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
           </div>
         </div>
         <div className="space-y-3">
-          {demoMeetings.map((meeting) => {
+          {!mounted
+            ? [1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse p-3 rounded-xl bg-white/[0.02]">
+                  <div className="h-4 w-32 bg-white/10 rounded mb-2" />
+                  <div className="h-3 w-24 bg-white/5 rounded" />
+                </div>
+              ))
+            : demoMeetings.map((meeting) => {
             const isToday = new Date(meeting.startTime).toDateString() === new Date().toDateString();
             const isTomorrow =
               new Date(meeting.startTime).toDateString() ===

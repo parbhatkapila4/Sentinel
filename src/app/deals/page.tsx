@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { unstable_noStore as noStore } from "next/cache";
+import { redirect } from "next/navigation";
 import { getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { getAuthenticatedUserId } from "@/lib/auth";
@@ -44,7 +45,7 @@ function filterDeals(
       );
     case "closed":
       return filtered.filter(
-        (deal) => deal.status === "saved" || deal.status === "lost"
+        (deal) => deal.status === "saved" || deal.status === "lost" || deal.status === "closed"
       );
     default:
       return filtered;
@@ -63,17 +64,30 @@ export default async function DealsPage({
   const teamId = params?.team ?? null;
   const scope = (params?.scope || "my") as "my" | "all";
 
-  const userId = await getAuthenticatedUserId();
-  await seedDemoDataForUser(userId);
-  const showDemoBanner = await hasDemoData(userId);
+  let userId: string;
+  try {
+    userId = await getAuthenticatedUserId();
+  } catch {
+    redirect("/sign-in?redirect=/deals");
+  }
 
-  const deals = await getAllDeals(
-    scope === "all"
-      ? { includeTeamDeals: true }
-      : teamId
-        ? { teamId }
-        : undefined
-  );
+  let showDemoBanner = false;
+  let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  let dataError = false;
+  try {
+    await seedDemoDataForUser(userId);
+    showDemoBanner = await hasDemoData(userId);
+    deals = await getAllDeals(
+      scope === "all"
+        ? { includeTeamDeals: true }
+        : teamId
+          ? { teamId }
+          : undefined
+    );
+  } catch {
+    dataError = true;
+  }
+
   const scopeDeals =
     teamId && scope === "my"
       ? deals.filter(
@@ -103,6 +117,16 @@ export default async function DealsPage({
   return (
     <DashboardLayout>
       <div className="min-h-full p-4 lg:p-6 space-y-6 bg-[#0b0b0b]">
+        {dataError && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4">
+            <p className="text-sm font-medium text-amber-200">
+              Data temporarily unavailable
+            </p>
+            <p className="text-xs text-amber-200/70 mt-1">
+              Check your connection and try again. Deals list is empty.
+            </p>
+          </div>
+        )}
         {showDemoBanner && <DemoBanner />}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
