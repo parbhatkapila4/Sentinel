@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { AppError, ValidationError, CircuitBreakerError, ExternalServiceError, RateLimitError } from "@/lib/errors";
 import { logError } from "./logger";
 import { getErrorContext } from "./error-context";
+import { getRequestId as getRequestContextId } from "@/lib/request-context";
 import { sanitizeString } from "./security";
 
 export function successResponse<T>(data: T, statusCode = 200) {
@@ -35,6 +36,8 @@ function generateRequestId(): string {
 }
 
 function getRequestId(): string {
+  const contextId = getRequestContextId();
+  if (contextId) return contextId;
   try {
     const context = getErrorContext();
     if (context?.requestId) {

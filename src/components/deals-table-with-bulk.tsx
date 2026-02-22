@@ -24,7 +24,7 @@ export type DealRow = {
 
 interface DealsTableWithBulkProps {
   deals: DealRow[];
-}
+} 
 
 export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
   const router = useRouter();

@@ -18,8 +18,8 @@ interface CircuitBreakerState {
 }
 
 const DEFAULT_CONFIG: Omit<CircuitBreakerConfig, "name"> = {
-  failureThreshold: parseInt(process.env.CIRCUIT_BREAKER_FAILURE_THRESHOLD || "5", 10),
-  timeout: parseInt(process.env.CIRCUIT_BREAKER_TIMEOUT || "60000", 10),
+  failureThreshold: parseInt(process.env.CIRCUIT_BREAKER_FAILURE_THRESHOLD || "8", 10),
+  timeout: parseInt(process.env.CIRCUIT_BREAKER_TIMEOUT || "30000", 10),
 };
 
 const circuitBreakers = new Map<string, CircuitBreakerState>();
@@ -144,7 +144,7 @@ export function resetCircuitBreaker(name: string): void {
   const state = getOrCreateCircuitBreakerState(name);
   state.state = "CLOSED";
   state.failures = 0;
-  state.lastFailureTime = null; 
+  state.lastFailureTime = null;
   state.successCount = 0;
   logInfo(`Circuit breaker "${name}" manually reset`, {
     circuitBreaker: name,

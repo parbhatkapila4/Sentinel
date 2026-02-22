@@ -47,6 +47,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
 
+
+  turbopack: {},
+
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.resolve = config.resolve ?? {};

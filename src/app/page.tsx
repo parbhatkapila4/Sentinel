@@ -30,1002 +30,1008 @@ export default async function Home() {
 
       <main id="main-content" tabIndex={-1}>
 
-        <style dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes mesh-drift {
-            0%   { transform: rotate(-8deg) scaleX(1.15) translate(0, 0); }
-            25%  { transform: rotate(-6deg) scaleX(1.18) translate(2%, -1%); }
-            50%  { transform: rotate(-9deg) scaleX(1.12) translate(-1%, 2%); }
-            75%  { transform: rotate(-5deg) scaleX(1.16) translate(1%, -2%); }
-            100% { transform: rotate(-8deg) scaleX(1.15) translate(0, 0); }
-          }
-          @keyframes color-cycle {
-            0%   { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-          }
-          @keyframes warm-pulse {
-            0%, 100% { opacity: 0.7; transform: translate(0, 0) scale(1); }
-            50%      { opacity: 0.5; transform: translate(-3%, 2%) scale(1.08); }
-          }
-          @keyframes cool-pulse {
-            0%, 100% { opacity: 0.6; transform: translate(0, 0) scale(1); }
-            50%      { opacity: 0.45; transform: translate(3%, -2%) scale(1.06); }
-          }
-        `}} />
-
-        <section className="relative overflow-hidden" style={{ backgroundColor: "#000" }}>
+        <section className="relative overflow-hidden bg-black" aria-label="Hero">
 
 
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-
-            <div
-              className="absolute left-[-10%] right-[-10%] top-[8%] bottom-[15%]"
-              style={{ filter: "blur(70px)", animation: "color-cycle 25s linear infinite" }}
-            >
-
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0" aria-hidden>
+            {[
+              { left: "5%", delay: 0, duration: 14 },
+              { left: "12%", delay: 2, duration: 16 },
+              { left: "18%", delay: 4, duration: 12 },
+              { left: "25%", delay: 1, duration: 18 },
+              { left: "32%", delay: 6, duration: 15 },
+              { left: "40%", delay: 3, duration: 13 },
+              { left: "48%", delay: 5, duration: 17 },
+              { left: "55%", delay: 2.5, duration: 14 },
+              { left: "62%", delay: 7, duration: 11 },
+              { left: "70%", delay: 1.5, duration: 19 },
+              { left: "78%", delay: 4.5, duration: 16 },
+              { left: "85%", delay: 0.5, duration: 12 },
+              { left: "92%", delay: 3.5, duration: 15 },
+              { left: "8%", delay: 8, duration: 13 },
+              { left: "22%", delay: 5.5, duration: 20 },
+              { left: "38%", delay: 1, duration: 14 },
+              { left: "52%", delay: 6.5, duration: 16 },
+              { left: "68%", delay: 2, duration: 11 },
+              { left: "82%", delay: 4, duration: 18 },
+              { left: "15%", delay: 7, duration: 15 },
+              { left: "45%", delay: 3, duration: 13 },
+              { left: "75%", delay: 5, duration: 17 },
+            ].map((note, i) => (
               <div
-                className="absolute inset-0"
+                key={i}
+                className="absolute animate-dollar-rain flex items-center justify-center rounded-[3px] select-none overflow-hidden blur-[2px]"
                 style={{
-                  background: "linear-gradient(105deg, #1e3a8a 0%, #4338ca 12%, #7c3aed 22%, #a855f7 32%, #d946ef 42%, #ec4899 52%, #f43f5e 62%, #f97316 74%, #eab308 86%, #fbbf24 100%)",
-                  borderRadius: "40% 60% 55% 45% / 55% 40% 60% 45%",
-                  opacity: 0.4,
-                  animation: "mesh-drift 20s ease-in-out infinite",
+                  left: note.left,
+                  top: "-2rem",
+                  animationDelay: `${note.delay}s`,
+                  animationDuration: `${note.duration}s`,
+                  width: "56px",
+                  height: "22px",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  background: "linear-gradient(145deg, #ecfdf5 0%, #d1fae5 35%, #a7f3d0 70%, #6ee7b7 100%)",
+                  border: "1px solid rgba(52, 211, 153, 0.4)",
                 }}
-              />
-
+              >
+                <div className="absolute inset-[2px] rounded-[2px] border border-[#34d399]/20 pointer-events-none" aria-hidden />
+                <div className="absolute left-1 top-1/2 -translate-y-1/2 w-px h-[60%] bg-[#34d399]/25 rounded-full" aria-hidden />
+                <div className="flex items-center justify-center w-6 h-6 rounded-full border border-[#10b981]/35 bg-[#f0fdf4]/80 shadow-inner">
+                  <span className="text-[#059669] font-bold text-sm leading-none">$</span>
+                </div>
+              </div>
+            ))}
+            {[
+              { left: "3%", delay: 1.2, duration: 15 },
+              { left: "28%", delay: 4.2, duration: 12 },
+              { left: "50%", delay: 0.8, duration: 19 },
+              { left: "72%", delay: 3.8, duration: 14 },
+              { left: "95%", delay: 6.2, duration: 16 },
+              { left: "10%", delay: 2.8, duration: 11 },
+              { left: "35%", delay: 5.2, duration: 17 },
+              { left: "58%", delay: 1.8, duration: 13 },
+              { left: "80%", delay: 4.8, duration: 18 },
+            ].map((note, i) => (
               <div
-                className="absolute top-[5%] right-0 w-[55%] h-[75%] rounded-full"
+                key={`note-${i}`}
+                className="absolute animate-dollar-rain flex items-center justify-center rounded-[2px] select-none overflow-hidden blur-[2px]"
                 style={{
-                  background: "radial-gradient(ellipse, rgba(251,191,36,0.7) 0%, rgba(249,115,22,0.35) 40%, transparent 70%)",
-                  animation: "warm-pulse 15s ease-in-out infinite",
+                  left: note.left,
+                  top: "-1.5rem",
+                  animationDelay: `${note.delay}s`,
+                  animationDuration: `${note.duration}s`,
+                  width: "44px",
+                  height: "18px",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.18)",
+                  background: "linear-gradient(145deg, #d1fae5 0%, #a7f3d0 45%, #6ee7b7 100%)",
+                  border: "1px solid rgba(52, 211, 153, 0.35)",
                 }}
-              />
-
-              <div
-                className="absolute bottom-[5%] left-0 w-[45%] h-[65%] rounded-full"
-                style={{
-                  background: "radial-gradient(ellipse, rgba(79,70,229,0.6) 0%, rgba(67,56,202,0.3) 40%, transparent 70%)",
-                  animation: "cool-pulse 18s ease-in-out infinite",
-                }}
-              />
-            </div>
-
-
-            <svg className="absolute inset-0 w-full h-full opacity-[0.025]" xmlns="http://www.w3.org/2000/svg">
-              <filter id="heroGrain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" /></filter>
-              <rect width="100%" height="100%" filter="url(#heroGrain)" />
-            </svg>
+              >
+                <div className="absolute inset-[1px] rounded-[1px] border border-[#34d399]/15 pointer-events-none" aria-hidden />
+                <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-px h-[55%] bg-[#34d399]/20 rounded-full" aria-hidden />
+                <div className="flex items-center justify-center w-4 h-4 rounded-full border border-[#10b981]/30 bg-[#f0fdf4]/70 shadow-inner">
+                  <span className="text-[#059669] font-bold text-[10px] leading-none">$</span>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 lg:pt-48">
+          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
+            <div
+              className="absolute w-[200%] h-px top-[25%] -left-[30%] opacity-[0.07]"
+              style={{
+                background: "linear-gradient(90deg, transparent 0%, #0ea5e9 20%, #0ea5e9 80%, transparent 100%)",
+                transform: "rotate(-24deg) scaleY(120)",
+              }}
+            />
+            <div
+              className="absolute w-[200%] h-px top-[55%] -left-[20%] opacity-[0.055]"
+              style={{
+                background: "linear-gradient(90deg, transparent 0%, #0ea5e9 25%, #0ea5e9 75%, transparent 100%)",
+                transform: "rotate(-20deg) scaleY(100)",
+              }}
+            />
+            <div
+              className="absolute w-[180%] h-[1px] top-[75%] left-[-10%] opacity-[0.035]"
+              style={{
+                background: "linear-gradient(90deg, transparent 0%, #0369a1 30%, #0369a1 70%, transparent 100%)",
+                transform: "rotate(-14deg) scaleY(80)",
+              }}
+            />
+            <div
+              className="absolute w-[1px] h-[200%] -top-[50%] left-[35%] opacity-[0.04]"
+              style={{
+                background: "linear-gradient(180deg, transparent 0%, #0ea5e9 30%, #0ea5e9 70%, transparent 100%)",
+                transform: "rotate(12deg) scaleX(200)",
+              }}
+            />
+          </div>
 
-            <div className="max-w-4xl mx-auto text-center mb-16 sm:mb-20">
+          <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24 pb-8 sm:pb-10 lg:pb-12">
+            <div className="max-w-6xl mx-auto">
+              <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-black/40 backdrop-blur-md px-4 py-1.5 mb-10 sm:mb-12">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                </span>
-                <span className="text-[13px] font-medium text-white/60">Now with AI-powered risk scoring</span>
-              </div>
+                <div className="order-2 lg:order-1 text-center lg:text-left">
+                  <p className="text-xs sm:text-sm font-medium tracking-[0.24em] uppercase text-white/50 mb-6">
+                    Deal risk intelligence
+                  </p>
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-[-0.03em] text-white leading-[1.12] mb-6 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+                    Catch at-risk deals
+                    <br />
+                    <span className="text-[#0ea5e9]" style={{ textShadow: "0 0 40px rgba(14, 165, 233, 0.35)" }}>
+                      before they go silent.
+                    </span>
+                  </h1>
+                  <p className="text-lg sm:text-xl text-white/60 leading-relaxed max-w-md mx-auto lg:mx-0 mb-10 tracking-tight">
+                    Risk scoring, activity signals, and clear next steps - so your team can act instead of guess.
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                    {!user ? (
+                      <>
+                        <Link
+                          href="/sign-up"
+                          className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-base font-semibold text-black transition-all duration-200 hover:bg-white/95 hover:shadow-[0_0_32px_rgba(255,255,255,0.12)] hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 focus-visible:ring-0"
+                        >
+                          Start free
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                          </svg>
+                        </Link>
+                        <Link
+                          href="/how"
+                          className="inline-flex items-center rounded-xl border border-white/20 px-6 py-3.5 text-base font-medium text-white/80 transition-all duration-200 hover:border-white/35 hover:text-white hover:bg-white/5 w-full sm:w-auto justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 focus-visible:outline-offset-2"
+                        >
+                          See how it works
+                        </Link>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
 
-              <h1 className="text-4xl leading-[1.1] sm:text-[3.5rem] md:text-[4.25rem] lg:text-[5rem] font-bold tracking-[-0.04em] mb-7 sm:mb-9">
-                <span className="text-white">Never lose a deal to</span>
-                <br />
-                <span
-                  className="bg-clip-text text-transparent"
-                  style={{ backgroundImage: "linear-gradient(90deg, #a78bfa, #e879f9, #fb923c, #fbbf24)" }}
-                >
-                  silent decay.
-                </span>
-              </h1>
 
-              <p className="text-lg sm:text-xl text-white/50 leading-relaxed max-w-xl mx-auto mb-10 sm:mb-12">
-                Sentinel uses AI to detect at-risk deals, diagnose why they&apos;re stalling, and tell your team exactly what to do next.
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                {!user ? (
-                  <>
-                    <Link
-                      href="/sign-up"
-                      className="group inline-flex items-center gap-2.5 rounded-lg bg-white px-6 py-3 text-[15px] font-semibold text-black transition-all hover:-translate-y-px hover:shadow-[0_0_30px_rgba(255,255,255,0.12)]"
+                <div className="order-1 lg:order-2 flex justify-center lg:justify-end mt-2 lg:mt-4">
+                  <div className="relative">
+                    <div
+                      className="absolute inset-0 -z-10 rounded-full opacity-30 blur-3xl"
+                      style={{ background: "radial-gradient(circle, rgba(14,165,233,0.2) 0%, transparent 70%)", transform: "scale(1.5)" }}
+                      aria-hidden
+                    />
+                    <div
+                      className="w-full min-w-[380px] max-w-none min-h-[380px] h-[min(80vh,880px)] max-h-[880px] drop-shadow-[0_0_60px_rgba(14,165,233,0.08)]"
+                      role="img"
+                      aria-label="Sentinel risk pipeline"
                     >
-                      Get started
-                      <svg className="w-4 h-4 opacity-40 transition-all group-hover:translate-x-0.5 group-hover:opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </Link>
-                    <Link
-                      href="#features"
-                      className="group inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/40 backdrop-blur-md px-6 py-3 text-[15px] font-medium text-white/60 transition-all hover:border-white/20 hover:text-white/80"
-                    >
-                      Learn more
-                    </Link>
-                  </>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="relative max-w-5xl mx-auto pb-4">
-              <div className="rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl p-2 sm:p-3">
-                <div className="relative rounded-xl overflow-hidden bg-black min-h-[280px] sm:min-h-[380px] lg:min-h-[460px]">
-                  <svg
-                    viewBox="0 0 600 600"
-                    className="w-full h-full"
-                    preserveAspectRatio="xMidYMid meet"
-                  >
-                    <defs>
-                      <linearGradient
-                        id="bluePipe3D"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
+                      <svg
+                        viewBox="0 0 600 600"
+                        className="w-full h-full"
+                        preserveAspectRatio="xMidYMid meet"
                       >
-                        <stop offset="0%" stopColor="#dbeafe" />
-                        <stop offset="15%" stopColor="#bfdbfe" />
-                        <stop offset="35%" stopColor="#93c5fd" />
-                        <stop offset="50%" stopColor="#60a5fa" />
-                        <stop offset="70%" stopColor="#3b82f6" />
-                        <stop offset="85%" stopColor="#2563eb" />
-                        <stop offset="100%" stopColor="#1e40af" />
-                      </linearGradient>
+                        <defs>
+                          <linearGradient
+                            id="bluePipe3D"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="100%"
+                          >
+                            <stop offset="0%" stopColor="#dbeafe" />
+                            <stop offset="15%" stopColor="#bfdbfe" />
+                            <stop offset="35%" stopColor="#93c5fd" />
+                            <stop offset="50%" stopColor="#60a5fa" />
+                            <stop offset="70%" stopColor="#3b82f6" />
+                            <stop offset="85%" stopColor="#2563eb" />
+                            <stop offset="100%" stopColor="#1e40af" />
+                          </linearGradient>
 
-                      <linearGradient
-                        id="blueHighlight"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="0%"
-                      >
-                        <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                        <stop
-                          offset="15%"
-                          stopColor="#eff6ff"
-                          stopOpacity="0.95"
-                        />
-                        <stop
-                          offset="30%"
-                          stopColor="#dbeafe"
-                          stopOpacity="0.8"
-                        />
-                        <stop
-                          offset="50%"
-                          stopColor="#bfdbfe"
-                          stopOpacity="0.6"
-                        />
-                        <stop
-                          offset="70%"
-                          stopColor="#93c5fd"
-                          stopOpacity="0.4"
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#60a5fa"
-                          stopOpacity="0.1"
-                        />
-                      </linearGradient>
+                          <linearGradient
+                            id="blueHighlight"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="0%"
+                          >
+                            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                            <stop
+                              offset="15%"
+                              stopColor="#eff6ff"
+                              stopOpacity="0.95"
+                            />
+                            <stop
+                              offset="30%"
+                              stopColor="#dbeafe"
+                              stopOpacity="0.8"
+                            />
+                            <stop
+                              offset="50%"
+                              stopColor="#bfdbfe"
+                              stopOpacity="0.6"
+                            />
+                            <stop
+                              offset="70%"
+                              stopColor="#93c5fd"
+                              stopOpacity="0.4"
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#60a5fa"
+                              stopOpacity="0.1"
+                            />
+                          </linearGradient>
 
-                      <linearGradient
-                        id="blueShadow"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="0%"
-                      >
-                        <stop offset="0%" stopColor="#1e3a8a" stopOpacity="0.9" />
-                        <stop
-                          offset="50%"
-                          stopColor="#1e40af"
-                          stopOpacity="0.7"
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#0f172a"
-                          stopOpacity="0.95"
-                        />
-                      </linearGradient>
+                          <linearGradient
+                            id="blueShadow"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="0%"
+                          >
+                            <stop offset="0%" stopColor="#1e3a8a" stopOpacity="0.9" />
+                            <stop
+                              offset="50%"
+                              stopColor="#1e40af"
+                              stopOpacity="0.7"
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#0f172a"
+                              stopOpacity="0.95"
+                            />
+                          </linearGradient>
 
-                      <linearGradient
-                        id="yellowTube"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#fef9c3" />
-                        <stop offset="30%" stopColor="#fef08a" />
-                        <stop offset="50%" stopColor="#fde047" />
-                        <stop offset="70%" stopColor="#facc15" />
-                        <stop offset="100%" stopColor="#eab308" />
-                      </linearGradient>
+                          <linearGradient
+                            id="yellowTube"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="100%"
+                          >
+                            <stop offset="0%" stopColor="#fef9c3" />
+                            <stop offset="30%" stopColor="#fef08a" />
+                            <stop offset="50%" stopColor="#fde047" />
+                            <stop offset="70%" stopColor="#facc15" />
+                            <stop offset="100%" stopColor="#eab308" />
+                          </linearGradient>
 
-                      <linearGradient
-                        id="redTube"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#fee2e2" />
-                        <stop offset="30%" stopColor="#fecaca" />
-                        <stop offset="50%" stopColor="#fca5a5" />
-                        <stop offset="70%" stopColor="#f87171" />
-                        <stop offset="100%" stopColor="#ef4444" />
-                      </linearGradient>
+                          <linearGradient
+                            id="redTube"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="100%"
+                          >
+                            <stop offset="0%" stopColor="#fee2e2" />
+                            <stop offset="30%" stopColor="#fecaca" />
+                            <stop offset="50%" stopColor="#fca5a5" />
+                            <stop offset="70%" stopColor="#f87171" />
+                            <stop offset="100%" stopColor="#ef4444" />
+                          </linearGradient>
 
-                      <linearGradient
-                        id="orangeTube"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#ffedd5" />
-                        <stop offset="30%" stopColor="#fed7aa" />
-                        <stop offset="50%" stopColor="#fdba74" />
-                        <stop offset="70%" stopColor="#fb923c" />
-                        <stop offset="100%" stopColor="#f97316" />
-                      </linearGradient>
+                          <linearGradient
+                            id="orangeTube"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="100%"
+                          >
+                            <stop offset="0%" stopColor="#ffedd5" />
+                            <stop offset="30%" stopColor="#fed7aa" />
+                            <stop offset="50%" stopColor="#fdba74" />
+                            <stop offset="70%" stopColor="#fb923c" />
+                            <stop offset="100%" stopColor="#f97316" />
+                          </linearGradient>
 
-                      <linearGradient
-                        id="silver"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#ffffff" />
-                        <stop offset="20%" stopColor="#f8fafc" />
-                        <stop offset="40%" stopColor="#f1f5f9" />
-                        <stop offset="60%" stopColor="#e2e8f0" />
-                        <stop offset="80%" stopColor="#cbd5e1" />
-                        <stop offset="100%" stopColor="#94a3b8" />
-                      </linearGradient>
+                          <linearGradient
+                            id="silver"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="100%"
+                          >
+                            <stop offset="0%" stopColor="#ffffff" />
+                            <stop offset="20%" stopColor="#f8fafc" />
+                            <stop offset="40%" stopColor="#f1f5f9" />
+                            <stop offset="60%" stopColor="#e2e8f0" />
+                            <stop offset="80%" stopColor="#cbd5e1" />
+                            <stop offset="100%" stopColor="#94a3b8" />
+                          </linearGradient>
 
-                      <linearGradient
-                        id="darkBlueCyl"
-                        x1="0%"
-                        y1="0%"
-                        x2="0%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#3b82f6" />
-                        <stop offset="20%" stopColor="#1e40af" />
-                        <stop offset="40%" stopColor="#1e3a8a" />
-                        <stop offset="60%" stopColor="#1e3a5f" />
-                        <stop offset="80%" stopColor="#1e293b" />
-                        <stop offset="100%" stopColor="#0f172a" />
-                      </linearGradient>
+                          <linearGradient
+                            id="darkBlueCyl"
+                            x1="0%"
+                            y1="0%"
+                            x2="0%"
+                            y2="100%"
+                          >
+                            <stop offset="0%" stopColor="#3b82f6" />
+                            <stop offset="20%" stopColor="#1e40af" />
+                            <stop offset="40%" stopColor="#1e3a8a" />
+                            <stop offset="60%" stopColor="#1e3a5f" />
+                            <stop offset="80%" stopColor="#1e293b" />
+                            <stop offset="100%" stopColor="#0f172a" />
+                          </linearGradient>
 
-                      <linearGradient
-                        id="conveyor"
-                        x1="0%"
-                        y1="0%"
-                        x2="0%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#94a3b8" />
-                        <stop offset="25%" stopColor="#64748b" />
-                        <stop offset="50%" stopColor="#475569" />
-                        <stop offset="75%" stopColor="#334155" />
-                        <stop offset="100%" stopColor="#1e293b" />
-                      </linearGradient>
+                          <linearGradient
+                            id="conveyor"
+                            x1="0%"
+                            y1="0%"
+                            x2="0%"
+                            y2="100%"
+                          >
+                            <stop offset="0%" stopColor="#94a3b8" />
+                            <stop offset="25%" stopColor="#64748b" />
+                            <stop offset="50%" stopColor="#475569" />
+                            <stop offset="75%" stopColor="#334155" />
+                            <stop offset="100%" stopColor="#1e293b" />
+                          </linearGradient>
 
-                      <filter
-                        id="glowBlue"
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                      >
-                        <feGaussianBlur stdDeviation="6" result="coloredBlur" />
-                        <feColorMatrix
-                          in="coloredBlur"
-                          type="matrix"
-                          values="0 0.4 1 0 0  0 0.5 1 0 0  0 0.7 1 0 0  0 0 0 0.6 0"
-                        />
-                        <feMerge>
-                          <feMergeNode />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
+                          <filter
+                            id="glowBlue"
+                            x="-100%"
+                            y="-100%"
+                            width="300%"
+                            height="300%"
+                          >
+                            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+                            <feColorMatrix
+                              in="coloredBlur"
+                              type="matrix"
+                              values="0 0.4 1 0 0  0 0.5 1 0 0  0 0.7 1 0 0  0 0 0 0.6 0"
+                            />
+                            <feMerge>
+                              <feMergeNode />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                          </filter>
 
-                      <filter
-                        id="strongGlow"
-                        x="-150%"
-                        y="-150%"
-                        width="400%"
-                        height="400%"
-                      >
-                        <feGaussianBlur stdDeviation="12" result="coloredBlur" />
-                        <feMerge>
-                          <feMergeNode in="coloredBlur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
+                          <filter
+                            id="strongGlow"
+                            x="-150%"
+                            y="-150%"
+                            width="400%"
+                            height="400%"
+                          >
+                            <feGaussianBlur stdDeviation="12" result="coloredBlur" />
+                            <feMerge>
+                              <feMergeNode in="coloredBlur" />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                          </filter>
 
-                      <filter
-                        id="shadow3D"
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                      >
-                        <feGaussianBlur
-                          in="SourceAlpha"
-                          stdDeviation="3"
-                          result="blur1"
-                        />
-                        <feOffset in="blur1" dx="2" dy="3" result="offset1" />
-                        <feGaussianBlur
-                          in="SourceAlpha"
-                          stdDeviation="6"
-                          result="blur2"
-                        />
-                        <feOffset in="blur2" dx="4" dy="6" result="offset2" />
-                        <feComponentTransfer in="offset1" result="shadow1">
-                          <feFuncA type="linear" slope="0.8" />
-                        </feComponentTransfer>
-                        <feComponentTransfer in="offset2" result="shadow2">
-                          <feFuncA type="linear" slope="0.4" />
-                        </feComponentTransfer>
-                        <feMerge>
-                          <feMergeNode in="shadow2" />
-                          <feMergeNode in="shadow1" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
+                          <filter
+                            id="shadow3D"
+                            x="-100%"
+                            y="-100%"
+                            width="300%"
+                            height="300%"
+                          >
+                            <feGaussianBlur
+                              in="SourceAlpha"
+                              stdDeviation="3"
+                              result="blur1"
+                            />
+                            <feOffset in="blur1" dx="2" dy="3" result="offset1" />
+                            <feGaussianBlur
+                              in="SourceAlpha"
+                              stdDeviation="6"
+                              result="blur2"
+                            />
+                            <feOffset in="blur2" dx="4" dy="6" result="offset2" />
+                            <feComponentTransfer in="offset1" result="shadow1">
+                              <feFuncA type="linear" slope="0.8" />
+                            </feComponentTransfer>
+                            <feComponentTransfer in="offset2" result="shadow2">
+                              <feFuncA type="linear" slope="0.4" />
+                            </feComponentTransfer>
+                            <feMerge>
+                              <feMergeNode in="shadow2" />
+                              <feMergeNode in="shadow1" />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                          </filter>
 
-                      <filter
-                        id="pulseGlow"
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                      >
-                        <feGaussianBlur stdDeviation="8" result="coloredBlur">
-                          <animate
-                            attributeName="stdDeviation"
-                            values="6;10;6"
-                            dur="3s"
-                            repeatCount="indefinite"
-                          />
-                        </feGaussianBlur>
-                        <feMerge>
-                          <feMergeNode in="coloredBlur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
+                          <filter
+                            id="pulseGlow"
+                            x="-100%"
+                            y="-100%"
+                            width="300%"
+                            height="300%"
+                          >
+                            <feGaussianBlur stdDeviation="8" result="coloredBlur">
+                              <animate
+                                attributeName="stdDeviation"
+                                values="6;10;6"
+                                dur="3s"
+                                repeatCount="indefinite"
+                              />
+                            </feGaussianBlur>
+                            <feMerge>
+                              <feMergeNode in="coloredBlur" />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                          </filter>
 
-                      <radialGradient id="blueBall3D" cx="25%" cy="25%">
-                        <stop offset="0%" stopColor="#ffffff" />
-                        <stop offset="15%" stopColor="#dbeafe" />
-                        <stop offset="35%" stopColor="#93c5fd" />
-                        <stop offset="55%" stopColor="#60a5fa" />
-                        <stop offset="75%" stopColor="#3b82f6" />
-                        <stop offset="90%" stopColor="#2563eb" />
-                        <stop offset="100%" stopColor="#1e40af" />
-                      </radialGradient>
-                      <radialGradient id="redBall3D" cx="25%" cy="25%">
-                        <stop offset="0%" stopColor="#ffffff" />
-                        <stop offset="15%" stopColor="#fee2e2" />
-                        <stop offset="35%" stopColor="#fecaca" />
-                        <stop offset="55%" stopColor="#fca5a5" />
-                        <stop offset="75%" stopColor="#f87171" />
-                        <stop offset="90%" stopColor="#ef4444" />
-                        <stop offset="100%" stopColor="#dc2626" />
-                      </radialGradient>
-                      <radialGradient id="silverBall3D" cx="25%" cy="25%">
-                        <stop offset="0%" stopColor="#ffffff" />
-                        <stop offset="20%" stopColor="#f8fafc" />
-                        <stop offset="40%" stopColor="#f1f5f9" />
-                        <stop offset="60%" stopColor="#e2e8f0" />
-                        <stop offset="80%" stopColor="#cbd5e1" />
-                        <stop offset="100%" stopColor="#94a3b8" />
-                      </radialGradient>
-                      <radialGradient id="orangeBall3D" cx="25%" cy="25%">
-                        <stop offset="0%" stopColor="#fff7ed" />
-                        <stop offset="20%" stopColor="#ffedd5" />
-                        <stop offset="40%" stopColor="#fed7aa" />
-                        <stop offset="60%" stopColor="#fdba74" />
-                        <stop offset="80%" stopColor="#fb923c" />
-                        <stop offset="100%" stopColor="#f97316" />
-                      </radialGradient>
-                    </defs>
+                          <radialGradient id="blueBall3D" cx="25%" cy="25%">
+                            <stop offset="0%" stopColor="#ffffff" />
+                            <stop offset="15%" stopColor="#dbeafe" />
+                            <stop offset="35%" stopColor="#93c5fd" />
+                            <stop offset="55%" stopColor="#60a5fa" />
+                            <stop offset="75%" stopColor="#3b82f6" />
+                            <stop offset="90%" stopColor="#2563eb" />
+                            <stop offset="100%" stopColor="#1e40af" />
+                          </radialGradient>
+                          <radialGradient id="redBall3D" cx="25%" cy="25%">
+                            <stop offset="0%" stopColor="#ffffff" />
+                            <stop offset="15%" stopColor="#fee2e2" />
+                            <stop offset="35%" stopColor="#fecaca" />
+                            <stop offset="55%" stopColor="#fca5a5" />
+                            <stop offset="75%" stopColor="#f87171" />
+                            <stop offset="90%" stopColor="#ef4444" />
+                            <stop offset="100%" stopColor="#dc2626" />
+                          </radialGradient>
+                          <radialGradient id="silverBall3D" cx="25%" cy="25%">
+                            <stop offset="0%" stopColor="#ffffff" />
+                            <stop offset="20%" stopColor="#f8fafc" />
+                            <stop offset="40%" stopColor="#f1f5f9" />
+                            <stop offset="60%" stopColor="#e2e8f0" />
+                            <stop offset="80%" stopColor="#cbd5e1" />
+                            <stop offset="100%" stopColor="#94a3b8" />
+                          </radialGradient>
+                          <radialGradient id="orangeBall3D" cx="25%" cy="25%">
+                            <stop offset="0%" stopColor="#fff7ed" />
+                            <stop offset="20%" stopColor="#ffedd5" />
+                            <stop offset="40%" stopColor="#fed7aa" />
+                            <stop offset="60%" stopColor="#fdba74" />
+                            <stop offset="80%" stopColor="#fb923c" />
+                            <stop offset="100%" stopColor="#f97316" />
+                          </radialGradient>
+                        </defs>
 
-                    <rect
-                      x="85"
-                      y="50"
-                      width="32"
-                      height="430"
-                      rx="16"
-                      fill="url(#darkBlueCyl)"
-                      filter="url(#shadow3D)"
-                    />
-
-                    <rect
-                      x="87"
-                      y="50"
-                      width="10"
-                      height="430"
-                      rx="5"
-                      fill="url(#blueHighlight)"
-                      opacity="0.7"
-                    />
-
-                    <rect
-                      x="103"
-                      y="50"
-                      width="6"
-                      height="430"
-                      rx="3"
-                      fill="url(#blueShadow)"
-                      opacity="0.5"
-                    />
-
-                    <ellipse
-                      cx="101"
-                      cy="110"
-                      rx="38"
-                      ry="14"
-                      fill="url(#darkBlueCyl)"
-                      filter="url(#shadow3D)"
-                    />
-                    <ellipse
-                      cx="96"
-                      cy="110"
-                      rx="30"
-                      ry="10"
-                      fill="url(#blueHighlight)"
-                      opacity="0.4"
-                    />
-
-                    <ellipse
-                      cx="101"
-                      cy="170"
-                      rx="35"
-                      ry="12"
-                      fill="url(#orangeTube)"
-                      filter="url(#glowBlue)"
-                    />
-                    <ellipse
-                      cx="96"
-                      cy="170"
-                      rx="28"
-                      ry="9"
-                      fill="url(#blueHighlight)"
-                      opacity="0.3"
-                    />
-
-                    <ellipse
-                      cx="101"
-                      cy="230"
-                      rx="33"
-                      ry="11"
-                      fill="url(#redTube)"
-                      filter="url(#glowBlue)"
-                    />
-                    <ellipse
-                      cx="96"
-                      cy="230"
-                      rx="26"
-                      ry="8"
-                      fill="url(#blueHighlight)"
-                      opacity="0.3"
-                    />
-
-                    <ellipse
-                      cx="101"
-                      cy="460"
-                      rx="45"
-                      ry="18"
-                      fill="url(#redTube)"
-                      filter="url(#glowBlue)"
-                    />
-                    <ellipse
-                      cx="96"
-                      cy="460"
-                      rx="38"
-                      ry="15"
-                      fill="url(#blueHighlight)"
-                      opacity="0.3"
-                    />
-
-                    <ellipse
-                      cx="101"
-                      cy="290"
-                      rx="22"
-                      ry="9"
-                      fill="url(#darkBlueCyl)"
-                    />
-                    <ellipse
-                      cx="97"
-                      cy="290"
-                      rx="18"
-                      ry="7"
-                      fill="url(#blueHighlight)"
-                      opacity="0.4"
-                    />
-
-                    <path
-                      d="M 45 90 Q 20 135 45 180 Q 65 205 101 195"
-                      stroke="url(#silver)"
-                      strokeWidth="22"
-                      fill="none"
-                      strokeLinecap="round"
-                      filter="url(#shadow3D)"
-                    />
-                    <path
-                      d="M 47 92 Q 22 137 47 182 Q 67 207 101 197"
-                      stroke="url(#blueHighlight)"
-                      strokeWidth="5"
-                      fill="none"
-                      opacity="0.6"
-                    />
-
-                    <path
-                      d="M 115 145 Q 205 135 290 155"
-                      stroke="url(#yellowTube)"
-                      strokeWidth="20"
-                      fill="none"
-                      strokeLinecap="round"
-                      filter="url(#glowBlue)"
-                    />
-                    <path
-                      d="M 115 145 Q 205 135 290 155"
-                      stroke="#fef08a"
-                      strokeWidth="6"
-                      fill="none"
-                      strokeLinecap="round"
-                      opacity="0.5"
-                    />
-
-                    <path
-                      d="M 290 155 Q 335 200 355 265"
-                      stroke="url(#redTube)"
-                      strokeWidth="18"
-                      fill="none"
-                      strokeLinecap="round"
-                      filter="url(#glowBlue)"
-                    />
-                    <path
-                      d="M 290 155 Q 335 200 355 265"
-                      stroke="#fecaca"
-                      strokeWidth="5"
-                      fill="none"
-                      strokeLinecap="round"
-                      opacity="0.5"
-                    />
-
-                    <path
-                      d="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
-                      stroke="url(#bluePipe3D)"
-                      strokeWidth="28"
-                      fill="none"
-                      strokeLinecap="round"
-                      filter="url(#glowBlue)"
-                    />
-
-                    <path
-                      d="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
-                      stroke="url(#blueHighlight)"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeLinecap="round"
-                      opacity="0.7"
-                    />
-
-                    <path
-                      d="M 290 155 Q 320 185 340 250"
-                      stroke="url(#bluePipe3D)"
-                      strokeWidth="14"
-                      fill="none"
-                      strokeLinecap="round"
-                      filter="url(#glowBlue)"
-                    />
-                    <path
-                      d="M 290 155 Q 320 185 340 250"
-                      stroke="url(#blueHighlight)"
-                      strokeWidth="4"
-                      fill="none"
-                      strokeLinecap="round"
-                      opacity="0.5"
-                    />
-
-                    <rect
-                      x="45"
-                      y="195"
-                      width="85"
-                      height="14"
-                      rx="7"
-                      fill="url(#orangeTube)"
-                      filter="url(#shadow3D)"
-                    />
-                    <rect
-                      x="47"
-                      y="197"
-                      width="30"
-                      height="10"
-                      rx="5"
-                      fill="url(#blueHighlight)"
-                      opacity="0.4"
-                    />
-
-                    <rect
-                      x="45"
-                      y="225"
-                      width="80"
-                      height="14"
-                      rx="7"
-                      fill="#fbbf24"
-                      filter="url(#shadow3D)"
-                    />
-                    <rect
-                      x="47"
-                      y="227"
-                      width="28"
-                      height="10"
-                      rx="5"
-                      fill="#fef08a"
-                      opacity="0.4"
-                    />
-
-                    <rect
-                      x="45"
-                      y="255"
-                      width="75"
-                      height="14"
-                      rx="7"
-                      fill="url(#redTube)"
-                      filter="url(#shadow3D)"
-                    />
-                    <rect
-                      x="47"
-                      y="257"
-                      width="26"
-                      height="10"
-                      rx="5"
-                      fill="#fecaca"
-                      opacity="0.4"
-                    />
-
-                    <rect
-                      x="40"
-                      y="495"
-                      width="520"
-                      height="70"
-                      fill="url(#conveyor)"
-                      filter="url(#shadow3D)"
-                    />
-
-                    {[
-                      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-                      17,
-                    ].map((i) => (
-                      <g key={i}>
-                        <line
-                          x1={40 + i * 29}
-                          y1="495"
-                          x2={40 + i * 29}
-                          y2="565"
-                          stroke="#0f172a"
-                          strokeWidth="2.5"
-                        />
                         <rect
-                          x={40 + i * 29 + 2}
-                          y1="495"
+                          x="85"
+                          y="50"
+                          width="32"
+                          height="430"
+                          rx="16"
+                          fill="url(#darkBlueCyl)"
+                          filter="url(#shadow3D)"
+                        />
+
+                        <rect
+                          x="87"
+                          y="50"
+                          width="10"
+                          height="430"
+                          rx="5"
+                          fill="url(#blueHighlight)"
+                          opacity="0.7"
+                        />
+
+                        <rect
+                          x="103"
+                          y="50"
                           width="6"
-                          height="70"
-                          fill="#1e293b"
+                          height="430"
+                          rx="3"
+                          fill="url(#blueShadow)"
                           opacity="0.5"
                         />
-                      </g>
-                    ))}
 
-                    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                      <g key={i} transform={`rotate(${-6 + i * 2.5})`}>
-                        <animateMotion
-                          dur={`${10 + i * 0.8}s`}
-                          repeatCount="indefinite"
-                          begin={`${i * 1.2}s`}
-                          path={`M ${110 + i * 65},${510 + (i % 2) * 6} L 560,${510 + (i % 2) * 6
-                            }`}
-                        />
-                        <rect
-                          width="48"
-                          height="24"
-                          rx="3"
-                          fill="#22c55e"
+                        <ellipse
+                          cx="101"
+                          cy="110"
+                          rx="38"
+                          ry="14"
+                          fill="url(#darkBlueCyl)"
                           filter="url(#shadow3D)"
-                        >
-                          <animate
-                            attributeName="opacity"
-                            values="0.85;1;0.85"
-                            dur={`${2.5 + i * 0.3}s`}
-                            repeatCount="indefinite"
-                            begin={`${i * 0.4}s`}
-                          />
-                        </rect>
-                        <rect
-                          x="3"
-                          y="3"
-                          width="42"
-                          height="18"
-                          fill="none"
-                          stroke="#166534"
-                          strokeWidth="1"
                         />
-                        <text
-                          x="24"
-                          y="17"
-                          fontSize="10"
-                          fill="#166534"
-                          textAnchor="middle"
-                          fontWeight="bold"
-                          fontFamily="Arial"
-                        >
-                          $
-                        </text>
-                        <rect
-                          x="5"
-                          y="12"
-                          width="38"
-                          height="1"
-                          fill="#166534"
+                        <ellipse
+                          cx="96"
+                          cy="110"
+                          rx="30"
+                          ry="10"
+                          fill="url(#blueHighlight)"
+                          opacity="0.4"
+                        />
+
+                        <ellipse
+                          cx="101"
+                          cy="170"
+                          rx="35"
+                          ry="12"
+                          fill="url(#orangeTube)"
+                          filter="url(#glowBlue)"
+                        />
+                        <ellipse
+                          cx="96"
+                          cy="170"
+                          rx="28"
+                          ry="9"
+                          fill="url(#blueHighlight)"
                           opacity="0.3"
                         />
-                      </g>
-                    ))}
 
-                    <g>
-                      <circle
-                        r="12"
-                        fill="url(#silverBall3D)"
-                        filter="url(#pulseGlow)"
-                        opacity="0.95"
-                      >
-                        <animateMotion
-                          dur="6s"
-                          repeatCount="indefinite"
-                          path="M 115 145 Q 205 135 290 155"
+                        <ellipse
+                          cx="101"
+                          cy="230"
+                          rx="33"
+                          ry="11"
+                          fill="url(#redTube)"
+                          filter="url(#glowBlue)"
                         />
-                        <animate
-                          attributeName="opacity"
-                          values="0.85;1;0.85"
-                          dur="2s"
-                          repeatCount="indefinite"
+                        <ellipse
+                          cx="96"
+                          cy="230"
+                          rx="26"
+                          ry="8"
+                          fill="url(#blueHighlight)"
+                          opacity="0.3"
                         />
-                      </circle>
-                      <circle r="9" fill="url(#silverBall3D)" opacity="0.6">
-                        <animateMotion
-                          dur="6s"
-                          repeatCount="indefinite"
-                          path="M 115 145 Q 205 135 290 155"
-                        />
-                      </circle>
-                      <circle r="5" fill="#ffffff" opacity="0.95">
-                        <animateMotion
-                          dur="6s"
-                          repeatCount="indefinite"
-                          path="M 110 140 Q 200 130 285 150"
-                        />
-                      </circle>
-                      <circle r="2" fill="#ffffff" opacity="1">
-                        <animateMotion
-                          dur="6s"
-                          repeatCount="indefinite"
-                          path="M 108 138 Q 198 128 283 148"
-                        />
-                      </circle>
-                    </g>
 
-                    <g>
-                      <circle
-                        r="16"
-                        fill="url(#blueBall3D)"
-                        filter="url(#pulseGlow)"
-                        opacity="0.95"
-                      >
-                        <animateMotion
-                          dur="12s"
-                          repeatCount="indefinite"
-                          path="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                        <ellipse
+                          cx="101"
+                          cy="460"
+                          rx="45"
+                          ry="18"
+                          fill="url(#redTube)"
+                          filter="url(#glowBlue)"
                         />
-                        <animate
-                          attributeName="opacity"
-                          values="0.9;1;0.9"
-                          dur="3s"
-                          repeatCount="indefinite"
+                        <ellipse
+                          cx="96"
+                          cy="460"
+                          rx="38"
+                          ry="15"
+                          fill="url(#blueHighlight)"
+                          opacity="0.3"
                         />
-                      </circle>
-                      <circle r="12" fill="url(#blueBall3D)" opacity="0.5">
-                        <animateMotion
-                          dur="12s"
-                          repeatCount="indefinite"
-                          path="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
-                        />
-                      </circle>
-                      <circle r="6" fill="#ffffff" opacity="0.95">
-                        <animateMotion
-                          dur="12s"
-                          repeatCount="indefinite"
-                          path="M 118 188 Q 218 208 323 228 Q 383 238 383 298 Q 383 363 338 403 Q 288 443 233 423"
-                        />
-                      </circle>
-                      <circle r="3" fill="#ffffff" opacity="1">
-                        <animateMotion
-                          dur="12s"
-                          repeatCount="indefinite"
-                          path="M 116 186 Q 216 206 321 226 Q 381 236 381 296 Q 381 361 336 401 Q 286 441 231 421"
-                        />
-                      </circle>
-                    </g>
 
-                    <g>
-                      <circle
-                        r="13"
-                        fill="url(#redBall3D)"
-                        filter="url(#pulseGlow)"
-                        opacity="0.95"
-                      >
-                        <animateMotion
-                          dur="7s"
-                          repeatCount="indefinite"
-                          path="M 290 155 Q 335 200 355 265"
+                        <ellipse
+                          cx="101"
+                          cy="290"
+                          rx="22"
+                          ry="9"
+                          fill="url(#darkBlueCyl)"
                         />
-                        <animate
-                          attributeName="opacity"
-                          values="0.85;1;0.85"
-                          dur="2.5s"
-                          repeatCount="indefinite"
+                        <ellipse
+                          cx="97"
+                          cy="290"
+                          rx="18"
+                          ry="7"
+                          fill="url(#blueHighlight)"
+                          opacity="0.4"
                         />
-                      </circle>
-                      <circle r="10" fill="url(#redBall3D)" opacity="0.5">
-                        <animateMotion
-                          dur="7s"
-                          repeatCount="indefinite"
-                          path="M 290 155 Q 335 200 355 265"
-                        />
-                      </circle>
-                      <circle r="5" fill="#ffffff" opacity="0.95">
-                        <animateMotion
-                          dur="7s"
-                          repeatCount="indefinite"
-                          path="M 284 149 Q 329 194 349 259"
-                        />
-                      </circle>
-                      <circle r="2.5" fill="#ffffff" opacity="1">
-                        <animateMotion
-                          dur="7s"
-                          repeatCount="indefinite"
-                          path="M 282 147 Q 327 192 347 257"
-                        />
-                      </circle>
-                    </g>
 
-                    <g>
-                      <circle
-                        r="11"
-                        fill="url(#orangeBall3D)"
-                        filter="url(#pulseGlow)"
-                        opacity="0.95"
-                      >
-                        <animateMotion
-                          dur="5s"
-                          repeatCount="indefinite"
-                          path="M 45 200 L 130 200"
+                        <path
+                          d="M 45 90 Q 20 135 45 180 Q 65 205 101 195"
+                          stroke="url(#silver)"
+                          strokeWidth="22"
+                          fill="none"
+                          strokeLinecap="round"
+                          filter="url(#shadow3D)"
                         />
-                        <animate
-                          attributeName="opacity"
-                          values="0.9;1;0.9"
-                          dur="2s"
-                          repeatCount="indefinite"
+                        <path
+                          d="M 47 92 Q 22 137 47 182 Q 67 207 101 197"
+                          stroke="url(#blueHighlight)"
+                          strokeWidth="5"
+                          fill="none"
+                          opacity="0.6"
                         />
-                      </circle>
-                      <circle r="8" fill="url(#orangeBall3D)" opacity="0.5">
-                        <animateMotion
-                          dur="5s"
-                          repeatCount="indefinite"
-                          path="M 45 200 L 130 200"
-                        />
-                      </circle>
-                      <circle r="4" fill="#fff7ed" opacity="0.95">
-                        <animateMotion
-                          dur="5s"
-                          repeatCount="indefinite"
-                          path="M 40 195 L 125 195"
-                        />
-                      </circle>
-                      <circle r="2" fill="#ffffff" opacity="1">
-                        <animateMotion
-                          dur="5s"
-                          repeatCount="indefinite"
-                          path="M 38 193 L 123 193"
-                        />
-                      </circle>
-                    </g>
 
-                    {[0, 1, 2, 3].map((i) => (
-                      <circle
-                        key={`particle-${i}`}
-                        r="3"
-                        fill="#60a5fa"
-                        opacity="0.6"
-                      >
-                        <animateMotion
-                          dur={`${4 + i * 0.5}s`}
-                          repeatCount="indefinite"
-                          begin={`${i * 1}s`}
-                          path="M 125 195 Q 225 215 330 235"
+                        <path
+                          d="M 115 145 Q 205 135 290 155"
+                          stroke="url(#yellowTube)"
+                          strokeWidth="20"
+                          fill="none"
+                          strokeLinecap="round"
+                          filter="url(#glowBlue)"
                         />
-                        <animate
-                          attributeName="opacity"
-                          values="0.3;0.8;0.3"
-                          dur={`${2 + i * 0.3}s`}
-                          repeatCount="indefinite"
+                        <path
+                          d="M 115 145 Q 205 135 290 155"
+                          stroke="#fef08a"
+                          strokeWidth="6"
+                          fill="none"
+                          strokeLinecap="round"
+                          opacity="0.5"
                         />
-                        <animate
-                          attributeName="r"
-                          values="2;4;2"
-                          dur={`${1.5 + i * 0.2}s`}
-                          repeatCount="indefinite"
+
+                        <path
+                          d="M 290 155 Q 335 200 355 265"
+                          stroke="url(#redTube)"
+                          strokeWidth="18"
+                          fill="none"
+                          strokeLinecap="round"
+                          filter="url(#glowBlue)"
                         />
-                      </circle>
-                    ))}
-                  </svg>
+                        <path
+                          d="M 290 155 Q 335 200 355 265"
+                          stroke="#fecaca"
+                          strokeWidth="5"
+                          fill="none"
+                          strokeLinecap="round"
+                          opacity="0.5"
+                        />
 
-                  <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-2 right-2 sm:top-10 sm:right-12 lg:top-12 lg:right-16 xl:top-14 xl:right-20 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 lg:px-6 lg:py-4 shadow-2xl max-w-[160px] sm:max-w-[210px] lg:max-w-[240px] border border-gray-100">
-                      <p className="text-gray-800 text-xs sm:text-sm lg:text-base font-medium leading-snug">
-                        Ready to protect your revenue with Sentinel?
-                      </p>
-                    </div>
+                        <path
+                          d="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                          stroke="url(#bluePipe3D)"
+                          strokeWidth="28"
+                          fill="none"
+                          strokeLinecap="round"
+                          filter="url(#glowBlue)"
+                        />
 
-                    <div className="absolute top-14 right-4 sm:top-28 sm:right-16 lg:top-32 lg:right-20 xl:top-36 xl:right-24 bg-blue-500 rounded-2xl rounded-br-none px-4 py-2 sm:px-6 sm:py-3 lg:px-7 lg:py-3.5 shadow-2xl max-w-[140px] sm:max-w-none">
-                      <p className="text-white text-xs sm:text-sm lg:text-base font-semibold">
-                        Absolutely!
-                      </p>
-                    </div>
+                        <path
+                          d="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                          stroke="url(#blueHighlight)"
+                          strokeWidth="8"
+                          fill="none"
+                          strokeLinecap="round"
+                          opacity="0.7"
+                        />
 
-                    <div className="absolute top-28 left-2 sm:top-44 sm:left-6 lg:top-52 lg:left-10 xl:top-56 xl:left-12 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 lg:px-6 lg:py-4 shadow-2xl max-w-[180px] sm:max-w-[230px] lg:max-w-[260px] border border-gray-100 sm:block hidden">
-                      <p className="text-gray-800 text-xs sm:text-sm lg:text-base font-medium leading-snug">
-                        Deal at risk: No activity detected in 7 days
-                      </p>
-                    </div>
+                        <path
+                          d="M 290 155 Q 320 185 340 250"
+                          stroke="url(#bluePipe3D)"
+                          strokeWidth="14"
+                          fill="none"
+                          strokeLinecap="round"
+                          filter="url(#glowBlue)"
+                        />
+                        <path
+                          d="M 290 155 Q 320 185 340 250"
+                          stroke="url(#blueHighlight)"
+                          strokeWidth="4"
+                          fill="none"
+                          strokeLinecap="round"
+                          opacity="0.5"
+                        />
 
-                    <div className="absolute top-40 right-2 sm:top-60 sm:right-6 lg:top-64 lg:right-10 xl:top-72 xl:right-12 bg-blue-500 rounded-2xl rounded-br-none px-3 py-2.5 sm:px-5 sm:py-3.5 lg:px-6 lg:py-4 shadow-2xl max-w-[150px] sm:max-w-[190px] lg:max-w-[220px]">
-                      <p className="text-white text-xs sm:text-sm lg:text-base font-medium leading-snug">
-                        Sending follow-up email now
-                      </p>
-                    </div>
+                        <rect
+                          x="45"
+                          y="195"
+                          width="85"
+                          height="14"
+                          rx="7"
+                          fill="url(#orangeTube)"
+                          filter="url(#shadow3D)"
+                        />
+                        <rect
+                          x="47"
+                          y="197"
+                          width="30"
+                          height="10"
+                          rx="5"
+                          fill="url(#blueHighlight)"
+                          opacity="0.4"
+                        />
 
-                    <div className="absolute bottom-4 left-2 sm:bottom-20 sm:left-10 lg:bottom-24 lg:left-14 xl:bottom-28 xl:left-16 bg-white rounded-2xl rounded-bl-none px-3 py-2.5 sm:px-5 sm:py-3.5 lg:px-6 lg:py-4 shadow-2xl max-w-[160px] sm:max-w-[210px] lg:max-w-[240px] border border-gray-100">
-                      <p className="text-gray-800 text-xs sm:text-sm lg:text-base font-medium leading-snug">
-                        Deal saved! Activity resumed
-                      </p>
+                        <rect
+                          x="45"
+                          y="225"
+                          width="80"
+                          height="14"
+                          rx="7"
+                          fill="#fbbf24"
+                          filter="url(#shadow3D)"
+                        />
+                        <rect
+                          x="47"
+                          y="227"
+                          width="28"
+                          height="10"
+                          rx="5"
+                          fill="#fef08a"
+                          opacity="0.4"
+                        />
+
+                        <rect
+                          x="45"
+                          y="255"
+                          width="75"
+                          height="14"
+                          rx="7"
+                          fill="url(#redTube)"
+                          filter="url(#shadow3D)"
+                        />
+                        <rect
+                          x="47"
+                          y="257"
+                          width="26"
+                          height="10"
+                          rx="5"
+                          fill="#fecaca"
+                          opacity="0.4"
+                        />
+
+                        <rect
+                          x="40"
+                          y="495"
+                          width="520"
+                          height="70"
+                          fill="url(#conveyor)"
+                          filter="url(#shadow3D)"
+                        />
+
+                        {[
+                          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                          17,
+                        ].map((i) => (
+                          <g key={i}>
+                            <line
+                              x1={40 + i * 29}
+                              y1="495"
+                              x2={40 + i * 29}
+                              y2="565"
+                              stroke="#0f172a"
+                              strokeWidth="2.5"
+                            />
+                            <rect
+                              x={40 + i * 29 + 2}
+                              y1="495"
+                              width="6"
+                              height="70"
+                              fill="#1e293b"
+                              opacity="0.5"
+                            />
+                          </g>
+                        ))}
+
+                        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                          <g key={i} transform={`rotate(${-6 + i * 2.5})`}>
+                            <animateMotion
+                              dur={`${10 + i * 0.8}s`}
+                              repeatCount="indefinite"
+                              begin={`${i * 1.2}s`}
+                              path={`M ${110 + i * 65},${510 + (i % 2) * 6} L 560,${510 + (i % 2) * 6
+                                }`}
+                            />
+                            <rect
+                              width="48"
+                              height="24"
+                              rx="3"
+                              fill="#22c55e"
+                              filter="url(#shadow3D)"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="0.85;1;0.85"
+                                dur={`${2.5 + i * 0.3}s`}
+                                repeatCount="indefinite"
+                                begin={`${i * 0.4}s`}
+                              />
+                            </rect>
+                            <rect
+                              x="3"
+                              y="3"
+                              width="42"
+                              height="18"
+                              fill="none"
+                              stroke="#166534"
+                              strokeWidth="1"
+                            />
+                            <text
+                              x="24"
+                              y="17"
+                              fontSize="10"
+                              fill="#166534"
+                              textAnchor="middle"
+                              fontWeight="bold"
+                              fontFamily="Arial"
+                            >
+                              $
+                            </text>
+                            <rect
+                              x="5"
+                              y="12"
+                              width="38"
+                              height="1"
+                              fill="#166534"
+                              opacity="0.3"
+                            />
+                          </g>
+                        ))}
+
+                        <g>
+                          <circle
+                            r="12"
+                            fill="url(#silverBall3D)"
+                            filter="url(#pulseGlow)"
+                            opacity="0.95"
+                          >
+                            <animateMotion
+                              dur="6s"
+                              repeatCount="indefinite"
+                              path="M 115 145 Q 205 135 290 155"
+                            />
+                            <animate
+                              attributeName="opacity"
+                              values="0.85;1;0.85"
+                              dur="2s"
+                              repeatCount="indefinite"
+                            />
+                          </circle>
+                          <circle r="9" fill="url(#silverBall3D)" opacity="0.6">
+                            <animateMotion
+                              dur="6s"
+                              repeatCount="indefinite"
+                              path="M 115 145 Q 205 135 290 155"
+                            />
+                          </circle>
+                          <circle r="5" fill="#ffffff" opacity="0.95">
+                            <animateMotion
+                              dur="6s"
+                              repeatCount="indefinite"
+                              path="M 110 140 Q 200 130 285 150"
+                            />
+                          </circle>
+                          <circle r="2" fill="#ffffff" opacity="1">
+                            <animateMotion
+                              dur="6s"
+                              repeatCount="indefinite"
+                              path="M 108 138 Q 198 128 283 148"
+                            />
+                          </circle>
+                        </g>
+
+                        <g>
+                          <circle
+                            r="16"
+                            fill="url(#blueBall3D)"
+                            filter="url(#pulseGlow)"
+                            opacity="0.95"
+                          >
+                            <animateMotion
+                              dur="12s"
+                              repeatCount="indefinite"
+                              path="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                            />
+                            <animate
+                              attributeName="opacity"
+                              values="0.9;1;0.9"
+                              dur="3s"
+                              repeatCount="indefinite"
+                            />
+                          </circle>
+                          <circle r="12" fill="url(#blueBall3D)" opacity="0.5">
+                            <animateMotion
+                              dur="12s"
+                              repeatCount="indefinite"
+                              path="M 125 195 Q 225 215 330 235 Q 390 245 390 305 Q 390 370 345 410 Q 295 450 240 430"
+                            />
+                          </circle>
+                          <circle r="6" fill="#ffffff" opacity="0.95">
+                            <animateMotion
+                              dur="12s"
+                              repeatCount="indefinite"
+                              path="M 118 188 Q 218 208 323 228 Q 383 238 383 298 Q 383 363 338 403 Q 288 443 233 423"
+                            />
+                          </circle>
+                          <circle r="3" fill="#ffffff" opacity="1">
+                            <animateMotion
+                              dur="12s"
+                              repeatCount="indefinite"
+                              path="M 116 186 Q 216 206 321 226 Q 381 236 381 296 Q 381 361 336 401 Q 286 441 231 421"
+                            />
+                          </circle>
+                        </g>
+
+                        <g>
+                          <circle
+                            r="13"
+                            fill="url(#redBall3D)"
+                            filter="url(#pulseGlow)"
+                            opacity="0.95"
+                          >
+                            <animateMotion
+                              dur="7s"
+                              repeatCount="indefinite"
+                              path="M 290 155 Q 335 200 355 265"
+                            />
+                            <animate
+                              attributeName="opacity"
+                              values="0.85;1;0.85"
+                              dur="2.5s"
+                              repeatCount="indefinite"
+                            />
+                          </circle>
+                          <circle r="10" fill="url(#redBall3D)" opacity="0.5">
+                            <animateMotion
+                              dur="7s"
+                              repeatCount="indefinite"
+                              path="M 290 155 Q 335 200 355 265"
+                            />
+                          </circle>
+                          <circle r="5" fill="#ffffff" opacity="0.95">
+                            <animateMotion
+                              dur="7s"
+                              repeatCount="indefinite"
+                              path="M 284 149 Q 329 194 349 259"
+                            />
+                          </circle>
+                          <circle r="2.5" fill="#ffffff" opacity="1">
+                            <animateMotion
+                              dur="7s"
+                              repeatCount="indefinite"
+                              path="M 282 147 Q 327 192 347 257"
+                            />
+                          </circle>
+                        </g>
+
+                        <g>
+                          <circle
+                            r="11"
+                            fill="url(#orangeBall3D)"
+                            filter="url(#pulseGlow)"
+                            opacity="0.95"
+                          >
+                            <animateMotion
+                              dur="5s"
+                              repeatCount="indefinite"
+                              path="M 45 200 L 130 200"
+                            />
+                            <animate
+                              attributeName="opacity"
+                              values="0.9;1;0.9"
+                              dur="2s"
+                              repeatCount="indefinite"
+                            />
+                          </circle>
+                          <circle r="8" fill="url(#orangeBall3D)" opacity="0.5">
+                            <animateMotion
+                              dur="5s"
+                              repeatCount="indefinite"
+                              path="M 45 200 L 130 200"
+                            />
+                          </circle>
+                          <circle r="4" fill="#fff7ed" opacity="0.95">
+                            <animateMotion
+                              dur="5s"
+                              repeatCount="indefinite"
+                              path="M 40 195 L 125 195"
+                            />
+                          </circle>
+                          <circle r="2" fill="#ffffff" opacity="1">
+                            <animateMotion
+                              dur="5s"
+                              repeatCount="indefinite"
+                              path="M 38 193 L 123 193"
+                            />
+                          </circle>
+                        </g>
+
+                        {[0, 1, 2, 3].map((i) => (
+                          <circle
+                            key={`particle-${i}`}
+                            r="3"
+                            fill="#60a5fa"
+                            opacity="0.6"
+                          >
+                            <animateMotion
+                              dur={`${4 + i * 0.5}s`}
+                              repeatCount="indefinite"
+                              begin={`${i * 1}s`}
+                              path="M 125 195 Q 225 215 330 235"
+                            />
+                            <animate
+                              attributeName="opacity"
+                              values="0.3;0.8;0.3"
+                              dur={`${2 + i * 0.3}s`}
+                              repeatCount="indefinite"
+                            />
+                            <animate
+                              attributeName="r"
+                              values="2;4;2"
+                              dur={`${1.5 + i * 0.2}s`}
+                              repeatCount="indefinite"
+                            />
+                          </circle>
+                        ))}
+                      </svg>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {user && (
-              <div className="flex justify-center mt-10 sm:mt-12">
-                <Link
-                  href="/dashboard"
-                  className="group relative inline-flex items-center gap-2.5 rounded-lg bg-white px-6 py-3 text-[15px] font-semibold text-black transition-all hover:-translate-y-px hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]"
-                >
-                  Go to Dashboard
-                  <svg className="w-4 h-4 opacity-40 transition-all group-hover:translate-x-0.5 group-hover:opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
-                </Link>
-              </div>
-            )}
-
-            <div className="h-32 sm:h-48" />
+            <div className="h-12 sm:h-16" />
           </div>
         </section>
 

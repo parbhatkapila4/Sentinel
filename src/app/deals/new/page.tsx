@@ -143,32 +143,11 @@ export default function NewDealPage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="transition-transform group-hover:scale-105">
-              <svg
-                className="w-10 h-10"
-                viewBox="0 0 36 36"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect width="36" height="36" rx="10" fill="#10B981" />
-                <path
-                  d="M18 8V28"
-                  stroke="white"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M22 12C22 12 20.5 10 18 10C15.5 10 13 11.5 13 14C13 16.5 15 17 18 18C21 19 23 19.5 23 22C23 24.5 20.5 26 18 26C15.5 26 14 24 14 24"
-                  stroke="white"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <span className="text-white font-semibold text-lg tracking-tight hidden sm:block">
-              Sentinel
-            </span>
+            <img
+              src="/Sentinel New logo.png"
+              alt="Sentinel"
+              className="h-9 w-auto transition-transform group-hover:scale-105"
+            />
           </Link>
           <Link
             href="/dashboard"

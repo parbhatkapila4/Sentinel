@@ -1,5 +1,5 @@
-
 import * as Sentry from "@sentry/nextjs";
+import { getRequestId } from "@/lib/request-context";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -14,6 +14,7 @@ interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
+  requestId?: string;
   context?: LogContext;
   error?: {
     name: string;
@@ -51,7 +52,8 @@ function formatLogEntry(entry: LogEntry): string {
       error: "❌",
     }[entry.level];
 
-    let output = `${levelEmoji} [${timestamp}] ${entry.level.toUpperCase()}: ${entry.message}`;
+    const reqPart = entry.requestId ? ` [req:${entry.requestId}]` : "";
+    let output = `${levelEmoji} [${timestamp}]${reqPart} ${entry.level.toUpperCase()}: ${entry.message}`;
 
     if (entry.context && Object.keys(entry.context).length > 0) {
       output += `\n  Context: ${JSON.stringify(entry.context, null, 2)}`;
@@ -91,10 +93,12 @@ function log(level: LogLevel, message: string, context?: LogContext, error?: Err
       return;
     }
 
+    const requestId = getRequestId();
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
       message,
+      ...(requestId ? { requestId } : {}),
       ...(context && Object.keys(context).length > 0 ? { context } : {}),
       ...(error
         ? {
@@ -126,7 +130,7 @@ function log(level: LogLevel, message: string, context?: LogContext, error?: Err
 
     if (level === "error" || level === "warn") {
       try {
-        const sentryTags = filterPrimitives(context);
+        const sentryTags = { ...filterPrimitives(context), ...(requestId ? { requestId } : {}) };
         if (error) {
           Sentry.captureException(error, {
             level: level === "error" ? "error" : "warning",

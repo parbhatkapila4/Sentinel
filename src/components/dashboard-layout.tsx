@@ -839,12 +839,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Link
                 href="/"
                 className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-2xl bg-[#131313] border border-[#1f1f1f] hover:bg-[#1a1a1a] transition-colors cursor-pointer shrink-0 min-w-0"
+                aria-label="Home"
               >
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#303030] to-[#161616] flex items-center justify-center border border-[#2a2a2a] shrink-0">
-                  <span className="text-white text-xs sm:text-sm font-semibold">S</span>
-                </div>
+                <img
+                  src="/Sentinel New logo.png"
+                  alt=""
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-contain shrink-0"
+                />
                 <div className="leading-tight hidden sm:block">
-                  <p className="text-xs sm:text-sm font-semibold text-white truncate">Sentinel</p>
+                  <p className="text-xs sm:text-sm font-semibold text-white truncate">Home</p>
                 </div>
               </Link>
               {teams.length > 0 && (

@@ -3,6 +3,8 @@ import {
   AI_EMBEDDING_SEARCH_CHAT_MODEL,
 } from "./config";
 import { AppError } from "./errors";
+import { retryWithBackoff } from "./retry";
+import { withCircuitBreaker } from "./circuit-breaker";
 
 export type TaskType =
   | "embedding_search"
@@ -215,66 +217,90 @@ export async function routeToAI(
       content: m.content,
     }));
 
+  const OPENROUTER_TIMEOUT_MS = 50_000;
+
   try {
-    const response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${openRouterApiKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer":
-            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-          "X-Title": "Sentinel",
+    return await withCircuitBreaker("openrouter", () =>
+      retryWithBackoff(
+        async () => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
+          try {
+            const response = await fetch(
+              "https://openrouter.ai/api/v1/chat/completions",
+              {
+                method: "POST",
+                signal: controller.signal,
+                headers: {
+                  Authorization: `Bearer ${openRouterApiKey}`,
+                  "Content-Type": "application/json",
+                  "HTTP-Referer":
+                    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+                  "X-Title": "Sentinel",
+                },
+                body: JSON.stringify({
+                  model: modelConfig.model,
+                  messages: formattedMessages,
+                  temperature: modelConfig.temperature,
+                  max_tokens: modelConfig.maxTokens,
+                }),
+              }
+            );
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+              const errorData = await response.text();
+              console.error("OpenRouter API error:", {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData,
+              });
+              const status = response.status;
+              const message =
+                status === 401
+                  ? "AI service configuration issue. Please check your provider settings."
+                  : status === 429
+                    ? "AI service is busy. Please try again in a moment."
+                    : status >= 500
+                      ? "AI service is temporarily unavailable. Please try again in a moment."
+                      : "AI assistant is temporarily unavailable. Please try again.";
+              throw new AppError(message, {
+                statusCode: 503,
+                code: "SERVICE_UNAVAILABLE",
+              });
+            }
+
+            const data = await response.json();
+
+            if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+              console.error("Invalid OpenRouter response:", data);
+              throw new AppError(
+                "AI assistant is temporarily unavailable. Please try again.",
+                { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+              );
+            }
+
+            return data.choices[0].message.content;
+          } finally {
+            clearTimeout(timeoutId);
+          }
         },
-        body: JSON.stringify({
-          model: modelConfig.model,
-          messages: formattedMessages,
-          temperature: modelConfig.temperature,
-          max_tokens: modelConfig.maxTokens,
-        }),
-      }
+        { maxRetries: 2, isIdempotent: true }
+      )
     );
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error("OpenRouter API error:", {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData,
-      });
-      const status = response.status;
-      const message =
-        status === 401
-          ? "AI service configuration issue. Please check your provider settings."
-          : status === 429
-            ? "AI service is busy. Please try again in a moment."
-            : status >= 500
-              ? "AI service is temporarily unavailable. Please try again in a moment."
-              : "AI assistant is temporarily unavailable. Please try again.";
-      throw new AppError(message, {
-        statusCode: 503,
-        code: "SERVICE_UNAVAILABLE",
-      });
-    }
-
-    const data = await response.json();
-
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error("Invalid OpenRouter response:", data);
-      throw new AppError(
-        "AI assistant is temporarily unavailable. Please try again.",
-        { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-      );
-    }
-
-    return data.choices[0].message.content;
   } catch (error) {
     if (error instanceof AppError) {
       throw error;
     }
     if (error instanceof Error) {
-      console.error("routeToAI fetch error:", error.message);
+      const isTimeout = error.name === "AbortError" || error.message.includes("aborted");
+      console.error("routeToAI fetch error:", error.message, isTimeout ? "(timeout)" : "");
+      throw new AppError(
+        isTimeout
+          ? "The AI service took too long to respond. Please try again."
+          : "AI assistant is temporarily unavailable. Please try again.",
+        { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+      );
     }
     throw new AppError(
       "AI assistant is temporarily unavailable. Please try again.",
@@ -299,56 +325,63 @@ export async function callOpenRouterForGeneration(
   const temperature = options?.temperature ?? 0.3;
   const maxTokens = options?.maxTokens ?? 2000;
 
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${openRouterApiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer":
-          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-        "X-Title": "Sentinel",
+  return withCircuitBreaker("openrouter", () =>
+    retryWithBackoff(
+      async () => {
+        const response = await fetch(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${openRouterApiKey}`,
+              "Content-Type": "application/json",
+              "HTTP-Referer":
+                process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+              "X-Title": "Sentinel",
+            },
+            body: JSON.stringify({
+              model,
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userMessage },
+              ],
+              temperature,
+              max_tokens: maxTokens,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const err = await response.text();
+          console.error("OpenRouter generation error:", response.status, err);
+          const status = response.status;
+          const message =
+            status === 401
+              ? "AI service configuration issue. Please check your provider settings."
+              : status === 429
+                ? "AI service is busy. Please try again in a moment."
+                : status >= 500
+                  ? "AI service is temporarily unavailable. Please try again in a moment."
+                  : "AI assistant is temporarily unavailable. Please try again.";
+          throw new AppError(message, {
+            statusCode: 503,
+            code: "SERVICE_UNAVAILABLE",
+          });
+        }
+
+        const data = (await response.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        const content = data.choices?.[0]?.message?.content;
+        if (typeof content !== "string") {
+          throw new AppError(
+            "AI assistant is temporarily unavailable. Please try again.",
+            { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+          );
+        }
+        return content;
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        temperature,
-        max_tokens: maxTokens,
-      }),
-    }
+      { maxRetries: 2, isIdempotent: true }
+    )
   );
-
-  if (!response.ok) {
-    const err = await response.text();
-    console.error("OpenRouter generation error:", response.status, err);
-    const status = response.status;
-    const message =
-      status === 401
-        ? "AI service configuration issue. Please check your provider settings."
-        : status === 429
-          ? "AI service is busy. Please try again in a moment."
-          : status >= 500
-            ? "AI service is temporarily unavailable. Please try again in a moment."
-            : "AI assistant is temporarily unavailable. Please try again.";
-    throw new AppError(message, {
-      statusCode: 503,
-      code: "SERVICE_UNAVAILABLE",
-    });
-  }
-
-  const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = data.choices?.[0]?.message?.content;
-  if (typeof content !== "string") {
-    throw new AppError(
-      "AI assistant is temporarily unavailable. Please try again.",
-      { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-    );
-  }
-  return content;
 }

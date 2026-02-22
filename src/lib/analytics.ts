@@ -77,10 +77,23 @@ export function calculateChartData(deals: DealForAnalytics[]): {
   avgGrowthRate: number;
 } {
   const monthlyRevenue = calculateMonthlyRevenue(deals);
-  const sortedMonths = Object.entries(monthlyRevenue)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-6);
+  const year = 2026;
+  const data: ChartDataPoint[] = [];
+  let prevActual = 0;
 
+  for (let monthIndex = 0; monthIndex <= 5; monthIndex++) {
+    const key = `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+    const actual = monthlyRevenue[key] ?? 0;
+    data.push({
+      month: MONTH_NAMES[monthIndex],
+      actual,
+      prediction: actual > 0 ? actual * 1.05 : 0,
+      lastMonth: prevActual,
+    });
+    prevActual = actual;
+  }
+
+  const sortedMonths = data.map((d, i) => [d.month, d.actual] as const);
   let avgGrowthRate = 0;
   if (sortedMonths.length >= 2) {
     const rates: number[] = [];
@@ -92,21 +105,6 @@ export function calculateChartData(deals: DealForAnalytics[]): {
     if (rates.length > 0) {
       avgGrowthRate = rates.reduce((s, r) => s + r, 0) / rates.length;
     }
-  }
-
-  const today = new Date();
-  const data: ChartDataPoint[] = [];
-
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const actual = monthlyRevenue[key] ?? 0;
-    const prediction = actual > 0 ? actual * (1 + avgGrowthRate) : 0;
-    data.push({
-      month: MONTH_NAMES[date.getMonth()],
-      actual,
-      prediction,
-    });
   }
 
   return { data, avgGrowthRate };

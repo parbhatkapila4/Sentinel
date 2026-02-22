@@ -32,16 +32,10 @@ export function InsightsPanel({ deals }: InsightsPanelProps) {
   const { anomalies } = detectAnomalies(normalized);
 
   return (
-    <div
-      className="rounded-2xl p-4 sm:p-5 lg:p-6 min-w-0 w-full flex flex-col h-full"
-      style={{
-        background: "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-        border: "1px solid rgba(255,255,255,0.06)",
-      }}
-    >
-      <h3 className="text-base lg:text-lg font-semibold text-white mb-4 flex items-center gap-2">
+    <div className="min-w-0 w-full flex flex-col h-full">
+      <h3 className="text-base lg:text-lg font-semibold text-white mb-5 flex items-center gap-2 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
         <svg
-          className="w-4 h-4 text-white/40"
+          className="w-4 h-4 text-[#0ea5e9]/80"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -57,15 +51,15 @@ export function InsightsPanel({ deals }: InsightsPanelProps) {
       </h3>
 
       {anomalies.length > 0 && (
-        <div className="mb-5">
-          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
+        <div className="mb-6">
+          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-3">
             Anomaly alerts
           </p>
-          <ul className="space-y-2 lg:space-y-4">
+          <ul className="space-y-2 lg:space-y-3">
             {anomalies.slice(0, 5).map((a, i) => (
               <li
                 key={`${a.deal.id}-${i}`}
-                className={`flex items-start gap-2 p-3 lg:p-4 rounded-xl text-sm border ${a.severity === "high"
+                className={`flex items-start gap-3 p-4 lg:p-4 rounded-xl text-sm border ${a.severity === "high"
                   ? "bg-red-500/10 border-red-500/20"
                   : a.severity === "medium"
                     ? "bg-amber-500/10 border-amber-500/20"
@@ -92,11 +86,11 @@ export function InsightsPanel({ deals }: InsightsPanelProps) {
       )}
 
       {insights.length > 0 && (
-        <div className="mb-5">
-          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
+        <div className="mb-6">
+          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-3">
             Pattern discoveries
           </p>
-          <ul className="space-y-2 lg:space-y-4">
+          <ul className="space-y-2.5 lg:space-y-3">
             {insights.slice(0, 5).map((ins, i) => (
               <li key={i} className="text-sm text-white/70 flex items-start gap-2">
                 <span
@@ -119,10 +113,10 @@ export function InsightsPanel({ deals }: InsightsPanelProps) {
 
       {recommendations.length > 0 && (
         <div>
-          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
+          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-3">
             Recommendations
           </p>
-          <ul className="space-y-2 lg:space-y-4">
+          <ul className="space-y-2.5 lg:space-y-3">
             {recommendations.slice(0, 4).map((r, i) => (
               <li key={i} className="text-sm text-white/80 flex items-start gap-2">
                 <span className="text-blue-400 mt-0.5">→</span>

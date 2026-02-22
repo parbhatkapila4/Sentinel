@@ -88,7 +88,7 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Upcoming Meetings</h3>
+          <h3 className="text-lg font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Upcoming Meetings</h3>
         </div>
         {[1, 2, 3].map((i) => (
           <div key={i} className="animate-pulse p-3 rounded-xl bg-white/[0.02]">
@@ -104,12 +104,14 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
     return (
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Upcoming Meetings</h3>
+          <h3 className="text-lg font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Upcoming Meetings</h3>
           <div className="flex items-center gap-2">
-            <span className="text-xs px-2 py-0.5 rounded-md bg-white/10 text-white/50">Demo</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-lg border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#38bdf8]">
+              Sample data
+            </span>
             <Link
               href="/settings"
-              className="text-sm text-white/40 hover:text-white transition-colors"
+              className="text-sm font-medium text-[#0ea5e9]/90 hover:text-[#38bdf8] transition-colors"
             >
               Connect Calendar →
             </Link>
@@ -118,49 +120,48 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
         <div className="space-y-3">
           {!mounted
             ? [1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse p-3 rounded-xl bg-white/[0.02]">
-                  <div className="h-4 w-32 bg-white/10 rounded mb-2" />
-                  <div className="h-3 w-24 bg-white/5 rounded" />
-                </div>
-              ))
+              <div key={i} className="animate-pulse p-3 rounded-xl bg-white/[0.02]">
+                <div className="h-4 w-32 bg-white/10 rounded mb-2" />
+                <div className="h-3 w-24 bg-white/5 rounded" />
+              </div>
+            ))
             : demoMeetings.map((meeting) => {
-            const isToday = new Date(meeting.startTime).toDateString() === new Date().toDateString();
-            const isTomorrow =
-              new Date(meeting.startTime).toDateString() ===
-              new Date(Date.now() + 86400000).toDateString();
+              const isToday = new Date(meeting.startTime).toDateString() === new Date().toDateString();
+              const isTomorrow =
+                new Date(meeting.startTime).toDateString() ===
+                new Date(Date.now() + 86400000).toDateString();
 
-            return (
-              <div
-                key={meeting.id}
-                className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{meeting.title}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-md ${
-                          isToday
-                            ? "bg-red-500/20 text-red-400"
-                            : isTomorrow
-                              ? "bg-amber-500/20 text-amber-400"
-                              : "bg-white/10 text-white/60"
-                        }`}
-                      >
-                        {isToday ? "Today" : isTomorrow ? "Tomorrow" : formatDate(meeting.startTime)}
-                      </span>
-                      <span className="text-xs text-white/40">
-                        {formatTime(meeting.startTime)} - {formatTime(meeting.endTime)}
-                      </span>
+              return (
+                <div
+                  key={meeting.id}
+                  className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{meeting.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-md ${isToday
+                              ? "bg-red-500/20 text-red-400"
+                              : isTomorrow
+                                ? "bg-amber-500/20 text-amber-400"
+                                : "bg-white/10 text-white/60"
+                            }`}
+                        >
+                          {isToday ? "Today" : isTomorrow ? "Tomorrow" : formatDate(meeting.startTime)}
+                        </span>
+                        <span className="text-xs text-white/40">
+                          {formatTime(meeting.startTime)} - {formatTime(meeting.endTime)}
+                        </span>
+                      </div>
+                      {meeting.location && (
+                        <p className="text-xs text-white/40 mt-1">{meeting.location}</p>
+                      )}
                     </div>
-                    {meeting.location && (
-                      <p className="text-xs text-white/40 mt-1">{meeting.location}</p>
-                    )}
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
     );
@@ -169,7 +170,7 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">Upcoming Meetings</h3>
+        <h3 className="text-lg font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Upcoming Meetings</h3>
         <Link href="/settings" className="text-sm text-white/40 hover:text-white transition-colors">
           Settings →
         </Link>

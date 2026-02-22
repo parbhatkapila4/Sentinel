@@ -364,21 +364,44 @@ export function ChatInterface() {
     };
 
     const maxRetries = 2;
+    const fetchTimeoutMs = 55_000;
 
     try {
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        const response = await fetch("/api/insights/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestBody),
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), fetchTimeoutMs);
+        let response: Response;
+        try {
+          response = await fetch("/api/insights/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal,
+          });
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          const isTimeout =
+            fetchError instanceof Error &&
+            (fetchError.name === "AbortError" || fetchError.message.includes("aborted"));
+          if (isTimeout && attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
+            continue;
+          }
+          throw new Error(
+            isTimeout
+              ? "The request took too long. Please try again."
+              : "Network error. Please check your connection and try again."
+          );
+        }
+        clearTimeout(timeoutId);
 
-        if (response.status === 429 && attempt < maxRetries) {
+        const retryableStatus = response.status === 429 || response.status === 503;
+        if (retryableStatus && attempt < maxRetries) {
           const data = await response.json().catch(() => ({}));
           const retryAfter =
             Number(response.headers.get("Retry-After")) ||
             (typeof data?.retryAfter === "number" ? data.retryAfter : null) ||
-            3;
+            (response.status === 503 ? 2 : 3);
           const delayMs = Math.min(retryAfter * 1000, 15_000);
           await new Promise((r) => setTimeout(r, delayMs));
           continue;
@@ -393,7 +416,9 @@ export function ChatInterface() {
                 ? "Please sign in again to use the AI assistant."
                 : response.status === 429
                   ? "Too many requests. Please wait a moment and try again."
-                  : "Sorry, I couldn't complete that. Please try again.";
+                  : response.status === 503
+                    ? "AI is temporarily busy. Please try again in a moment."
+                    : "Something went wrong. Please try again.";
           throw new Error(errMessage);
         }
 

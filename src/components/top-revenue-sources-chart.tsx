@@ -95,7 +95,7 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
       <div className="flex flex-row items-center gap-2 mb-4 flex-shrink-0 flex-wrap">
         <div className="flex items-center gap-2 min-w-0">
           <svg
-            className="w-4 h-4 text-[#8a8a8a] shrink-0"
+            className="w-4 h-4 text-[#0ea5e9]/80 shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -107,7 +107,7 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
               d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
             />
           </svg>
-          <h3 className="text-sm sm:text-base font-semibold text-white truncate">
+          <h3 className="text-sm sm:text-base font-semibold text-white truncate [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
             Top Revenue Sources
           </h3>
         </div>
@@ -126,29 +126,20 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
           className="absolute inset-0"
         >
           <defs>
-            <linearGradient id="redGradient" x1="0" x2="0" y1="1" y2="0">
-              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.95" />
-              <stop offset="50%" stopColor="#dc2626" stopOpacity="1" />
-              <stop offset="100%" stopColor="#dc2626" stopOpacity="1" />
+            <linearGradient id="revenue-bar-accent" x1="0" x2="0" y1="1" y2="0">
+              <stop offset="0%" stopColor="#0c4a6e" />
+              <stop offset="40%" stopColor="#0ea5e9" />
+              <stop offset="100%" stopColor="#38bdf8" />
             </linearGradient>
-            <linearGradient id="grayGradient" x1="0" x2="0" y1="1" y2="0">
-              <stop offset="0%" stopColor="#404040" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#4a4a4a" stopOpacity="0.9" />
+            <linearGradient id="revenue-bar-default" x1="0" x2="0" y1="1" y2="0">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.06)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,0.12)" />
             </linearGradient>
-            <linearGradient id="grayGradientHover" x1="0" x2="0" y1="1" y2="0">
-              <stop offset="0%" stopColor="#4a4a4a" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#555555" stopOpacity="1" />
+            <linearGradient id="revenue-bar-hover" x1="0" x2="0" y1="1" y2="0">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.08)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,0.16)" />
             </linearGradient>
           </defs>
-
-          <rect
-            x={viewBoxPadding}
-            y={chartHeight - labelAreaHeight - 4}
-            width={chartWidth - viewBoxPadding * 2}
-            height={labelAreaHeight + 4}
-            fill="#0f0f0f"
-            opacity="0.5"
-          />
 
           {[0, 1, 2, 3, 4].map((i) => {
             const y = viewBoxPadding + (i * chartAreaHeight) / 4;
@@ -159,10 +150,9 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
                 y1={y}
                 x2={chartWidth - viewBoxPadding}
                 y2={y}
-                stroke="#1a1a1a"
+                stroke="rgba(255,255,255,0.06)"
                 strokeWidth="1"
-                strokeDasharray="2 4"
-                opacity="0.6"
+                strokeDasharray="4 6"
               />
             );
           })}
@@ -172,9 +162,8 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
             y1={chartHeight - labelAreaHeight - 4}
             x2={chartWidth - viewBoxPadding}
             y2={chartHeight - labelAreaHeight - 4}
-            stroke="#2a2a2a"
+            stroke="rgba(255,255,255,0.08)"
             strokeWidth="1"
-            opacity="0.8"
           />
 
           {data.map((item, index) => {
@@ -193,18 +182,18 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
                   height={barHeight}
                   fill={
                     isHighlighted
-                      ? "url(#redGradient)"
+                      ? "url(#revenue-bar-accent)"
                       : isHovered
-                        ? "url(#grayGradientHover)"
-                        : "url(#grayGradient)"
+                        ? "url(#revenue-bar-hover)"
+                        : "url(#revenue-bar-default)"
                   }
-                  rx="6"
-                  ry="6"
+                  rx="8"
+                  ry="8"
                   style={{
                     cursor: "pointer",
-                    transition: "all 0.2s ease",
+                    transition: "fill 0.2s ease, filter 0.2s ease",
                     filter: isHighlighted
-                      ? "drop-shadow(0 4px 12px rgba(239, 68, 68, 0.3))"
+                      ? "drop-shadow(0 0 12px rgba(14, 165, 233, 0.35))"
                       : "none",
                   }}
                   onMouseEnter={() => setHoveredIndex(index)}
@@ -216,11 +205,11 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
                   x={barX + barWidth / 2}
                   y={chartHeight - 6}
                   textAnchor="middle"
-                  fill="#8a8a8a"
+                  fill="rgba(255,255,255,0.5)"
                   fontSize="11"
                   fontFamily="system-ui, -apple-system, sans-serif"
-                  fontWeight="400"
-                  letterSpacing="0.01em"
+                  fontWeight="500"
+                  letterSpacing="0.02em"
                 >
                   {item.source}
                 </text>
@@ -266,8 +255,8 @@ export function TopRevenueSourcesChart({ data }: TopRevenueSourcesChartProps) {
                 style={{
                   color:
                     data[hoveredIndex ?? highlightedIndex ?? 0]?.change >= 0
-                      ? "#ef4444"
-                      : "#8a8a8a",
+                      ? "#38bdf8"
+                      : "rgba(255,255,255,0.5)",
                 }}
               >
                 {data[hoveredIndex ?? highlightedIndex ?? 0]?.change >= 0

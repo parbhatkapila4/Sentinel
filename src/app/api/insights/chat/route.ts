@@ -15,6 +15,8 @@ import { generateFollowUpEmail } from "@/app/actions/ai";
 import { AppError, ValidationError } from "@/lib/errors";
 import { successResponse, handleApiError } from "@/lib/api-response";
 import { withRateLimit } from "@/lib/api-rate-limit";
+import { withRequestId } from "@/lib/request-context";
+import { logInfo, logError } from "@/lib/logger";
 import { trackPerformance, trackApiCall } from "@/lib/monitoring";
 import { trackApiCall as trackApiMetric } from "@/lib/metrics";
 
@@ -58,6 +60,7 @@ function formatFileSize(bytes: number): string {
 
 async function chatHandler(request: NextRequest) {
   const startTime = Date.now();
+  logInfo("Chat API request started", { path: "/api/insights/chat" });
 
   try {
     const userId = await getAuthenticatedUserId();
@@ -252,6 +255,7 @@ async function chatHandler(request: NextRequest) {
     const duration = Date.now() - startTime;
     trackApiCall("/api/insights/chat", "POST", duration, 200);
     trackApiMetric("/api/insights/chat", duration, 200);
+    logInfo("Chat API request completed", { path: "/api/insights/chat", durationMs: duration });
     return successResponse({ content, taskType });
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -261,6 +265,11 @@ async function chatHandler(request: NextRequest) {
         : 500;
     trackApiCall("/api/insights/chat", "POST", duration, statusCode);
     trackApiMetric("/api/insights/chat", duration, statusCode);
+    logError("Chat API request failed", error, {
+      path: "/api/insights/chat",
+      durationMs: duration,
+      statusCode,
+    });
     const is500 = statusCode === 500;
     if (process.env.NODE_ENV === "production" && is500) {
       return handleApiError(
@@ -274,4 +283,4 @@ async function chatHandler(request: NextRequest) {
   }
 }
 
-export const POST = withRateLimit(chatHandler, { tier: "ai" });
+export const POST = withRateLimit<NextRequest>(withRequestId(chatHandler), { tier: "ai" });

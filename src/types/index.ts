@@ -70,6 +70,7 @@ export type ChartDataPoint = {
   month: string;
   actual: number;
   prediction: number;
+  lastMonth?: number;
 };
 
 export type RevenueSource = {

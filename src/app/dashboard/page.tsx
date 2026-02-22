@@ -125,194 +125,129 @@ export default async function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 lg:p-6 xl:p-8 space-y-4 sm:space-y-6 w-full">
-        {dbUnavailable && (
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4 sm:mb-6">
-            <p className="text-sm font-medium text-amber-200">
-              Database temporarily unavailable
+      <div className="relative min-h-screen w-full">
+        <div className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-8 sm:space-y-10 max-w-[1600px] mx-auto">
+          {dbUnavailable && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 shadow-lg shadow-black/20">
+              <p className="text-sm font-medium text-amber-200">Database temporarily unavailable</p>
+              <p className="text-xs text-amber-200/70 mt-1">
+                Check your <code className="bg-white/10 px-1 rounded">DATABASE_URL</code> and that your database is active.
+              </p>
+            </div>
+          )}
+          {showDemoBanner && <DemoBanner />}
+
+
+          <header className="animate-fade-in-up">
+            <p className="text-[11px] sm:text-xs font-medium tracking-[0.2em] uppercase text-white/45 mb-2">
+              Dashboard
             </p>
-            <p className="text-xs text-amber-200/70 mt-1">
-              Check your <code className="bg-white/10 px-1 rounded">DATABASE_URL</code> and that your database (e.g. Neon branch) is active. Dashboard is showing empty data.
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-white leading-[1.15] [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+              Pipeline
+              <span className="text-[#0ea5e9]" style={{ textShadow: "0 0 32px rgba(14,165,233,0.25)" }}> overview</span>
+            </h1>
+            <p className="mt-3 text-sm sm:text-base text-white/55 max-w-xl">
+              Key metrics, performance trends, and at-risk deals at a glance.
             </p>
-          </div>
-        )}
-        {showDemoBanner && <DemoBanner />}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-          <div className="bg-white/5 rounded-xl p-4 sm:p-5 border border-white/10 flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2 mb-4 min-w-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#2d1115] text-[#f87171] border border-[#3a1418]">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
-                    />
-                  </svg>
-                </span>
-                <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-[0.08em] text-[#fca5a5] truncate">
-                    Revenue Impact
-                  </p>
-                  <p className="text-[11px] text-[#9f6168]">Verified models</p>
+          </header>
+
+
+          <section className="animate-fade-in-up" style={{ animationDelay: "0.05s", animationFillMode: "both" }}>
+            <div className="relative rounded-2xl border border-white/[0.07] overflow-hidden bg-[#0c0c0c]">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#0ea5e9]/60 to-[#0ea5e9]/20" aria-hidden />
+              <div className="pl-6 pr-6 sm:pl-7 sm:pr-7 lg:px-8 py-6 sm:py-7">
+                <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-10">
+                  <div>
+                    <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-white/40 mb-2">
+                      Pipeline value
+                    </p>
+                    <p className="text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tabular-nums text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+                      {formatRevenue(revenueImpact)}
+                    </p>
+                    <p className={`mt-2 text-sm font-medium tabular-nums ${revenueGrowthPercent >= 0 ? "text-[#0ea5e9]" : "text-amber-400/90"}`}>
+                      {revenueGrowthPercent >= 0 ? "+" : ""}{revenueGrowthPercent.toFixed(1)}% vs last month
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-end gap-6 sm:gap-8 lg:gap-10 border-t border-white/[0.06] pt-6 lg:border-t-0 lg:pt-0 lg:border-l border-white/[0.07] lg:pl-10 lg:min-h-[4.5rem]">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-medium tracking-wider uppercase text-white/40">Data accuracy</p>
+                      <p className="text-xl font-bold tabular-nums text-white mt-1">{dataAccuracy.toFixed(1)}%</p>
+                      {closedWonCount === 0 && totalDeals > 0 && (
+                        <p className="text-[10px] text-white/40 mt-1">Close deals to see</p>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-medium tracking-wider uppercase text-white/40">Active deals</p>
+                      <p className="text-xl font-bold tabular-nums text-white mt-1">{activeInsights}</p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-medium tracking-wider uppercase text-white/40">Processing</p>
+                      <p className="text-xl font-bold tabular-nums text-white mt-1">{processingSpeed.toFixed(1)}s</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-white mb-2 break-words min-w-0">
-              {formatRevenue(revenueImpact)}
-            </p>
-            <p className="text-xs text-[#fca5a5]">
-              {revenueGrowthPercent >= 0 ? "+" : ""}
-              {revenueGrowthPercent.toFixed(1)}% from last month
-            </p>
-          </div>
+          </section>
 
-          <div className="bg-white/5 rounded-xl p-4 sm:p-5 border border-white/10 flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#151515] text-[#a3e635] border border-[#1f1f1f]">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4.5 12.75l6 6 9-13.5"
-                  />
-                </svg>
-              </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
-                  Data Accuracy
-                </p>
-                <p className="text-[11px] text-[#5f5f5f]">Verified models</p>
+
+          <section className="animate-fade-in-up" style={{ animationDelay: "0.1s", animationFillMode: "both" }}>
+            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.18em] uppercase text-white/40 mb-4">
+              Performance
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
+              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-h-[280px] lg:min-h-[320px] xl:min-h-[350px]">
+                <BusinessPerformanceTrends
+                  chartData={chartData}
+                  totalValue={totalValue}
+                  avgGrowthRate={avgGrowthRate}
+                />
+              </div>
+              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-h-[280px] lg:min-h-[320px] xl:min-h-[350px]">
+                <TopRevenueSourcesChart data={revenueSources} />
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-white mb-1">
-              {dataAccuracy.toFixed(1)}%
-            </p>
-            <p className="text-xs text-[#7d7d7d]" title="Share of all deals that are closed won">
-              {closedWonCount === 0 && totalDeals > 0 ? "Close deals to see %" : "Live"}
-            </p>
-          </div>
+          </section>
 
-          <div className="bg-white/5 rounded-xl p-4 sm:p-5 border border-white/10 flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#151515] text-[#22c55e] border border-[#1f1f1f]">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
-                  Active Insights
-                </p>
-                <p className="text-[11px] text-[#5f5f5f]">
-                  {activeDeals > 0 ? `${activeDeals} active` : "No active"}
-                </p>
+          <section className="animate-fade-in-up" style={{ animationDelay: "0.15s", animationFillMode: "both" }}>
+            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.18em] uppercase text-white/40 mb-4">
+              Pipeline & insights
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6 items-stretch">
+              <div className="lg:col-span-2 min-w-0 h-full rounded-2xl overflow-hidden border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 p-5 sm:p-6 lg:p-6">
+                <PipelineForecastChart forecast={pipelineForecast} />
+              </div>
+              <div className="lg:col-span-1 min-w-0 h-full rounded-2xl overflow-hidden border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 p-5 sm:p-6 lg:p-6">
+                <InsightsPanel deals={dealsForPrediction} />
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-white mb-1">
-              {activeInsights}
-            </p>
-            <p className="text-xs text-[#22c55e]">Increasing</p>
-          </div>
+          </section>
 
-          <div className="bg-white/5 rounded-xl p-4 sm:p-5 border border-white/10 flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#151515] text-[#f97316] border border-[#1f1f1f]">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 4.5h14.25M3 8.25h14.25M3 12h14.25m-14.25 3.75h14.25"
-                  />
-                </svg>
-              </span>
-              <div>
-                <p className="text-xs uppercase tracking-[0.08em] text-[#7d7d7d]">
-                  Processing Speed
-                </p>
-                <p className="text-[11px] text-[#5f5f5f]">
-                  Real-time analytics
-                </p>
+          <section className="animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
+            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.18em] uppercase text-white/40 mb-4">
+              Top deals · Map · Calendar
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
+              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-w-0">
+                <TopDeals
+                  deals={deals.map((deal) => ({
+                    id: deal.id,
+                    name: deal.name,
+                    stage: deal.stage,
+                    value: deal.value,
+                    createdAt: deal.createdAt,
+                    isDemo: deal.isDemo,
+                  }))}
+                />
+              </div>
+              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-w-0 overflow-hidden">
+                <CustomerByCountry />
+              </div>
+              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-w-0">
+                <UpcomingMeetingsWidget limit={5} />
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-white mb-1">
-              {processingSpeed.toFixed(1)}s
-            </p>
-            <p className="text-xs text-[#7d7d7d]">Updated live</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-
-          <BusinessPerformanceTrends
-            chartData={chartData}
-            totalValue={totalValue}
-            avgGrowthRate={avgGrowthRate}
-          />
-
-          <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 w-full min-w-0 min-h-[280px] lg:min-h-[320px] xl:min-h-[350px]">
-            <TopRevenueSourcesChart data={revenueSources} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 items-stretch">
-          <div className="lg:col-span-2 min-w-0 h-full">
-            <PipelineForecastChart forecast={pipelineForecast} />
-          </div>
-          <div className="lg:col-span-1 min-w-0 h-full">
-            <InsightsPanel deals={dealsForPrediction} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 w-full min-w-0">
-            <TopDeals
-              deals={deals.map((deal) => ({
-                id: deal.id,
-                name: deal.name,
-                stage: deal.stage,
-                value: deal.value,
-                createdAt: deal.createdAt,
-                isDemo: deal.isDemo,
-              }))}
-            />
-          </div>
-
-          <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 w-full min-w-0">
-            <CustomerByCountry />
-          </div>
-
-          <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 w-full min-w-0">
-            <UpcomingMeetingsWidget limit={5} />
-          </div>
+          </section>
         </div>
       </div>
     </DashboardLayout>

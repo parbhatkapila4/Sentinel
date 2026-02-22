@@ -23,7 +23,8 @@ export interface ChartDataPoint {
   month: string;
   actual: number;
   prediction: number;
-  [key: string]: string | number;
+  lastMonth?: number;
+  [key: string]: string | number | undefined;
 }
 
 export type ChartType = "bar" | "graph" | "column";
@@ -36,17 +37,21 @@ interface RevenueForecastChartProps {
 const commonSx = {
   backgroundColor: "transparent",
   "& .MuiChartsGrid-horizontalLine": {
-    stroke: "#1a1a1a",
+    stroke: "rgba(255,255,255,0.04)",
     strokeWidth: 1,
-    strokeDasharray: "2 4",
-    opacity: 0.6,
+    strokeDasharray: "none",
   },
   "& .MuiChartsGrid-verticalLine": {
     stroke: "transparent",
   },
-  "& .MuiChartsAxis-line": { stroke: "#202020" },
-  "& .MuiChartsAxis-tick": { stroke: "#202020" },
-  "& .MuiChartsAxis-tickLabel": { fill: "#8a8a8a" },
+  "& .MuiChartsAxis-line": { stroke: "transparent" },
+  "& .MuiChartsAxis-tick": { stroke: "transparent" },
+  "& .MuiChartsAxis-tickLabel": {
+    fill: "rgba(255,255,255,0.5)",
+    fontSize: 13,
+    fontWeight: 500,
+    letterSpacing: "0.02em",
+  },
 };
 
 export function RevenueForecastChart({
@@ -58,7 +63,7 @@ export function RevenueForecastChart({
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <div style={{ width: "100%", height: 280, position: "relative" }}>
+      <div className="relative w-full" style={{ height: 300 }}>
         {chartType === "graph" && (
           <LineChart
             dataset={data}
@@ -66,12 +71,17 @@ export function RevenueForecastChart({
               {
                 scaleType: "point",
                 dataKey: "month",
-                tickLabelStyle: { fill: "#8a8a8a", fontSize: 12 },
+                tickLabelStyle: {
+                  fill: "rgba(255,255,255,0.55)",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  letterSpacing: "0.04em",
+                },
               },
             ]}
             yAxis={[
               {
-                tickLabelStyle: { fill: "#555555", fontSize: 11 },
+                tickLabelStyle: { fill: "transparent" },
                 tickNumber: 5,
               },
             ]}
@@ -79,27 +89,37 @@ export function RevenueForecastChart({
               {
                 dataKey: "actual",
                 label: "Actual",
-                color: "#ffffff",
+                color: "#2563eb",
                 curve: "monotoneX",
                 showMark: false,
                 area: true,
+                valueFormatter,
+              },
+              {
+                dataKey: "lastMonth",
+                label: "Total revenue (last month)",
+                color: "#7dd3fc",
+                curve: "monotoneX",
+                showMark: false,
+                area: false,
                 valueFormatter,
               },
             ]}
             sx={{
               ...commonSx,
               "& .MuiLineElement-root": {
-                stroke: "#ffffff",
-                strokeWidth: 2.5,
+                strokeWidth: 3,
                 fill: "none",
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
               },
               "& .MuiAreaElement-root": {
-                fill: "#ffffff",
-                fillOpacity: 0.15,
+                fill: "#2563eb",
+                fillOpacity: 0.12,
               },
             }}
-            grid={{ horizontal: true }}
-            margin={{ top: 20, right: 20, bottom: 30, left: 50 }}
+            grid={{ horizontal: true, vertical: false }}
+            margin={{ top: 36, right: 28, bottom: 36, left: 28 }}
           />
         )}
 

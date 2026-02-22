@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   "/privacy",
   "/about",
   "/contact",
+  "/api/internal(.*)",
 ]);
 
 const MAX_REQUEST_SIZE = 10 * 1024 * 1024;
@@ -26,24 +27,41 @@ function checkRequestSize(request: NextRequest): boolean {
   return true;
 }
 
+function addRequestIdToResponse(response: NextResponse, requestId: string): NextResponse {
+  response.headers.set("X-Request-Id", requestId);
+  return response;
+}
+
+function nextWithRequestId(req: NextRequest, requestId: string): NextResponse {
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-request-id", requestId);
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  return addRequestIdToResponse(response, requestId);
+}
+
 export default clerkMiddleware(async (auth, req) => {
+  const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
+
   if (["POST", "PUT", "PATCH"].includes(req.method)) {
     if (!checkRequestSize(req)) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: "Request body too large", code: "PAYLOAD_TOO_LARGE" },
         { status: 413 }
       );
+      return addRequestIdToResponse(res, requestId);
     }
   }
 
   if (isPublicRoute(req)) {
-    return NextResponse.next();
+    return nextWithRequestId(req, requestId);
   }
 
   const rsc = req.headers.get("RSC") || req.headers.get("rsc");
   const prefetch = req.headers.get("Next-Router-Prefetch");
   if (rsc === "1" || prefetch === "1") {
-    return NextResponse.next();
+    return nextWithRequestId(req, requestId);
   }
 
   const referer = req.headers.get("Referer") || req.headers.get("referer");
@@ -52,7 +70,7 @@ export default clerkMiddleware(async (auth, req) => {
       const refUrl = new URL(referer);
       const requestUrl = new URL(req.url);
       if (refUrl.origin === requestUrl.origin) {
-        return NextResponse.next();
+        return nextWithRequestId(req, requestId);
       }
     } catch {
     }
@@ -63,10 +81,11 @@ export default clerkMiddleware(async (auth, req) => {
   if (!userId) {
     const signInUrl = new URL("/sign-in", req.url);
     signInUrl.searchParams.set("redirect", req.nextUrl.pathname);
-    return NextResponse.redirect(signInUrl);
+    const res = NextResponse.redirect(signInUrl);
+    return addRequestIdToResponse(res, requestId);
   }
 
-  return NextResponse.next();
+  return nextWithRequestId(req, requestId);
 });
 
 export const config = {

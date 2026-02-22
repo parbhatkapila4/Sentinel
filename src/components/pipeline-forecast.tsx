@@ -32,14 +32,9 @@ export function PipelineForecastChart({ forecast }: PipelineForecastProps) {
   }));
 
   return (
-    <div
-      className="rounded-2xl p-4 lg:p-6 border border-white/10 min-w-0 overflow-hidden w-full flex flex-col h-full"
-      style={{
-        background: "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-      }}
-    >
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 shrink-0">
-        <h3 className="text-base sm:text-lg font-semibold text-white">Pipeline forecast</h3>
+    <div className="min-w-0 overflow-hidden w-full flex flex-col h-full">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5 shrink-0">
+        <h3 className="text-base sm:text-lg font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Pipeline forecast</h3>
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs">
           <span className="text-emerald-400">Best {formatVal(bestCase)}</span>
           <span className="text-white/80">Expected {formatVal(expected)}</span>
