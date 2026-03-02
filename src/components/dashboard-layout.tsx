@@ -421,7 +421,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             />
           )}
           <aside
-            className={`fixed inset-y-0 left-0 z-50 ${isSidebarCollapsed ? "w-16" : "w-64"} bg-[#0a0a0a] border-r border-white/10 transform transition-all duration-300 lg:static lg:translate-x-0 flex flex-col h-screen overflow-hidden ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
+            className={`fixed inset-y-0 left-0 z-50 ${isSidebarCollapsed ? "w-16" : "w-64"} bg-[#000000] border-r border-white/[0.06] sidebar-shiny transform transition-all duration-300 lg:static lg:translate-x-0 flex flex-col h-screen overflow-hidden ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
             aria-label="Main navigation"
           >
             <button
@@ -568,7 +568,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 {!isSidebarCollapsed && (
                   <>
                     <div className="mt-6 mb-6 px-3">
-                      <div className="rounded-xl bg-gradient-to-br from-[#2a1a1d] to-[#1a0f11] p-4 border border-white/5">
+                      <div className="rounded-xl bg-gradient-to-br from-[#0ea5e9]/10 to-[#0ea5e9]/5 p-4 border border-[#0ea5e9]/20">
                         <div className="flex items-center gap-2 mb-3">
                           <svg
                             className="w-4 h-4 text-[#f97316]"
@@ -617,7 +617,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
 
                     <div className="mb-6 px-3">
-                      <div className="rounded-xl bg-white/5 p-4 border border-white/10">
+                      <div className="rounded-xl bg-[#0c0c0c] p-4 border border-white/5">
                         <div className="flex items-center gap-2 mb-3">
                           <svg
                             className="w-4 h-4 text-blue-400"
@@ -661,7 +661,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
 
                     <div className="mb-6 px-3">
-                      <div className="rounded-xl bg-white/5 p-4 border border-white/10">
+                      <div className="rounded-xl bg-[#0c0c0c] p-4 border border-white/5">
                         <div className="flex items-center gap-2 mb-3">
                           <svg
                             className="w-4 h-4 text-green-400"
@@ -684,7 +684,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           <Link
                             href="/insights"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0c0c0c] hover:bg-[#0a0a0a] transition-colors group"
                           >
                             <svg
                               className="w-3.5 h-3.5 text-white/60 group-hover:text-white"
@@ -706,7 +706,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           <Link
                             href="/reports"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0c0c0c] hover:bg-[#0a0a0a] transition-colors group"
                           >
                             <svg
                               className="w-3.5 h-3.5 text-white/60 group-hover:text-white"
@@ -728,7 +728,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           <Link
                             href="/risk-overview"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0c0c0c] hover:bg-[#0a0a0a] transition-colors group"
                           >
                             <svg
                               className="w-3.5 h-3.5 text-white/60 group-hover:text-white"
@@ -757,7 +757,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {!isSidebarCollapsed && (
               <div className="flex-shrink-0 p-4 border-t border-white/10 space-y-4">
-                <div className="rounded-2xl bg-gradient-to-br from-[#2a1a1d] to-[#1a0f11] p-5 border border-white/5 max-sm:hidden">
+                <div className="rounded-2xl bg-gradient-to-br from-[#0ea5e9]/15 to-[#0ea5e9]/5 p-5 border border-[#0ea5e9]/25 shadow-lg shadow-[#0ea5e9]/5 max-sm:hidden">
                   <h3 className="text-base font-bold text-white mb-1">
                     Let&apos;s start!
                   </h3>
@@ -767,7 +767,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <Link
                     href="/deals/new"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold text-sm transition-all shadow-lg shadow-[#f97316]/20 min-h-[44px]"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-semibold text-sm transition-all shadow-lg shadow-[#0ea5e9]/30 min-h-[44px]"
                   >
                     <svg
                       className="w-4 h-4"
@@ -824,7 +824,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {!isInsightsPage && (
-          <header className="flex-shrink-0 sticky top-0 z-30 flex items-center justify-between gap-3 px-4 lg:px-6 py-3 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-white/10 min-w-0 max-md:flex-wrap max-md:gap-2" role="banner">
+          <header className="flex-shrink-0 sticky top-0 z-30 flex items-center justify-between gap-3 px-4 lg:px-6 py-3 bg-[#000000] border-b border-white/[0.06] header-shiny min-w-0 max-md:flex-wrap max-md:gap-2" role="banner">
             <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0">
               <button
                 type="button"
@@ -838,7 +838,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </button>
               <Link
                 href="/"
-                className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-2xl bg-[#131313] border border-[#1f1f1f] hover:bg-[#1a1a1a] transition-colors cursor-pointer shrink-0 min-w-0"
+                className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-[#050505] border border-white/[0.06] hover:bg-[#0a0a0a] hover:border-white/10 transition-all duration-200 cursor-pointer shrink-0 min-w-0"
                 aria-label="Home"
               >
                 <img
@@ -853,7 +853,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               {teams.length > 0 && (
                 <Suspense
                   fallback={
-                    <div className="h-10 w-32 rounded-xl bg-[#131313] border border-[#1f1f1f] animate-pulse" />
+                    <div className="h-10 w-32 rounded-xl bg-[#050505] border border-white/[0.06] animate-pulse" />
                   }
                 >
                   <TeamSelector teams={teams} />
@@ -865,7 +865,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <div ref={searchRef} className="relative w-10 min-w-[2.5rem] shrink-0 sm:min-w-0 sm:flex-1 sm:max-w-72">
                 <form
                   onSubmit={handleSearchSubmit}
-                  className="flex items-center justify-center sm:justify-start gap-0 sm:gap-3 p-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-[#131313] border border-[#1f1f1f] w-full min-w-0 sm:min-w-[8rem] sm:max-w-full min-h-[44px] overflow-hidden"
+                  className="flex items-center justify-center sm:justify-start gap-0 sm:gap-3 p-2 sm:px-4 sm:py-2.5 rounded-xl bg-[#050505] border border-white/[0.06] hover:border-white/10 focus-within:border-[#0ea5e9]/40 w-full min-w-0 sm:min-w-32 sm:max-w-full min-h-[44px] overflow-hidden transition-all"
                 >
                   <svg
                     className="w-4 h-4 sm:w-4 sm:h-4 text-[#808080] shrink-0"
@@ -919,7 +919,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </form>
 
                 {showSearchResults && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 mt-2 w-full min-w-[12rem] max-w-[calc(100vw-2rem)] sm:w-56 lg:w-72 bg-[#131313] border border-[#1f1f1f] rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
+                  <div className="absolute top-full left-0 mt-2 w-full min-w-48 max-w-[calc(100vw-2rem)] sm:w-56 lg:w-72 bg-[#050505] border border-white/[0.06] rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
                     {searchResults.map((deal) => (
                       <Link
                         key={deal.id}
@@ -928,7 +928,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           setShowSearchResults(false);
                           setSearchQuery("");
                         }}
-                        className="block px-4 py-3 hover:bg-[#1a1a1a] border-b border-[#1f1f1f] last:border-b-0 transition-colors"
+                        className="block px-4 py-3 hover:bg-[#0a0a0a] border-b border-white/5 last:border-b-0 transition-colors"
                       >
                         <div className="text-sm font-medium text-white">
                           {deal.name}
@@ -953,7 +953,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     setShowHelp(!showHelp);
                     setShowAlerts(false);
                   }}
-                  className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-[#131313] border border-[#1f1f1f] flex items-center justify-center text-[#8a8a8a] hover:text-white hover:border-white/20 transition-all"
+                  className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-[#050505] border border-white/[0.06] flex items-center justify-center text-white/50 hover:text-white hover:border-white/10 transition-all"
                   aria-label="Help and support"
                   aria-expanded={showHelp}
                   aria-haspopup="true"
@@ -975,11 +975,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {showHelp && (
                   <div
-                    className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,18rem)] sm:w-72 bg-[#131313] border border-[#1f1f1f] rounded-xl shadow-2xl z-50 max-h-[70vh] overflow-y-auto"
+                    className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,18rem)] sm:w-72 bg-[#050505] border border-white/[0.06] rounded-xl shadow-2xl z-50 max-h-[70vh] overflow-y-auto"
                     role="menu"
                     aria-label="Help and support menu"
                   >
-                    <div className="px-4 py-3 border-b border-[#1f1f1f]">
+                    <div className="px-4 py-3 border-b border-white/5">
                       <h3 id="help-menu-title" className="text-sm font-semibold text-white">
                         Help & Support
                       </h3>
@@ -988,7 +988,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       <Link
                         href="/insights"
                         onClick={() => setShowHelp(false)}
-                        className="block px-4 py-3 hover:bg-[#1a1a1a] transition-colors"
+                        className="block px-4 py-3 hover:bg-[#0a0a0a] transition-colors"
                       >
                         <div className="text-sm font-medium text-white">
                           AI Assistant
@@ -1000,7 +1000,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       <Link
                         href="/docs"
                         onClick={() => setShowHelp(false)}
-                        className="block px-4 py-3 hover:bg-[#1a1a1a] transition-colors"
+                        className="block px-4 py-3 hover:bg-[#0a0a0a] transition-colors"
                       >
                         <div className="text-sm font-medium text-white">
                           Documentation
@@ -1012,7 +1012,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       <a
                         href="mailto:help@sentinels.in"
                         onClick={() => setShowHelp(false)}
-                        className="block px-4 py-3 hover:bg-[#1a1a1a] transition-colors"
+                        className="block px-4 py-3 hover:bg-[#0a0a0a] transition-colors"
                       >
                         <div className="text-sm font-medium text-white">
                           Contact Support
@@ -1026,7 +1026,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           setShowVideoTutorial(true);
                           setShowHelp(false);
                         }}
-                        className="w-full text-left px-4 py-3 hover:bg-[#1a1a1a] transition-colors"
+                        className="w-full text-left px-4 py-3 hover:bg-[#0a0a0a] transition-colors"
                       >
                         <div className="text-sm font-medium text-white">
                           Video tutorial
@@ -1047,7 +1047,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     setShowAlerts(!showAlerts);
                     setShowHelp(false);
                   }}
-                  className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-[#131313] border border-[#1f1f1f] flex items-center justify-center text-[#8a8a8a] hover:text-white hover:border-white/20 transition-all relative"
+                  className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-[#050505] border border-white/[0.06] flex items-center justify-center text-white/50 hover:text-white hover:border-white/10 transition-all relative"
                   aria-label={`Risk alerts${alerts.length > 0 ? `, ${alerts.length} unread` : ""}`}
                   aria-expanded={showAlerts}
                   aria-haspopup="true"
@@ -1074,11 +1074,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {showAlerts && (
                   <div
-                    className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,20rem)] sm:w-80 bg-[#131313] border border-[#1f1f1f] rounded-xl shadow-2xl z-50 max-h-[70vh] sm:max-h-96 overflow-y-auto"
+                    className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,20rem)] sm:w-80 bg-[#050505] border border-white/[0.06] rounded-xl shadow-2xl z-50 max-h-[70vh] sm:max-h-96 overflow-y-auto"
                     role="menu"
                     aria-label="Risk alerts"
                   >
-                    <div className="px-4 py-3 border-b border-[#1f1f1f] flex items-center justify-between">
+                    <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-white">
                         Risk Alerts
                       </h3>
@@ -1114,7 +1114,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                             key={alert.id}
                             href={`/deals/${alert.dealId}`}
                             onClick={() => setShowAlerts(false)}
-                            className="block px-4 py-3 hover:bg-[#1a1a1a] transition-colors border-b border-[#1f1f1f] last:border-b-0"
+                            className="block px-4 py-3 hover:bg-[#0a0a0a] transition-colors border-b border-white/5 last:border-b-0"
                           >
                             <div className="flex items-start gap-3">
                               <div
@@ -1150,7 +1150,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
         )}
 
-        <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden bg-[#0b0b0b] scrollbar-hide" tabIndex={-1}>
+        <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden bg-[#000000] scrollbar-hide" tabIndex={-1}>
           {children}
         </main>
 
@@ -1166,7 +1166,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               className="relative w-full max-w-4xl bg-[#131313] rounded-xl border border-[#1f1f1f] overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[#1f1f1f]">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
                 <h3 id="video-tutorial-title" className="text-sm font-semibold text-white">
                   Video Tutorial
                 </h3>

@@ -134,7 +134,7 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
               return (
                 <div
                   key={meeting.id}
-                  className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors"
+                  className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 hover:border-white/15 transition-all duration-200"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
@@ -142,10 +142,10 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
                       <div className="flex items-center gap-2 mt-1">
                         <span
                           className={`text-xs px-2 py-0.5 rounded-md ${isToday
-                              ? "bg-red-500/20 text-red-400"
-                              : isTomorrow
-                                ? "bg-amber-500/20 text-amber-400"
-                                : "bg-white/10 text-white/60"
+                            ? "bg-red-500/20 text-red-400"
+                            : isTomorrow
+                              ? "bg-amber-500/20 text-amber-400"
+                              : "bg-white/10 text-white/60"
                             }`}
                         >
                           {isToday ? "Today" : isTomorrow ? "Tomorrow" : formatDate(meeting.startTime)}
@@ -206,7 +206,7 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
             return (
               <div
                 key={meeting.id}
-                className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors"
+                className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 hover:border-white/15 transition-all duration-200"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">

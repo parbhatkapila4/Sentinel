@@ -123,12 +123,14 @@ export default async function DashboardPage() {
   }));
   const pipelineForecast = forecastPipelineValue(dealsForPrediction);
 
+  const CARD_CLASS = "rounded-2xl p-5 sm:p-6 border border-white/[0.07] bg-[#000000] transition-all duration-300 hover:border-white/[0.12] relative overflow-hidden shiny-black";
+
   return (
     <DashboardLayout>
       <div className="relative min-h-screen w-full">
-        <div className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-8 sm:space-y-10 max-w-[1600px] mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-[1600px] mx-auto">
           {dbUnavailable && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 shadow-lg shadow-black/20">
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 shadow-lg shadow-amber-500/10">
               <p className="text-sm font-medium text-amber-200">Database temporarily unavailable</p>
               <p className="text-xs text-amber-200/70 mt-1">
                 Check your <code className="bg-white/10 px-1 rounded">DATABASE_URL</code> and that your database is active.
@@ -137,52 +139,57 @@ export default async function DashboardPage() {
           )}
           {showDemoBanner && <DemoBanner />}
 
-
           <header className="animate-fade-in-up">
-            <p className="text-[11px] sm:text-xs font-medium tracking-[0.2em] uppercase text-white/45 mb-2">
+            <p className="text-[11px] sm:text-xs font-medium tracking-[0.24em] uppercase text-white/50 mb-3">
               Dashboard
             </p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-white leading-[1.15] [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.03em] text-white leading-[1.12] [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
               Pipeline
-              <span className="text-[#0ea5e9]" style={{ textShadow: "0 0 32px rgba(14,165,233,0.25)" }}> overview</span>
+              <span className="text-[#0ea5e9]" style={{ textShadow: "0 0 48px rgba(14,165,233,0.4)" }}> overview</span>
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-white/55 max-w-xl">
+            <p className="mt-4 text-base sm:text-lg text-white/60 max-w-xl leading-relaxed">
               Key metrics, performance trends, and at-risk deals at a glance.
             </p>
           </header>
 
-
           <section className="animate-fade-in-up" style={{ animationDelay: "0.05s", animationFillMode: "both" }}>
-            <div className="relative rounded-2xl border border-white/[0.07] overflow-hidden bg-[#0c0c0c]">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#0ea5e9]/60 to-[#0ea5e9]/20" aria-hidden />
-              <div className="pl-6 pr-6 sm:pl-7 sm:pr-7 lg:px-8 py-6 sm:py-7">
-                <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-10">
+            <div className="relative rounded-2xl border border-white/[0.07] overflow-hidden bg-[#000000] shiny-black">
+              <div
+                className="absolute inset-0 opacity-40"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 40%, transparent 100%)",
+                }}
+                aria-hidden
+              />
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#0ea5e9] via-[#0ea5e9]/60 to-[#0ea5e9]/20" aria-hidden />
+              <div className="relative pl-6 pr-6 sm:pl-8 sm:pr-8 lg:px-10 py-8 sm:py-9">
+                <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-12">
                   <div>
-                    <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-white/40 mb-2">
+                    <p className="text-[10px] font-medium tracking-[0.22em] uppercase text-white/45 mb-3">
                       Pipeline value
                     </p>
-                    <p className="text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tabular-nums text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+                    <p className="text-4xl sm:text-5xl lg:text-[3rem] font-bold tabular-nums text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
                       {formatRevenue(revenueImpact)}
                     </p>
-                    <p className={`mt-2 text-sm font-medium tabular-nums ${revenueGrowthPercent >= 0 ? "text-[#0ea5e9]" : "text-amber-400/90"}`}>
+                    <p className={`mt-3 text-base font-semibold tabular-nums ${revenueGrowthPercent >= 0 ? "text-[#0ea5e9]" : "text-amber-400"}`}>
                       {revenueGrowthPercent >= 0 ? "+" : ""}{revenueGrowthPercent.toFixed(1)}% vs last month
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-end gap-6 sm:gap-8 lg:gap-10 border-t border-white/[0.06] pt-6 lg:border-t-0 lg:pt-0 lg:border-l border-white/[0.07] lg:pl-10 lg:min-h-[4.5rem]">
+                  <div className="flex flex-wrap items-end gap-8 sm:gap-10 lg:gap-14 border-t lg:border-t-0 lg:border-l border-white/10 pt-6 lg:pt-0 lg:pl-12 lg:min-h-18">
                     <div className="min-w-0">
-                      <p className="text-[10px] font-medium tracking-wider uppercase text-white/40">Data accuracy</p>
-                      <p className="text-xl font-bold tabular-nums text-white mt-1">{dataAccuracy.toFixed(1)}%</p>
+                      <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45">Data accuracy</p>
+                      <p className="text-2xl font-bold tabular-nums text-white mt-1.5">{dataAccuracy.toFixed(1)}%</p>
                       {closedWonCount === 0 && totalDeals > 0 && (
                         <p className="text-[10px] text-white/40 mt-1">Close deals to see</p>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-medium tracking-wider uppercase text-white/40">Active deals</p>
-                      <p className="text-xl font-bold tabular-nums text-white mt-1">{activeInsights}</p>
+                      <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45">Active deals</p>
+                      <p className="text-2xl font-bold tabular-nums text-white mt-1.5">{activeInsights}</p>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-medium tracking-wider uppercase text-white/40">Processing</p>
-                      <p className="text-xl font-bold tabular-nums text-white mt-1">{processingSpeed.toFixed(1)}s</p>
+                      <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45">Processing</p>
+                      <p className="text-2xl font-bold tabular-nums text-white mt-1.5">{processingSpeed.toFixed(1)}s</p>
                     </div>
                   </div>
                 </div>
@@ -190,45 +197,44 @@ export default async function DashboardPage() {
             </div>
           </section>
 
-
           <section className="animate-fade-in-up" style={{ animationDelay: "0.1s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.18em] uppercase text-white/40 mb-4">
+            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
               Performance
             </p>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
-              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-h-[280px] lg:min-h-[320px] xl:min-h-[350px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-7">
+              <div className={`${CARD_CLASS} min-h-[300px] lg:min-h-[340px] xl:min-h-[360px]`}>
                 <BusinessPerformanceTrends
                   chartData={chartData}
                   totalValue={totalValue}
                   avgGrowthRate={avgGrowthRate}
                 />
               </div>
-              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-h-[280px] lg:min-h-[320px] xl:min-h-[350px]">
+              <div className={`${CARD_CLASS} min-h-[300px] lg:min-h-[340px] xl:min-h-[360px]`}>
                 <TopRevenueSourcesChart data={revenueSources} />
               </div>
             </div>
           </section>
 
           <section className="animate-fade-in-up" style={{ animationDelay: "0.15s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.18em] uppercase text-white/40 mb-4">
+            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
               Pipeline & insights
             </p>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6 items-stretch">
-              <div className="lg:col-span-2 min-w-0 h-full rounded-2xl overflow-hidden border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 p-5 sm:p-6 lg:p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7 items-stretch">
+              <div className={`lg:col-span-2 min-w-0 h-full ${CARD_CLASS} p-7 sm:p-8 lg:p-10`}>
                 <PipelineForecastChart forecast={pipelineForecast} />
               </div>
-              <div className="lg:col-span-1 min-w-0 h-full rounded-2xl overflow-hidden border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 p-5 sm:p-6 lg:p-6">
+              <div className={`lg:col-span-1 min-w-0 h-full ${CARD_CLASS}`}>
                 <InsightsPanel deals={dealsForPrediction} />
               </div>
             </div>
           </section>
 
           <section className="animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.18em] uppercase text-white/40 mb-4">
+            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
               Top deals · Map · Calendar
             </p>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
-              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-w-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
+              <div className={`${CARD_CLASS} min-w-0`}>
                 <TopDeals
                   deals={deals.map((deal) => ({
                     id: deal.id,
@@ -240,10 +246,10 @@ export default async function DashboardPage() {
                   }))}
                 />
               </div>
-              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-w-0 overflow-hidden">
+              <div className={`${CARD_CLASS} min-w-0 overflow-hidden`}>
                 <CustomerByCountry />
               </div>
-              <div className="rounded-2xl p-4 sm:p-6 border border-white/[0.07] bg-[#0f0f0f]/90 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-white/10 min-w-0">
+              <div className={`${CARD_CLASS} min-w-0`}>
                 <UpcomingMeetingsWidget limit={5} />
               </div>
             </div>

@@ -7,7 +7,7 @@ import type { PipelineForecast } from "@/types";
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
-    background: { default: "#0f0f0f", paper: "#0f0f0f" },
+    background: { default: "transparent", paper: "transparent" },
     text: { primary: "#e5e5e5", secondary: "#7a7a7a" },
   },
 });
@@ -32,8 +32,15 @@ export function PipelineForecastChart({ forecast }: PipelineForecastProps) {
   }));
 
   return (
-    <div className="min-w-0 overflow-hidden w-full flex flex-col h-full">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5 shrink-0">
+    <div className="min-w-0 overflow-hidden w-full flex flex-col h-full relative px-1 sm:px-2">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(165deg, rgba(255,255,255,0.05) 0%, transparent 35%, transparent 100%)",
+        }}
+        aria-hidden
+      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6 shrink-0 relative z-10">
         <h3 className="text-base sm:text-lg font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Pipeline forecast</h3>
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs">
           <span className="text-emerald-400">Best {formatVal(bestCase)}</span>
@@ -42,7 +49,7 @@ export function PipelineForecastChart({ forecast }: PipelineForecastProps) {
         </div>
       </div>
       <ThemeProvider theme={darkTheme}>
-        <div className="flex-1 w-full min-h-[280px] lg:min-h-[300px] min-w-0" style={{ width: "100%" }}>
+        <div className="flex-1 w-full min-h-[280px] lg:min-h-[300px] min-w-0 relative z-10" style={{ width: "100%" }}>
           <LineChart
             dataset={data}
             xAxis={[
@@ -99,7 +106,7 @@ export function PipelineForecastChart({ forecast }: PipelineForecastProps) {
           />
         </div>
       </ThemeProvider>
-      <p className="text-[11px] text-white/40 mt-2 shrink-0">
+      <p className="text-[11px] text-white/40 mt-2 shrink-0 relative z-10">
         Weighted by stage and win probability. Next 3 months.
       </p>
     </div>

@@ -12,12 +12,12 @@ export function DemoBanner({ onDismiss }: DemoBannerProps) {
   if (dismissed) return null;
 
   return (
-    <div className="bg-gradient-to-r from-blue-500/10 to-red-600/10 border border-blue-500/20 rounded-xl p-4 mb-4 sm:mb-6">
+    <div className="bg-gradient-to-r from-[#0ea5e9]/10 via-[#0ea5e9]/5 to-transparent border border-[#0ea5e9]/25 rounded-2xl p-5 sm:p-6 shadow-lg shadow-[#0ea5e9]/5 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex-1 min-w-0 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#0ea5e9]/20 flex items-center justify-center border border-[#0ea5e9]/30">
             <svg
-              className="w-4 h-4 text-blue-400"
+              className="w-5 h-5 text-[#0ea5e9]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -31,10 +31,10 @@ export function DemoBanner({ onDismiss }: DemoBannerProps) {
             </svg>
           </div>
           <div>
-            <p className="text-sm text-white font-medium">
+            <p className="text-sm font-semibold text-white">
               You&apos;re viewing demo data
             </p>
-            <p className="text-xs text-white/60">
+            <p className="text-xs text-white/55 mt-0.5">
               Create your first deal to start fresh with your own pipeline
             </p>
           </div>
