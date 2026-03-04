@@ -12,6 +12,10 @@ const isPublicRoute = createRouteMatcher([
   "/about",
   "/contact",
   "/api/internal(.*)",
+  "/api-docs",
+  "/api-docs(.*)",
+  "/docs",
+  "/docs(.*)",
 ]);
 
 const MAX_REQUEST_SIZE = 10 * 1024 * 1024;

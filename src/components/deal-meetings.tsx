@@ -107,22 +107,15 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
 
   return (
     <>
-      <div
-        className="rounded-2xl p-6"
-        style={{
-          background:
-            "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-          border: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
+      <div className="rounded-xl p-5 sm:p-6 border border-white/[0.08] bg-[#080808] transition-colors hover:border-white/[0.1] card-elevated">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <span>📅</span> Meetings
+          <h3 className="text-base font-semibold text-white border-l-2 border-white/20 pl-3 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+            Meetings
           </h3>
           {calendarConnected && (
             <button
               onClick={() => setShowScheduleModal(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-[#8b1a1a]/20 text-red-400 hover:bg-[#8b1a1a]/30 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-[#0f766e]/15 text-teal-400 border border-[#0f766e]/25 hover:bg-[#0f766e]/20 transition-colors"
             >
               <svg
                 className="w-4 h-4"
@@ -143,10 +136,11 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
         </div>
 
         {!calendarConnected ? (
-          <div className="text-center py-8">
-            <p className="text-white/60 mb-2">Connect Google Calendar to see meetings</p>
-            <Link href="/settings" className="text-sm text-red-400 hover:underline">
-              Connect in Settings →
+          <div className="text-center py-10">
+            <p className="text-white/55 mb-3 text-sm">Connect Google Calendar to see meetings for this deal.</p>
+            <Link href="/settings" className="text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors inline-flex items-center gap-1">
+              Connect in Settings
+              <span aria-hidden>→</span>
             </Link>
           </div>
         ) : loadingMeetings ? (
@@ -167,7 +161,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
             {meetings.map((meeting) => (
               <div
                 key={meeting.id}
-                className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors"
+                className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -192,7 +186,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                       href={meeting.meetingLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-blue-500/20 hover:bg-blue-500/30 transition-colors"
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#0f766e]/20 hover:bg-[#0f766e]/30 border border-[#0f766e]/25 transition-colors"
                     >
                       Join
                     </a>
@@ -211,22 +205,12 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
           onClick={() => setShowScheduleModal(false)}
         >
           <div
-            className="rounded-2xl p-6 max-w-md w-full"
+            className="rounded-xl p-6 max-w-md w-full border border-white/[0.08] bg-[#0a0a0a] card-elevated"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-2xl">
-                📅
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Schedule Meeting</h3>
-                <p className="text-sm text-white/40">For: {dealName}</p>
-              </div>
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-white">Schedule meeting</h3>
+              <p className="text-sm text-white/50 mt-0.5">{dealName}</p>
             </div>
 
             <form onSubmit={handleCreateMeeting} className="space-y-4">
@@ -239,7 +223,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                   value={newMeeting.title}
                   onChange={(e) => setNewMeeting((m) => ({ ...m, title: e.target.value }))}
                   placeholder="Enter meeting title"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                   required
                 />
               </div>
@@ -251,7 +235,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                     type="date"
                     value={newMeeting.date}
                     onChange={(e) => setNewMeeting((m) => ({ ...m, date: e.target.value }))}
-                    className="w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50"
+                    className="w-full px-3 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                     required
                   />
                 </div>
@@ -261,7 +245,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                     type="time"
                     value={newMeeting.startTime}
                     onChange={(e) => setNewMeeting((m) => ({ ...m, startTime: e.target.value }))}
-                    className="w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50"
+                    className="w-full px-3 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                     required
                   />
                 </div>
@@ -271,7 +255,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                     type="time"
                     value={newMeeting.endTime}
                     onChange={(e) => setNewMeeting((m) => ({ ...m, endTime: e.target.value }))}
-                    className="w-full px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50"
+                    className="w-full px-3 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                     required
                   />
                 </div>
@@ -286,7 +270,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                   value={newMeeting.attendees}
                   onChange={(e) => setNewMeeting((m) => ({ ...m, attendees: e.target.value }))}
                   placeholder="email1@example.com, email2@example.com"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                 />
               </div>
 
@@ -297,7 +281,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                   value={newMeeting.location}
                   onChange={(e) => setNewMeeting((m) => ({ ...m, location: e.target.value }))}
                   placeholder="Office, Zoom, etc."
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                 />
               </div>
 
@@ -308,7 +292,7 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                   onChange={(e) => setNewMeeting((m) => ({ ...m, description: e.target.value }))}
                   placeholder="Meeting agenda..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50 resize-none"
+                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30 resize-none"
                 />
               </div>
 
@@ -323,10 +307,9 @@ export function DealMeetings({ dealId, dealName }: DealMeetingsProps) {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)" }}
+                  className="flex-1 px-4 py-3 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors disabled:opacity-50"
                 >
-                  {isCreating ? "Scheduling..." : "Schedule Meeting"}
+                  {isCreating ? "Scheduling…" : "Schedule"}
                 </button>
               </div>
             </form>

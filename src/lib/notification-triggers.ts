@@ -67,7 +67,7 @@ export async function triggerStageChangeNotification(
 ): Promise<void> {
   const message = `Moved from ${oldStage} to ${newStage}`;
   const dealUrl = `${APP_URL}/deals/${deal.id}`;
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a1a"><h2>Deal Stage Changed: ${escapeHtml(deal.name)}</h2><p>${escapeHtml(message)}</p><p><a href="${dealUrl}">View deal</a></p><p style="color:#6b7280;font-size:14px">— Sentinel</p></body></html>`;
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a1a"><h2>Deal Stage Changed: ${escapeHtml(deal.name)}</h2><p>${escapeHtml(message)}</p><p><a href="${dealUrl}">View deal</a></p><p style="color:#6b7280;font-size:14px">- Sentinel</p></body></html>`;
 
   await createNotification({
     userId: deal.userId,

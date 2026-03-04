@@ -7,7 +7,7 @@ Prerequisites, local setup, and deployment (Vercel) for Sentinel.
 - **Node.js** 18+ (LTS recommended)
 - **PostgreSQL** 12+ (local or hosted)
 - **npm** (or compatible package manager)
-- **Environment variables** — see [Environment variables](#environment-variables) and [README](README.md) for setup.
+- **Environment variables** - see [Environment variables](#environment-variables) and [README](README.md) for setup.
 
 ## Local Development
 
@@ -26,7 +26,7 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
 
 1. **Connect** your Git repo to Vercel.
 2. **Set environment variables** in the Vercel project (see table below). Critical ones:
-   - `DATABASE_URL` — PostgreSQL connection string
+   - `DATABASE_URL` - PostgreSQL connection string
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
    - `OPENROUTER_API_KEY` (for AI insights)
    - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (optional; cache/rate limit)
@@ -38,7 +38,7 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
    - **Hobby**: Add a single cron that runs once per day, e.g. `"schedule": "0 0 * * *"` (midnight UTC) for `/api/cron/sync-integrations`.
    - **Pro**: You can add multiple crons with finer schedules (e.g. every 6 h for sync, every 15 min for process-emails/process-webhooks).
    - **Any plan**: For more frequent runs on Hobby (e.g. every 5 or 15 minutes), use an **external scheduler** (e.g. [cron-job.org](https://cron-job.org), GitHub Actions) and call the endpoints with `Authorization: Bearer <CRON_SECRET>`. See [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) for limits. Set `CRON_SECRET` in the Vercel dashboard for auth. An example once-daily cron config is in `vercel.crons.example.json` (copy the `crons` array into `vercel.json`).
-6. **Deploy** — Vercel will run `npm run build` and serve the app.
+6. **Deploy** - Vercel will run `npm run build` and serve the app.
 
 ## Environment Variables
 
@@ -48,12 +48,12 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key                              | Yes                | `pk_...`                              |
 | `CLERK_SECRET_KEY`                  | Clerk secret key (min 32 chars)                    | Yes                | `sk_...`                              |
 | `NEXT_PUBLIC_CLERK_*`               | Clerk URLs (sign-in, sign-up, after sign-in, etc.) | Optional           | See [.env.example](.env.example)      |
-| `OPENROUTER_API_KEY`                | OpenRouter API key for AI                          | Yes (for insights) | —                                     |
-| `UPSTASH_REDIS_REST_URL`            | Upstash Redis REST URL                             | Optional           | —                                     |
-| `UPSTASH_REDIS_REST_TOKEN`          | Upstash Redis REST token                           | Optional           | —                                     |
-| `RESEND_API_KEY`                    | Resend for transactional email                     | Optional           | —                                     |
+| `OPENROUTER_API_KEY`                | OpenRouter API key for AI                          | Yes (for insights) | -                                     |
+| `UPSTASH_REDIS_REST_URL`            | Upstash Redis REST URL                             | Optional           | -                                     |
+| `UPSTASH_REDIS_REST_TOKEN`          | Upstash Redis REST token                           | Optional           | -                                     |
+| `RESEND_API_KEY`                    | Resend for transactional email                     | Optional           | -                                     |
 | `NEXT_PUBLIC_APP_URL`               | App base URL                                       | Optional           | `http://localhost:3000`               |
-| `NEXT_PUBLIC_SENTRY_DSN`            | Sentry DSN                                         | Optional           | —                                     |
+| `NEXT_PUBLIC_SENTRY_DSN`            | Sentry DSN                                         | Optional           | -                                     |
 | `SENTRY_*`                          | Sentry config (sample rate, etc.)                  | Optional           | See [.env.example](.env.example)      |
 | `CRON_SECRET`                       | Secret for cron route auth (Bearer token)          | Optional           | Used by `/api/cron/*`                 |
 | `NEXT_PUBLIC_ANALYTICS_ENABLED`     | Set to `false` to disable client-side analytics    | Optional           | Omit or `true` to enable              |
@@ -85,5 +85,5 @@ Docker is for local development and self-hosted deployment. Vercel remains the p
 
 ## Links
 
-- [README](README.md) — Setup and overview
-- [ARCHITECTURE.md](ARCHITECTURE.md) — System overview
+- [README](README.md) - Setup and overview
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System overview

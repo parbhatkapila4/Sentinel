@@ -39,82 +39,53 @@ export function DealPredictions({ deal, allDeals }: DealPredictionsProps) {
   const similar = findSimilarDeals(d, deals);
 
   const trendLabel = winProb ? (winProb.trend === "up" ? "Improving" : winProb.trend === "down" ? "Declining" : "Stable") : null;
-  const trendColor = winProb ? (winProb.trend === "up" ? "text-emerald-400" : winProb.trend === "down" ? "text-amber-400" : "text-white/50") : "";
+
+  const trendColorClass = winProb ? (winProb.trend === "up" ? "text-green-500" : winProb.trend === "down" ? "text-amber-500" : "text-white/50") : "";
 
   return (
-    <div
-      className="rounded-2xl p-6"
-      style={{
-        background: "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-        border: "1px solid rgba(255,255,255,0.06)",
-      }}
-    >
-      <h2 className="text-lg font-semibold text-white mb-5 flex items-center gap-2">
-        <svg
-          className="w-5 h-5 text-white/40"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
-          />
-        </svg>
+    <div className="rounded-xl p-5 sm:p-6 border border-white/[0.08] bg-[#080808] transition-colors hover:border-white/[0.1] card-elevated">
+      <h2 className="text-base font-semibold text-white mb-6 border-l-2 border-[#0f766e] pl-3 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
         Predictions
       </h2>
 
       {closed ? (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
-          <span
-            className={`inline-flex px-3 py-1.5 rounded-lg text-sm font-semibold ${d.stage === "closed_won" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-              }`}
-          >
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+          <span className={`inline-flex px-3 py-1.5 rounded-md text-sm font-medium border ${d.stage === "closed_won" ? "bg-green-700/15 text-green-400 border-green-700/25" : "bg-red-700/15 text-red-400 border-red-700/25"}`}>
             {d.stage === "closed_won" ? "Won" : "Lost"}
           </span>
-          <span className="text-white/50 text-sm">This deal is closed.</span>
+          <span className="text-white/50 text-sm">Deal closed.</span>
         </div>
       ) : (
         <>
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
-                Win probability
-              </p>
+              <p className="text-xs font-medium text-white/50 mb-2">Win probability</p>
               <div className="flex items-center gap-3 mb-2">
-                <div className="flex-1 h-3 rounded-full bg-white/10 overflow-hidden">
+                <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all"
+                    className="h-full rounded-full bg-linear-to-r from-[#0f766e] to-green-500 transition-all"
                     style={{ width: `${winProb!.probability}%` }}
                   />
                 </div>
-                <span className="text-lg font-bold text-white w-12 text-right">
-                  {winProb!.probability}%
-                </span>
+                <span className="text-lg font-bold text-white w-12 text-right tabular-nums">{winProb!.probability}%</span>
               </div>
-              {trendLabel && <p className={`text-xs font-medium ${trendColor}`}>{trendLabel}</p>}
+              {trendLabel && <p className={`text-xs font-medium ${trendColorClass}`}>{trendLabel}</p>}
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
-                Est. days to close
-              </p>
-              <p className="text-2xl font-bold text-white">{daysPred!.estimatedDays}</p>
+              <p className="text-xs font-medium text-white/50 mb-2">Est. days to close</p>
+              <p className="text-2xl font-bold text-white tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">{daysPred!.estimatedDays}</p>
               <p className="text-xs text-white/50 capitalize">{daysPred!.confidence} confidence</p>
             </div>
           </div>
 
           {winProb!.factors.length > 0 && (
-            <div className="mt-5">
-              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
-                Factors
-              </p>
+            <div className="mt-6">
+              <p className="text-xs font-medium text-white/50 mb-2">Factors</p>
               <ul className="space-y-1.5">
                 {winProb!.factors.slice(0, 4).map((f, i) => (
                   <li key={i} className="text-sm text-white/70 flex items-start gap-2">
-                    <span className="text-white/40 mt-0.5">•</span>
+                    <span className="text-white/40 mt-0.5">·</span>
                     <span>{f}</span>
                   </li>
                 ))}
@@ -125,10 +96,8 @@ export function DealPredictions({ deal, allDeals }: DealPredictionsProps) {
       )}
 
       {similar.similar.length > 0 && (
-        <div className="mt-6 pt-5 border-t border-white/10">
-          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-3">
-            Similar deals
-          </p>
+        <div className="mt-6 pt-5 border-t border-white/[0.06]">
+          <p className="text-xs font-medium text-white/50 mb-3">Similar deals</p>
           <p className="text-xs text-white/50 mb-3">
             Win rate {Math.round(similar.winRate * 100)}% · Avg {similar.avgDaysToClose} days to close
           </p>
@@ -143,9 +112,9 @@ export function DealPredictions({ deal, allDeals }: DealPredictionsProps) {
                 </Link>
                 <span className="shrink-0 flex items-center gap-1.5">
                   <span
-                    className={`px-2 py-0.5 rounded-md text-xs font-medium ${s.outcome === "won"
-                      ? "bg-emerald-500/20 text-emerald-400"
-                      : "bg-red-500/20 text-red-400"
+                    className={`px-2 py-0.5 rounded text-xs font-medium border ${s.outcome === "won"
+                      ? "bg-green-700/15 text-green-400 border-green-700/20"
+                      : "bg-red-700/15 text-red-400 border-red-700/20"
                       }`}
                   >
                     {s.outcome}
@@ -161,9 +130,7 @@ export function DealPredictions({ deal, allDeals }: DealPredictionsProps) {
       )}
 
       {similar.similar.length === 0 && !deals.some((x) => x.stage === "closed_won" || x.stage === "closed_lost") && (
-        <p className="mt-5 text-sm text-white/40">
-          Close more deals to see similar-deal comparisons.
-        </p>
+        <p className="mt-5 text-sm text-white/45">Close more deals to see similar-deal comparisons.</p>
       )}
     </div>
   );

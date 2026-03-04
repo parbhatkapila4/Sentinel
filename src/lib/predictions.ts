@@ -200,7 +200,7 @@ export function identifyDealPatterns(deals: DealForPrediction[]): DealPatterns {
     if (stuck.length > 0) {
       insights.push({
         type: "activity",
-        description: `${stuck.length} deal(s) with no activity in 14+ days — re-engage to avoid going cold.`,
+        description: `${stuck.length} deal(s) with no activity in 14+ days - re-engage to avoid going cold.`,
         impact: "negative",
       });
       recommendations.push("Add timeline events or follow up on inactive deals to improve close likelihood.");

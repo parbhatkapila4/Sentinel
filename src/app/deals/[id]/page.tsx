@@ -39,201 +39,115 @@ export default async function DealDetailPage({
   const dealInAll = allDeals.some((d) => d.id === deal.id);
   const dealsForPredictions = dealInAll ? allDeals : [deal, ...allDeals];
 
-  return (
-    <div className="fixed inset-0 bg-[#030303] overflow-y-auto">
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-20"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 60%)",
-            filter: "blur(80px)",
-          }}
-        />
-        <div
-          className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-15"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 60%)",
-            filter: "blur(60px)",
-          }}
-        />
-      </div>
+  const CARD_CLASS = "rounded-xl p-5 sm:p-6 border border-white/[0.08] bg-[#080808] transition-colors hover:border-white/[0.1] card-elevated";
 
-      <header
-        className="sticky top-0 z-50 border-b"
-        style={{
-          background: "rgba(3, 3, 3, 0.8)",
-          backdropFilter: "blur(20px)",
-          borderColor: "rgba(255,255,255,0.06)",
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-3 shrink-0">
-              <img
-                src="/Sentinel New logo.png"
-                alt="Sentinel"
-                className="h-9 w-auto"
-              />
-            </Link>
-          </div>
+  const riskStyles = {
+    High: "bg-red-700/15 text-red-400 border border-red-700/25",
+    Medium: "bg-amber-700/15 text-amber-400 border border-amber-700/25",
+    Low: "bg-green-700/15 text-green-400 border border-green-700/25",
+  };
+  const riskBarStyles = {
+    High: "bg-linear-to-r from-red-700 to-red-500",
+    Medium: "bg-linear-to-r from-amber-700 to-amber-500",
+    Low: "bg-linear-to-r from-green-700 to-green-500",
+  };
+
+  return (
+    <div className="fixed inset-0 bg-[#000000] overflow-y-auto">
+      <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#000000]/95 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-3 shrink-0 w-fit">
+            <img src="/Sentinel New logo.png" alt="Sentinel" className="h-9 w-auto" />
+          </Link>
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white/60 hover:text-white bg-white/[0.04] border border-white/[0.08] hover:border-white/12 transition-colors"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              <span>Back to Dashboard</span>
+              Dashboard
             </Link>
             {!deal.isDemo && (
-              <DeleteDealButton
-                dealId={deal.id}
-                dealName={deal.name}
-                variant="button"
-                redirectTo="/dashboard"
-              />
+              <DeleteDealButton dealId={deal.id} dealName={deal.name} variant="button" redirectTo="/dashboard" />
             )}
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 mb-6">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
+        <div className={CARD_CLASS}>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">
+              <p className="text-xs font-medium text-white/50 mb-1.5">Deal</p>
+              <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
                 {deal.name}
               </h1>
               {deal.source && (
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium ${deal.source === "salesforce"
-                    ? "bg-blue-500/20 text-blue-400"
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium mt-2 border ${deal.source === "salesforce"
+                    ? "bg-[#0f766e]/10 text-teal-400 border-[#0f766e]/20"
                     : deal.source === "hubspot"
-                      ? "bg-orange-500/20 text-orange-400"
-                      : "bg-white/10 text-white/60"
+                      ? "bg-amber-700/10 text-amber-400 border-amber-700/20"
+                      : "bg-white/5 text-white/50 border-white/10"
                     }`}
                 >
-                  {deal.source === "salesforce" && "☁️ Synced from Salesforce"}
-                  {deal.source === "hubspot" && "🔶 Synced from HubSpot"}
-                  {deal.source !== "salesforce" && deal.source !== "hubspot" && `📥 ${deal.source}`}
+                  {deal.source === "salesforce" && "Synced from Salesforce"}
+                  {deal.source === "hubspot" && "Synced from HubSpot"}
+                  {deal.source !== "salesforce" && deal.source !== "hubspot" && deal.source}
                 </span>
               )}
             </div>
-            <span
-              className={`inline-flex px-3 py-1.5 rounded-xl text-sm font-medium ${riskLevel === "High"
-                ? "bg-red-500/15 text-red-400 border border-red-500/20"
-                : riskLevel === "Medium"
-                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/20"
-                  : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-                }`}
-            >
-              {riskLevel} Risk
+            <span className={`inline-flex px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 border ${riskStyles[riskLevel]}`}>
+              {riskLevel} risk
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
             <div>
-              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
-                Stage
-              </p>
+              <p className="text-xs font-medium text-white/50 mb-2">Stage</p>
               <StageSelector dealId={deal.id} currentStage={deal.stage} />
             </div>
             <div>
-              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
-                Value
-              </p>
-              <p className="text-lg font-semibold text-white">
+              <p className="text-xs font-medium text-white/50 mb-2">Value</p>
+              <p className="text-xl font-bold text-white tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
                 ${deal.value.toLocaleString("en-US")}
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
-                Status
-              </p>
-              <p className="text-lg font-semibold text-white">{deal.status ? deal.status.charAt(0).toUpperCase() + deal.status.slice(1).replace(/_/g, " ") : "—"}</p>
+              <p className="text-xs font-medium text-white/50 mb-2">Status</p>
+              <p className="text-lg font-semibold text-white">{deal.status ? deal.status.charAt(0).toUpperCase() + deal.status.slice(1).replace(/_/g, " ") : "-"}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
-                Last Activity
-              </p>
-              <p className="text-lg font-semibold text-white">
-                {formatDistanceToNow(new Date(deal.lastActivityAt), {
-                  addSuffix: true,
-                })}
+              <p className="text-xs font-medium text-white/50 mb-2">Last activity</p>
+              <p className="text-lg font-semibold text-white/90">
+                {formatDistanceToNow(new Date(deal.lastActivityAt), { addSuffix: true })}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6 bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10">
-            <h2 className="text-lg font-semibold text-white mb-5 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-white/40"
-                viewBox="0 0 36 36"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect width="36" height="36" rx="8" fill="#10B981" />
-                <path
-                  d="M18 8V28"
-                  stroke="white"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M22 12C22 12 20.5 10 18 10C15.5 10 13 11.5 13 14C13 16.5 15 17 18 18C21 19 23 19.5 23 22C23 24.5 20.5 26 18 26C15.5 26 14 24 14 24"
-                  stroke="white"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Risk & Action
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
+          <div className={`lg:col-span-2 ${CARD_CLASS}`}>
+            <h2 className="text-base font-semibold text-white mb-6 border-l-2 border-[#0f766e] pl-3 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+              Risk & action
             </h2>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
               <div>
-                <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
-                  Risk Score
-                </p>
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl font-bold text-white">
+                <p className="text-xs font-medium text-white/50 mb-2">Risk score</p>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-3xl font-bold text-white tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
                     {(deal.riskScore * 100).toFixed(0)}%
                   </span>
-                  <span
-                    className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold ${riskLevel === "High"
-                      ? "bg-red-500/15 text-red-400"
-                      : riskLevel === "Medium"
-                        ? "bg-amber-500/15 text-amber-400"
-                        : "bg-emerald-500/15 text-emerald-400"
-                      }`}
-                  >
+                  <span className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium border ${riskStyles[riskLevel]}`}>
                     {riskLevel}
                   </span>
                 </div>
-
-                <div className="mt-3 h-2 rounded-full bg-white/5 overflow-hidden">
+                <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${riskLevel === "High"
-                      ? "bg-gradient-to-r from-red-500 to-red-400"
-                      : riskLevel === "Medium"
-                        ? "bg-gradient-to-r from-amber-500 to-amber-400"
-                        : "bg-gradient-to-r from-emerald-500 to-emerald-400"
-                      }`}
+                    className={`h-full rounded-full transition-all ${riskBarStyles[riskLevel]}`}
                     style={{ width: `${deal.riskScore * 100}%` }}
                   />
                 </div>
@@ -241,32 +155,17 @@ export default async function DealDetailPage({
 
               {deal.primaryRiskReason && (
                 <div>
-                  <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
-                    Primary Risk Reason
-                  </p>
-                  <p className="text-sm text-white/80">
-                    {deal.primaryRiskReason}
-                  </p>
+                  <p className="text-xs font-medium text-white/50 mb-2">Primary risk reason</p>
+                  <p className="text-sm text-white/85 leading-relaxed">{deal.primaryRiskReason}</p>
                 </div>
               )}
 
               {deal.recommendedAction && (
                 <div>
-                  <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
-                    Recommended Action
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-white">
-                      {deal.recommendedAction.label}
-                    </p>
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${deal.recommendedAction.urgency === "high"
-                        ? "bg-red-500/15 text-red-400"
-                        : deal.recommendedAction.urgency === "medium"
-                          ? "bg-amber-500/15 text-amber-400"
-                          : "bg-white/5 text-white/50"
-                        }`}
-                    >
+                  <p className="text-xs font-medium text-white/50 mb-2">Recommended action</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-medium text-white">{deal.recommendedAction.label}</p>
+                    <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${deal.recommendedAction.urgency === "high" ? "bg-red-700/15 text-red-400" : deal.recommendedAction.urgency === "medium" ? "bg-amber-700/15 text-amber-400" : "bg-white/5 text-white/50"}`}>
                       {deal.recommendedAction.urgency}
                     </span>
                   </div>
@@ -276,155 +175,53 @@ export default async function DealDetailPage({
           </div>
 
           {deal.nextAction && deal.nextActionReason ? (
-            <div
-              className="rounded-2xl p-6 relative overflow-hidden"
-              style={{
-                background:
-                  "linear-gradient(145deg, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.02) 100%)",
-                border: "1px solid rgba(59,130,246,0.2)",
-              }}
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
-              <div className="relative">
-                <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-blue-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-                    />
-                  </svg>
-                  Next Action Required
-                </h2>
-                <div
-                  className="rounded-xl p-4 mb-3"
-                  style={{ background: "rgba(255,255,255,0.05)" }}
-                >
-                  <p className="text-base font-semibold text-white mb-1">
-                    {deal.nextAction === "send_follow_up_email"
-                      ? "Send Follow-up Email"
-                      : deal.nextAction === "schedule_meeting"
-                        ? "Schedule Meeting"
-                        : deal.nextAction === "escalate"
-                          ? "Escalate"
-                          : "Wait"}
-                  </p>
-                  <p className="text-sm text-white/60">
-                    {deal.nextActionReason}
-                  </p>
-                </div>
-                <button
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                    boxShadow: "0 4px 14px rgba(59, 130, 246, 0.3)",
-                  }}
-                >
-                  <span>Take Action</span>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </button>
+            <div className={`${CARD_CLASS} border-[#0f766e]/25 bg-[#0f766e]/5`}>
+              <h2 className="text-base font-semibold text-white mb-4 border-l-2 border-[#0f766e] pl-3 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+                Next action
+              </h2>
+              <div className="rounded-lg p-4 mb-4 bg-white/[0.03] border border-white/[0.06]">
+                <p className="text-base font-semibold text-white mb-1">
+                  {deal.nextAction === "send_follow_up_email" ? "Send follow-up email" : deal.nextAction === "schedule_meeting" ? "Schedule meeting" : deal.nextAction === "escalate" ? "Escalate" : "Wait"}
+                </p>
+                <p className="text-sm text-white/55">{deal.nextActionReason}</p>
               </div>
+              <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors">
+                <span>View action</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
             </div>
           ) : (
-            <div
-              className="space-y-4 rounded-2xl p-4 sm:p-6"
-              style={{
-                background:
-                  "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-white/40"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+            <div className={CARD_CLASS}>
+              <h2 className="text-base font-semibold text-white mb-4 border-l-2 border-green-700/50 pl-3 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
                 Status
               </h2>
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-emerald-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-green-700/10 border border-green-700/20">
+                <div className="w-9 h-9 rounded-lg bg-green-700/20 flex items-center justify-center shrink-0">
+                  <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">
-                    No immediate action needed
-                  </p>
-                  <p className="text-xs text-white/50">
-                    Deal is progressing normally
-                  </p>
+                  <p className="text-sm font-medium text-white">On track</p>
+                  <p className="text-xs text-white/50">Activity within expected range</p>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        <div className="mt-6 lg:mt-8 mb-6">
-          <DealPredictions deal={deal} allDeals={dealsForPredictions} />
-        </div>
+        <DealPredictions deal={deal} allDeals={dealsForPredictions} />
 
-        <div className="mb-6">
-          <DealSummaryCard dealId={deal.id} />
-        </div>
+        <DealSummaryCard dealId={deal.id} />
 
-        <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-            <h2 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-white/40"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
-                />
-              </svg>
+        <div className={CARD_CLASS}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <h2 className="text-base font-semibold text-white border-l-2 border-white/20 pl-3 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
               Events
             </h2>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 flex-wrap">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-wrap">
               <EmailGenerator
                 dealId={deal.id}
                 dealName={deal.name}
@@ -436,42 +233,21 @@ export default async function DealDetailPage({
           </div>
 
           {deal.events.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                <svg
-                  className="w-6 h-6 text-white/30"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
-                  />
-                </svg>
-              </div>
-              <p className="text-white/40 text-sm">No events recorded yet</p>
-              <p className="text-white/25 text-xs mt-1">
-                Add events using the buttons above
-              </p>
+            <div className="text-center py-12">
+              <p className="text-white/50 text-sm font-medium">No events yet</p>
+              <p className="text-white/40 text-xs mt-1">Add an event with the buttons above</p>
             </div>
           ) : (
             <div className="grid gap-3">
               {deal.events.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-start gap-4 p-4 rounded-xl transition-colors hover:bg-white/[0.02]"
-                  style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.04)",
-                  }}
+                  className="flex items-start gap-4 p-4 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.04] transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#0f766e]/15 border border-[#0f766e]/20 flex items-center justify-center shrink-0">
                     {event.type.includes("email") ? (
                       <svg
-                        className="w-5 h-5 text-blue-400"
+                        className="w-4 h-4 text-teal-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -485,7 +261,7 @@ export default async function DealDetailPage({
                       </svg>
                     ) : (
                       <svg
-                        className="w-5 h-5 text-red-400"
+                        className="w-4 h-4 text-red-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -508,12 +284,11 @@ export default async function DealDetailPage({
                         addSuffix: true,
                       })}
                     </p>
-                    {Object.keys(event.payload as Record<string, unknown>)
-                      .length > 0 && (
-                        <pre className="mt-2 text-xs text-white/30 bg-white/5 rounded-lg p-2 overflow-auto">
-                          {JSON.stringify(event.payload, null, 2)}
-                        </pre>
-                      )}
+                    {Object.keys(event.payload as Record<string, unknown>).length > 0 && (
+                      <pre className="mt-2 text-xs text-white/45 bg-white/[0.04] border border-white/[0.06] rounded-lg p-3 overflow-auto font-mono">
+                        {JSON.stringify(event.payload, null, 2)}
+                      </pre>
+                    )}
                   </div>
                 </div>
               ))}
@@ -521,46 +296,20 @@ export default async function DealDetailPage({
           )}
         </div>
 
-        <div
-          className="rounded-2xl p-6"
-          style={{
-            background:
-              "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-            border: "1px solid rgba(255,255,255,0.06)",
-          }}
-        >
-          <h2 className="text-lg font-semibold text-white mb-5 flex items-center gap-2">
-            <svg
-              className="w-5 h-5 text-white/40"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+        <div className={CARD_CLASS}>
+          <h2 className="text-base font-semibold text-white mb-6 border-l-2 border-white/20 pl-3 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
             Timeline
           </h2>
 
           {deal.timeline && deal.timeline.length > 0 ? (
             <div className="relative">
-              <div className="absolute left-[19px] top-2 bottom-2 w-px bg-gradient-to-b from-blue-500/50 via-white/10 to-transparent" />
+              <div className="absolute left-[17px] top-2 bottom-2 w-px bg-white/10" />
 
               <div className="space-y-4">
                 {deal.timeline.map((entry, index) => (
                   <div key={entry.id} className="flex gap-4 relative">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 z-10 ${index === 0 ? "bg-blue-500/20" : "bg-white/5"
-                        }`}
-                    >
-                      <div
-                        className={`w-3 h-3 rounded-full ${index === 0 ? "bg-blue-400" : "bg-white/30"
-                          }`}
-                      />
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 z-10 ${index === 0 ? "bg-[#0f766e]/15 border border-[#0f766e]/25" : "bg-white/[0.04] border border-white/[0.06]"}`}>
+                      <div className={`w-2.5 h-2.5 rounded-full ${index === 0 ? "bg-[#0f766e]" : "bg-white/30"}`} />
                     </div>
 
                     <div className="flex-1 pb-4">
@@ -586,7 +335,7 @@ export default async function DealDetailPage({
                           ? formatDistanceToNow(new Date(entry.createdAt), {
                             addSuffix: true,
                           })
-                          : "—"}
+                          : "-"}
                       </p>
                     </div>
                   </div>
@@ -594,30 +343,13 @@ export default async function DealDetailPage({
               </div>
             </div>
           ) : (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                <svg
-                  className="w-6 h-6 text-white/30"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <p className="text-white/40 text-sm">No timeline entries yet</p>
+            <div className="text-center py-12">
+              <p className="text-white/50 text-sm font-medium">No timeline entries</p>
             </div>
           )}
         </div>
 
-        <div className="mt-6">
-          <DealMeetings dealId={deal.id} dealName={deal.name} />
-        </div>
+        <DealMeetings dealId={deal.id} dealName={deal.name} />
       </main>
     </div>
   );

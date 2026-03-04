@@ -27,14 +27,9 @@ export function AnalyticsDateFilter() {
       value={currentRange}
       onChange={(e) => handleChange(e.target.value)}
       disabled={isPending}
-      className="w-full sm:w-auto pl-4 pr-8 py-2.5 rounded-xl text-sm font-medium text-white/60 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+      className="w-full sm:w-auto pl-4 pr-10 py-2.5 rounded-xl text-sm font-medium text-white/80 hover:text-white bg-[#050505] border border-white/[0.06] hover:border-white/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-no-repeat bg-[length:12px_12px] bg-[right_0.75rem_center] transition-colors"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "right 0.75rem center",
-        paddingRight: "2.5rem",
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='rgba(255,255,255,0.5)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
       }}
     >
       <option value="7d">Last 7 days</option>

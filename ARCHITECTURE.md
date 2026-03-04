@@ -16,8 +16,8 @@ High-level system overview for the Sentinel revenue intelligence platform.
 ```
 
 - **Frontend**: React 19, Tailwind, Framer Motion; pages under `src/app/` (dashboard, deals, analytics, settings).
-- **API layer**: Next.js 16 App Router — Route Handlers under `src/app/api/`, Server Actions under `src/app/actions/`.
-- **Core logic**: `src/lib/` — auth, deal risk, AI router, cache, integrations, real-time, audit.
+- **API layer**: Next.js 16 App Router - Route Handlers under `src/app/api/`, Server Actions under `src/app/actions/`.
+- **Core logic**: `src/lib/` - auth, deal risk, AI router, cache, integrations, real-time, audit.
 - **Data**: Prisma ORM, PostgreSQL; schema and migrations in `prisma/`.
 
 ## Tech Stack
@@ -48,18 +48,18 @@ High-level system overview for the Sentinel revenue intelligence platform.
 - **Auth**: Clerk middleware protects non-public routes; `getAuthenticatedUserId()` in `src/lib/auth.ts` resolves current user and syncs to DB.
 - **Deals**: Server Actions and API routes scope by `userId` (and optional `teamId`). Risk is computed in `src/lib/dealRisk.ts` from deal + timeline events.
 - **Notifications**: In-app + optional email; triggers in `src/lib/notification-triggers.ts`; API under `src/app/api/notifications/`.
-- **Integrations**: Salesforce, HubSpot, Google Calendar, Slack — sync and webhook APIs under `src/app/api/integrations/`; cron at `src/app/api/cron/sync-integrations/`.
+- **Integrations**: Salesforce, HubSpot, Google Calendar, Slack - sync and webhook APIs under `src/app/api/integrations/`; cron at `src/app/api/cron/sync-integrations/`.
 
 ## Key Features & Locations
 
 | Feature          | Location                                                                                                      |
 | ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| Risk scoring     | `src/lib/dealRisk.ts` — `calculateDealSignals()`, thresholds in `src/lib/config.ts`                           |
+| Risk scoring     | `src/lib/dealRisk.ts` - `calculateDealSignals()`, thresholds in `src/lib/config.ts`                           |
 | AI insights      | `src/lib/ai-router.ts` (task routing), `src/app/api/insights/chat/` (chat API)                                |
 | Real-time events | `src/hooks/use-realtime.ts` (SSE client), `src/app/api/events/` (SSE stream), `src/lib/realtime.ts` (publish) |
-| Caching          | `src/lib/cache.ts` — `getCache`, `setCache`, `withCache` (Redis-backed)                                       |
+| Caching          | `src/lib/cache.ts` - `getCache`, `setCache`, `withCache` (Redis-backed)                                       |
 | Rate limiting    | Upstash Redis used for API rate limits (see `src/lib/api-rate-limit.ts` or similar)                           |
-| Audit logging    | `src/lib/audit-log.ts` — deal and team actions                                                                |
+| Audit logging    | `src/lib/audit-log.ts` - deal and team actions                                                                |
 
 ## Caching (Redis)
 

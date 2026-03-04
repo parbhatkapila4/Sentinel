@@ -36,7 +36,7 @@ export function ReportActions() {
       <button
         onClick={handleExportPDF}
         disabled={isExporting}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-[#8a8a8a] hover:text-white transition-colors bg-[#131313] border border-[#1f1f1f] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white/60 hover:text-white transition-colors bg-white/4 border border-white/8 hover:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
       >
         {isExporting ? (
           <>

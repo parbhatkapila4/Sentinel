@@ -75,140 +75,88 @@ export default function WebhooksSettingsPage() {
     }
   }
 
+  const CARD_CLASS = "rounded-xl p-5 sm:p-6 border border-white/8 bg-[#080808] transition-colors hover:border-white/10 card-elevated";
+
   return (
     <DashboardLayout>
-      <div className="p-6 min-h-full max-sm:p-4 max-sm:pb-6 overflow-x-hidden" style={{ background: "#0a0a0f" }}>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1 max-sm:text-xl">Webhooks</h1>
-            <p className="text-sm text-white/40">
+      <div className="relative min-h-full w-full">
+        <div className="p-4 sm:p-6 lg:p-8 xl:p-10 max-w-[1600px] mx-auto max-sm:pb-6 overflow-x-hidden">
+          <header className="mb-8">
+            <p className="text-[11px] sm:text-xs font-medium tracking-[0.24em] uppercase text-white/50 mb-3">Settings</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-white leading-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+              <span className="text-[#0f766e]" style={{ textShadow: "0 0 32px rgba(15,118,110,0.35)" }}>Webhooks</span>
+            </h1>
+            <p className="mt-3 text-base text-white/60">
               Configure endpoints to receive deal events
             </p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-sm:gap-2">
-            <Link
-              href="/settings"
-              className="text-sm text-white/50 hover:text-white min-h-[44px] flex items-center"
-            >
-              ← Back to settings
-            </Link>
-            {!showForm && (
-              <button
-                type="button"
-                onClick={() => setShowForm(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] transition-colors max-sm:min-h-[44px]"
-              >
-                <span className="text-lg">+</span>
-                Add Webhook
-              </button>
-            )}
-          </div>
-        </div>
+          </header>
 
-        {showForm && (
-          <div
-            className="rounded-2xl p-6 mb-6 max-sm:p-4 max-sm:mb-4"
-            style={{
-              background:
-                "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            <h2 className="text-lg font-semibold text-white mb-4">
-              New webhook
-            </h2>
-            <WebhookForm
-              onSuccess={() => {
-                setShowForm(false);
-                load();
-              }}
-              onCancel={() => setShowForm(false)}
-            />
-          </div>
-        )}
-
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{
-            background:
-              "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-            border: "1px solid rgba(255,255,255,0.06)",
-          }}
-        >
-          {loading ? (
-            <div className="p-8 text-center text-white/50 max-sm:p-6">Loading…</div>
-          ) : webhooks.length === 0 ? (
-            <div className="p-12 text-center max-sm:p-6">
-              <p className="text-white/60 mb-2">No webhooks yet</p>
-              <p className="text-sm text-white/40 mb-4">
-                Add a webhook to receive deal events (e.g. webhook.site for
-                testing).
-              </p>
-              {!showForm && (
-                <button
-                  type="button"
-                  onClick={() => setShowForm(true)}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] transition-colors max-sm:min-h-[44px]"
-                >
-                  Add Webhook
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="divide-y divide-white/5">
-              {webhooks.map((w) => (
-                <div
-                  key={w.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors max-sm:px-4 max-sm:gap-3"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-white truncate">{w.name}</p>
-                      <span
-                        className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium ${w.isActive
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : "bg-white/10 text-white/50"
-                          }`}
-                      >
-                        {w.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-                    <p className="text-sm text-white/50 mt-0.5 truncate">
-                      {maskUrl(w.url)} · {w.events.length} event
-                      {w.events.length !== 1 ? "s" : ""}
-                    </p>
-                    <p className="text-xs text-white/40 mt-1">
-                      {w._count.deliveries} delivery
-                      {w._count.deliveries !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 shrink-0 max-sm:w-full">
-                    <Link
-                      href={`/settings/webhooks/${w.id}`}
-                      className="px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors max-sm:min-h-[44px] max-sm:flex max-sm:items-center"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => handleTest(w.id)}
-                      disabled={testingId === w.id}
-                      className="px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50 max-sm:min-h-[44px]"
-                    >
-                      {testingId === w.id ? "Sending…" : "Test"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(w.id)}
-                      className="px-3 py-2 rounded-lg text-sm font-medium text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-colors max-sm:min-h-[44px]"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+          {showForm && (
+            <div className={`${CARD_CLASS} mb-6`}>
+              <div className="border-l-2 border-[#0f766e] pl-3 mb-4">
+                <h2 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">New webhook</h2>
+              </div>
+              <WebhookForm
+                onSuccess={() => { setShowForm(false); load(); }}
+                onCancel={() => setShowForm(false)}
+              />
             </div>
           )}
+
+          <div className={CARD_CLASS}>
+            {loading ? (
+              <div className="p-8 text-center text-white/50 max-sm:p-6">Loading…</div>
+            ) : webhooks.length === 0 ? (
+              <div className="p-12 text-center max-sm:p-6">
+                <p className="text-white/50 font-medium mb-2">No webhooks yet</p>
+                <p className="text-sm text-white/40 mb-4">
+                  Add a webhook to receive deal events (e.g. webhook.site for testing).
+                </p>
+                {!showForm && (
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(true)}
+                    className="px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors max-sm:min-h-[44px]"
+                  >
+                    Add webhook
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-white/6">
+                {webhooks.map((w) => (
+                  <div
+                    key={w.id}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-1 py-4 first:pt-0 hover:bg-white/3 transition-colors max-sm:px-0 max-sm:gap-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-white truncate">{w.name}</p>
+                        <span className={`shrink-0 px-2 py-0.5 rounded-lg text-xs font-medium ${w.isActive ? "bg-green-700/20 text-green-400" : "bg-white/10 text-white/50"}`}>
+                          {w.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-white/50 mt-0.5 truncate">
+                        {maskUrl(w.url)} · {w.events.length} event{w.events.length !== 1 ? "s" : ""}
+                      </p>
+                      <p className="text-xs text-white/40 mt-1">{w._count.deliveries} delivery{w._count.deliveries !== 1 ? "s" : ""}</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 shrink-0 max-sm:w-full">
+                      <Link href={`/settings/webhooks/${w.id}`} className="px-3 py-2 rounded-lg text-sm font-medium text-teal-400 hover:text-teal-300 hover:bg-[#0f766e]/10 transition-colors max-sm:min-h-[44px] max-sm:flex max-sm:items-center">
+                        Edit
+                      </Link>
+                      <button type="button" onClick={() => handleTest(w.id)} disabled={testingId === w.id} className="px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50 max-sm:min-h-[44px]">
+                        {testingId === w.id ? "Sending…" : "Test"}
+                      </button>
+                      <button type="button" onClick={() => handleDelete(w.id)} className="px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-700/10 transition-colors max-sm:min-h-[44px]">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </DashboardLayout>

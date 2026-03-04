@@ -89,11 +89,7 @@ export function AddEventButtons({ dealId }: { dealId: string }) {
           key={btn.type}
           onClick={() => handleAddEvent(btn.type)}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50 text-white/70 hover:text-white hover:bg-white/[0.06]"
-          style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 text-white/80 hover:text-white bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.1] hover:bg-white/[0.06]"
         >
           {btn.icon}
           <span>{isLoading ? "Adding..." : btn.label}</span>

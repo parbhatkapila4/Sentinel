@@ -59,7 +59,7 @@ export function dealAtRiskEmailHtml(
   <h2 style="color: #b91c1c;">Deal at Risk: ${escapeHtml(dealName)}</h2>
   <p>${escapeHtml(riskReason)}</p>
   <p><a href="${escapeHtml(dealUrl)}" style="color: #2563eb;">View deal</a></p>
-  <p style="color: #6b7280; font-size: 14px;">— Sentinel</p>
+  <p style="color: #6b7280; font-size: 14px;">- Sentinel</p>
 </body>
 </html>`;
 }
@@ -81,7 +81,7 @@ export function actionOverdueEmailHtml(
   <h2 style="color: #b45309;">Action Overdue: ${escapeHtml(dealName)}</h2>
   <p>${msg}</p>
   <p><a href="${getAppUrl()}/deals" style="color: #2563eb;">View deals</a></p>
-  <p style="color: #6b7280; font-size: 14px;">— Sentinel</p>
+  <p style="color: #6b7280; font-size: 14px;">- Sentinel</p>
 </body>
 </html>`;
 }
@@ -104,7 +104,7 @@ export function dailyDigestEmailHtml(
   <h2>Your daily digest</h2>
   <ul style="list-style: none; padding: 0;">${items || "<li>No new notifications.</li>"}</ul>
   <p><a href="${getAppUrl()}/notifications" style="color: #2563eb;">View all notifications</a></p>
-  <p style="color: #6b7280; font-size: 14px;">— Sentinel</p>
+  <p style="color: #6b7280; font-size: 14px;">- Sentinel</p>
 </body>
 </html>`;
 }

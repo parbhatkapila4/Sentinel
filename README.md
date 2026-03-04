@@ -4,7 +4,7 @@
   <img src="./header.svg" alt="Sentinel: AI-powered revenue intelligence for sales and pipeline risk" width="920" />
 </p>
 
-**AI-powered revenue intelligence for sales and revenue teams.** Early warning for pipeline risk—predictions, recommendations, and real-time visibility so you never lose a deal to silent decay.
+**AI-powered revenue intelligence for sales and revenue teams.** Early warning for pipeline risk - predictions, recommendations, and real-time visibility so you never lose a deal to silent decay.
 
 **Live demo:** [https://www.sentinels.in/](https://www.sentinels.in/) · [API Reference](https://www.sentinels.in/api-docs) · [Documentation](https://www.sentinels.in/docs)
 
@@ -283,12 +283,10 @@ curl -X GET "https://your-domain.com/api/cron/sync-integrations" \
 ### Connect Salesforce
 
 1. **Get your Salesforce credentials:**
-
    - Instance URL: Your Salesforce org URL (e.g., `https://yourcompany.salesforce.com`)
    - API Key: Create a Connected App in Salesforce and generate an access token
 
 2. **Connect in Sentinel:**
-
    - Go to Settings → Integrations
    - Click "Connect" on the Salesforce card
    - Enter your Instance URL and API Key
@@ -301,13 +299,11 @@ curl -X GET "https://your-domain.com/api/cron/sync-integrations" \
 ### Connect HubSpot
 
 1. **Create a Private App:**
-
    - Go to HubSpot Settings → Integrations → Private Apps
    - Create a new app with CRM read permissions
    - Copy the Access Token
 
 2. **Connect in Sentinel:**
-
    - Go to Settings → Integrations
    - Click "Connect" on the HubSpot card
    - Paste your Access Token
@@ -319,13 +315,11 @@ curl -X GET "https://your-domain.com/api/cron/sync-integrations" \
 ### Connect Google Calendar
 
 1. **Get API credentials:**
-
    - Go to Google Cloud Console
    - Enable Calendar API
    - Create an API Key (or use OAuth for write access)
 
 2. **Connect in Sentinel:**
-
    - Go to Settings → Integrations
    - Click "Connect" on the Google Calendar card
    - Enter your API Key and Calendar ID (`primary` for main calendar)
@@ -521,7 +515,7 @@ model IntegrationLog {
 
 The system is built around a few core choices.
 
-**Risk scoring over raw metrics.** Pipeline data alone is noisy; stage and value tell you what exists, not what is at risk. We compute a composite risk score from temporal decay, stage velocity, and engagement so the UI can prioritize. The model is deterministic and auditable — no black box. Recommendations (e.g. “schedule a follow-up”) are derived from the same signals so reasoning is traceable.
+**Risk scoring over raw metrics.** Pipeline data alone is noisy; stage and value tell you what exists, not what is at risk. We compute a composite risk score from temporal decay, stage velocity, and engagement so the UI can prioritize. The model is deterministic and auditable - no black box. Recommendations (e.g. “schedule a follow-up”) are derived from the same signals so reasoning is traceable.
 
 **PostgreSQL + Prisma, no separate vector store.** Deals, teams, and notifications live in one database. The AI assistant uses the same relational data via structured queries and controlled context, not a separate embedding index. That keeps the stack simple, avoids sync and consistency issues, and fits Vercel/serverless. If we later need semantic search over large corpora, we’d add it explicitly rather than preemptively.
 
@@ -991,11 +985,10 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 
 ## Documentation
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — System overview, tech stack, directory structure, data flow, caching, security
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** — Prerequisites, local setup, Vercel deployment, env vars
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — How to run locally, branch naming, PR checks, code style
-- **[docs/API.md](docs/API.md)** — API index and links to full OpenAPI spec
-- **[CHANGELOG.md](CHANGELOG.md)** — Version history and notable changes
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System overview, tech stack, directory structure, data flow, caching, security
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Prerequisites, local setup, Vercel deployment, env vars
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to run locally, branch naming, PR checks, code style
+- **[docs/API.md](docs/API.md)** - API index and links to full OpenAPI spec
 
 In-app: [API Reference](/api-docs) (OpenAPI/Swagger), [Developer Docs](/docs/developers).
 
@@ -1015,20 +1008,20 @@ We welcome contributions. Please read our [contributing guidelines](CONTRIBUTING
 
 ## Support
 
-- Documentation: [docs](https://www.sentinel.parbhat.dev/docs)
-- API Reference: [api-docs](https://www.sentinel.parbhat.dev/api-docs)
+- Documentation: [docs](https://www.sentinels.in/docs)
+- API Reference: [api-docs](https://www.sentinels.in/api-docs)
 - Issues: [GitHub Issues](https://github.com/parbhatkapila4/Sentinel/issues)
 
 ---
 
 ## Acknowledgments
 
-- [Next.js](https://nextjs.org) — The React framework for production
-- [Prisma](https://prisma.io) — Next-generation ORM for Node.js
-- [Clerk](https://clerk.com) — Authentication and user management
-- [OpenRouter](https://openrouter.ai) — Unified API for AI models
-- [Tailwind CSS](https://tailwindcss.com) — Utility-first CSS framework
-- [Vercel](https://vercel.com) — Deployment and hosting
+- [Next.js](https://nextjs.org) - The React framework for production
+- [Prisma](https://prisma.io) - Next-generation ORM for Node.js
+- [Clerk](https://clerk.com) - Authentication and user management
+- [OpenRouter](https://openrouter.ai) - Unified API for AI models
+- [Tailwind CSS](https://tailwindcss.com) - Utility-first CSS framework
+- [Vercel](https://vercel.com) - Deployment and hosting
 
 ---
 

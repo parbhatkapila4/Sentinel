@@ -138,9 +138,9 @@ Focus on:
 - Specific, actionable recommendations (e.g. which deals to follow up on, why pipeline health is changing)
 
 Example good responses:
-- "You have 3 overdue actions. Prioritize [Deal X] — follow-up overdue by 5 days."
+- "You have 3 overdue actions. Prioritize [Deal X] - follow-up overdue by 5 days."
 - "Pipeline health is declining: 2 fewer new deals this week. Focus on top-of-funnel."
-- "Your negotiation stage has 5 deals ($200K). [Deal A] has been stuck 14 days — recommend a check-in."`;
+- "Your negotiation stage has 5 deals ($200K). [Deal A] has been stuck 14 days - recommend a check-in."`;
 
     case "deal_specific":
       return `You are an expert sales advisor for Sentinel. The user is asking about one or more specific deals. Use the "SPECIFIC DEAL(S) USER ASKED ABOUT" context (including timeline when provided) to answer precisely.

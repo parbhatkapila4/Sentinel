@@ -603,13 +603,18 @@ export default function SettingsPage() {
   const isPaidPlan = userPlan?.isPaidPlan ?? false;
   const apiCallsDisplay = userPlan?.apiCallsDisplay ?? "1K";
 
+  const CARD_CLASS = "rounded-xl p-5 sm:p-6 border border-white/8 bg-[#080808] transition-colors hover:border-white/10 card-elevated";
+
   return (
     <DashboardLayout>
-      <div className="p-6 min-h-full" style={{ background: "#0a0a0f" }}>
-        <div className="max-w-7xl mx-auto">
+      <div className="relative min-h-full w-full">
+        <div className="p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-white mb-1">Settings</h1>
-            <p className="text-sm text-white/40">
+            <p className="text-[11px] sm:text-xs font-medium tracking-[0.24em] uppercase text-white/50 mb-3">Account</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-white leading-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+              <span className="text-[#0f766e]" style={{ textShadow: "0 0 32px rgba(15,118,110,0.35)" }}>Settings</span>
+            </h1>
+            <p className="mt-3 text-base text-white/60">
               Manage your account and preferences
             </p>
           </div>
@@ -622,9 +627,9 @@ export default function SettingsPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all min-h-[44px] ${activeTab === tab.id
-                      ? "bg-[#8b1a1a]/20 text-white"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all min-h-[44px] ${activeTab === tab.id
+                      ? "bg-[#0f766e]/10 text-teal-300 border border-[#0f766e]/25"
+                      : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
                       } lg:w-full`}
                   >
                     <span className="text-lg">{tab.icon}</span>
@@ -633,26 +638,19 @@ export default function SettingsPage() {
                 ))}
               </nav>
 
-              <div
-                className="rounded-2xl p-4 mt-6"
-                style={{
-                  background:
-                    "linear-gradient(145deg, rgba(139, 26, 26, 0.15) 0%, rgba(107, 15, 15, 0.05) 100%)",
-                  border: "1px solid rgba(139, 26, 26, 0.2)",
-                }}
-              >
+              <div className={`${CARD_CLASS} p-4 mt-6`}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8b1a1a] to-[#6b0f0f] flex items-center justify-center text-white text-sm font-bold shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#0f766e]/20 flex items-center justify-center text-teal-400 text-sm font-bold shrink-0">
                     {getInitials()}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-white">{userPlan?.planName ?? "Starter"}</p>
-                    <p className="text-xs text-white/40">{dealsCount} / {DEAL_LIMIT} deals</p>
+                    <p className="text-xs text-white/50">{dealsCount} / {DEAL_LIMIT} deals</p>
                   </div>
                 </div>
                 <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#8b1a1a] to-[#6b0f0f]"
+                    className="h-full rounded-full bg-[#0f766e]"
                     style={{ width: `${Math.min(dealsPercentage, 100)}%` }}
                   />
                 </div>
@@ -662,17 +660,12 @@ export default function SettingsPage() {
             <div className="flex-1 min-w-0">
               {activeTab === "general" && (
                 <div className="space-y-6">
-                  <div
-                    className="rounded-2xl p-6"
-                    style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                    }}
-                  >
-                    <h3 className="text-lg font-semibold text-white mb-6">
-                      Profile Information
-                    </h3>
+                  <div className={CARD_CLASS}>
+                    <div className="border-l-2 border-[#0f766e] pl-3 mb-6">
+                      <h3 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+                        Profile information
+                      </h3>
+                    </div>
 
                     <div className="flex items-start gap-6 mb-6">
                       <div className="relative">
@@ -685,7 +678,7 @@ export default function SettingsPage() {
                             />
                           </div>
                         ) : (
-                          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#8b1a1a] to-[#6b0f0f] flex items-center justify-center text-white text-2xl font-bold">
+                          <div className="w-20 h-20 rounded-2xl bg-[#0f766e]/20 flex items-center justify-center text-teal-400 text-2xl font-bold">
                             {getInitials()}
                           </div>
                         )}
@@ -724,19 +717,19 @@ export default function SettingsPage() {
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-medium text-white/50 mb-2">
                           Full Name
                         </label>
                         <input
                           type="text"
                           value={userData.name}
                           onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50 transition-colors"
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30 transition-colors"
                           placeholder="Enter your name"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-medium text-white/50 mb-2">
                           Email
                         </label>
                         <input
@@ -752,25 +745,25 @@ export default function SettingsPage() {
                         </p>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-medium text-white/50 mb-2">
                           Company
                         </label>
                         <input
                           type="text"
                           value={userData.company}
                           onChange={(e) => setUserData({ ...userData, company: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50 transition-colors"
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30 transition-colors"
                           placeholder="Enter company name"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-medium text-white/50 mb-2">
                           Role
                         </label>
                         <select
                           value={userData.role}
                           onChange={(e) => setUserData({ ...userData, role: e.target.value })}
-                          className="w-full px-4 py-3 pr-10 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50 transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E')] bg-no-repeat bg-[length:16px] bg-[right_0.75rem_center]"
+                          className="w-full px-4 py-3 pr-10 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30 transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E')] bg-no-repeat bg-[length:16px] bg-[right_0.75rem_center]"
                         >
                           <option value="admin">Admin</option>
                           <option value="manager">Sales Manager</option>
@@ -785,7 +778,7 @@ export default function SettingsPage() {
                         disabled={isSaving}
                         className="px-6 py-3 rounded-xl text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
-                          background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)",
+                          background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
                         }}
                       >
                         {isSaving ? "Saving..." : "Save Changes"}
@@ -794,12 +787,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div
-                    className="rounded-2xl p-6"
-                    style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                    }}
+                    className={CARD_CLASS}
                   >
                     <h3 className="text-lg font-semibold text-white mb-6">
                       Security
@@ -836,7 +824,7 @@ export default function SettingsPage() {
                         </div>
                         <button
                           onClick={() => openUserProfile()}
-                          className="px-4 py-2 rounded-xl text-sm font-medium bg-[#8b1a1a]/20 text-red-400 hover:bg-[#8b1a1a]/30 transition-colors"
+                          className="px-4 py-2 rounded-xl text-sm font-medium bg-[#0f766e]/10 text-teal-400 hover:bg-[#0f766e]/20 transition-colors"
                         >
                           {user?.twoFactorEnabled ? "Manage" : "Enable"}
                         </button>
@@ -877,12 +865,7 @@ export default function SettingsPage() {
 
               {activeTab === "notifications" && (
                 <div
-                  className="rounded-2xl p-6"
-                  style={{
-                    background:
-                      "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                  }}
+                  className={CARD_CLASS}
                 >
                   <h3 className="text-lg font-semibold text-white mb-6">
                     Email Notifications
@@ -932,7 +915,7 @@ export default function SettingsPage() {
                             }))
                           }
                           className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${notifications[item.id as keyof typeof notifications]
-                            ? "bg-[#8b1a1a]"
+                            ? "bg-[#0f766e]"
                             : "bg-white/10"
                             }`}
                         >
@@ -954,7 +937,7 @@ export default function SettingsPage() {
                       className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium text-white transition-all disabled:opacity-50"
                       style={{
                         background:
-                          "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)",
+                          "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
                       }}
                     >
                       <svg
@@ -979,12 +962,7 @@ export default function SettingsPage() {
               {activeTab === "risk" && (
                 <div className="space-y-6">
                   <div
-                    className="rounded-2xl p-6"
-                    style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                    }}
+                    className={CARD_CLASS}
                   >
                     <h3 className="text-lg font-semibold text-white mb-2">
                       Risk Analysis Settings
@@ -1049,7 +1027,7 @@ export default function SettingsPage() {
                           }}
                           className={`w-full px-4 py-3 rounded-xl bg-white/5 border text-white placeholder-white/30 focus:outline-none transition-colors ${riskSettingsError
                             ? "border-red-500/50 focus:border-red-500"
-                            : "border-white/10 focus:border-[#8b1a1a]/50"
+                            : "border-white/10 focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                             }`}
                         />
                         {riskSettingsError ? (
@@ -1078,7 +1056,7 @@ export default function SettingsPage() {
                             })
                           }
                           className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${riskSettings.enableCompetitiveSignals
-                            ? "bg-[#8b1a1a]"
+                            ? "bg-[#0f766e]"
                             : "bg-white/10"
                             }`}
                         >
@@ -1099,7 +1077,7 @@ export default function SettingsPage() {
                         className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium text-white transition-all disabled:opacity-50"
                         style={{
                           background:
-                            "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)",
+                            "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
                         }}
                       >
                         <svg
@@ -1124,14 +1102,7 @@ export default function SettingsPage() {
 
               {activeTab === "integrations" && (
                 <div className="space-y-6">
-                  <div
-                    className="rounded-2xl p-6"
-                    style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                    }}
-                  >
+                  <div className={CARD_CLASS}>
                     <h3 className="text-lg font-semibold text-white mb-2">
                       Connected Apps
                     </h3>
@@ -1191,7 +1162,7 @@ export default function SettingsPage() {
                           name="Slack"
                           description="Get notifications in Slack"
                           icon="💬"
-                          iconBg="bg-red-600/20"
+                          iconBg="bg-[#0f766e]/20"
                           connected={integrationStatuses?.slack?.connected || false}
                           channelCount={integrationStatuses?.slack?.channelCount}
                           onConnect={() => router.push("/settings/integrations")}
@@ -1215,17 +1186,12 @@ export default function SettingsPage() {
                     )}
                   </div>
 
-                  <div
-                    className="rounded-2xl p-6"
-                    style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                    }}
-                  >
-                    <h3 className="text-lg font-semibold text-white mb-4">
-                      Recent Activity
-                    </h3>
+                  <div className={CARD_CLASS}>
+                    <div className="border-l-2 border-white/20 pl-3 mb-4">
+                      <h3 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+                        Recent activity
+                      </h3>
+                    </div>
                     {integrationLogs.length === 0 ? (
                       <p className="text-sm text-white/40 text-center py-6">
                         No integration activity yet
@@ -1273,21 +1239,16 @@ export default function SettingsPage() {
               )}
 
               {activeTab === "team" && (
-                <div
-                  className="rounded-2xl p-6"
-                  style={{
-                    background:
-                      "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                  }}
-                >
+                <div className={CARD_CLASS}>
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-white">
-                      Team Members
-                    </h3>
+                    <div className="border-l-2 border-[#0f766e] pl-3">
+                      <h3 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
+                        Team members
+                      </h3>
+                    </div>
                     <button
                       onClick={() => setShowInviteModal(true)}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-[#8b1a1a]/20 text-red-400 hover:bg-[#8b1a1a]/30 transition-colors"
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[#0f766e] hover:bg-[#0d9488] text-white border border-[#0f766e]/40 transition-colors"
                     >
                       <svg
                         className="w-4 h-4"
@@ -1332,7 +1293,7 @@ export default function SettingsPage() {
                         className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8b1a1a] to-[#6b0f0f] flex items-center justify-center text-white text-sm font-bold shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-[#0f766e]/20 flex items-center justify-center text-teal-400 text-sm font-bold shrink-0">
                             {member.avatar}
                           </div>
                           <div className="min-w-0">
@@ -1363,11 +1324,11 @@ export default function SettingsPage() {
                       border: "1px solid rgba(139, 26, 26, 0.2)",
                     }}
                   >
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#8b1a1a]/10 rounded-full blur-3xl" />
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#0f766e]/10 rounded-full blur-3xl" />
                     <div className="relative">
                       <div className="flex items-start justify-between mb-6">
                         <div>
-                          <span className="inline-flex px-3 py-1 rounded-lg text-xs font-semibold text-red-400 bg-[#8b1a1a]/20 mb-3">
+                          <span className="inline-flex px-3 py-1 rounded-lg text-xs font-semibold text-red-400 bg-[#0f766e]/20 mb-3">
                             Current Plan
                           </span>
                           <h3 className="text-2xl font-bold text-white">
@@ -1395,7 +1356,7 @@ export default function SettingsPage() {
                         {[
                           { label: "Deals", value: `${dealsCount} / ${DEAL_LIMIT}` },
                           { label: "Team Members", value: `${teamMembersCount} / ${TEAM_MEMBER_LIMIT}` },
-                          { label: "API Calls", value: `— / ${apiCallsDisplay}` },
+                          { label: "API Calls", value: `- / ${apiCallsDisplay}` },
                         ].map((item) => (
                           <div
                             key={item.label}
@@ -1431,12 +1392,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div
-                    className="rounded-2xl p-6"
-                    style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                    }}
+                    className={CARD_CLASS}
                   >
                     <h3 className="text-lg font-semibold text-white mb-6">
                       Payment Method
@@ -1556,7 +1512,7 @@ export default function SettingsPage() {
                 disabled={isCanceling}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
                 style={{
-                  background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)",
+                  background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
                 }}
               >
                 {isCanceling ? "Canceling..." : "Yes, Cancel"}
@@ -1589,7 +1545,7 @@ export default function SettingsPage() {
                 <select
                   value={paymentForm.brand}
                   onChange={(e) => setPaymentForm((f) => ({ ...f, brand: e.target.value }))}
-                  className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
+                  className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
                 >
                   {CARD_BRANDS.map((b) => (
                     <option key={b} value={b} className="bg-gray-900">
@@ -1607,7 +1563,7 @@ export default function SettingsPage() {
                   placeholder="4242"
                   value={paymentForm.last4}
                   onChange={(e) => setPaymentForm((f) => ({ ...f, last4: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1616,7 +1572,7 @@ export default function SettingsPage() {
                   <select
                     value={paymentForm.expMonth}
                     onChange={(e) => setPaymentForm((f) => ({ ...f, expMonth: Number(e.target.value) }))}
-                    className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
+                    className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
                   >
                     {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                       <option key={m} value={m} className="bg-gray-900">
@@ -1630,7 +1586,7 @@ export default function SettingsPage() {
                   <select
                     value={paymentForm.expYear}
                     onChange={(e) => setPaymentForm((f) => ({ ...f, expYear: Number(e.target.value) }))}
-                    className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#8b1a1a]/50 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
+                    className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30 appearance-none bg-[length:16px] bg-[right_1rem_center] bg-no-repeat [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19%209-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')]"
                   >
                     {Array.from({ length: 15 }, (_, i) => new Date().getFullYear() + i).map((y) => (
                       <option key={y} value={y} className="bg-gray-900">
@@ -1664,7 +1620,7 @@ export default function SettingsPage() {
                   type="submit"
                   disabled={isSavingPayment}
                   className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)" }}
+                  style={{ background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)" }}
                 >
                   {isSavingPayment ? "Saving..." : showPaymentModal === "add" ? "Add card" : "Update"}
                 </button>
@@ -1704,7 +1660,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={handleConfirmRemovePayment}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors"
-                style={{ background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)" }}
+                style={{ background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)" }}
               >
                 Remove
               </button>
@@ -1791,7 +1747,7 @@ export default function SettingsPage() {
                   value={salesforceForm.instanceUrl}
                   onChange={(e) => setSalesforceForm((f) => ({ ...f, instanceUrl: e.target.value }))}
                   placeholder="https://yourcompany.salesforce.com"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                   required
                 />
                 <p className="text-xs text-white/40 mt-1">Your Salesforce org URL</p>
@@ -1804,7 +1760,7 @@ export default function SettingsPage() {
                   value={salesforceForm.apiKey}
                   onChange={(e) => setSalesforceForm((f) => ({ ...f, apiKey: e.target.value }))}
                   placeholder="Enter your Salesforce API key"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                   required
                 />
                 <p className="text-xs text-white/40 mt-1">
@@ -1831,7 +1787,7 @@ export default function SettingsPage() {
                   type="submit"
                   disabled={connectingIntegration === "salesforce"}
                   className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)" }}
+                  style={{ background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)" }}
                 >
                   {connectingIntegration === "salesforce" ? "Connecting..." : "Connect"}
                 </button>
@@ -1873,7 +1829,7 @@ export default function SettingsPage() {
                   value={hubspotForm.apiKey}
                   onChange={(e) => setHubspotForm((f) => ({ ...f, apiKey: e.target.value }))}
                   placeholder="pat-na1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                   required
                 />
                 <p className="text-xs text-white/40 mt-1">
@@ -1900,7 +1856,7 @@ export default function SettingsPage() {
                   type="submit"
                   disabled={connectingIntegration === "hubspot"}
                   className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)" }}
+                  style={{ background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)" }}
                 >
                   {connectingIntegration === "hubspot" ? "Connecting..." : "Connect"}
                 </button>
@@ -1942,7 +1898,7 @@ export default function SettingsPage() {
                   value={googleCalendarForm.apiKey}
                   onChange={(e) => setGoogleCalendarForm((f) => ({ ...f, apiKey: e.target.value }))}
                   placeholder="AIzaSy..."
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                   required
                 />
                 <p className="text-xs text-white/40 mt-1">
@@ -1957,7 +1913,7 @@ export default function SettingsPage() {
                   value={googleCalendarForm.calendarId}
                   onChange={(e) => setGoogleCalendarForm((f) => ({ ...f, calendarId: e.target.value }))}
                   placeholder="e.g. xxx@group.calendar.google.com"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#8b1a1a]/50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30"
                   required
                 />
                 <p className="text-xs text-white/40 mt-1">
@@ -1977,7 +1933,7 @@ export default function SettingsPage() {
                   type="submit"
                   disabled={connectingIntegration === "google_calendar"}
                   className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg, #d51024 0%, #8b1a1a 100%)" }}
+                  style={{ background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)" }}
                 >
                   {connectingIntegration === "google_calendar" ? "Connecting..." : "Connect"}
                 </button>
@@ -2087,7 +2043,7 @@ export default function SettingsPage() {
                   showManageModal === "hubspot" ? integrationStatuses?.hubspot?.syncEnabled :
                     showManageModal === "googleCalendar" ? integrationStatuses?.googleCalendar?.syncEnabled :
                       false)
-                  ? "bg-[#8b1a1a]"
+                  ? "bg-[#0f766e]"
                   : "bg-white/10"
                   }`}
               >
@@ -2138,7 +2094,7 @@ export default function SettingsPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#8b1a1a]/20 flex items-center justify-center text-2xl">
+                <div className="w-12 h-12 rounded-xl bg-[#0f766e]/20 flex items-center justify-center text-2xl">
                   👥
                 </div>
                 <div>
@@ -2168,7 +2124,7 @@ export default function SettingsPage() {
                   onChange={(e) => setInviteEmail(e.target.value)}
                   disabled={sendingInvite}
                   placeholder="colleague@company.com"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-[#8b1a1a]/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                 />
               </div>
@@ -2181,7 +2137,7 @@ export default function SettingsPage() {
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
                   disabled={sendingInvite}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#8b1a1a]/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#0f766e]/30 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
@@ -2202,7 +2158,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={sendingInvite || !inviteEmail.trim()}
-                  className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {sendingInvite ? (
                     <>
@@ -2322,7 +2278,7 @@ function IntegrationCard({
       ) : (
         <button
           onClick={onConnect}
-          className="px-4 py-2 rounded-xl text-sm font-medium bg-[#8b1a1a]/20 text-red-400 hover:bg-[#8b1a1a]/30 transition-colors"
+          className="px-4 py-2 rounded-xl text-sm font-medium bg-[#0f766e]/10 text-teal-400 hover:bg-[#0f766e]/20 transition-colors"
         >
           Connect
         </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics-client";
 
 const EXPORT_FORMATS = [
@@ -24,11 +25,30 @@ export function ExportButton({
 }: ExportButtonProps) {
   const [isExporting, setIsExporting] = React.useState(false);
   const [showMenu, setShowMenu] = React.useState(false);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
   const menuRef = React.useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
+
+  React.useLayoutEffect(() => {
+    if (!showMenu || !triggerRef.current) {
+      if (!showMenu) setMenuPosition(null);
+      return;
+    }
+    const rect = triggerRef.current.getBoundingClientRect();
+    const menuWidth = 120;
+    setMenuPosition({
+      top: rect.bottom + 8,
+      left: rect.right - menuWidth,
+    });
+  }, [showMenu]);
 
   React.useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        menuRef.current && !menuRef.current.contains(target) &&
+        triggerRef.current && !triggerRef.current.contains(target)
+      ) {
         setShowMenu(false);
       }
     }
@@ -76,15 +96,17 @@ export function ExportButton({
   };
 
   return (
-    <div ref={menuRef} className="relative">
-      <button
-        onClick={() => setShowMenu(!showMenu)}
-        disabled={isExporting}
-        className={className}
-        aria-label="Export deals"
-        aria-expanded={showMenu}
-        aria-haspopup="true"
-      >
+    <>
+      <div className="relative">
+        <button
+          ref={triggerRef}
+          onClick={() => setShowMenu(!showMenu)}
+          disabled={isExporting}
+          className={className}
+          aria-label="Export deals"
+          aria-expanded={showMenu}
+          aria-haspopup="true"
+        >
         {isExporting ? (
           <>
             <svg
@@ -129,27 +151,36 @@ export function ExportButton({
             </svg>
           </>
         )}
-      </button>
-      {showMenu && !isExporting && (
-        <div
-          className="absolute right-0 top-full mt-2 min-w-[120px] rounded-xl overflow-hidden z-50 py-1"
-          style={{
-            background: "rgba(20, 20, 20, 0.98)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
-          }}
-        >
-          {EXPORT_FORMATS.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => handleExport(f.value)}
-              className="w-full px-4 py-2 text-left text-sm text-[#8a8a8a] hover:bg-white/10 hover:text-white transition-colors"
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+        </button>
+      </div>
+      {typeof document !== "undefined" &&
+        showMenu &&
+        !isExporting &&
+        menuPosition &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-label="Export format"
+            className="fixed min-w-[120px] rounded-lg overflow-hidden py-1 bg-[#0a0a0a] border border-white/10 shadow-xl z-9999"
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+            }}
+          >
+            {EXPORT_FORMATS.map((f) => (
+              <button
+                key={f.value}
+                role="menuitem"
+                onClick={() => handleExport(f.value)}
+                className="w-full px-4 py-2 text-left text-sm text-white/70 hover:bg-white/6 hover:text-white transition-colors"
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
+    </>
   );
 }

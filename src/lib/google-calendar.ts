@@ -94,14 +94,14 @@ export async function validateGoogleCalendarCredentials(
                 return {
                   valid: false,
                   error:
-                    "Invalid API key — check it's correct and that Google Calendar API is enabled in Google Cloud Console. " +
+                    "Invalid API key - check it's correct and that Google Calendar API is enabled in Google Cloud Console. " +
                     "API keys also cannot access private calendars; use a public calendar ID.",
                 };
               }
               return {
                 valid: false,
                 error:
-                  "Permission denied. The calendar may be private. API keys only work with public calendars — " +
+                  "Permission denied. The calendar may be private. API keys only work with public calendars - " +
                   "use a public calendar's ID (e.g. xxx@group.calendar.google.com).",
               };
             }

@@ -123,7 +123,7 @@ export default async function DashboardPage() {
   }));
   const pipelineForecast = forecastPipelineValue(dealsForPrediction);
 
-  const CARD_CLASS = "rounded-2xl p-5 sm:p-6 border border-white/[0.07] bg-[#000000] transition-all duration-300 hover:border-white/[0.12] relative overflow-hidden shiny-black";
+  const CARD_CLASS = "rounded-xl p-5 sm:p-6 border border-white/[0.08] bg-[#080808] transition-colors hover:border-white/[0.1] card-elevated";
 
   return (
     <DashboardLayout>
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
             </p>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.03em] text-white leading-[1.12] [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
               Pipeline
-              <span className="text-[#0ea5e9]" style={{ textShadow: "0 0 48px rgba(14,165,233,0.4)" }}> overview</span>
+              <span className="text-[#0f766e]" style={{ textShadow: "0 0 32px rgba(15,118,110,0.35)" }}> overview</span>
             </h1>
             <p className="mt-4 text-base sm:text-lg text-white/60 max-w-xl leading-relaxed">
               Key metrics, performance trends, and at-risk deals at a glance.
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
           </header>
 
           <section className="animate-fade-in-up" style={{ animationDelay: "0.05s", animationFillMode: "both" }}>
-            <div className="relative rounded-2xl border border-white/[0.07] overflow-hidden bg-[#000000] shiny-black">
+            <div className="relative rounded-xl border border-white/[0.08] overflow-hidden bg-[#080808] card-elevated">
               <div
                 className="absolute inset-0 opacity-40"
                 style={{
@@ -161,7 +161,7 @@ export default async function DashboardPage() {
                 }}
                 aria-hidden
               />
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#0ea5e9] via-[#0ea5e9]/60 to-[#0ea5e9]/20" aria-hidden />
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#0f766e] via-[#0f766e]/50 to-[#0f766e]/15" aria-hidden />
               <div className="relative pl-6 pr-6 sm:pl-8 sm:pr-8 lg:px-10 py-8 sm:py-9">
                 <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-12">
                   <div>
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
                     <p className="text-4xl sm:text-5xl lg:text-[3rem] font-bold tabular-nums text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
                       {formatRevenue(revenueImpact)}
                     </p>
-                    <p className={`mt-3 text-base font-semibold tabular-nums ${revenueGrowthPercent >= 0 ? "text-[#0ea5e9]" : "text-amber-400"}`}>
+                    <p className={`mt-3 text-base font-semibold tabular-nums ${revenueGrowthPercent >= 0 ? "text-[#0f766e]" : "text-amber-500"}`}>
                       {revenueGrowthPercent >= 0 ? "+" : ""}{revenueGrowthPercent.toFixed(1)}% vs last month
                     </p>
                   </div>

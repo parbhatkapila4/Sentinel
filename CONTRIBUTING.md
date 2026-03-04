@@ -11,9 +11,9 @@ Thank you for your interest in contributing. This document covers how to get sta
 
 Use descriptive branches:
 
-- `feature/<name>` — New features
-- `fix/<name>` — Bug fixes
-- `docs/<name>` — Documentation only
+- `feature/<name>` - New features
+- `fix/<name>` - Bug fixes
+- `docs/<name>` - Documentation only
 
 Examples: `feature/export-csv`, `fix/deal-risk-edge-case`, `docs/api-examples`.
 

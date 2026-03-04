@@ -276,7 +276,7 @@ export default function WebhookDetailPage() {
                     <p className="text-xs text-white/40">
                       {d.createdAt
                         ? new Date(d.createdAt).toLocaleString("en-US")
-                        : "—"}
+                        : "-"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">

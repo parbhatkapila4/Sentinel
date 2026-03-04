@@ -22,9 +22,9 @@ const REPORTS: {
       id: "pipeline",
       title: "Pipeline Summary",
       subtitle: "All active deals overview",
-      borderHover: "hover:border-blue-500/30",
+      borderHover: "hover:border-[#0f766e]/30",
       icon: (
-        <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-4 h-4 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
@@ -44,7 +44,7 @@ const REPORTS: {
       id: "at-risk",
       title: "At-Risk Analysis",
       subtitle: "Deals needing attention",
-      borderHover: "hover:border-red-500/30",
+      borderHover: "hover:border-red-700/30",
       icon: (
         <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -140,10 +140,10 @@ export function QuickReports({ summary }: { summary: QuickReportsSummary }) {
             <div className="flex items-center gap-3">
               <div
                 className={`w-8 h-8 rounded-lg flex items-center justify-center ${r.id === "pipeline"
-                    ? "bg-blue-500/20"
-                    : r.id === "won"
-                      ? "bg-green-500/20"
-                      : "bg-red-500/20"
+                  ? "bg-[#0f766e]/20"
+                  : r.id === "won"
+                    ? "bg-green-700/20"
+                    : "bg-red-700/20"
                   }`}
               >
                 {r.icon}
@@ -169,17 +169,17 @@ export function QuickReports({ summary }: { summary: QuickReportsSummary }) {
           aria-labelledby="quick-report-title"
         >
           <div
-            className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#131313] shadow-2xl p-6 text-left"
+            className="relative w-full max-w-lg rounded-xl border border-white/8 bg-[#0a0a0a] shadow-2xl p-6 text-left"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 mb-4">
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${report.id === "pipeline"
-                      ? "bg-blue-500/20"
-                      : report.id === "won"
-                        ? "bg-green-500/20"
-                        : "bg-red-500/20"
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${report.id === "pipeline"
+                    ? "bg-[#0f766e]/20"
+                    : report.id === "won"
+                      ? "bg-green-700/20"
+                      : "bg-red-700/20"
                     }`}
                 >
                   {report.icon}

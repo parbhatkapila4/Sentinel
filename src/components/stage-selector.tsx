@@ -43,7 +43,7 @@ export function StageSelector({ dealId, currentStage }: StageSelectorProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-50 disabled:cursor-wait min-w-[140px] justify-between"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white bg-white/[0.04] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.1] transition-colors disabled:opacity-50 disabled:cursor-wait min-w-[140px] justify-between"
       >
         {isLoading ? (
           <>
@@ -76,15 +76,7 @@ export function StageSelector({ dealId, currentStage }: StageSelectorProps) {
       </button>
 
       {isOpen && (
-        <div
-          className="absolute top-full left-0 mt-2 w-48 rounded-xl overflow-hidden z-50"
-          style={{
-            background: "rgba(20, 20, 20, 0.95)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
-          }}
-        >
+        <div className="absolute top-full left-0 mt-2 w-48 rounded-lg overflow-hidden z-50 bg-[#0a0a0a] border border-white/[0.08] shadow-xl shadow-black/50">
           {stages.map((stage) => (
             <button
               key={stage}
@@ -97,7 +89,7 @@ export function StageSelector({ dealId, currentStage }: StageSelectorProps) {
             >
               <span className="capitalize">{stage.replace(/_/g, " ")}</span>
               {stage === currentStage && (
-                <span className="ml-2 text-xs text-emerald-400">Current</span>
+                <span className="ml-2 text-xs text-green-400">Current</span>
               )}
             </button>
           ))}

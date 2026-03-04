@@ -32,7 +32,7 @@ try {
   ) {
     try {
 
-      // @ts-expect-error — query event type narrows to never with conditional log config
+      // @ts-expect-error - query event type narrows to never with conditional log config
       prismaInstance.$on("query", (e: { duration?: number; query?: string }) => {
         if (e.duration && e.query) {
           const duration = e.duration;

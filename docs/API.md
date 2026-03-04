@@ -1,6 +1,6 @@
 # Sentinel API Index
 
-Short index of the main API areas. For the full OpenAPI/Swagger spec, see the in-app [API Reference](https://www.sentinel.parbhat.dev/api-docs).
+Short index of the main API areas. For the full OpenAPI/Swagger spec, see the in-app [API Reference](https://www.sentinels.in/api-docs).
 
 ## Overview
 
@@ -35,7 +35,7 @@ Short index of the main API areas. For the full OpenAPI/Swagger spec, see the in
 | POST        | `/api/cron/process-webhooks`               | Cron: process webhooks.                                     |
 | DELETE      | `/api/user/delete`                         | Delete current user (or account).                           |
 
-**Full spec**: [API Reference](https://www.sentinel.parbhat.dev/api-docs) — OpenAPI/Swagger with request/response schemas.
+**Full spec**: [API Reference](https://www.sentinels.in/api-docs) - OpenAPI/Swagger with request/response schemas.
 
 ## Example Requests
 
@@ -57,4 +57,4 @@ curl -X POST "https://your-app.vercel.app/api/insights/chat" \
   -d '{"message": "Which deals need my attention today?"}'
 ```
 
-Replace `YOUR_CLERK_SESSION` with a valid Clerk session cookie (or Bearer token if the route supports it). See [API Reference](https://www.sentinel.parbhat.dev/api-docs) for exact request/response shapes and auth.
+Replace `YOUR_CLERK_SESSION` with a valid Clerk session cookie (or Bearer token if the route supports it). See [API Reference](https://www.sentinels.in/api-docs) for exact request/response shapes and auth.

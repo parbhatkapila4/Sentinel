@@ -121,7 +121,7 @@ export function DeleteDealButton({
         className={
           variant === "link"
             ? `inline-block ${className}`.trim()
-            : `inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20 transition-colors disabled:opacity-50 ${className}`.trim()
+            : `inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-red-700/90 hover:bg-red-600 border border-red-700/40 transition-colors disabled:opacity-50 ${className}`.trim()
         }
       >
         {trigger}
@@ -168,7 +168,7 @@ export function DeleteDealButton({
                   type="button"
                   onClick={handleDelete}
                   disabled={loading}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-500 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-700 hover:bg-red-600 border border-red-700/40 transition-colors disabled:opacity-50"
                 >
                   {loading ? "Deleting…" : "Delete"}
                 </button>

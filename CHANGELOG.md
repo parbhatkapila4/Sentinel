@@ -19,11 +19,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Security**: Audit logging for deal and team actions; Content-Security-Policy and security headers (CSP, HSTS, etc.).
 - **Real-time events**: SSE stream at `/api/events` and `useRealtime` hook for live deal/notification updates.
 - **Documentation**:
-  - [ARCHITECTURE.md](ARCHITECTURE.md) — System overview, tech stack, directory structure, data flow, caching, security.
-  - [DEPLOYMENT.md](DEPLOYMENT.md) — Prerequisites, local setup, Vercel deployment, env vars, post-deploy checks.
-  - [CONTRIBUTING.md](CONTRIBUTING.md) — How to run locally, branch naming, PR checks, code style.
-  - [docs/API.md](docs/API.md) — API index and links to full OpenAPI spec at `/api-docs`.
-  - [CHANGELOG.md](CHANGELOG.md) — This file.
+  - [ARCHITECTURE.md](ARCHITECTURE.md) - System overview, tech stack, directory structure, data flow, caching, security.
+  - [DEPLOYMENT.md](DEPLOYMENT.md) - Prerequisites, local setup, Vercel deployment, env vars, post-deploy checks.
+  - [CONTRIBUTING.md](CONTRIBUTING.md) - How to run locally, branch naming, PR checks, code style.
+  - [docs/API.md](docs/API.md) - API index and links to full OpenAPI spec at `/api-docs`.
 
 ### Changed
 

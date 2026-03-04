@@ -158,43 +158,28 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
   return (
     <>
       {selectedIds.size > 0 && (
-        <div className="flex flex-wrap items-center gap-3 p-3 mb-4 rounded-xl bg-[#151515] border border-[#1f1f1f] max-sm:flex-col max-sm:items-stretch max-sm:gap-2">
-          <span className="text-sm text-white font-medium">
-            {selectedIds.size} selected
-          </span>
+        <div className="flex flex-wrap items-center gap-3 p-3 mb-4 rounded-lg bg-white/4 border border-white/8 max-sm:flex-col max-sm:items-stretch max-sm:gap-2">
+          <span className="text-sm font-medium text-white">{selectedIds.size} selected</span>
           <div className="flex items-center gap-2">
             <div className="relative" ref={stagePickerRef}>
               <button
                 onClick={() => setShowStagePicker(!showStagePicker)}
                 disabled={isBulkLoading}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-blue-600/80 hover:bg-blue-600 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors disabled:opacity-50"
               >
                 Bulk update stage
-                <svg
-                  className={`w-4 h-4 transition-transform ${showStagePicker ? "rotate-180" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
+                <svg className={`w-4 h-4 transition-transform ${showStagePicker ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {showStagePicker && (
-                <div
-                  className="absolute top-full left-0 mt-2 w-48 rounded-xl overflow-hidden z-50 py-1"
-                  style={{
-                    background: "rgba(20, 20, 20, 0.98)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
-                  }}
-                >
+                <div className="absolute top-full left-0 mt-2 w-48 rounded-lg overflow-hidden z-50 py-1 bg-[#0a0a0a] border border-white/8 shadow-xl">
                   {STAGE_FORM_OPTIONS.map((s) => (
                     <button
                       key={s.value}
                       onClick={() => handleBulkUpdateStage(s.value)}
                       disabled={isBulkLoading}
-                      className="w-full px-4 py-2 text-left text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                      className="w-full px-4 py-2 text-left text-sm text-white/80 hover:bg-white/6 hover:text-white transition-colors"
                     >
                       {s.label}
                     </button>
@@ -205,14 +190,14 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
             <button
               onClick={() => setShowDeleteConfirm(true)}
               disabled={isBulkLoading}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/20 border border-red-500/30 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-700/20 border border-red-700/30 transition-colors disabled:opacity-50"
             >
               Bulk delete
             </button>
             <button
               onClick={() => setSelectedIds(new Set())}
               disabled={isBulkLoading}
-              className="text-sm text-[#8a8a8a] hover:text-white"
+              className="text-sm text-white/50 hover:text-white transition-colors"
             >
               Clear selection
             </button>
@@ -228,23 +213,15 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
           aria-modal="true"
           aria-labelledby="bulk-delete-title"
         >
-          <div
-            className="rounded-2xl border border-white/10 bg-[#0a0a0b] p-6 max-w-md w-full shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 id="bulk-delete-title" className="text-lg font-semibold text-white mb-2">
-              Delete {selectedIds.size} deal(s)?
-            </h2>
-            <p className="text-white/60 text-sm mb-6">
-              This action cannot be undone. All selected deals will be permanently
-              deleted.
-            </p>
+          <div className="rounded-xl border border-white/8 bg-[#0a0a0a] p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 id="bulk-delete-title" className="text-lg font-semibold text-white mb-2">Delete {selectedIds.size} deal(s)?</h2>
+            <p className="text-white/60 text-sm mb-6">This action cannot be undone. All selected deals will be permanently deleted.</p>
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isBulkLoading}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/6 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -252,7 +229,7 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                 type="button"
                 onClick={handleBulkDelete}
                 disabled={isBulkLoading}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-500 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-700 hover:bg-red-600 transition-colors disabled:opacity-50"
               >
                 {isBulkLoading ? "Deleting…" : "Delete all"}
               </button>
@@ -264,39 +241,39 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         <table className="w-full min-w-[700px]" aria-label="Deals pipeline">
           <thead>
-            <tr className="border-b border-[#1a1a1a]">
+            <tr className="border-b border-white/6">
               <th scope="col" className="text-left px-3 sm:px-4 py-3 sm:py-4 w-10">
                 <input
                   type="checkbox"
                   checked={allSelectableSelected}
                   onChange={toggleSelectAll}
                   disabled={selectableDeals.length === 0}
-                  className="rounded border-[#3f3f3f] bg-[#151515] text-[#8b1a1a] focus:ring-[#8b1a1a]"
+                  className="rounded border-white/20 bg-white/5 text-[#0f766e] focus:ring-[#0f766e]/50 focus:ring-1"
                   aria-label="Select all deals"
                 />
               </th>
-              <th scope="col" className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
+              <th scope="col" className="text-left text-xs font-medium text-white/50 px-3 sm:px-4 py-3 sm:py-4">
                 Deal
               </th>
-              <th scope="col" className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
+              <th scope="col" className="text-left text-xs font-medium text-white/50 px-3 sm:px-4 py-3 sm:py-4">
                 Value
               </th>
-              <th scope="col" className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
+              <th scope="col" className="text-left text-xs font-medium text-white/50 px-3 sm:px-4 py-3 sm:py-4">
                 Stage
               </th>
-              <th scope="col" className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
+              <th scope="col" className="text-left text-xs font-medium text-white/50 px-3 sm:px-4 py-3 sm:py-4">
                 Risk
               </th>
-              <th scope="col" className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
+              <th scope="col" className="text-left text-xs font-medium text-white/50 px-3 sm:px-4 py-3 sm:py-4">
                 Assigned to
               </th>
-              <th scope="col" className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                Next Action
+              <th scope="col" className="text-left text-xs font-medium text-white/50 px-3 sm:px-4 py-3 sm:py-4">
+                Next action
               </th>
-              <th scope="col" className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider">
-                Last Activity
+              <th scope="col" className="text-left text-xs font-medium text-white/50 px-3 sm:px-4 py-3 sm:py-4">
+                Last activity
               </th>
-              <th scope="col" className="text-left text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 font-semibold text-white uppercase tracking-wider"></th>
+              <th scope="col" className="text-left text-xs font-medium text-white/50 px-3 sm:px-4 py-3 sm:py-4 min-w-28"></th>
             </tr>
           </thead>
           <tbody>
@@ -320,9 +297,9 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                   </td>
                   <td className="py-3 sm:py-4 px-3 sm:px-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#151515] border border-[#1f1f1f] flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center shrink-0">
                         <svg
-                          className="w-5 h-5 text-[#8b1a1a]"
+                          className="w-5 h-5 text-white/50"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -339,7 +316,7 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                         {deal.name}
                       </span>
                       {deal.isDemo && (
-                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/20 text-blue-400 rounded">
+                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-[#0f766e]/20 text-teal-400 rounded">
                           DEMO
                         </span>
                       )}
@@ -355,13 +332,13 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                   </td>
                   <td className="py-3 sm:py-4 px-3 sm:px-4">
                     <span
-                      className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${deal.status === "closed"
+                      className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${deal.status === "closed"
                         ? "bg-white/10 text-white/70 border border-white/20"
                         : riskLevel === "High"
-                          ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                          ? "bg-red-700/20 text-red-400 border border-red-700/30"
                           : riskLevel === "Medium"
-                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                            : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                            ? "bg-amber-700/20 text-amber-400 border border-amber-700/30"
+                            : "bg-green-700/20 text-green-400 border border-green-700/30"
                         }`}
                     >
                       {deal.status === "closed" ? "Closed" : riskLevel}
@@ -372,8 +349,8 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                       {deal.assignedTo
                         ? [deal.assignedTo.name, deal.assignedTo.surname]
                           .filter(Boolean)
-                          .join(" ") || "—"
-                        : "—"}
+                          .join(" ") || "-"
+                        : "-"}
                     </span>
                   </td>
                   <td className="py-3 sm:py-4 px-3 sm:px-4">
@@ -388,22 +365,24 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                       })}
                     </span>
                   </td>
-                  <td className="py-3 sm:py-4 px-3 sm:px-4">
-                    <div className="flex items-center gap-3">
+                  <td className="py-3 sm:py-4 px-3 sm:px-4 whitespace-nowrap">
+                    <div className="flex items-center gap-3 flex-nowrap">
                       <Link
                         href={`/deals/${deal.id}`}
-                        className="text-sm text-[#8b1a1a] hover:text-[#6b0f0f] transition-colors font-medium"
+                        className="text-sm text-teal-400 hover:text-teal-300 transition-colors font-medium shrink-0"
                       >
                         View →
                       </Link>
                       {!deal.isDemo && (
-                        <DeleteDealButton
-                          dealId={deal.id}
-                          dealName={deal.name}
-                          variant="link"
-                          redirectTo="/dashboard"
-                          className="text-sm text-red-400 hover:text-red-300"
-                        />
+                        <span className="shrink-0">
+                          <DeleteDealButton
+                            dealId={deal.id}
+                            dealName={deal.name}
+                            variant="link"
+                            redirectTo="/dashboard"
+                            className="text-sm text-red-400 hover:text-red-300 inline"
+                          />
+                        </span>
                       )}
                     </div>
                   </td>
@@ -421,32 +400,26 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
             <Link
               key={deal.id}
               href={`/deals/${deal.id}`}
-              className="block bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/[0.07] transition-colors"
+              className="block bg-white/4 rounded-lg p-4 border border-white/8 hover:bg-white/6 hover:border-white/10 transition-colors"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="font-medium text-white">{deal.name}</span>
-                <span className="text-sm text-white/60">
-                  ${deal.value.toLocaleString("en-US")}
-                </span>
+                <span className="text-sm text-white/60">${deal.value.toLocaleString("en-US")}</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-white/50 flex-wrap">
-                <span className="px-2 py-0.5 rounded-full bg-white/10">
-                  {deal.stage}
-                </span>
-                <span>—</span>
+                <span className="px-2 py-0.5 rounded-lg bg-white/10">{deal.stage}</span>
+                <span>-</span>
                 {deal.isDemo && (
-                  <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/20 text-blue-400 rounded">
-                    DEMO
-                  </span>
+                  <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium bg-[#0f766e]/20 text-teal-400 rounded">DEMO</span>
                 )}
                 <span
-                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${deal.status === "closed"
+                  className={`inline-flex px-2 py-0.5 rounded-lg text-xs font-medium ${deal.status === "closed"
                     ? "bg-white/10 text-white/70"
                     : riskLevel === "High"
-                      ? "bg-red-500/20 text-red-400"
+                      ? "bg-red-700/20 text-red-400"
                       : riskLevel === "Medium"
-                        ? "bg-amber-500/20 text-amber-400"
-                        : "bg-emerald-500/20 text-emerald-400"
+                        ? "bg-amber-700/20 text-amber-400"
+                        : "bg-green-700/20 text-green-400"
                     }`}
                 >
                   {deal.status === "closed" ? "Closed" : riskLevel}

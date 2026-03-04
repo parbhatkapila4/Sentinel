@@ -82,7 +82,7 @@ export function EmailGenerator({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all text-white bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors"
       >
         <svg
           className="w-4 h-4"
@@ -107,9 +107,9 @@ export function EmailGenerator({
             aria-hidden="true"
             onClick={handleClose}
           />
-          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 bg-[#131313] border border-[#1f1f1f] shadow-xl">
+          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide rounded-xl p-6 bg-[#0a0a0a] border border-white/[0.08] shadow-xl">
             <h3 className="text-lg font-semibold text-white mb-1">
-              Generate follow-up email
+              Follow-up email
             </h3>
             <p className="text-sm text-white/50 mb-4">
               {dealName} · ${dealValue.toLocaleString("en-US")} · {dealStage}
@@ -117,18 +117,16 @@ export function EmailGenerator({
 
             {!email ? (
               <>
-                <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2">
-                  Tone
-                </p>
+                <p className="text-xs font-medium text-white/50 mb-2">Tone</p>
                 <div className="flex gap-2 mb-6">
                   {TONES.map((t) => (
                     <button
                       key={t.value}
                       type="button"
                       onClick={() => setTone(t.value)}
-                      className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${tone === t.value
-                        ? "bg-blue-500/30 text-white border border-blue-500/50"
-                        : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10"
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${tone === t.value
+                        ? "bg-[#0f766e]/20 text-teal-300 border-[#0f766e]/40"
+                        : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border-white/10"
                         }`}
                     >
                       {t.label}
@@ -139,7 +137,7 @@ export function EmailGenerator({
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="px-4 py-2.5 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                    className="px-4 py-2.5 rounded-lg text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
                   >
                     Cancel
                   </button>
@@ -147,24 +145,24 @@ export function EmailGenerator({
                     type="button"
                     onClick={handleGenerate}
                     disabled={loading}
-                    className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-colors"
+                    className="px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors disabled:opacity-50"
                   >
-                    {loading ? "Generating…" : "Generate Email"}
+                    {loading ? "Generating…" : "Generate"}
                   </button>
                 </div>
               </>
             ) : (
               <>
                 <div className="flex gap-2 mb-4">
-                  <span className="text-[11px] font-semibold text-white/40 uppercase tracking-wider self-center mr-1">Tone:</span>
+                  <span className="text-xs font-medium text-white/50 self-center mr-1">Tone</span>
                   {TONES.map((t) => (
                     <button
                       key={t.value}
                       type="button"
                       onClick={() => setTone(t.value)}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${tone === t.value
-                        ? "bg-blue-500/30 text-white border border-blue-500/50"
-                        : "bg-white/5 text-white/50 hover:text-white hover:bg-white/10 border border-white/10"
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border ${tone === t.value
+                        ? "bg-[#0f766e]/20 text-teal-300 border-[#0f766e]/40"
+                        : "bg-white/5 text-white/50 hover:text-white hover:bg-white/10 border-white/10"
                         }`}
                     >
                       {t.label}
@@ -173,25 +171,21 @@ export function EmailGenerator({
                 </div>
                 <div className="space-y-4 mb-6">
                   <div>
-                    <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
-                      Subject
-                    </label>
+                    <label className="block text-xs font-medium text-white/50 mb-1">Subject</label>
                     <input
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-lg text-sm text-white bg-white/5 border border-white/10 focus:border-[#0f766e]/50 focus:outline-none focus:ring-1 focus:ring-[#0f766e]/30"
                       placeholder="Subject line"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-1">
-                      Body
-                    </label>
+                    <label className="block text-xs font-medium text-white/50 mb-1">Body</label>
                     <textarea
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
                       rows={12}
-                      className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none resize-y"
+                      className="w-full px-4 py-2.5 rounded-lg text-sm text-white bg-white/5 border border-white/10 focus:border-[#0f766e]/50 focus:outline-none focus:ring-1 focus:ring-[#0f766e]/30 resize-y overflow-y-auto scrollbar-hide"
                       placeholder="Email body"
                     />
                   </div>
@@ -200,30 +194,30 @@ export function EmailGenerator({
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="px-3 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 border border-white/10 transition-colors"
+                    className="px-3 py-2 rounded-lg text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 border border-white/10 transition-colors"
                   >
-                    Copy to clipboard
+                    Copy
                   </button>
                   <a
                     href={mailto}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 border border-white/10 transition-colors"
+                    className="px-3 py-2 rounded-lg text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 border border-white/10 transition-colors"
                   >
-                    Open in email client
+                    Open in client
                   </a>
                   <button
                     type="button"
                     onClick={handleGenerate}
                     disabled={regenerating}
-                    className="px-3 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50"
+                    className="px-3 py-2 rounded-lg text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50"
                   >
                     {regenerating ? "Regenerating…" : "Regenerate"}
                   </button>
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="px-3 py-2 rounded-xl text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-colors"
+                    className="px-3 py-2 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors"
                   >
                     Done
                   </button>
