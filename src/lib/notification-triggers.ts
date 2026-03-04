@@ -1,35 +1,79 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { createNotification } from "./notifications";
 import {
   dealAtRiskEmailHtml,
   actionOverdueEmailHtml,
+  stageChangeEmailHtml,
+  sendEmail as sendEmailViaResend,
 } from "./email";
+import { prisma } from "./prisma";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-export async function triggerDealAtRiskNotification(deal: {
-  id: string;
-  name: string;
-  userId: string;
-  riskLevel: string;
-  primaryRiskReason?: string | null;
-}): Promise<void> {
+export async function triggerDealAtRiskNotification(
+  deal: {
+    id: string;
+    name: string;
+    userId: string;
+    riskLevel: string;
+    primaryRiskReason?: string | null;
+  },
+  options?: { sendEmail?: boolean }
+): Promise<void> {
   const level = (deal.riskLevel || "").toLowerCase();
   if (level !== "high" && level !== "critical") return;
 
   const riskReason = deal.primaryRiskReason ?? "Deal marked as high risk.";
   const dealUrl = `${APP_URL}/deals/${deal.id}`;
   const html = dealAtRiskEmailHtml(deal.name, riskReason, dealUrl);
+  const shouldSendEmail = options?.sendEmail ?? true;
 
-  await createNotification({
+  const notification = await createNotification({
     userId: deal.userId,
     type: "deal_at_risk",
     title: `Deal at Risk: ${deal.name}`,
     message: riskReason,
     dealId: deal.id,
-    sendEmail: true,
+    sendEmail: false,
     emailSubject: `Deal at Risk: ${deal.name}`,
     emailHtml: html,
   });
+
+  if (shouldSendEmail) {
+    try {
+      const settings = await prisma.userNotificationSettings.findUnique({
+        where: { userId: deal.userId },
+      });
+      const user = await prisma.user.findUnique({
+        where: { id: deal.userId },
+        select: { email: true },
+      });
+      let email = user?.email?.trim();
+      if (!email) {
+        const { userId } = await auth();
+        if (userId === deal.userId) {
+          const clerkUser = await currentUser();
+          email = clerkUser?.emailAddresses?.[0]?.emailAddress?.trim() ?? "";
+          if (email) {
+            await prisma.user.updateMany({
+              where: { id: deal.userId },
+              data: { email },
+            });
+          }
+        }
+      }
+      const send = settings?.emailOnDealAtRisk ?? true;
+      if (send && email) {
+        await sendEmailViaResend(email, `Deal at Risk: ${deal.name}`, html);
+        await prisma.notification.updateMany({
+          where: { id: notification.id },
+          data: { emailSent: true },
+        });
+      }
+    } catch (e) {
+      console.error("[notification-triggers] Deal at risk email send failed:", e);
+    }
+  }
 }
 
 export async function triggerActionOverdueNotification(
@@ -66,17 +110,50 @@ export async function triggerStageChangeNotification(
   newStage: string
 ): Promise<void> {
   const message = `Moved from ${oldStage} to ${newStage}`;
-  const dealUrl = `${APP_URL}/deals/${deal.id}`;
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a1a"><h2>Deal Stage Changed: ${escapeHtml(deal.name)}</h2><p>${escapeHtml(message)}</p><p><a href="${dealUrl}">View deal</a></p><p style="color:#6b7280;font-size:14px">- Sentinel</p></body></html>`;
+  const html = stageChangeEmailHtml(deal.name, oldStage, newStage);
 
-  await createNotification({
+  const notification = await createNotification({
     userId: deal.userId,
     type: "stage_changed",
     title: `Deal Stage Changed: ${deal.name}`,
     message,
     dealId: deal.id,
-    sendEmail: true,
+    sendEmail: false,
     emailSubject: `Deal Stage Changed: ${deal.name}`,
     emailHtml: html,
   });
+
+  try {
+    const settings = await prisma.userNotificationSettings.findUnique({
+      where: { userId: deal.userId },
+    });
+    const user = await prisma.user.findUnique({
+      where: { id: deal.userId },
+      select: { email: true },
+    });
+    let email = user?.email?.trim();
+    if (!email) {
+      const { userId } = await auth();
+      if (userId === deal.userId) {
+        const clerkUser = await currentUser();
+        email = clerkUser?.emailAddresses?.[0]?.emailAddress?.trim() ?? "";
+        if (email) {
+          await prisma.user.updateMany({
+            where: { id: deal.userId },
+            data: { email },
+          });
+        }
+      }
+    }
+    const send = settings?.emailOnStageChange ?? true;
+    if (send && email) {
+      await sendEmailViaResend(email, `Deal Stage Changed: ${deal.name}`, html);
+      await prisma.notification.updateMany({
+        where: { id: notification.id },
+        data: { emailSent: true },
+      });
+    }
+  } catch (e) {
+    console.error("[notification-triggers] Stage change email send failed:", e);
+  }
 }

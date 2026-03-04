@@ -39,19 +39,20 @@ model User {
 }
 
 model Deal {
-  id            String         @id @default(cuid())
-  userId        String
-  teamId        String?
-  assignedToId  String?
-  name          String
-  stage         String
-  value         Int
-  location      String?
-  isDemo        Boolean        @default(false)
-  source        String?
-  externalId    String?
-  createdAt     DateTime       @default(now())
-  actions       Action[]
+  id               String         @id @default(cuid())
+  userId           String
+  teamId           String?
+  assignedToId     String?
+  name             String
+  stage            String
+  value            Int
+  location         String?
+  isDemo           Boolean        @default(false)
+  source           String?
+  externalId       String?
+  createdAt        DateTime       @default(now())
+  riskEmailSentAt  DateTime?
+  actions          Action[]
   user          User           @relation("CreatedDeals", fields: [userId], references: [id])
   team          Team?          @relation(fields: [teamId], references: [id])
   assignedTo    User?          @relation("AssignedDeals", fields: [assignedToId], references: [id])

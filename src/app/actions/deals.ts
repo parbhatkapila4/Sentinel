@@ -3,7 +3,7 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { logInfo, logError, logWarn } from "@/lib/logger";
+import { logInfo, logWarn } from "@/lib/logger";
 import { withErrorContext } from "@/lib/error-context";
 import {
   calculateDealSignals,
@@ -38,7 +38,7 @@ import { notifyRealtimeEvent } from "@/lib/realtime";
 import { incrementMetric } from "@/lib/business-metrics";
 
 const DEAL_VALUE_AUDIT_THRESHOLD = 100000;
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function logDealValueChangeIfNeeded(
   userId: string,
   dealId: string,
@@ -699,17 +699,40 @@ export async function updateDealStage(dealId: string, newStage: string) {
         }
         const enriched = await getDealById(dealId);
         const riskLevel = enriched.riskLevel ?? formatRiskLevel(enriched.riskScore);
+        let alreadySentRiskEmail = false;
+        try {
+          const dealRecord = await prisma.deal.findUnique({
+            where: { id: dealId },
+            select: { riskEmailSentAt: true } as Prisma.DealSelect,
+          });
+          alreadySentRiskEmail = (dealRecord as { riskEmailSentAt?: Date | null } | null)?.riskEmailSentAt != null;
+        } catch {
+
+        }
         if (
           riskLevel === "High" ||
           (riskLevel as string).toLowerCase() === "critical"
         ) {
-          await triggerDealAtRiskNotification({
-            id: enriched.id,
-            name: enriched.name,
-            userId: enriched.userId,
-            riskLevel: riskLevel as string,
-            primaryRiskReason: enriched.primaryRiskReason ?? undefined,
-          });
+          await triggerDealAtRiskNotification(
+            {
+              id: enriched.id,
+              name: enriched.name,
+              userId: enriched.userId,
+              riskLevel: riskLevel as string,
+              primaryRiskReason: enriched.primaryRiskReason ?? undefined,
+            },
+            { sendEmail: !alreadySentRiskEmail }
+          );
+          if (!alreadySentRiskEmail) {
+            try {
+              await prisma.deal.update({
+                where: { id: dealId },
+                data: { riskEmailSentAt: new Date() } as Prisma.DealUpdateInput,
+              });
+            } catch {
+
+            }
+          }
           await dispatchWebhookEvent(userId, deal.teamId, "deal.at_risk", {
             id: enriched.id,
             name: enriched.name,
@@ -730,6 +753,15 @@ export async function updateDealStage(dealId: string, newStage: string) {
               riskReason: enriched.primaryRiskReason ?? undefined,
             })
           );
+        } else if (enriched.status !== "at_risk") {
+          try {
+            await prisma.deal.update({
+              where: { id: dealId },
+              data: { riskEmailSentAt: null } as Prisma.DealUpdateInput,
+            });
+          } catch {
+
+          }
         }
         if (
           enriched.isActionOverdue &&

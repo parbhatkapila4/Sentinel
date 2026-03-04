@@ -696,6 +696,36 @@ curl -X GET "https://your-domain.com/api/deals/search?q=Acme" \
 | GET    | `/api/cron/process-webhooks`  | Process webhook delivery queue |
 | GET    | `/api/cron/process-emails`    | Process email queue            |
 
+#### Testing the deal-at-risk email
+
+To verify that the “deal at risk” email is sent **once** per risk period:
+
+1. **Prerequisites**
+   - `RESEND_API_KEY` and `RESEND_FROM_EMAIL` in `.env.local`
+   - Redis configured (`UPSTASH_REDIS_*`) so emails can be queued
+   - `CRON_SECRET` set (to call the process-emails endpoint)
+   - The signed-in user has an **email** stored in the database (same user that owns the deal)
+
+2. **Trigger a deal to become “at risk”**
+   - In the app, open a deal and **change its stage** (e.g. to **Negotiation**). Deals are marked at risk when the risk score is High (e.g. no recent activity, or stalled in negotiation).
+   - After the stage change, an in-app notification “Deal at Risk: …” should appear, and one email job should be queued (only the first time for that risk period).
+
+3. **Process the email queue**
+   - Emails are sent when the cron runs. To test immediately, call the process-emails endpoint (replace with your app URL and `CRON_SECRET`):
+
+   ```bash
+   curl -X GET "http://localhost:3000/api/cron/process-emails?secret=YOUR_CRON_SECRET"
+   ```
+
+   Or: `Authorization: Bearer YOUR_CRON_SECRET` with GET `.../api/cron/process-emails`.
+
+   - Response example: `{ "processed": 1 }` if one email was sent.
+
+4. **Confirm delivery**
+   - **Resend dashboard**: [resend.com/emails](https://resend.com/emails) → check “Sent” for the deal-at-risk subject.
+   - **Inbox**: Check the user’s email for “Deal at Risk: &lt;deal name&gt;”.
+   - **One-time behaviour**: Change the same deal’s stage again while it stays at risk; you should get another in-app notification but **no second email** until the deal leaves “at risk” and goes at risk again.
+
 #### Other
 
 | Method | Endpoint           | Description          |
