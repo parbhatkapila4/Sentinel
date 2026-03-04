@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 260" width="920" height="260" role="img" aria-label="Sentinel: AI-powered revenue intelligence for sales and pipeline risk">
+  <defs>
+    <linearGradient id="barGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#eab308"/>
+      <stop offset="100%" style="stop-color:#0f766e"/>
+    </linearGradient>
+    <linearGradient id="chartGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#0f766e;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#0f766e;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  <!-- Card -->
+  <rect width="920" height="240" rx="16" ry="16" fill="#0a0d12"/>
+  <rect width="920" height="240" rx="16" ry="16" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+  <!-- Left: content block -->
+  <text x="48" y="72" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="800" letter-spacing="-0.02em">
+    <tspan fill="#ffffff">SENTI</tspan><tspan fill="#0f766e">NEL</tspan>
+  </text>
+  <rect x="48" y="88" width="48" height="4" rx="2" fill="#0f766e"/>
+  <text x="48" y="128" font-family="system-ui, -apple-system, sans-serif" font-size="17" fill="rgba(255,255,255,0.75)">AI-powered revenue intelligence for sales and pipeline risk.</text>
+  <text x="48" y="158" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="rgba(255,255,255,0.45)">One pipeline. Predictive risk. Recommendations with AI.</text>
+
+  <!-- Right: abstract "pipeline health" chart -->
+  <g transform="translate(560, 60)">
+    <polyline points="0,120 40,100 80,110 120,70 160,85 200,50 240,60 280,30 320,45 360,20" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <polygon points="0,120 40,100 80,110 120,70 160,85 200,50 240,60 280,30 320,45 360,20 360,120 0,120" fill="url(#chartGrad)"/>
+    <circle cx="360" cy="20" r="5" fill="#0f766e"/>
+    <circle cx="200" cy="50" r="4" fill="#eab308" opacity="0.9"/>
+  </g>
+  <!-- Risk gauge dots -->
+  <circle cx="720" cy="100" r="6" fill="#0f766e"/>
+  <circle cx="755" cy="100" r="6" fill="#0f766e" opacity="0.6"/>
+  <circle cx="790" cy="100" r="6" fill="rgba(255,255,255,0.15)"/>
+  <text x="720" y="132" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="rgba(255,255,255,0.4)" letter-spacing="0.1em">LOW RISK</text>
+
+  <!-- Bottom accent bar -->
+  <rect x="0" y="228" width="920" height="32" fill="url(#barGrad)"/>
+  <rect x="0" y="228" width="920" height="32" fill="rgba(0,0,0,0.15)" rx="0"/>
+</svg>

@@ -1,8 +1,12 @@
 # Sentinel
 
+<p align="center">
+  <img src="./header.svg" alt="Sentinel: AI-powered revenue intelligence for sales and pipeline risk" width="920" />
+</p>
+
 **AI-powered revenue intelligence for sales and revenue teams.** Early warning for pipeline risk—predictions, recommendations, and real-time visibility so you never lose a deal to silent decay.
 
-**Live demo:** [https://www.sentinel.parbhat.dev](https://www.sentinel.parbhat.dev) · [API Reference](https://www.sentinel.parbhat.dev/api-docs) · [Documentation](https://www.sentinel.parbhat.dev/docs/developers)
+**Live demo:** [https://www.sentinels.in/](https://www.sentinels.in/) · [API Reference](https://www.sentinels.in/api-docs) · [Documentation](https://www.sentinels.in/docs)
 
 **Tech stack:** Next.js, TypeScript, PostgreSQL, Prisma, Clerk, OpenRouter (AI), Upstash Redis, Sentry.
 
