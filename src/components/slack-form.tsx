@@ -8,6 +8,10 @@ const SLACK_EVENTS = [
   { value: "deal.at_risk", label: "Deal at risk" },
   { value: "deal.closed_won", label: "Deal closed won" },
   { value: "deal.stage_changed", label: "Deal stage changed" },
+  {
+    value: "crm.sync_summary",
+    label: "CRM sync summary (after HubSpot/Salesforce sync)",
+  },
 ] as const;
 
 interface SlackFormProps {
@@ -18,7 +22,14 @@ interface SlackFormProps {
 export function SlackForm({ onSuccess, onCancel }: SlackFormProps) {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [channelName, setChannelName] = useState("");
-  const [notifyOn, setNotifyOn] = useState<Set<string>>(new Set(["deal.at_risk", "deal.closed_won", "deal.stage_changed"]));
+  const [notifyOn, setNotifyOn] = useState<Set<string>>(
+    new Set([
+      "deal.at_risk",
+      "deal.closed_won",
+      "deal.stage_changed",
+      "crm.sync_summary",
+    ])
+  );
   const [saving, setSaving] = useState(false);
 
   function toggleEvent(value: string) {

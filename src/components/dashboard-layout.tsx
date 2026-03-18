@@ -108,7 +108,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { label: "Team", href: "/settings/team" },
         { label: "Notifications", href: "/settings/notifications" },
         { label: "Webhooks", href: "/settings/webhooks" },
-        { label: "Integrations", href: "/settings/integrations" },
+        { label: "Integrations", href: "/settings?tab=integrations" },
       ],
     },
   ];

@@ -54,7 +54,7 @@ export function dealAtRiskEmailHtml(
   return `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>Deal at Risk – Sentinel</title></head>
+<head><meta charset="utf-8"><title>Deal at Risk - Sentinel</title></head>
 <body style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1a1a1a;">
   <h2 style="color: #b91c1c;">Your deal is at risk</h2>
   <p><strong>${escapeHtml(dealName)}</strong> has been flagged as at risk.</p>
@@ -62,7 +62,7 @@ export function dealAtRiskEmailHtml(
   <p>Open Sentinel to view the deal, fix it, take the recommended action, or discuss next steps with the AI.</p>
   <p><a href="${escapeHtml(dealUrl)}" style="display: inline-block; padding: 12px 20px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">View deal in Sentinel</a></p>
   <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">You’re receiving this because this deal entered a risk state. This email is sent only once per risk period.</p>
-  <p style="color: #6b7280; font-size: 14px;">— Sentinel</p>
+  <p style="color: #6b7280; font-size: 14px;">- Sentinel</p>
 </body>
 </html>`;
 }
@@ -106,7 +106,7 @@ export function stageChangeEmailHtml(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deal stage update – ${escapeHtml(dealName)}</title>
+  <title>Deal stage update - ${escapeHtml(dealName)}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f8fafc;">
@@ -155,7 +155,7 @@ export function stageChangeEmailHtml(
           </tr>
           <tr>
             <td style="padding: 24px 40px 32px; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0; font-size: 12px; color: #94a3b8;">Sentinel – Revenue intelligence and deal management.</p>
+              <p style="margin: 0; font-size: 12px; color: #94a3b8;">Sentinel - Revenue intelligence and deal management.</p>
             </td>
           </tr>
         </table>

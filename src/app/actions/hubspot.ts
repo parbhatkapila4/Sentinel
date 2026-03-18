@@ -11,6 +11,7 @@ import {
 import { logIntegrationAction } from "./integrations";
 import { enforceIntegrationLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
+import { notifySlackAfterCrmSync } from "@/lib/post-crm-sync-slack";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = prisma as any;
@@ -180,6 +181,12 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
     revalidatePath("/settings");
     revalidatePath("/deals");
     revalidatePath("/dashboard");
+
+    void notifySlackAfterCrmSync(userId, {
+      provider: "hubspot",
+      created,
+      updated,
+    });
 
     return {
       success: true,

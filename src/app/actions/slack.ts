@@ -23,6 +23,7 @@ export async function createSlackIntegration(data: {
   });
 
   revalidatePath("/settings/integrations");
+  revalidatePath("/settings");
   return integration;
 }
 
@@ -52,6 +53,7 @@ export async function updateSlackIntegration(
   });
 
   revalidatePath("/settings/integrations");
+  revalidatePath("/settings");
 }
 
 export async function deleteSlackIntegration(id: string) {
@@ -62,6 +64,7 @@ export async function deleteSlackIntegration(id: string) {
   });
 
   revalidatePath("/settings/integrations");
+  revalidatePath("/settings");
 }
 
 export async function testSlackIntegration(id: string) {

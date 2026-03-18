@@ -220,10 +220,10 @@ export default async function DealsPage({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-white/6 pb-5">
                 <h2 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Deals</h2>
                 <div className="flex flex-col sm:flex-row gap-3 flex-wrap max-md:gap-2">
-                  <Suspense fallback={<div className="h-8 w-24 bg-white/5 rounded-lg animate-pulse" />}>
+                  <Suspense fallback={<div className="h-8 w-24 rounded-lg relative overflow-hidden bg-white/[0.04] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/[0.07] before:to-transparent before:animate-[skeleton-shimmer_2s_ease-in-out_infinite] before:-translate-x-full" />}>
                     <DealsScopeFilter currentScope={scope} />
                   </Suspense>
-                  <Suspense fallback={<div className="h-8 w-48 bg-white/5 rounded-lg animate-pulse" />}>
+                  <Suspense fallback={<div className="h-8 w-48 rounded-lg relative overflow-hidden bg-white/[0.04] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/[0.07] before:to-transparent before:animate-[skeleton-shimmer_2s_ease-in-out_infinite] before:-translate-x-full" />}>
                     <DealsFilter currentFilter={filter} />
                   </Suspense>
                 </div>

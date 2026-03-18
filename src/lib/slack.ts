@@ -146,3 +146,29 @@ export function formatStageChangeSlackMessage(deal: {
     ],
   };
 }
+
+export function formatCrmSyncSummarySlackMessage(summary: {
+  provider: string;
+  created: number;
+  updated: number;
+  highRiskCount: number;
+  dashboardUrl: string;
+}): SlackMessage {
+  const lines = [
+    `*CRM sync complete* (${summary.provider})`,
+    `• ${summary.created} created, ${summary.updated} updated`,
+    `• ${summary.highRiskCount} open deal(s) currently at *High* risk`,
+    summary.dashboardUrl ? `<${summary.dashboardUrl}|Open dashboard>` : "",
+  ].filter(Boolean);
+  return {
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: lines.join("\n"),
+        },
+      },
+    ],
+  };
+}

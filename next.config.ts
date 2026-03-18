@@ -7,13 +7,13 @@ const getCSP = () => {
 
   const directives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://browser.sentry-cdn.com",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://browser.sentry-cdn.com",
     "worker-src 'self' blob:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "img-src 'self' data: https: blob:",
+    "img-src 'self' data: https: blob: https://img.clerk.com",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://api.openrouter.ai https://*.salesforce.com https://*.hubspot.com https://*.googleapis.com https://*.google.com wss://*.clerk.accounts.dev",
-    "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com",
+    "connect-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://api.openrouter.ai https://*.salesforce.com https://*.hubspot.com https://*.googleapis.com https://*.google.com wss://*.clerk.accounts.dev",
+    "frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://accounts.google.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://*.clerk.accounts.dev https://*.clerk.com",

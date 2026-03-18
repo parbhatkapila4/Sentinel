@@ -7,6 +7,11 @@ import {
   getFounderActionQueue,
 } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
+import {
+  HIGH_VALUE_THRESHOLD,
+  INACTIVITY_DAYS,
+  RISK_REASONS,
+} from "@/lib/config";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { formatRevenue, formatValueInMillions } from "@/lib/utils";
 import { UnauthorizedError } from "@/lib/errors";
@@ -119,6 +124,39 @@ export default async function RiskOverviewPage() {
     if (!deal.riskStartedAt) return false;
     return new Date(deal.riskStartedAt) >= sevenDaysAgo;
   }).length;
+
+  const riskRuleExplanations = [
+    {
+      title: "No activity threshold exceeded",
+      description: `No recent human activity for more than ${INACTIVITY_DAYS} days pushes the score up.`,
+      count: riskReasonsCount[RISK_REASONS.NO_ACTIVITY] || 0,
+      accent: "text-amber-400",
+      bar: "bg-amber-500",
+    },
+    {
+      title: "Negotiation stalled without response",
+      description:
+        "Deals in negotiation become riskier when there is no recent email response or outreach momentum.",
+      count: riskReasonsCount[RISK_REASONS.NEGOTIATION_STALLED] || 0,
+      accent: "text-red-400",
+      bar: "bg-red-700",
+    },
+    {
+      title: "High value deal requires attention",
+      description: `Large deals above $${HIGH_VALUE_THRESHOLD.toLocaleString("en-US")} get extra weight because the downside is bigger.`,
+      count: riskReasonsCount[RISK_REASONS.HIGH_VALUE] || 0,
+      accent: "text-red-300",
+      bar: "bg-red-600",
+    },
+    {
+      title: "Competitive signals detected",
+      description:
+        "Competitive pressure raises risk when timeline or interaction patterns suggest the buyer may be evaluating alternatives.",
+      count: riskReasonsCount[RISK_REASONS.COMPETITIVE_PRESSURE] || 0,
+      accent: "text-orange-300",
+      bar: "bg-orange-600",
+    },
+  ];
 
   const CARD_CLASS = "rounded-xl p-5 sm:p-6 border border-white/8 bg-[#080808] transition-colors hover:border-white/10 card-elevated";
 
@@ -383,32 +421,60 @@ export default async function RiskOverviewPage() {
 
               <div className={`${CARD_CLASS} max-sm:w-full max-sm:min-w-0 overflow-hidden`}>
                 <div className="border-l-2 border-white/20 pl-3 mb-4">
-                  <h3 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Top risk reasons</h3>
+                  <h3 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">What makes a deal risky</h3>
                 </div>
-                {Object.keys(riskReasonsCount).length === 0 ? (
+                {highRiskDeals.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-white/50 text-sm">No risk reasons identified</p>
+                    <p className="text-white/50 text-sm">No high-risk deals right now</p>
+                    <p className="text-white/40 text-xs mt-1">Risk rules will appear here as deals become risky.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {Object.entries(riskReasonsCount)
-                      .sort(([, a], [, b]) => b - a)
-                      .slice(0, 5)
-                      .map(([reason, count]) => {
-                        const percentage = highRiskDeals.length > 0 ? (count / highRiskDeals.length) * 100 : 0;
-                        return (
-                          <div key={reason} className="p-3 rounded-lg bg-white/5 border border-white/8">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm text-white">{reason}</span>
-                              <span className="text-sm font-semibold text-red-400">{count}</span>
+                    <div className="p-3 rounded-lg bg-white/5 border border-white/8">
+                      <p className="text-sm text-white/80 leading-relaxed">
+                        Sentinel marks a deal as risky by combining activity decay, stage context, deal value, and competitive pressure into a score from 0 to 1. These are the main triggers:
+                      </p>
+                    </div>
+                    {riskRuleExplanations.map((rule) => {
+                      const percentage =
+                        highRiskDeals.length > 0
+                          ? (rule.count / highRiskDeals.length) * 100
+                          : 0;
+                      return (
+                        <div
+                          key={rule.title}
+                          className="p-3 rounded-lg bg-white/5 border border-white/8"
+                        >
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-white">
+                                {rule.title}
+                              </p>
+                              <p className="text-xs text-white/50 mt-1 leading-relaxed">
+                                {rule.description}
+                              </p>
                             </div>
-                            <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                              <div className="h-full bg-red-700 rounded-full" style={{ width: `${percentage}%` }} />
-                            </div>
-                            <p className="text-xs text-white/50 mt-1">{percentage.toFixed(0)}% of high-risk deals</p>
+                            <span className={`text-sm font-semibold shrink-0 ${rule.accent}`}>
+                              {rule.count}
+                            </span>
                           </div>
-                        );
-                      })}
+                          <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${rule.bar}`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-white/50 mt-1">
+                            {percentage.toFixed(0)}% of current high-risk deals
+                          </p>
+                        </div>
+                      );
+                    })}
+                    <div className="p-3 rounded-lg bg-[#0f766e]/10 border border-[#0f766e]/20">
+                      <p className="text-xs text-white/70 leading-relaxed">
+                        Recent emails sent, replies received, and meetings held reduce the risk score, so active deals stay healthier.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

@@ -1,6 +1,6 @@
 # Verify internal metrics endpoint
 
-Step-by-step checks for `GET /api/internal/metrics` (CRON_SECRET–protected).
+Step-by-step checks for `GET /api/internal/metrics` (CRON_SECRET-protected).
 
 ---
 

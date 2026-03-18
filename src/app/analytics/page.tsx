@@ -135,9 +135,7 @@ export default async function AnalyticsPage({
                   className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white/80 hover:text-white transition-colors w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed bg-[#050505] border border-white/6 hover:border-white/10"
                 />
                 <Suspense fallback={
-                  <div className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium text-white/50 bg-[#050505] border border-white/6">
-                    Loading...
-                  </div>
+                  <div className="h-10 w-36 sm:w-auto rounded-xl relative overflow-hidden bg-white/[0.04] border border-white/[0.06] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/[0.07] before:to-transparent before:animate-[skeleton-shimmer_2s_ease-in-out_infinite] before:-translate-x-full" />
                 }>
                   <AnalyticsDateFilter />
                 </Suspense>

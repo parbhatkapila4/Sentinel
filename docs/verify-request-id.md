@@ -12,10 +12,10 @@ Keep the terminal open so you can see the Next.js logs.
 
 ## 2. Trigger a request that hits the chat API
 
-**Option A – From the app (easiest)**  
+**Option A - From the app (easiest)**  
 Sign in, open the dashboard, and use the chat (send any message). The chat calls `/api/insights/chat`.
 
-**Option B – With curl (no auth)**  
+**Option B - With curl (no auth)**  
 You’ll get 401, but the request still goes through middleware and may hit the route; for a clear success-path test, use Option A.
 
 ## 3. Check the terminal logs

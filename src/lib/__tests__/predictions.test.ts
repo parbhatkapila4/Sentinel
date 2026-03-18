@@ -59,7 +59,7 @@ describe("predictDaysToClose", () => {
 });
 
 describe("calculateWinProbability", () => {
-  it("returns 0–100 probability", () => {
+  it("returns 0-100 probability", () => {
     const d = deal();
     const r = calculateWinProbability(d, [d]);
     expect(r.probability).toBeGreaterThanOrEqual(0);

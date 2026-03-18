@@ -207,7 +207,7 @@ export default function NewDealPage() {
                   type="text"
                   value={dealName}
                   onChange={(e) => setDealName(e.target.value)}
-                  placeholder="e.g., Acme Corp – Enterprise License"
+                  placeholder="e.g., Acme Corp - Enterprise License"
                   className="w-full px-4 py-3 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white placeholder-white/30 focus:outline-none focus:border-[#0f766e]/50 focus:ring-1 focus:ring-[#0f766e]/30 transition-colors text-base"
                   aria-describedby={error ? "deal-error" : undefined}
                 />

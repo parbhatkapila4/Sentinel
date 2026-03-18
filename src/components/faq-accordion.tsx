@@ -74,7 +74,7 @@ export function FAQAccordion({ items }: FAQAccordionProps) {
                       lineHeight: "1",
                     }}
                   >
-                    −
+                    -
                   </span>
                 ) : (
                   <span

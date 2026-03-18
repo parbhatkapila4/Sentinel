@@ -6,7 +6,7 @@
 
 **AI-powered revenue intelligence for sales and revenue teams.** Early warning for pipeline risk - predictions, recommendations, and real-time visibility so you never lose a deal to silent decay.
 
-**Live demo:** [https://www.sentinels.in/](https://www.sentinels.in/) · [API Reference](https://www.sentinels.in/api-docs) · [Documentation](https://www.sentinels.in/docs)
+**Live demo:** [https://www.sentinels.in/](https://www.sentinels.in/) · [API Reference](https://www.sentinels.in/api-docs) · [Documentation](https://www.sentinels.in/docs) · **[Try this first →](TRY_THIS.md)** (2-minute walkthrough)
 
 **Tech stack:** Next.js, TypeScript, PostgreSQL, Prisma, Clerk, OpenRouter (AI), Upstash Redis, Sentry.
 
@@ -38,7 +38,7 @@ Sentinel adds an **AI intelligence layer** on top of your pipeline. It computes 
 - **Stage velocity**: Time-in-stage vs. historical norms; bottlenecks and stalled stages flagged.
 - **Engagement scoring**: Human touchpoints (emails, meetings, calls) tracked; drop-off triggers alerts.
 - **Competitive signals**: High-value and negotiation-stage deals weighted for priority.
-- **Composite risk score**: Single 0–1 score with Low / Medium / High bands and reason strings.
+- **Composite risk score**: Single 0-1 score with Low / Medium / High bands and reason strings.
 
 ---
 
@@ -247,7 +247,7 @@ CRON_SECRET=your-secret-key-here
 
 **Vercel Cron (plan limits):** On **Hobby**, Vercel allows only **one run per day** with hourly precision (no every-5-min or every-15-min). On **Pro**, you can use per-minute schedules. For more frequent runs on Hobby, use an external scheduler (e.g. [cron-job.org](https://cron-job.org), GitHub Actions) and call the URL with `Authorization: Bearer <CRON_SECRET>`.
 
-**Example – Hobby (once per day):** Add to `vercel.json`:
+**Example - Hobby (once per day):** Add to `vercel.json`:
 
 ```json
 {

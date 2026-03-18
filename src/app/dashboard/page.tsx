@@ -16,17 +16,19 @@ import { TopDeals } from "@/components/top-deals";
 import { InsightsPanel } from "@/components/insights-panel";
 import { DemoBanner } from "@/components/demo-banner";
 import { UpcomingMeetingsWidget } from "@/components/upcoming-meetings-widget";
-import { ChartSkeleton } from "@/components/ui/skeleton";
+import { PerformanceChartSkeleton, RevenueSourcesSkeleton, PipelineForecastSkeleton, ChartSkeleton } from "@/components/ui/skeleton";
 import { formatRevenue } from "@/lib/utils";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { seedDemoDataForUser, hasDemoData } from "@/lib/demo-data";
+import { getAllIntegrationStatuses } from "@/app/actions/integrations";
+import { DashboardGettingStarted } from "@/components/dashboard-getting-started";
 
 const BusinessPerformanceTrends = nextDynamic(
   () =>
     import("@/components/business-performance-trends").then((m) => ({
       default: m.BusinessPerformanceTrends,
     })),
-  { loading: () => <ChartSkeleton /> }
+  { loading: () => <PerformanceChartSkeleton /> }
 );
 
 const TopRevenueSourcesChart = nextDynamic(
@@ -34,7 +36,7 @@ const TopRevenueSourcesChart = nextDynamic(
     import("@/components/top-revenue-sources-chart").then((m) => ({
       default: m.TopRevenueSourcesChart,
     })),
-  { loading: () => <ChartSkeleton className="min-h-[280px] lg:min-h-[320px] xl:min-h-[350px]" /> }
+  { loading: () => <RevenueSourcesSkeleton /> }
 );
 
 const CustomerByCountry = nextDynamic(
@@ -50,7 +52,7 @@ const PipelineForecastChart = nextDynamic(
     import("@/components/pipeline-forecast").then((m) => ({
       default: m.PipelineForecastChart,
     })),
-  { loading: () => <ChartSkeleton /> }
+  { loading: () => <PipelineForecastSkeleton /> }
 );
 
 export const dynamic = "force-dynamic";
@@ -78,6 +80,8 @@ export default async function DashboardPage() {
   let showDemoBanner = false;
   let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
   let dbUnavailable = false;
+  let crmConnected = false;
+  let crmEverSynced = false;
 
   try {
     await seedDemoDataForUser(userId);
@@ -86,6 +90,24 @@ export default async function DashboardPage() {
   } catch {
     dbUnavailable = true;
   }
+
+  try {
+    const integrationStatuses = await getAllIntegrationStatuses();
+    crmConnected =
+      integrationStatuses.salesforce.connected ||
+      integrationStatuses.hubspot.connected;
+    crmEverSynced = Boolean(
+      integrationStatuses.salesforce.lastSyncAt ||
+        integrationStatuses.hubspot.lastSyncAt
+    );
+  } catch {
+  }
+
+  const showGettingStarted =
+    !dbUnavailable &&
+    (showDemoBanner ||
+      !crmConnected ||
+      (crmConnected && !crmEverSynced));
 
   const { totalValue, totalDeals } = calculatePipelineMetrics(deals);
   const { growthPercent: revenueGrowthPercent } =
@@ -138,6 +160,13 @@ export default async function DashboardPage() {
             </div>
           )}
           {showDemoBanner && <DemoBanner />}
+
+          <DashboardGettingStarted
+            show={showGettingStarted}
+            crmConnected={crmConnected}
+            crmEverSynced={crmEverSynced}
+            demoMode={showDemoBanner}
+          />
 
           <header className="animate-fade-in-up">
             <p className="text-[11px] sm:text-xs font-medium tracking-[0.24em] uppercase text-white/50 mb-3">

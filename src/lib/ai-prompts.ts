@@ -60,7 +60,7 @@ Write a concise, personalized follow-up email that:
 2. Provides value (insight, resource, or brief update)
 3. Has a clear, low-friction call-to-action (e.g. short call, reply with feedback, quick sync)
 4. Feels human and personalized, not templated
-5. Is 2–4 short paragraphs; avoid long blocks of text
+5. Is 2-4 short paragraphs; avoid long blocks of text
 
 Respond with valid JSON only, no markdown or extra text:
 {
@@ -100,8 +100,8 @@ ${deal.timelineSummary}
 EVENTS:
 ${deal.eventsSummary}
 
-Provide a formatted summary (plain text, 4–6 short paragraphs) covering:
-1. Current status and health (2–3 sentences)
+Provide a formatted summary (plain text, 4-6 short paragraphs) covering:
+1. Current status and health (2-3 sentences)
 2. Key milestones and timeline highlights
 3. Risks and concerns, if any
 4. Recommended next steps
@@ -134,7 +134,7 @@ Generate a structured win strategy. Respond with valid JSON only, no markdown:
     { "objection": "Possible objection", "response": "Suggested response" }
   ],
   "timelineSuggestions": ["suggestion1", "suggestion2", "..."],
-  "summary": "2–3 sentence executive summary of the strategy"
+  "summary": "2-3 sentence executive summary of the strategy"
 }`;
 }
 
