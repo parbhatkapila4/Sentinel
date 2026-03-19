@@ -1,4 +1,4 @@
-import { checkUsageLimit, incrementUsage, getOrCreateUserPlan } from "./plans";
+import { checkUsageLimit, incrementUsage } from "./plans";
 import { ForbiddenError } from "./errors";
 import { prisma } from "./prisma";
 
@@ -15,7 +15,6 @@ export async function enforceDealLimit(userId: string): Promise<void> {
   const usage = await checkUsageLimit(userId, "deals");
 
   if (!usage.allowed) {
-    const plan = await getOrCreateUserPlan(userId);
     throw new ForbiddenError(
       `You've reached your plan limit of ${usage.limit} deals. You currently have ${usage.current} deals. Upgrade your plan to create more deals.`
     );
@@ -24,8 +23,9 @@ export async function enforceDealLimit(userId: string): Promise<void> {
 
 export async function enforceTeamMemberLimit(
   userId: string,
-  teamId: string
+  _teamId: string
 ): Promise<void> {
+  void _teamId;
   const userTeams = await prisma.teamMember.findMany({
     where: { userId },
     select: { teamId: true },
@@ -52,7 +52,6 @@ export async function enforceApiCallLimit(userId: string): Promise<void> {
   const usage = await checkUsageLimit(userId, "apiCalls");
 
   if (!usage.allowed) {
-    const plan = await getOrCreateUserPlan(userId);
     throw new ForbiddenError(
       `You've reached your monthly API call limit of ${usage.limit.toLocaleString()}. You've made ${usage.current.toLocaleString()} API calls this month. Upgrade your plan for more API calls.`
     );
@@ -65,7 +64,6 @@ export async function enforceWebhookLimit(userId: string): Promise<void> {
   const usage = await checkUsageLimit(userId, "webhooks");
 
   if (!usage.allowed) {
-    const plan = await getOrCreateUserPlan(userId);
     throw new ForbiddenError(
       `You've reached your plan limit of ${usage.limit} webhooks. You currently have ${usage.current} webhooks. Upgrade your plan to create more webhooks.`
     );
@@ -74,12 +72,12 @@ export async function enforceWebhookLimit(userId: string): Promise<void> {
 
 export async function enforceIntegrationLimit(
   userId: string,
-  integrationType: string
+  _integrationType: string
 ): Promise<void> {
+  void _integrationType;
   const usage = await checkUsageLimit(userId, "integrations");
 
   if (!usage.allowed) {
-    const plan = await getOrCreateUserPlan(userId);
     throw new ForbiddenError(
       `You've reached your plan limit of ${usage.limit} integrations. You currently have ${usage.current} active integrations. Upgrade your plan to add more integrations.`
     );

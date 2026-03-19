@@ -386,8 +386,6 @@ export default async function TopDealsPage() {
                     const riskLevel = formatRiskLevel(deal.riskScore);
                     const percentOfTotal = totalValue > 0 ? (deal.value / totalValue) * 100 : 0;
                     const formatted = formatValueInMillions(deal.value);
-                    const isTop3 = index < 3;
-
                     return (
                       <Link
                         key={deal.id}

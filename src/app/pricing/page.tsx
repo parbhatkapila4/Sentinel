@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 import { PricingCards } from "@/components/pricing-cards";
 import { PricingToggle, PricingToggleDisplay } from "@/components/pricing-toggle";
 
 export default async function PricingPage() {
-  const user = await getAuthenticatedUser();
+  const user = await isAuthenticated();
 
   return (
     <PricingToggle>

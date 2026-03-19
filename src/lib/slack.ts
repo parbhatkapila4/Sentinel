@@ -1,7 +1,7 @@
 import { prisma } from "./prisma";
 import { retryWithBackoff } from "./retry";
 import { RetryableError } from "./errors";
-import { logError, logWarn } from "./logger";
+import { logWarn } from "./logger";
 
 interface SlackMessage {
   text?: string;

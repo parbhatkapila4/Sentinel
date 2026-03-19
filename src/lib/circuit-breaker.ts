@@ -71,8 +71,7 @@ function recordSuccess(state: CircuitBreakerState, name: string): void {
 function recordFailure(
   state: CircuitBreakerState,
   name: string,
-  failureThreshold: number,
-  timeout: number
+  failureThreshold: number
 ): void {
   state.failures++;
   state.lastFailureTime = Date.now();
@@ -135,7 +134,7 @@ export async function withCircuitBreaker<T>(
     recordSuccess(state, name);
     return result;
   } catch (error) {
-    recordFailure(state, name, fullConfig.failureThreshold, fullConfig.timeout);
+    recordFailure(state, name, fullConfig.failureThreshold);
     throw error;
   }
 }

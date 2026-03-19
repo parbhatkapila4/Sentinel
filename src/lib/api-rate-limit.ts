@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimiter, RATE_LIMIT_CONFIGS, RateLimitConfig } from "./rate-limit";
 import { getAuthenticatedUserId } from "./auth";
 import { RateLimitError } from "./errors";
-import { errorResponse } from "./api-response";
 
 
 export type RateLimitTier = "strict" | "normal" | "lenient" | "ai" | "export";

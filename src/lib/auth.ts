@@ -5,6 +5,7 @@ import { logError, logWarn } from "./logger";
 import { isConnectionPoolExhausted, isDatabaseUnavailable, withDbRetry } from "./db-connection-helper";
 
 const userCache = new Map<string, { timestamp: number }>();
+const ensureUserPromises = new Map<string, Promise<void>>();
 const CACHE_TTL = 60000;
 
 function isCached(userId: string): boolean {
@@ -27,6 +28,66 @@ function setCached(userId: string): void {
   }
 }
 
+async function ensureUserExistsInDb(userId: string): Promise<void> {
+  if (isCached(userId)) {
+    return;
+  }
+
+  const inFlight = ensureUserPromises.get(userId);
+  if (inFlight) {
+    await inFlight;
+    return;
+  }
+
+  const ensurePromise = (async () => {
+    const existingUser = await withDbRetry(
+      () =>
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { id: true },
+        }),
+      2,
+      100
+    );
+
+    if (!existingUser) {
+      const clerkUser = await currentUser();
+      if (!clerkUser) {
+        return;
+      }
+
+      await withDbRetry(
+        () =>
+          prisma.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+              name: clerkUser.firstName || clerkUser.username || "User",
+              surname: clerkUser.lastName || "",
+              email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+              password: "",
+            },
+          }),
+        2,
+        100
+      );
+    }
+
+    setCached(userId);
+  })().finally(() => {
+    ensureUserPromises.delete(userId);
+  });
+
+  ensureUserPromises.set(userId, ensurePromise);
+  await ensurePromise;
+}
+
+export async function isAuthenticated(): Promise<boolean> {
+  const { userId } = await auth();
+  return Boolean(userId);
+}
+
 export async function getAuthenticatedUserId(): Promise<string> {
   const { userId } = await auth();
 
@@ -39,40 +100,7 @@ export async function getAuthenticatedUserId(): Promise<string> {
   }
 
   try {
-    const clerkUser = await currentUser();
-
-    if (clerkUser) {
-      const existingUser = await withDbRetry(
-        () =>
-          prisma.user.findUnique({
-            where: { id: userId },
-            select: { id: true },
-          }),
-        2,
-        100
-      );
-
-      if (!existingUser) {
-        await withDbRetry(
-          () =>
-            prisma.user.upsert({
-              where: { id: userId },
-              update: {},
-              create: {
-                id: userId,
-                name: clerkUser.firstName || clerkUser.username || "User",
-                surname: clerkUser.lastName || "",
-                email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
-                password: "",
-              },
-            }),
-          2,
-          100
-        );
-      }
-
-      setCached(userId);
-    }
+    await ensureUserExistsInDb(userId);
   } catch (error) {
     if (isConnectionPoolExhausted(error)) {
       logWarn("Database connection pool exhausted, skipping user verification", {
@@ -101,14 +129,49 @@ export async function getAuthenticatedUser() {
     return null;
   }
 
-  try {
-    const clerkUser = await currentUser();
+  const clerkUser = await currentUser();
+  if (!clerkUser) {
+    return null;
+  }
 
-    if (clerkUser) {
-      let user = await withDbRetry(
+  const fallbackUser = {
+    id: userId,
+    name: clerkUser.firstName || clerkUser.username || "User",
+    surname: clerkUser.lastName || "",
+    email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+    createdAt: new Date(),
+  };
+
+  try {
+    let user = await withDbRetry(
+      () =>
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            createdAt: true,
+          },
+        }),
+      2,
+      100
+    );
+
+    if (!user) {
+      user = await withDbRetry(
         () =>
-          prisma.user.findUnique({
+          prisma.user.upsert({
             where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+              name: clerkUser.firstName || clerkUser.username || "User",
+              surname: clerkUser.lastName || "",
+              email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+              password: "",
+            },
             select: {
               id: true,
               name: true,
@@ -120,41 +183,18 @@ export async function getAuthenticatedUser() {
         2,
         100
       );
-
-      if (!user) {
-        user = await withDbRetry(
-          () =>
-            prisma.user.upsert({
-              where: { id: userId },
-              update: {},
-              create: {
-                id: userId,
-                name: clerkUser.firstName || clerkUser.username || "User",
-                surname: clerkUser.lastName || "",
-                email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
-                password: "",
-              },
-              select: {
-                id: true,
-                name: true,
-                surname: true,
-                email: true,
-                createdAt: true,
-              },
-            }),
-          2,
-          100
-        );
-      }
-
-      return user;
     }
+
+    setCached(userId);
+    return user;
   } catch (error) {
     if (isConnectionPoolExhausted(error) || isDatabaseUnavailable(error)) {
       logWarn("Database unavailable in getAuthenticatedUser", {
         userId,
         error: error instanceof Error ? error.message : String(error),
       });
+      setCached(userId);
+      return fallbackUser;
     } else {
       logError("Error in getAuthenticatedUser", error, { userId });
     }

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 export default async function DocsPage() {
-  const user = await getAuthenticatedUser();
+  const user = await isAuthenticated();
 
   return (
     <div className="fixed inset-0 bg-black text-white overflow-y-auto">

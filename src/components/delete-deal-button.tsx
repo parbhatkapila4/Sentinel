@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { deleteDeal } from "@/app/actions/deals";
@@ -33,13 +33,13 @@ export function DeleteDealButton({
 
   useEffect(() => setMounted(true), []);
 
-  function closeModal() {
+  const closeModal = useCallback(() => {
     if (!loading) {
       setOpen(false);
       setError(null);
       triggerRef.current?.focus();
     }
-  }
+  }, [loading]);
 
   async function handleDelete() {
     setError(null);
@@ -108,7 +108,7 @@ export function DeleteDealButton({
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, loading]);
+  }, [open, loading, closeModal]);
 
   return (
     <>

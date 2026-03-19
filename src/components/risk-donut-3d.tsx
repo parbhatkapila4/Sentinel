@@ -56,7 +56,6 @@ function DonutSegments({
     const twoPi = Math.PI * 2;
     const a0 = (low / total) * twoPi;
     const a1 = (medium / total) * twoPi;
-    const a2 = (high / total) * twoPi;
     const segs: { start: number; end: number; color: number }[] = [];
     if (low > 0) segs.push({ start: 0, end: a0, color: COLORS.low });
     if (medium > 0) segs.push({ start: a0, end: a0 + a1, color: COLORS.medium });
@@ -65,7 +64,7 @@ function DonutSegments({
   }, [low, medium, high, total]);
 
   const meshes = useMemo(() => {
-    return segments.map((seg, i) => {
+    return segments.map((seg) => {
       const geom = createDonutSegmentGeometry(seg.start, seg.end);
       return { geometry: geom, color: seg.color };
     });

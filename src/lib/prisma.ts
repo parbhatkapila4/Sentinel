@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { trackDatabaseQuery } from "./monitoring";
-
+import { normalizeSupabasePoolerDatabaseUrl } from "./prisma-database-url";
 
 if (!process.env.DATABASE_URL) {
   console.error("DATABASE_URL environment variable is not set!");
@@ -12,18 +12,28 @@ const globalForPrisma = globalThis as unknown as {
 
 let prismaInstance: PrismaClient;
 
+const resolvedDatabaseUrl =
+  normalizeSupabasePoolerDatabaseUrl(process.env.DATABASE_URL) ??
+  process.env.DATABASE_URL;
+
 try {
-  prismaInstance =
-    globalForPrisma.prisma ??
-    new PrismaClient({
-      log: process.env.NODE_ENV === "development"
+  const clientOptions: ConstructorParameters<typeof PrismaClient>[0] = {
+    log:
+      process.env.NODE_ENV === "development"
         ? [
-          { emit: "event", level: "query" },
-          { emit: "stdout", level: "error" },
-          { emit: "stdout", level: "warn" },
-        ]
+            { emit: "event", level: "query" },
+            { emit: "stdout", level: "error" },
+            { emit: "stdout", level: "warn" },
+          ]
         : [{ emit: "stdout", level: "error" }],
-    });
+  };
+
+  if (resolvedDatabaseUrl) {
+    clientOptions.datasources = { db: { url: resolvedDatabaseUrl } };
+  }
+
+  prismaInstance =
+    globalForPrisma.prisma ?? new PrismaClient(clientOptions);
 
   if (
     (process.env.NODE_ENV === "development" ||

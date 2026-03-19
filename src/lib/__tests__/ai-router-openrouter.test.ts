@@ -10,7 +10,7 @@ vi.mock("@/lib/logger", () => ({
   logInfo: vi.fn(),
 }));
 
-import { callOpenRouterForGeneration, routeToAI } from "@/lib/ai-router";
+import { callOpenRouterForGeneration } from "@/lib/ai-router";
 import {
   resetCircuitBreaker,
   getCircuitBreakerState,

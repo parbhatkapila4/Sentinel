@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getDealById, getAllDeals } from "@/app/actions/deals";
 import { formatRiskLevel } from "@/lib/dealRisk";
 import { formatDistanceToNow } from "date-fns";
@@ -57,7 +58,14 @@ export default async function DealDetailPage({
       <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#000000]/95 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-3 shrink-0 w-fit">
-            <img src="/Sentinel New logo.png" alt="Sentinel" className="h-9 w-auto" />
+            <Image
+              src="/Sentinel New logo.png"
+              alt="Sentinel"
+              width={160}
+              height={36}
+              className="h-9 w-auto"
+              priority
+            />
           </Link>
           <div className="flex items-center gap-3">
             <Link

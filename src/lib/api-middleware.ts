@@ -25,17 +25,6 @@ function getRequestId(request: NextRequest): string {
   return generateRequestId();
 }
 
-async function getUserIdFromRequest(request: NextRequest): Promise<string | undefined> {
-  try {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader) {
-      return undefined;
-    }
-  } catch {
-  }
-  return undefined;
-}
-
 export function withApiContext<T>(
   handler: (request: NextRequest, context?: { requestId: string }) => Promise<T>,
   options?: {

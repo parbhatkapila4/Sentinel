@@ -1,12 +1,5 @@
 import { redis } from "./redis";
 
-interface MetricData {
-  value: number;
-  count: number;
-  lastUpdated: number;
-  tags?: Record<string, string>;
-}
-
 export async function incrementMetric(
   name: string,
   value: number = 1,

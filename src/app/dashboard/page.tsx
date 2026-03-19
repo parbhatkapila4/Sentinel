@@ -19,7 +19,6 @@ import { UpcomingMeetingsWidget } from "@/components/upcoming-meetings-widget";
 import { PerformanceChartSkeleton, RevenueSourcesSkeleton, PipelineForecastSkeleton, ChartSkeleton } from "@/components/ui/skeleton";
 import { formatRevenue } from "@/lib/utils";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { seedDemoDataForUser, hasDemoData } from "@/lib/demo-data";
 import { getAllIntegrationStatuses } from "@/app/actions/integrations";
 import { DashboardGettingStarted } from "@/components/dashboard-getting-started";
 
@@ -70,9 +69,8 @@ function isClosedWonStage(stage: string): boolean {
 
 export default async function DashboardPage() {
   noStore();
-  let userId: string;
   try {
-    userId = await getAuthenticatedUserId();
+    await getAuthenticatedUserId();
   } catch {
     redirect("/sign-in?redirect=/dashboard");
   }
@@ -84,9 +82,8 @@ export default async function DashboardPage() {
   let crmEverSynced = false;
 
   try {
-    await seedDemoDataForUser(userId);
-    showDemoBanner = await hasDemoData(userId);
     deals = await getAllDeals();
+    showDemoBanner = deals.length > 0 && deals.every((deal) => deal.isDemo);
   } catch {
     dbUnavailable = true;
   }
@@ -98,7 +95,7 @@ export default async function DashboardPage() {
       integrationStatuses.hubspot.connected;
     crmEverSynced = Boolean(
       integrationStatuses.salesforce.lastSyncAt ||
-        integrationStatuses.hubspot.lastSyncAt
+      integrationStatuses.hubspot.lastSyncAt
     );
   } catch {
   }
@@ -153,9 +150,9 @@ export default async function DashboardPage() {
         <div className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-[1600px] mx-auto">
           {dbUnavailable && (
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 shadow-lg shadow-amber-500/10">
-              <p className="text-sm font-medium text-amber-200">Database temporarily unavailable</p>
+              <p className="text-sm font-medium text-amber-200">Unable to load dashboard data</p>
               <p className="text-xs text-amber-200/70 mt-1">
-                Check your <code className="bg-white/10 px-1 rounded">DATABASE_URL</code> and that your database is active.
+                This can happen when the database is temporarily busy. Please try again in a moment.
               </p>
             </div>
           )}

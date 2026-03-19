@@ -32,7 +32,8 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
    - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (optional; cache/rate limit)
    - `NEXT_PUBLIC_SENTRY_DSN`, Sentry env vars (optional)
    - `CRON_SECRET` (optional; for cron routes like sync-integrations, process-emails, process-webhooks)
-3. **Postgres**: Use [Vercel Postgres](https://vercel.com/storage/postgres) or attach an external PostgreSQL database and set `DATABASE_URL`.
+   - **Supabase**: `DATABASE_URL` = **Transaction pooler** (host `*.pooler.supabase.com`, port **6543**). `DIRECT_URL` = **Direct** connection (port **5432**). Set both in Vercel.
+3. **Postgres**: Use [Vercel Postgres](https://vercel.com/storage/postgres) or attach an external PostgreSQL database and set `DATABASE_URL` (and `DIRECT_URL` when using Prisma migrations — same as `DATABASE_URL` for Vercel Postgres unless your provider documents otherwise).
 4. **Migrations**: Run `npx prisma migrate deploy` as part of the build (e.g. in a custom build script) or in a one-off step after first deploy. The default `npm run build` runs `prisma generate`; add a postinstall or build step for `prisma migrate deploy` if you deploy migrations from Vercel.
 5. **Crons**: Cron jobs are not defined in `vercel.json` by default. **Vercel plan limits:** On **Hobby**, cron can run only **once per day** with hourly precision (no every-5-min or every-15-min). On **Pro**, you can use per-minute intervals. To enable Vercel Cron:
    - **Hobby**: Add a single cron that runs once per day, e.g. `"schedule": "0 0 * * *"` (midnight UTC) for `/api/cron/sync-integrations`.
@@ -44,7 +45,8 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
 
 | Variable                            | Description                                        | Required           | Example (no real secrets)             |
 | ----------------------------------- | -------------------------------------------------- | ------------------ | ------------------------------------- |
-| `DATABASE_URL`                      | PostgreSQL connection string                       | Yes                | `postgresql://user:pass@host:5432/db` |
+| `DATABASE_URL`                      | PostgreSQL connection string (see Supabase below) | Yes                | `postgresql://...` |
+| `DIRECT_URL`                        | Direct Postgres URL for Prisma migrations (`migrate` / `db push`). Supabase: port **5432** (not pooler). Local/Docker: same as `DATABASE_URL`. | Yes for Prisma CLI | `postgresql://...:5432/...` |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key                              | Yes                | `pk_...`                              |
 | `CLERK_SECRET_KEY`                  | Clerk secret key (min 32 chars)                    | Yes                | `sk_...`                              |
 | `NEXT_PUBLIC_CLERK_*`               | Clerk URLs (sign-in, sign-up, after sign-in, etc.) | Optional           | See [.env.example](.env.example)      |
@@ -59,13 +61,19 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
 | `NEXT_PUBLIC_ANALYTICS_ENABLED`     | Set to `false` to disable client-side analytics    | Optional           | Omit or `true` to enable              |
 | `ANALYTICS_API_KEY`                 | API key for GET `/api/metrics/summary` (internal)  | Optional           | Used by metrics summary endpoint      |
 
+### Supabase
+
+- **`DATABASE_URL`**: Dashboard → **Project Settings → Database → Connection string** → **Transaction** / pooler (`:6543`). The app adds `pgbouncer=true` and a `connection_limit` if they are missing on pooler hosts.
+- **`DIRECT_URL`**: Same page → **Direct connection** (`:5432`). Used only by `prisma migrate` / `db push`, not by the running Next.js app.
+- **Local Postgres / Docker**: Set `DIRECT_URL` to the **same** value as `DATABASE_URL`.
+
 ## Docker
 
 Docker is for local development and self-hosted deployment. Vercel remains the primary deployment target.
 
 **Prerequisites:** Docker, Docker Compose
 
-1. **Environment**: Copy `.env.example` to `.env.local` and fill in required vars (Clerk, OpenRouter, etc.). `DATABASE_URL` is overridden in `docker-compose.yml` to use the `db` service.
+1. **Environment**: Copy `.env.example` to `.env.local` and fill in required vars (Clerk, OpenRouter, etc.). `DATABASE_URL` and `DIRECT_URL` are overridden in `docker-compose.yml` to use the `db` service (both point at the same local Postgres URL).
 2. **Start stack**: `docker compose up --build` (or `docker-compose up --build`).
 3. **Migrations**: Run after the app and DB are up:
    - `docker compose exec app npx prisma migrate deploy`

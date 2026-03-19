@@ -93,7 +93,7 @@ export function calculateChartData(deals: DealForAnalytics[]): {
     prevActual = actual;
   }
 
-  const sortedMonths = data.map((d, i) => [d.month, d.actual] as const);
+  const sortedMonths = data.map((d) => [d.month, d.actual] as const);
   let avgGrowthRate = 0;
   if (sortedMonths.length >= 2) {
     const rates: number[] = [];

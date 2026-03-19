@@ -21,6 +21,11 @@ export interface ModelConfig {
   provider: "openrouter" | "anthropic" | "google";
 }
 
+const OPENROUTER_CIRCUIT_BREAKER = {
+  failureThreshold: 5,
+  timeout: 30000,
+} as const;
+
 export function analyzeTaskType(query: string): TaskType {
   const lowerQuery = query.toLowerCase();
 
@@ -220,9 +225,11 @@ export async function routeToAI(
   const OPENROUTER_TIMEOUT_MS = 50_000;
 
   try {
-    return await withCircuitBreaker("openrouter", () =>
-      retryWithBackoff(
-        async () => {
+    return await withCircuitBreaker(
+      "openrouter",
+      () =>
+        retryWithBackoff(
+          async () => {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
           try {
@@ -284,9 +291,10 @@ export async function routeToAI(
           } finally {
             clearTimeout(timeoutId);
           }
-        },
-        { maxRetries: 2, isIdempotent: true }
-      )
+          },
+          { maxRetries: 2, isIdempotent: true }
+        ),
+      OPENROUTER_CIRCUIT_BREAKER
     );
   } catch (error) {
     if (error instanceof AppError) {
@@ -325,9 +333,11 @@ export async function callOpenRouterForGeneration(
   const temperature = options?.temperature ?? 0.3;
   const maxTokens = options?.maxTokens ?? 2000;
 
-  return withCircuitBreaker("openrouter", () =>
-    retryWithBackoff(
-      async () => {
+  return withCircuitBreaker(
+    "openrouter",
+    () =>
+      retryWithBackoff(
+        async () => {
         const response = await fetch(
           "https://openrouter.ai/api/v1/chat/completions",
           {
@@ -380,8 +390,9 @@ export async function callOpenRouterForGeneration(
           );
         }
         return content;
-      },
-      { maxRetries: 2, isIdempotent: true }
-    )
+        },
+        { maxRetries: 2, isIdempotent: true }
+      ),
+    OPENROUTER_CIRCUIT_BREAKER
   );
 }

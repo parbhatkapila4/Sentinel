@@ -41,9 +41,15 @@ function subtractDays(date: Date, days: number): Date {
 }
 
 export async function seedDemoDataForUser(userId: string): Promise<void> {
-  const hasReal = await hasRealDeals(userId);
-  if (hasReal) {
-    await removeDemoDataForUser(userId);
+  const totalDeals = await prisma.deal.count({
+    where: { userId },
+  });
+
+  if (totalDeals > 0) {
+    const hasReal = await hasRealDeals(userId);
+    if (hasReal) {
+      await removeDemoDataForUser(userId);
+    }
     return;
   }
 

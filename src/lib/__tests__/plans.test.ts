@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   getPlanLimits,
-  getPlanDefinition,
   getOrCreateUserPlan,
   checkUsageLimit,
   incrementUsage,

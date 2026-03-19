@@ -1,6 +1,6 @@
 import Link from "next/link";
 import nextDynamic from "next/dynamic";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 import { PricingCards } from "@/components/pricing-cards";
 import {
   PricingToggle,
@@ -22,7 +22,7 @@ const WorldMapDemo = nextDynamic(
 );
 
 export default async function Home() {
-  const user = await getAuthenticatedUser();
+  const user = await isAuthenticated();
 
   return (
     <div className="min-h-screen bg-black text-white antialiased overflow-x-hidden">

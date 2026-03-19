@@ -95,15 +95,6 @@ export async function triggerActionOverdueNotification(
   });
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 export async function triggerStageChangeNotification(
   deal: { id: string; name: string; userId: string },
   oldStage: string,

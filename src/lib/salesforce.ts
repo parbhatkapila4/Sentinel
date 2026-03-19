@@ -1,7 +1,7 @@
 import { retryWithBackoff } from "./retry";
 import { withCircuitBreaker } from "./circuit-breaker";
 import { ExternalServiceError, RetryableError } from "./errors";
-import { logError, logInfo } from "./logger";
+import { logError } from "./logger";
 
 export interface SalesforceValidationResult {
   valid: boolean;

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import {
   getWebhookById,
-  updateWebhook,
   regenerateWebhookSecret,
   testWebhook,
   deleteWebhook,
@@ -27,7 +26,7 @@ export default function WebhookDetailPage() {
   const [testing, setTesting] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     try {
@@ -35,17 +34,17 @@ export default function WebhookDetailPage() {
       setWebhook(w);
       if (!w) router.push("/settings/webhooks");
     } catch (e) {
-      toast.error("Failed to load webhook");
+      toast.error(e instanceof Error ? e.message : "Failed to load webhook");
       setWebhook(null);
       router.push("/settings/webhooks");
     } finally {
       setLoading(false);
     }
-  }
+  }, [id, router]);
 
   useEffect(() => {
     load();
-  }, [id]);
+  }, [load]);
 
   async function handleTest() {
     if (!id) return;

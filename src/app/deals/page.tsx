@@ -12,7 +12,6 @@ import { DealsScopeFilter } from "@/components/deals-scope-filter";
 import { PipelineValueCard } from "@/components/pipeline-value-card";
 import { DemoBanner } from "@/components/demo-banner";
 import { DealsTableWithBulk } from "@/components/deals-table-with-bulk";
-import { seedDemoDataForUser, hasDemoData } from "@/lib/demo-data";
 
 export const dynamic = "force-dynamic";
 
@@ -75,8 +74,6 @@ export default async function DealsPage({
   let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
   let dataError = false;
   try {
-    await seedDemoDataForUser(userId);
-    showDemoBanner = await hasDemoData(userId);
     deals = await getAllDeals(
       scope === "all"
         ? { includeTeamDeals: true }
@@ -84,6 +81,7 @@ export default async function DealsPage({
           ? { teamId }
           : undefined
     );
+    showDemoBanner = deals.length > 0 && deals.every((deal) => deal.isDemo);
   } catch {
     dataError = true;
   }

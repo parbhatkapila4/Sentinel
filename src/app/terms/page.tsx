@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 export default async function TermsPage() {
-  const user = await getAuthenticatedUser();
+  const user = await isAuthenticated();
 
   return (
     <div className="min-h-screen bg-black text-white">

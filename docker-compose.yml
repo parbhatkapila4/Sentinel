@@ -10,6 +10,8 @@ services:
       - .env.local
     environment:
       DATABASE_URL: postgresql://sentinel:sentinel@db:5432/sentinel
+      # Required by Prisma schema (directUrl); same as DATABASE_URL for local Postgres
+      DIRECT_URL: postgresql://sentinel:sentinel@db:5432/sentinel
     restart: unless-stopped
 
   db:

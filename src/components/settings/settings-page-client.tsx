@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
+import Image from "next/image";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { getAllDeals } from "@/app/actions/deals";
 import { getMyTeams } from "@/app/actions/teams";
@@ -706,9 +707,11 @@ export function SettingsPageClient() {
                       <div className="relative">
                         {avatarPreview ? (
                           <div className="w-20 h-20 rounded-2xl overflow-hidden">
-                            <img
+                            <Image
                               src={avatarPreview}
                               alt="Profile"
+                              width={80}
+                              height={80}
                               className="w-full h-full object-cover"
                             />
                           </div>

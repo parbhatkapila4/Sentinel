@@ -14,7 +14,6 @@ import type {
   WinProbabilityTrend,
 } from "@/types";
 
-const ACTIVE_STAGES = ["discover", "qualify", "proposal", "negotiation"];
 const CLOSED_WON = "closed_won";
 const CLOSED_LOST = "closed_lost";
 
@@ -167,6 +166,12 @@ export function identifyDealPatterns(deals: DealForPrediction[]): DealPatterns {
   const active = deals.filter((d) => !isClosed(d.stage));
 
   if (won.length + lost.length === 0) {
+    insights.push({
+      type: "data",
+      description: "No closed deals yet, so historical win/loss insights are limited.",
+      impact: "neutral",
+    });
+
     if (active.length === 0) {
       insights.push({
         type: "data",
@@ -256,7 +261,6 @@ export function identifyDealPatterns(deals: DealForPrediction[]): DealPatterns {
   }
 
   const highRiskLost = lost.filter((d) => (d.riskLevel ?? formatRiskLevel(d.riskScore)) === "High").length;
-  const highRiskWon = won.filter((d) => (d.riskLevel ?? formatRiskLevel(d.riskScore)) === "High").length;
   if (lost.length > 0 && highRiskLost / lost.length > 0.5) {
     insights.push({
       type: "risk",
@@ -293,7 +297,6 @@ export function findSimilarDeals(
   const closed = allDeals.filter((d) => isClosed(d.stage) && d.id !== deal.id);
   const age = dealAge(deal);
   const vb = valueBucket(deal.value);
-  const act = daysSinceActivity(deal);
 
   const scored = closed.map((d) => {
     const valueMatch = Math.abs(valueBucket(d.value) - vb);

@@ -1,6 +1,5 @@
 "use server";
 
-import { getAuthenticatedUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canUserEditDeal } from "@/app/actions/deals";
 import { invalidateCachePattern, invalidateCache } from "@/lib/cache";

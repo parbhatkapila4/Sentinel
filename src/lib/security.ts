@@ -55,7 +55,6 @@ export function validateEmail(email: string): boolean {
   }
 
   const localPart = parts[0];
-  const domain = parts[1];
 
   if (localPart.length > 64) {
     return false;

@@ -165,7 +165,7 @@ export function buildPipelineInsights(deals: DealForContext[]): PipelineInsights
   const stageOrder = Object.entries(STAGE_ORDER).sort((a, b) => a[1] - b[1]);
   const bottleneckStages: string[] = [];
   let prevCount = 0;
-  for (const [stage, order] of stageOrder) {
+  for (const [stage] of stageOrder) {
     if (["closed_won", "closed_lost"].includes(stage)) continue;
     const count = byStage[stage] || 0;
     if (count > prevCount + 2 && prevCount > 0) {
@@ -438,7 +438,6 @@ export function resolveDealReference(
 ): DealForContext | null {
   const userMessages = messages.filter((m) => m.role === "user").map((m) => m.content);
   const last = userMessages[userMessages.length - 1] || "";
-  const lower = last.toLowerCase();
 
   const refPatterns = [
     /that\s+deal/i,

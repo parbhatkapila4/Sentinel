@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { Suspense } from "react";
 import { TeamSelector } from "@/components/team-selector";
 import { NotificationsDropdown } from "@/components/notifications-dropdown";
-import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useRealtime } from "@/hooks/use-realtime";
 import { trackPageView } from "@/lib/analytics-client";
 
@@ -841,10 +841,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-[#050505] border border-white/[0.06] hover:bg-[#0a0a0a] hover:border-white/10 transition-all duration-200 cursor-pointer shrink-0 min-w-0"
                 aria-label="Home"
               >
-                <img
+                <Image
                   src="/Sentinel New logo.png"
                   alt=""
+                  width={40}
+                  height={40}
                   className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-contain shrink-0"
+                  priority
                 />
                 <div className="leading-tight hidden sm:block">
                   <p className="text-xs sm:text-sm font-semibold text-white truncate">Home</p>

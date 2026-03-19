@@ -197,7 +197,7 @@ export async function checkUsageLimit(
     };
   }
 
-  const { periodStart, periodEnd } = getCurrentPeriod();
+  const { periodStart } = getCurrentPeriod();
   const tracking = await prisma.usageTracking.findUnique({
     where: {
       userId_metricType_periodStart: {

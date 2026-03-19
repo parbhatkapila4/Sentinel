@@ -36,7 +36,7 @@ export default function WebhooksSettingsPage() {
       const list = await getMyWebhooks();
       setWebhooks(list);
     } catch (e) {
-      toast.error("Failed to load webhooks");
+      toast.error(e instanceof Error ? e.message : "Failed to load webhooks");
       setWebhooks([]);
     } finally {
       setLoading(false);
