@@ -53,24 +53,18 @@ export async function seedDemoDataForUser(userId: string): Promise<void> {
     return;
   }
 
-  const didSeed = await prisma.$transaction(async (tx) => {
-    const existingDeals = await tx.deal.count({
-      where: { userId },
-    });
-
-    if (existingDeals > 0) {
-      return false;
-    }
+  const seedWithoutTransaction = async (): Promise<boolean> => {
+    const existingDeals = await prisma.deal.count({ where: { userId } });
+    if (existingDeals > 0) return false;
 
     const now = new Date();
-
     for (const company of DEMO_COMPANIES) {
       const createdAt = subtractDays(
         now,
         company.daysAgo + Math.floor(Math.random() * 30) + 10
       );
 
-      const deal = await tx.deal.create({
+      const deal = await prisma.deal.create({
         data: {
           name: company.name,
           value: company.value,
@@ -82,7 +76,7 @@ export async function seedDemoDataForUser(userId: string): Promise<void> {
         },
       });
 
-      await tx.dealTimeline.create({
+      await prisma.dealTimeline.create({
         data: {
           dealId: deal.id,
           eventType: "stage_changed",
@@ -99,7 +93,7 @@ export async function seedDemoDataForUser(userId: string): Promise<void> {
           company.daysAgo + i * 2 + Math.floor(Math.random() * 3)
         );
 
-        await tx.dealTimeline.create({
+        await prisma.dealTimeline.create({
           data: {
             dealId: deal.id,
             eventType: "event_created",
@@ -112,8 +106,77 @@ export async function seedDemoDataForUser(userId: string): Promise<void> {
         });
       }
     }
+
     return true;
-  });
+  };
+
+  let didSeed: boolean;
+  try {
+    didSeed = await prisma.$transaction(async (tx) => {
+      const existingDeals = await tx.deal.count({ where: { userId } });
+      if (existingDeals > 0) return false;
+
+      const now = new Date();
+
+      for (const company of DEMO_COMPANIES) {
+        const createdAt = subtractDays(
+          now,
+          company.daysAgo + Math.floor(Math.random() * 30) + 10
+        );
+
+        const deal = await tx.deal.create({
+          data: {
+            name: company.name,
+            value: company.value,
+            stage: company.stage,
+            location: getRandomItem(LOCATIONS),
+            userId,
+            isDemo: true,
+            createdAt,
+          },
+        });
+
+        await tx.dealTimeline.create({
+          data: {
+            dealId: deal.id,
+            eventType: "stage_changed",
+            metadata: { stage: company.stage } as Prisma.InputJsonValue,
+            createdAt,
+          },
+        });
+
+        const eventCount = 2 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < eventCount; i++) {
+          const ev = getRandomItem(TIMELINE_EVENTS);
+          const eventDate = subtractDays(
+            now,
+            company.daysAgo + i * 2 + Math.floor(Math.random() * 3)
+          );
+
+          await tx.dealTimeline.create({
+            data: {
+              dealId: deal.id,
+              eventType: "event_created",
+              metadata: {
+                eventType: ev.eventType,
+                note: ev.note,
+              } as Prisma.InputJsonValue,
+              createdAt: eventDate,
+            },
+          });
+        }
+      }
+      return true;
+    });
+  } catch (error) {
+    const code = (error as { code?: string })?.code;
+    if (code === "P2028") {
+      await removeDemoDataForUser(userId);
+      didSeed = await seedWithoutTransaction();
+    } else {
+      throw error;
+    }
+  }
 
   if (didSeed) {
     console.log(`[Demo] Seeded ${DEMO_COMPANIES.length} demo deals for user ${userId}`);

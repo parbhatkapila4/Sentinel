@@ -32,7 +32,6 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
 
   const combinedOutput = `${res.stdout ?? ""}${res.stderr ?? ""}`;
   if (combinedOutput) {
-    // Preserve Prisma output for debuggability.
     process.stdout.write(res.stdout ?? "");
     process.stderr.write(res.stderr ?? "");
   }
@@ -48,16 +47,17 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
 
   if (attempt < MAX_ATTEMPTS) {
     const delay = BASE_DELAY_MS * attempt;
-    // eslint-disable-next-line no-console
-    console.warn(`[prisma-generate-safe] Prisma engine locked (attempt ${attempt}/${MAX_ATTEMPTS}); retrying in ${delay}ms...`);
+    console.warn(
+      `[prisma-generate-safe] Prisma engine locked (attempt ${attempt}/${MAX_ATTEMPTS}); retrying in ${delay}ms...`,
+    );
     await sleep(delay);
     continue;
   }
 
-  // eslint-disable-next-line no-console
-  console.warn("[prisma-generate-safe] Prisma engine still locked; continuing build with existing generated client.");
+  console.warn(
+    "[prisma-generate-safe] Prisma engine still locked; continuing build with existing generated client.",
+  );
   process.exit(0);
 }
 
 process.exit(lastStatus ?? 1);
-

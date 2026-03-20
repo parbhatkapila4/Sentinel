@@ -593,9 +593,19 @@ export async function deleteDeal(dealId: string) {
 
       const remainingCount = await prisma.deal.count({ where: { userId } });
       if (remainingCount === 0) {
-        await seedDemoDataForUser(userId);
-        await invalidateCachePattern(`deals:all:${userId}:*`);
-        await invalidateCachePattern(`deals:team:*:${userId}`);
+        try {
+          await seedDemoDataForUser(userId);
+          await invalidateCachePattern(`deals:all:${userId}:*`);
+          await invalidateCachePattern(`deals:team:*:${userId}`);
+        } catch (error) {
+          const errMessage =
+            error instanceof Error ? error.message : String(error);
+          logWarn("Failed to seed demo data after deleting deal", {
+            userId,
+            dealId,
+            error: errMessage,
+          });
+        }
       }
 
       revalidatePath("/dashboard");

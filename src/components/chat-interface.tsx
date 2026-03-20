@@ -539,9 +539,14 @@ export function ChatInterface() {
           return;
         }
 
+        let micStream: MediaStream | null = null;
         try {
-          await navigator.mediaDevices.getUserMedia({ audio: true });
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          micStream.getTracks().forEach((t) => t.stop());
+          micStream = null;
         } catch {
+          micStream?.getTracks().forEach((t) => t.stop());
           toast.error("Microphone access required", {
             description:
               "Please allow microphone access in your browser settings.",
@@ -626,9 +631,14 @@ export function ChatInterface() {
         finalTranscriptRef.current = "";
         processedFinalTranscriptsRef.current.clear();
       } else {
+        let micStream: MediaStream | null = null;
         try {
-          await navigator.mediaDevices.getUserMedia({ audio: true });
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          micStream.getTracks().forEach((t) => t.stop());
+          micStream = null;
         } catch {
+          micStream?.getTracks().forEach((t) => t.stop());
           toast.error("Microphone access required", {
             description:
               "Please allow microphone access in your browser settings.",
