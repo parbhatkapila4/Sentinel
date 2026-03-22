@@ -29,11 +29,12 @@ export const metadata: Metadata = {
   description: "Sentinel - Deal Management Platform",
   icons: {
     icon: [
-      { url: "/Sentinel%20New%20logo.png", sizes: "48x48", type: "image/png" },
-      { url: "/Sentinel%20New%20logo.png", sizes: "32x32", type: "image/png" },
-      { url: "/Sentinel%20New%20logo.png", sizes: "16x16", type: "image/png" },
+      { url: "/Sentinel%20New%20logo.png", type: "image/png", sizes: "48x48" },
+      { url: "/Sentinel%20New%20logo.png", type: "image/png", sizes: "32x32" },
+      { url: "/Sentinel%20New%20logo.png", type: "image/png", sizes: "16x16" },
     ],
-    apple: { url: "/Sentinel%20New%20logo.png", sizes: "180x180", type: "image/png" },
+    shortcut: [{ url: "/Sentinel%20New%20logo.png", type: "image/png" }],
+    apple: [{ url: "/Sentinel%20New%20logo.png", type: "image/png", sizes: "180x180" }],
   },
 };
 

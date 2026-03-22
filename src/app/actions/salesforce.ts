@@ -34,6 +34,32 @@ export interface SyncResult {
   errors?: string[];
 }
 
+async function findExistingSalesforceDeal(
+  userId: string,
+  dealData: {
+    name: string;
+    source: string;
+    externalId: string;
+  }
+) {
+  const byExternal = await prisma.deal.findFirst({
+    where: {
+      userId,
+      externalId: dealData.externalId,
+      source: "salesforce",
+    },
+  });
+  if (byExternal) return byExternal;
+
+  return prisma.deal.findFirst({
+    where: {
+      userId,
+      name: dealData.name,
+      OR: [{ source: "salesforce" }, { source: null }],
+    },
+  });
+}
+
 export async function connectSalesforce(
   apiKey: string,
   instanceUrl: string
@@ -134,13 +160,7 @@ export async function syncSalesforceDeals(): Promise<SyncResult> {
       try {
         const dealData = mapSalesforceOpportunityToDeal(opportunity, userId);
 
-        const existingDeal = await prisma.deal.findFirst({
-          where: {
-            userId,
-            ...(dealData.externalId ? { externalId: dealData.externalId, source: "salesforce" } : {}),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any,
-        });
+        const existingDeal = await findExistingSalesforceDeal(userId, dealData);
 
         if (existingDeal) {
           await prisma.deal.update({
@@ -296,13 +316,7 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
     for (const opportunity of opportunities) {
       const dealData = mapSalesforceOpportunityToDeal(opportunity, userId);
 
-      const existingDeal = await prisma.deal.findFirst({
-        where: {
-          userId,
-          ...(dealData.externalId ? { externalId: dealData.externalId, source: "salesforce" } : {}),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-      });
+      const existingDeal = await findExistingSalesforceDeal(userId, dealData);
 
       if (existingDeal) {
         await prisma.deal.update({

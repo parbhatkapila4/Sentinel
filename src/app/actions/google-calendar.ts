@@ -12,6 +12,7 @@ import {
 import { logIntegrationAction } from "./integrations";
 import { enforceIntegrationLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
+import { notifySlackAfterCrmSync } from "@/lib/post-crm-sync-slack";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = prisma as any;
@@ -40,6 +41,79 @@ export interface MeetingDetails {
   endTime: Date;
   attendees?: string[];
   location?: string;
+}
+
+function inferDomainFromAttendees(attendees: string[]): string | null {
+  for (const attendee of attendees) {
+    const domain = attendee.split("@")[1]?.trim().toLowerCase();
+    if (domain) return domain;
+  }
+  return null;
+}
+
+function inferDealNameFromMeeting(meeting: {
+  title: string;
+  description: string | null;
+  attendees: string[];
+}): string {
+  const normalizedTitle = meeting.title.trim();
+  if (normalizedTitle && normalizedTitle.toLowerCase() !== "untitled meeting") {
+    return normalizedTitle.slice(0, 120);
+  }
+
+  const domain = inferDomainFromAttendees(meeting.attendees);
+  if (domain) {
+    return `Deal - ${domain}`;
+  }
+
+  return "Deal from Google Calendar";
+}
+
+async function linkOrCreateDealForMeeting(
+  userId: string,
+  meetingId: string,
+  meetingData: {
+    title: string;
+    description: string | null;
+    attendees: string[];
+    externalId: string;
+  },
+  deals: Array<{
+    id: string;
+    name: string;
+    location?: string | null;
+  }>
+): Promise<boolean> {
+  const potentialDealId = findPotentialDealMatch(meetingData, deals);
+  if (potentialDealId) {
+    await db.meeting.update({
+      where: { id: meetingId },
+      data: { dealId: potentialDealId },
+    });
+    return true;
+  }
+
+  const locationDomain = inferDomainFromAttendees(meetingData.attendees);
+  const createdDeal = await prisma.deal.create({
+    data: {
+      userId,
+      name: inferDealNameFromMeeting(meetingData),
+      stage: "Discovery",
+      value: 0,
+      location: locationDomain,
+      source: "google_calendar",
+      externalId: `gcal:${meetingData.externalId}`,
+    },
+    select: { id: true, name: true, location: true },
+  });
+
+  await db.meeting.update({
+    where: { id: meetingId },
+    data: { dealId: createdDeal.id },
+  });
+
+  deals.push(createdDeal);
+  return true;
 }
 
 export async function connectGoogleCalendar(
@@ -187,14 +261,13 @@ export async function syncCalendarEvents(): Promise<SyncResult> {
         }
 
         if (!existingMeeting?.dealId) {
-          const potentialDealId = findPotentialDealMatch(meetingData, deals);
-          if (potentialDealId) {
-            await db.meeting.update({
-              where: { id: meetingId },
-              data: { dealId: potentialDealId },
-            });
-            linked++;
-          }
+          const didLink = await linkOrCreateDealForMeeting(
+            userId,
+            meetingId,
+            meetingData,
+            deals
+          );
+          if (didLink) linked++;
         }
       } catch (error) {
         errors.push(`Failed to sync event ${event.id}: ${String(error)}`);
@@ -222,6 +295,12 @@ export async function syncCalendarEvents(): Promise<SyncResult> {
     revalidatePath("/settings");
     revalidatePath("/deals");
     revalidatePath("/dashboard");
+
+    void notifySlackAfterCrmSync(userId, {
+      provider: "google_calendar",
+      created,
+      updated,
+    });
 
     return {
       success: true,
@@ -484,14 +563,13 @@ export async function syncCalendarEventsForUser(userId: string): Promise<SyncRes
       }
 
       if (!existingMeeting?.dealId) {
-        const potentialDealId = findPotentialDealMatch(meetingData, deals);
-        if (potentialDealId) {
-          await db.meeting.update({
-            where: { id: meetingId },
-            data: { dealId: potentialDealId },
-          });
-          linked++;
-        }
+        const didLink = await linkOrCreateDealForMeeting(
+          userId,
+          meetingId,
+          meetingData,
+          deals
+        );
+        if (didLink) linked++;
       }
     }
 
@@ -501,6 +579,12 @@ export async function syncCalendarEventsForUser(userId: string): Promise<SyncRes
         lastSyncAt: new Date(),
         lastSyncStatus: "success",
       },
+    });
+
+    void notifySlackAfterCrmSync(userId, {
+      provider: "google_calendar",
+      created,
+      updated,
     });
 
     return { success: true, synced: created + updated, created, updated, linked };

@@ -22,6 +22,16 @@ describe("normalizeSupabasePoolerDatabaseUrl", () => {
     expect(normalizeSupabasePoolerDatabaseUrl(raw)).toBe(raw);
   });
 
+  it("rewrites Supabase pooler session port 5432 to transaction port 6543", () => {
+    const raw =
+      "postgresql://postgres.x:k@aws-1-ap-south-1.pooler.supabase.com:5432/postgres";
+    const out = normalizeSupabasePoolerDatabaseUrl(raw)!;
+    expect(out).toContain(":6543/");
+    expect(out).toContain("pgbouncer=true");
+    expect(out).toContain("connection_limit=5");
+    expect(out).toContain("sslmode=require");
+  });
+
   it("preserves existing query params", () => {
     const raw =
       "postgresql://u:p@aws-0.pooler.supabase.com:6543/postgres?sslmode=require";

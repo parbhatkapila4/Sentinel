@@ -18,7 +18,7 @@ function isClosedStage(stage: string): boolean {
 export async function notifySlackAfterCrmSync(
   userId: string,
   params: {
-    provider: "hubspot" | "salesforce";
+    provider: "hubspot" | "salesforce" | "google_calendar";
     created: number;
     updated: number;
   }
@@ -60,7 +60,11 @@ export async function notifySlackAfterCrmSync(
     }
 
     const providerLabel =
-      params.provider === "hubspot" ? "HubSpot" : "Salesforce";
+      params.provider === "hubspot"
+        ? "HubSpot"
+        : params.provider === "salesforce"
+          ? "Salesforce"
+          : "Google Calendar";
 
     await sendSlackNotification(
       userId,

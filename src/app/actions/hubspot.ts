@@ -33,6 +33,32 @@ export interface SyncResult {
   errors?: string[];
 }
 
+async function findExistingHubSpotDeal(
+  userId: string,
+  dealData: {
+    name: string;
+    source: string;
+    externalId: string;
+  }
+) {
+  const byExternal = await prisma.deal.findFirst({
+    where: {
+      userId,
+      externalId: dealData.externalId,
+      source: "hubspot",
+    },
+  });
+  if (byExternal) return byExternal;
+
+  return prisma.deal.findFirst({
+    where: {
+      userId,
+      name: dealData.name,
+      OR: [{ source: "hubspot" }, { source: null }],
+    },
+  });
+}
+
 export async function connectHubSpot(
   apiKey: string
 ): Promise<{ success: boolean }> {
@@ -129,13 +155,7 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
       try {
         const dealData = mapHubSpotDealToDeal(hubspotDeal, userId);
 
-        const existingDeal = await prisma.deal.findFirst({
-          where: {
-            userId,
-            ...(dealData.externalId ? { externalId: dealData.externalId, source: "hubspot" } : {}),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any,
-        });
+        const existingDeal = await findExistingHubSpotDeal(userId, dealData);
 
         if (existingDeal) {
           await prisma.deal.update({
@@ -283,13 +303,7 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
     for (const hubspotDeal of hubspotDeals) {
       const dealData = mapHubSpotDealToDeal(hubspotDeal, userId);
 
-      const existingDeal = await prisma.deal.findFirst({
-        where: {
-          userId,
-          ...(dealData.externalId ? { externalId: dealData.externalId, source: "hubspot" } : {}),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-      });
+      const existingDeal = await findExistingHubSpotDeal(userId, dealData);
 
       if (existingDeal) {
         await prisma.deal.update({
