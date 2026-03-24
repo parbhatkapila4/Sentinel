@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { useAuth } from "@clerk/nextjs";
 import {
   getAllChats,
   getChatFolders,
@@ -86,6 +87,7 @@ interface WindowWithSpeechRecognition extends Window {
 }
 
 export function ChatInterface() {
+  const { isSignedIn } = useAuth();
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -296,6 +298,14 @@ export function ChatInterface() {
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading || sendingRef.current) return;
+    if (!isSignedIn) {
+      toast.error("Please sign in to use chat.");
+      if (typeof window !== "undefined") {
+        const currentPath = window.location.pathname + window.location.search;
+        window.location.href = `/sign-in?redirect=${encodeURIComponent(currentPath)}`;
+      }
+      return;
+    }
     sendingRef.current = true;
 
     const userMessage = messageText.trim();
@@ -336,7 +346,10 @@ export function ChatInterface() {
       try {
         await saveChatMessage(chatId, "user", userMessage);
       } catch (error) {
-        console.error("Error saving message:", error);
+        const message = error instanceof Error ? error.message : String(error);
+        if (!message.toLowerCase().includes("unauthorized")) {
+          console.error("Error saving message:", error);
+        }
       }
     }
 
@@ -355,16 +368,43 @@ export function ChatInterface() {
 
     const requestBody = {
       messages: [...messages, { role: "user", content: messageContent }],
-      attachments: currentAttachments.map((att) => ({
-        name: att.name,
-        type: att.type,
-        size: att.size,
-        data: att.data,
-      })),
+      attachments: currentAttachments.map((att) => {
+        const lowerType = (att.type || "").toLowerCase();
+        const lowerName = (att.name || "").toLowerCase();
+        const looksImage =
+          lowerType.startsWith("image/") ||
+          (!!att.data && att.data.startsWith("data:image/")) ||
+          /\.(jpe?g|png|gif|webp|bmp|svg|heic|avif)$/i.test(lowerName);
+        const looksPdf = lowerType === "application/pdf" || lowerName.endsWith(".pdf");
+        const looksText =
+          lowerType.startsWith("text/") ||
+          lowerType.includes("json") ||
+          lowerType.includes("xml") ||
+          lowerType.includes("javascript") ||
+          lowerType.includes("typescript") ||
+          /\.(txt|md|csv|json|xml|yaml|yml|js|ts|tsx|jsx|py|java|go|rb|php|sql)$/i.test(
+            lowerName
+          );
+        const includeData = looksImage || looksPdf || looksText;
+        return {
+          name: att.name,
+          type: att.type,
+          size: att.size,
+          ...(includeData && att.data ? { data: att.data } : {}),
+        };
+      }),
     };
 
     const maxRetries = 2;
-    const fetchTimeoutMs = 55_000;
+    const hasHeavyAttachment = currentAttachments.some(
+      (a) =>
+        a.type.startsWith("image/") ||
+        a.type === "application/pdf" ||
+        (!!a.data && a.data.startsWith("data:image/")) ||
+        (!!a.data && a.data.startsWith("data:application/pdf")) ||
+        /\.(jpe?g|png|gif|webp|bmp|svg|heic|avif)$/i.test(a.name)
+    );
+    const fetchTimeoutMs = hasHeavyAttachment ? 110_000 : 55_000;
 
     try {
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -409,16 +449,27 @@ export function ChatInterface() {
 
         if (!response.ok) {
           const errBody = await response.json().catch(() => ({}));
+          if (response.status === 401) {
+            const currentPath =
+              typeof window !== "undefined"
+                ? window.location.pathname + window.location.search
+                : "/dashboard";
+            toast.error("Your session expired. Please sign in again.");
+            if (typeof window !== "undefined") {
+              window.location.href = `/sign-in?redirect=${encodeURIComponent(
+                currentPath
+              )}`;
+            }
+            return;
+          }
           const errMessage =
-            typeof errBody?.error === "string"
-              ? errBody.error
-              : response.status === 401
-                ? "Please sign in again to use the AI assistant."
-                : response.status === 429
-                  ? "Too many requests. Please wait a moment and try again."
-                  : response.status === 503
-                    ? "AI is temporarily busy. Please try again in a moment."
-                    : "Something went wrong. Please try again.";
+            response.status === 429
+              ? "Too many requests. Please wait a moment and try again."
+              : response.status === 503
+                ? "AI is temporarily busy. Please try again in a moment."
+                : typeof errBody?.error === "string"
+                  ? errBody.error
+                  : "Something went wrong. Please try again.";
           throw new Error(errMessage);
         }
 
@@ -443,7 +494,10 @@ export function ChatInterface() {
             await saveChatMessage(chatId, "assistant", content);
             await loadChatsAndFolders();
           } catch (error) {
-            console.error("Error saving message:", error);
+            const message = error instanceof Error ? error.message : String(error);
+            if (!message.toLowerCase().includes("unauthorized")) {
+              console.error("Error saving message:", error);
+            }
           }
         }
         return;

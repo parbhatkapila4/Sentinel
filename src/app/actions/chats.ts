@@ -3,6 +3,7 @@
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDistanceToNow } from "date-fns";
+import { logWarn } from "@/lib/logger";
 
 export interface ChatListItem {
   id: string;
@@ -17,8 +18,22 @@ export interface ChatFolder {
   color: string | null;
 }
 
+async function getAuthenticatedUserIdSafe(): Promise<string | null> {
+  try {
+    return await getAuthenticatedUserId();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.toLowerCase().includes("unauthorized")) {
+      return null;
+    }
+    logWarn("Chat auth check failed", { error: message });
+    return null;
+  }
+}
+
 export async function getAllChats(): Promise<ChatListItem[]> {
-  const userId = await getAuthenticatedUserId();
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return [];
 
   const chats = await prisma.chat.findMany({
     where: { userId },
@@ -58,7 +73,8 @@ export async function getAllChats(): Promise<ChatListItem[]> {
 }
 
 export async function getChatFolders(): Promise<ChatFolder[]> {
-  const userId = await getAuthenticatedUserId();
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return [];
 
   const folders = await prisma.chatFolder.findMany({
     where: { userId },
@@ -74,7 +90,8 @@ export async function getChatFolders(): Promise<ChatFolder[]> {
 }
 
 export async function createChat(title?: string): Promise<string> {
-  const userId = await getAuthenticatedUserId();
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return "";
 
   const chat = await prisma.chat.create({
     data: {
@@ -87,7 +104,8 @@ export async function createChat(title?: string): Promise<string> {
 }
 
 export async function updateChatTitle(chatId: string, title: string) {
-  const userId = await getAuthenticatedUserId();
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return;
 
   await prisma.chat.updateMany({
     where: {
@@ -105,7 +123,8 @@ export async function saveChatMessage(
   role: "user" | "assistant",
   content: string
 ) {
-  const userId = await getAuthenticatedUserId();
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return;
 
   const chat = await prisma.chat.findFirst({
     where: {
@@ -133,7 +152,8 @@ export async function saveChatMessage(
 }
 
 export async function getChatMessages(chatId: string) {
-  const userId = await getAuthenticatedUserId();
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return [];
 
   const chat = await prisma.chat.findFirst({
     where: {
@@ -155,7 +175,10 @@ export async function getChatMessages(chatId: string) {
 }
 
 export async function createChatFolder(name: string, color?: string) {
-  const userId = await getAuthenticatedUserId();
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
 
   const folder = await prisma.chatFolder.create({
     data: {
@@ -169,7 +192,8 @@ export async function createChatFolder(name: string, color?: string) {
 }
 
 export async function deleteChat(chatId: string) {
-  const userId = await getAuthenticatedUserId();
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return;
 
   const chat = await prisma.chat.findFirst({
     where: {

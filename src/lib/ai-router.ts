@@ -178,8 +178,21 @@ export interface RouteToAIOptions {
   dealContext?: string;
 }
 
+export type ChatCompletionContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } };
+
+export type ChatMessageContent = string | ChatCompletionContentPart[];
+
+function messageUsesVision(messages: Array<{ role: string; content: ChatMessageContent }>): boolean {
+  return messages.some((m) => {
+    if (typeof m.content === "string") return false;
+    return m.content.some((p) => p.type === "image_url");
+  });
+}
+
 export async function routeToAI(
-  messages: Array<{ role: string; content: string }>,
+  messages: Array<{ role: string; content: ChatMessageContent }>,
   query: string,
   options?: RouteToAIOptions
 ): Promise<string> {
@@ -187,6 +200,7 @@ export async function routeToAI(
   const modelConfig = getModelConfig(taskType);
   let systemPrompt = getSystemPrompt(taskType);
   const dealContext = options?.dealContext;
+  const useVision = messageUsesVision(messages);
 
   if (dealContext) {
     const contextBlock = `\n\n---\nDEAL & PIPELINE CONTEXT (use this for accurate, data-driven answers):\n${dealContext}`;
@@ -195,8 +209,15 @@ export async function routeToAI(
       : `You are a helpful assistant for Sentinel, a revenue intelligence platform. Use the following context when relevant to the user's question.${contextBlock}`;
   }
 
-  if (taskType === "embedding_search") {
-    modelConfig.model = AI_EMBEDDING_SEARCH_CHAT_MODEL;
+  let model = modelConfig.model;
+  let maxTokens = modelConfig.maxTokens;
+  let temperature = modelConfig.temperature;
+  if (useVision) {
+    model = "openai/gpt-4o";
+    maxTokens = Math.max(modelConfig.maxTokens, 2000);
+    temperature = Math.min(modelConfig.temperature, 0.5);
+  } else if (taskType === "embedding_search") {
+    model = AI_EMBEDDING_SEARCH_CHAT_MODEL;
   }
 
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
@@ -222,7 +243,7 @@ export async function routeToAI(
       content: m.content,
     }));
 
-  const OPENROUTER_TIMEOUT_MS = 50_000;
+  const OPENROUTER_TIMEOUT_MS = useVision ? 90_000 : 50_000;
   const retryConfig =
     process.env.NODE_ENV === "production"
       ? {
@@ -255,10 +276,10 @@ export async function routeToAI(
                     "X-Title": "Sentinel",
                   },
                   body: JSON.stringify({
-                    model: modelConfig.model,
+                    model,
                     messages: formattedMessages,
-                    temperature: modelConfig.temperature,
-                    max_tokens: modelConfig.maxTokens,
+                    temperature,
+                    max_tokens: maxTokens,
                   }),
                 }
               );
@@ -296,7 +317,15 @@ export async function routeToAI(
                 );
               }
 
-              return data.choices[0].message.content;
+              const rawContent = data.choices[0].message.content;
+              if (typeof rawContent === "string") return rawContent;
+              if (Array.isArray(rawContent)) {
+                const textParts = rawContent.filter(
+                  (p: { type?: string; text?: string }) => p.type === "text" && p.text
+                );
+                return textParts.map((p: { text: string }) => p.text).join("\n") || "";
+              }
+              return "";
             } finally {
               clearTimeout(timeoutId);
             }
