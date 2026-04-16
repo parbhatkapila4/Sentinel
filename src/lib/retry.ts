@@ -1,6 +1,6 @@
 
 import { logWarn, logError } from "./logger";
-import { RetryableError } from "./errors";
+import { CircuitBreakerError, RetryableError } from "./errors";
 
 export interface RetryOptions {
   maxRetries?: number;
@@ -32,6 +32,10 @@ function calculateExponentialDelay(
 
 function isRetryableError(error: unknown, attempt: number, isIdempotent: boolean): boolean {
   if (!isIdempotent) {
+    return false;
+  }
+
+  if (error instanceof CircuitBreakerError) {
     return false;
   }
 

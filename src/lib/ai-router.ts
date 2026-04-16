@@ -26,6 +26,11 @@ const OPENROUTER_CIRCUIT_BREAKER = {
   timeout: 30000,
 } as const;
 
+const OPENROUTER_FALLBACK_MODELS = [
+  "openai/gpt-4o-mini",
+  "anthropic/claude-3-haiku",
+] as const;
+
 export function analyzeTaskType(query: string): TaskType {
   const lowerQuery = query.toLowerCase();
 
@@ -191,6 +196,30 @@ function messageUsesVision(messages: Array<{ role: string; content: ChatMessageC
   });
 }
 
+function getModelCandidates(primaryModel: string, useVision: boolean): string[] {
+  const candidates = [
+    primaryModel,
+    ...(useVision
+      ? OPENROUTER_FALLBACK_MODELS.filter((m) => m.startsWith("openai/"))
+      : OPENROUTER_FALLBACK_MODELS),
+  ];
+  return [...new Set(candidates)];
+}
+
+function shouldTryFallbackModel(error: unknown): boolean {
+  if (!(error instanceof AppError)) return false;
+  return (
+    error.statusCode === 429 ||
+    error.statusCode === 502 ||
+    error.statusCode === 503 ||
+    error.statusCode === 504
+  );
+}
+
+function toCircuitBreakerName(model: string): string {
+  return `openrouter:${model.replace(/[^a-zA-Z0-9_.-]/g, "_")}`;
+}
+
 export async function routeToAI(
   messages: Array<{ role: string; content: ChatMessageContent }>,
   query: string,
@@ -254,86 +283,110 @@ export async function routeToAI(
       }
       : { maxRetries: 2, isIdempotent: true };
 
-  try {
-    return await withCircuitBreaker(
-      "openrouter",
-      () =>
-        retryWithBackoff(
-          async () => {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
-            try {
-              const response = await fetch(
-                "https://openrouter.ai/api/v1/chat/completions",
-                {
-                  method: "POST",
-                  signal: controller.signal,
-                  headers: {
-                    Authorization: `Bearer ${openRouterApiKey}`,
-                    "Content-Type": "application/json",
-                    "HTTP-Referer":
-                      process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-                    "X-Title": "Sentinel",
-                  },
-                  body: JSON.stringify({
-                    model,
-                    messages: formattedMessages,
-                    temperature,
-                    max_tokens: maxTokens,
-                  }),
+  const modelCandidates = getModelCandidates(model, useVision);
+  let lastError: unknown;
+
+  for (let i = 0; i < modelCandidates.length; i++) {
+    const candidateModel = modelCandidates[i];
+    const hasAnotherFallback = i < modelCandidates.length - 1;
+
+    try {
+      return await withCircuitBreaker(
+        toCircuitBreakerName(candidateModel),
+        () =>
+          retryWithBackoff(
+            async () => {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
+              try {
+                const response = await fetch(
+                  "https://openrouter.ai/api/v1/chat/completions",
+                  {
+                    method: "POST",
+                    signal: controller.signal,
+                    headers: {
+                      Authorization: `Bearer ${openRouterApiKey}`,
+                      "Content-Type": "application/json",
+                      "HTTP-Referer":
+                        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+                      "X-Title": "Sentinel",
+                    },
+                    body: JSON.stringify({
+                      model: candidateModel,
+                      messages: formattedMessages,
+                      temperature,
+                      max_tokens: maxTokens,
+                    }),
+                  }
+                );
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                  const errorData = await response.text();
+                  console.error("OpenRouter API error:", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorData,
+                    model: candidateModel,
+                  });
+                  const status = response.status;
+                  const message =
+                    status === 401
+                      ? "AI service configuration issue. Please check your provider settings."
+                      : status === 429
+                        ? "AI service is busy. Please try again in a moment."
+                        : status >= 500
+                          ? "AI service is temporarily unavailable. Please try again in a moment."
+                          : "AI assistant is temporarily unavailable. Please try again.";
+                  throw new AppError(message, {
+                    statusCode: 503,
+                    code: "SERVICE_UNAVAILABLE",
+                  });
                 }
-              );
-              clearTimeout(timeoutId);
 
-              if (!response.ok) {
-                const errorData = await response.text();
-                console.error("OpenRouter API error:", {
-                  status: response.status,
-                  statusText: response.statusText,
-                  error: errorData,
-                });
-                const status = response.status;
-                const message =
-                  status === 401
-                    ? "AI service configuration issue. Please check your provider settings."
-                    : status === 429
-                      ? "AI service is busy. Please try again in a moment."
-                      : status >= 500
-                        ? "AI service is temporarily unavailable. Please try again in a moment."
-                        : "AI assistant is temporarily unavailable. Please try again.";
-                throw new AppError(message, {
-                  statusCode: 503,
-                  code: "SERVICE_UNAVAILABLE",
-                });
+                const data = await response.json();
+
+                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                  console.error("Invalid OpenRouter response:", data);
+                  throw new AppError(
+                    "AI assistant is temporarily unavailable. Please try again.",
+                    { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
+                  );
+                }
+
+                const rawContent = data.choices[0].message.content;
+                if (typeof rawContent === "string") return rawContent;
+                if (Array.isArray(rawContent)) {
+                  const textParts = rawContent.filter(
+                    (p: { type?: string; text?: string }) => p.type === "text" && p.text
+                  );
+                  return textParts.map((p: { text: string }) => p.text).join("\n") || "";
+                }
+                return "";
+              } finally {
+                clearTimeout(timeoutId);
               }
+            },
+            retryConfig
+          ),
+        OPENROUTER_CIRCUIT_BREAKER
+      );
+    } catch (error) {
+      lastError = error;
+      if (hasAnotherFallback && shouldTryFallbackModel(error)) {
+        console.warn("Falling back to alternate OpenRouter model", {
+          fromModel: candidateModel,
+          toModel: modelCandidates[i + 1],
+          reason: error instanceof Error ? error.message : String(error),
+        });
+        continue;
+      }
+      break;
+    }
+  }
 
-              const data = await response.json();
-
-              if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-                console.error("Invalid OpenRouter response:", data);
-                throw new AppError(
-                  "AI assistant is temporarily unavailable. Please try again.",
-                  { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-                );
-              }
-
-              const rawContent = data.choices[0].message.content;
-              if (typeof rawContent === "string") return rawContent;
-              if (Array.isArray(rawContent)) {
-                const textParts = rawContent.filter(
-                  (p: { type?: string; text?: string }) => p.type === "text" && p.text
-                );
-                return textParts.map((p: { text: string }) => p.text).join("\n") || "";
-              }
-              return "";
-            } finally {
-              clearTimeout(timeoutId);
-            }
-          },
-          retryConfig
-        ),
-      OPENROUTER_CIRCUIT_BREAKER
-    );
+  try {
+    throw lastError;
   } catch (error) {
     if (error instanceof AppError) {
       throw error;
