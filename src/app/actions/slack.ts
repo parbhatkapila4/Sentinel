@@ -3,6 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import {
+  decryptIntegrationSecret,
+  encryptIntegrationSecret,
+} from "@/lib/integration-secrets";
 
 export async function createSlackIntegration(data: {
   webhookUrl: string;
@@ -16,7 +20,7 @@ export async function createSlackIntegration(data: {
     data: {
       userId,
       teamId: data.teamId ?? null,
-      webhookUrl: data.webhookUrl,
+      webhookUrl: encryptIntegrationSecret(data.webhookUrl),
       channelName: data.channelName ?? null,
       notifyOn: data.notifyOn,
     },
@@ -33,7 +37,12 @@ export async function getMySlackIntegrations() {
   return prisma.slackIntegration.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-  });
+  }).then((rows) =>
+    rows.map((row) => ({
+      ...row,
+      webhookUrl: decryptIntegrationSecret(row.webhookUrl),
+    }))
+  );
 }
 
 export async function updateSlackIntegration(
@@ -49,7 +58,12 @@ export async function updateSlackIntegration(
 
   await prisma.slackIntegration.updateMany({
     where: { id, userId },
-    data,
+    data: {
+      ...data,
+      ...(typeof data.webhookUrl === "string"
+        ? { webhookUrl: encryptIntegrationSecret(data.webhookUrl) }
+        : {}),
+    },
   });
 
   revalidatePath("/settings/integrations");
@@ -77,7 +91,7 @@ export async function testSlackIntegration(id: string) {
   if (!integration) throw new Error("Integration not found");
 
   try {
-    const response = await fetch(integration.webhookUrl, {
+    const response = await fetch(decryptIntegrationSecret(integration.webhookUrl), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -2,18 +2,14 @@ import { NextRequest } from "next/server";
 import { redis } from "@/lib/redis";
 import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
+import { requireCronBearerAuth } from "@/lib/cron-auth";
 
 const EMAIL_QUEUE = "email_queue";
 const MAX_PER_RUN = 10;
 
 export async function GET(request: NextRequest) {
-  const secret = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "")
-    ?? request.headers.get("x-cron-secret")
-    ?? request.nextUrl.searchParams.get("secret");
-  const expected = process.env.CRON_SECRET;
-  if (expected && secret !== expected) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  const authError = requireCronBearerAuth(request);
+  if (authError) return authError;
 
   if (!redis) {
     return Response.json(

@@ -13,6 +13,12 @@ import { logIntegrationAction } from "./integrations";
 import { enforceIntegrationLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
 import { notifySlackAfterCrmSync } from "@/lib/post-crm-sync-slack";
+import {
+  decryptIntegrationSecret,
+  encryptIntegrationSecret,
+} from "@/lib/integration-secrets";
+import { incrementMetric } from "@/lib/metrics";
+import { logInfo, logWarn } from "@/lib/logger";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = prisma as any;
@@ -31,6 +37,8 @@ export interface SyncResult {
   created: number;
   updated: number;
   linked: number;
+  scanned?: number;
+  failed?: number;
   errors?: string[];
 }
 
@@ -145,13 +153,13 @@ export async function connectGoogleCalendar(
     where: { userId },
     create: {
       userId,
-      apiKey,
+      apiKey: encryptIntegrationSecret(apiKey),
       calendarId,
       isActive: true,
       syncEnabled: true,
     },
     update: {
-      apiKey,
+      apiKey: encryptIntegrationSecret(apiKey),
       calendarId,
       isActive: true,
     },
@@ -207,7 +215,7 @@ export async function syncCalendarEvents(): Promise<SyncResult> {
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     const events = await fetchCalendarEvents(
-      integration.apiKey,
+      decryptIntegrationSecret(integration.apiKey),
       integration.calendarId,
       now,
       thirtyDaysFromNow
@@ -498,6 +506,7 @@ export async function updateGoogleCalendarSettings(settings: {
 }
 
 export async function syncCalendarEventsForUser(userId: string): Promise<SyncResult> {
+  const startedAt = Date.now();
   const integration = await db.googleCalendarIntegration.findUnique({
     where: { userId },
   });
@@ -511,10 +520,25 @@ export async function syncCalendarEventsForUser(userId: string): Promise<SyncRes
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     const events = await fetchCalendarEvents(
-      integration.apiKey,
+      decryptIntegrationSecret(integration.apiKey),
       integration.calendarId,
       now,
       thirtyDaysFromNow
+    );
+
+    const externalIds = events.map((event) => event.id);
+    const existingMeetings: Array<{ id: string; externalId: string; dealId: string | null }> = externalIds.length
+      ? await db.meeting.findMany({
+        where: {
+          userId,
+          source: "google_calendar",
+          externalId: { in: externalIds },
+        },
+        select: { id: true, externalId: true, dealId: true },
+      })
+      : [];
+    const existingMeetingByExternalId = new Map<string, { id: string; externalId: string; dealId: string | null }>(
+      existingMeetings.map((meeting) => [meeting.externalId, meeting])
     );
 
     const deals = await prisma.deal.findMany({
@@ -525,51 +549,53 @@ export async function syncCalendarEventsForUser(userId: string): Promise<SyncRes
     let created = 0;
     let updated = 0;
     let linked = 0;
+    const errors: string[] = [];
 
     for (const event of events) {
-      const meetingData = mapCalendarEventToMeeting(event, userId);
+      try {
+        const meetingData = mapCalendarEventToMeeting(event, userId);
+        const existingMeeting = existingMeetingByExternalId.get(meetingData.externalId);
 
-      const existingMeeting = await db.meeting.findFirst({
-        where: {
-          userId,
-          externalId: meetingData.externalId,
-          source: "google_calendar",
-        },
-      });
+        let meetingId: string;
 
-      let meetingId: string;
+        if (existingMeeting) {
+          await db.meeting.update({
+            where: { id: existingMeeting.id },
+            data: {
+              title: meetingData.title,
+              description: meetingData.description,
+              startTime: meetingData.startTime,
+              endTime: meetingData.endTime,
+              attendees: meetingData.attendees,
+              location: meetingData.location,
+              meetingLink: meetingData.meetingLink,
+            },
+          });
+          meetingId = existingMeeting.id;
+          updated++;
+        } else {
+          const newMeeting = await db.meeting.create({
+            data: meetingData,
+            select: { id: true, externalId: true, dealId: true },
+          }) as { id: string; externalId: string; dealId: string | null };
+          meetingId = newMeeting.id;
+          existingMeetingByExternalId.set(newMeeting.externalId, newMeeting);
+          created++;
+        }
 
-      if (existingMeeting) {
-        await db.meeting.update({
-          where: { id: existingMeeting.id },
-          data: {
-            title: meetingData.title,
-            description: meetingData.description,
-            startTime: meetingData.startTime,
-            endTime: meetingData.endTime,
-            attendees: meetingData.attendees,
-            location: meetingData.location,
-            meetingLink: meetingData.meetingLink,
-          },
-        });
-        meetingId = existingMeeting.id;
-        updated++;
-      } else {
-        const newMeeting = await db.meeting.create({
-          data: meetingData,
-        });
-        meetingId = newMeeting.id;
-        created++;
-      }
-
-      if (!existingMeeting?.dealId) {
-        const didLink = await linkOrCreateDealForMeeting(
-          userId,
-          meetingId,
-          meetingData,
-          deals
+        if (!existingMeeting?.dealId) {
+          const didLink = await linkOrCreateDealForMeeting(
+            userId,
+            meetingId,
+            meetingData,
+            deals
+          );
+          if (didLink) linked++;
+        }
+      } catch (error) {
+        errors.push(
+          `Failed to sync calendar event ${event.id}: ${error instanceof Error ? error.message : String(error)}`
         );
-        if (didLink) linked++;
       }
     }
 
@@ -578,16 +604,42 @@ export async function syncCalendarEventsForUser(userId: string): Promise<SyncRes
       data: {
         lastSyncAt: new Date(),
         lastSyncStatus: "success",
+        syncErrors: errors.length > 0 ? errors.join("; ") : null,
       },
     });
 
+    const durationMs = Date.now() - startedAt;
+    void incrementMetric("sync.google_calendar.duration_ms", durationMs);
+    void incrementMetric("sync.google_calendar.success", 1);
+    if (errors.length > 0) {
+      void incrementMetric("sync.google_calendar.item_errors", errors.length);
+    }
+    logInfo("Google Calendar user sync completed", {
+      userId,
+      scanned: events.length,
+      created,
+      updated,
+      linked,
+      failed: errors.length,
+      failureReasons: errors.slice(0, 3),
+      durationMs,
+    });
     void notifySlackAfterCrmSync(userId, {
       provider: "google_calendar",
       created,
       updated,
     });
 
-    return { success: true, synced: created + updated, created, updated, linked };
+    return {
+      success: true,
+      synced: created + updated,
+      created,
+      updated,
+      linked,
+      scanned: events.length,
+      failed: errors.length,
+      errors: errors.length > 0 ? errors : undefined,
+    };
   } catch (error) {
     await db.googleCalendarIntegration.update({
       where: { userId },
@@ -597,6 +649,22 @@ export async function syncCalendarEventsForUser(userId: string): Promise<SyncRes
       },
     });
 
-    return { success: false, synced: 0, created: 0, updated: 0, linked: 0, errors: [String(error)] };
+    const durationMs = Date.now() - startedAt;
+    void incrementMetric("sync.google_calendar.errors", 1);
+    logWarn("Google Calendar user sync failed", {
+      userId,
+      durationMs,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      success: false,
+      synced: 0,
+      created: 0,
+      updated: 0,
+      linked: 0,
+      scanned: 0,
+      failed: 1,
+      errors: [String(error)],
+    };
   }
 }

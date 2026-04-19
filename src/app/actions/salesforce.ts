@@ -12,6 +12,13 @@ import { logIntegrationAction } from "./integrations";
 import { enforceIntegrationLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
 import { notifySlackAfterCrmSync } from "@/lib/post-crm-sync-slack";
+import {
+  decryptIntegrationSecret,
+  encryptIntegrationSecret,
+} from "@/lib/integration-secrets";
+import { incrementMetric } from "@/lib/metrics";
+import { logInfo, logWarn } from "@/lib/logger";
+import { runWithConcurrency } from "@/lib/async-pool";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,8 +38,12 @@ export interface SyncResult {
   synced: number;
   created: number;
   updated: number;
+  scanned?: number;
+  failed?: number;
   errors?: string[];
 }
+
+const SALESFORCE_SYNC_ITEM_CONCURRENCY = 2;
 
 async function findExistingSalesforceDeal(
   userId: string,
@@ -89,13 +100,13 @@ export async function connectSalesforce(
     where: { userId },
     create: {
       userId,
-      apiKey,
+      apiKey: encryptIntegrationSecret(apiKey),
       instanceUrl: instanceUrl.replace(/\/$/, ""),
       isActive: true,
       syncEnabled: true,
     },
     update: {
-      apiKey,
+      apiKey: encryptIntegrationSecret(apiKey),
       instanceUrl: instanceUrl.replace(/\/$/, ""),
       isActive: true,
     },
@@ -148,7 +159,7 @@ export async function syncSalesforceDeals(): Promise<SyncResult> {
 
   try {
     const opportunities = await fetchSalesforceOpportunities(
-      integration.apiKey,
+      decryptIntegrationSecret(integration.apiKey),
       integration.instanceUrl
     );
 
@@ -296,6 +307,7 @@ export async function updateSalesforceSettings(settings: {
 }
 
 export async function syncSalesforceDealsForUser(userId: string): Promise<SyncResult> {
+  const startedAt = Date.now();
   const integration = await db.salesforceIntegration.findUnique({
     where: { userId },
   });
@@ -305,36 +317,84 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
   }
 
   try {
-    const opportunities = await fetchSalesforceOpportunities(
-      integration.apiKey,
+    const fetchedOpportunities = await fetchSalesforceOpportunities(
+      decryptIntegrationSecret(integration.apiKey),
       integration.instanceUrl
+    );
+    const opportunities = fetchedOpportunities.filter((opportunity, index, arr) => {
+      return arr.findIndex((candidate) => candidate.Id === opportunity.Id) === index;
+    });
+
+    const mappedDeals = opportunities.map((opportunity) =>
+      mapSalesforceOpportunityToDeal(opportunity, userId)
+    );
+    const externalIds = mappedDeals.map((deal) => deal.externalId);
+    const candidateNames = [...new Set(mappedDeals.map((deal) => deal.name))];
+    const existingDeals = await prisma.deal.findMany({
+      where: {
+        userId,
+        OR: [
+          { externalId: { in: externalIds }, source: "salesforce" },
+          { name: { in: candidateNames }, OR: [{ source: "salesforce" }, { source: null }] },
+        ],
+      },
+      select: { id: true, externalId: true, name: true, source: true },
+    });
+    const existingByExternal = new Map(
+      existingDeals
+        .filter((deal) => deal.externalId && deal.source === "salesforce")
+        .map((deal) => [deal.externalId as string, deal])
+    );
+    const existingByName = new Map(
+      existingDeals
+        .filter((deal) => deal.source === "salesforce" || deal.source === null)
+        .map((deal) => [deal.name, deal])
     );
 
     let created = 0;
     let updated = 0;
+    const errors: string[] = [];
 
-    for (const opportunity of opportunities) {
-      const dealData = mapSalesforceOpportunityToDeal(opportunity, userId);
+    await runWithConcurrency(
+      opportunities,
+      SALESFORCE_SYNC_ITEM_CONCURRENCY,
+      async (opportunity) => {
+        try {
+          const dealData = mapSalesforceOpportunityToDeal(opportunity, userId);
+          const existingDeal =
+            existingByExternal.get(dealData.externalId) ?? existingByName.get(dealData.name);
 
-      const existingDeal = await findExistingSalesforceDeal(userId, dealData);
+          if (existingDeal) {
+            await prisma.deal.update({
+              where: { id: existingDeal.id },
+              data: {
+                name: dealData.name,
+                value: dealData.value,
+                stage: dealData.stage,
+              },
+            });
+            updated++;
+            existingByExternal.set(dealData.externalId, existingDeal);
+            existingByName.set(dealData.name, existingDeal);
+            return;
+          }
 
-      if (existingDeal) {
-        await prisma.deal.update({
-          where: { id: existingDeal.id },
-          data: {
-            name: dealData.name,
-            value: dealData.value,
-            stage: dealData.stage,
-          },
-        });
-        updated++;
-      } else {
-        await prisma.deal.create({
-          data: dealData,
-        });
-        created++;
+          const createdDeal = await prisma.deal.create({
+            data: dealData,
+            select: { id: true, externalId: true, name: true, source: true },
+          });
+          created++;
+          if (createdDeal.externalId) {
+            existingByExternal.set(createdDeal.externalId, createdDeal);
+          }
+          existingByName.set(createdDeal.name, createdDeal);
+        } catch (error) {
+          errors.push(
+            `Failed to sync opportunity ${opportunity.Id}: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
       }
-    }
+    );
 
     await db.salesforceIntegration.update({
       where: { userId },
@@ -342,10 +402,35 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
         lastSyncAt: new Date(),
         lastSyncStatus: "success",
         totalSynced: integration.totalSynced + created + updated,
+        syncErrors: errors.length > 0 ? errors.join("; ") : null,
       },
     });
 
-    return { success: true, synced: created + updated, created, updated };
+    const durationMs = Date.now() - startedAt;
+    void incrementMetric("sync.salesforce.duration_ms", durationMs);
+    void incrementMetric("sync.salesforce.success", 1);
+    if (errors.length > 0) {
+      void incrementMetric("sync.salesforce.item_errors", errors.length);
+    }
+    logInfo("Salesforce user sync completed", {
+      userId,
+      scanned: opportunities.length,
+      created,
+      updated,
+      failed: errors.length,
+      failureReasons: errors.slice(0, 3),
+      durationMs,
+      concurrency: SALESFORCE_SYNC_ITEM_CONCURRENCY,
+    });
+    return {
+      success: true,
+      synced: created + updated,
+      created,
+      updated,
+      scanned: opportunities.length,
+      failed: errors.length,
+      errors: errors.length > 0 ? errors : undefined,
+    };
   } catch (error) {
     await db.salesforceIntegration.update({
       where: { userId },
@@ -356,6 +441,13 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
       },
     });
 
-    return { success: false, synced: 0, created: 0, updated: 0, errors: [String(error)] };
+    const durationMs = Date.now() - startedAt;
+    void incrementMetric("sync.salesforce.errors", 1);
+    logWarn("Salesforce user sync failed", {
+      userId,
+      durationMs,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return { success: false, synced: 0, created: 0, updated: 0, scanned: 0, failed: 1, errors: [String(error)] };
   }
 }

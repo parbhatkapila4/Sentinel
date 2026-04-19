@@ -4,11 +4,15 @@ import path from "path";
 
 const getCSP = () => {
   const isDev = process.env.NODE_ENV === "development";
+  const scriptUnsafeDirectives = isDev
+    ? "'unsafe-eval' 'unsafe-inline' "
+    : "";
 
   const directives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://browser.sentry-cdn.com",
+    `script-src 'self' ${scriptUnsafeDirectives}blob: https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://browser.sentry-cdn.com`,
     "worker-src 'self' blob:",
+
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob: https://img.clerk.com",
     "font-src 'self' data: https://fonts.gstatic.com",

@@ -46,12 +46,17 @@ export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeResult
   const backoffRef = useRef(INITIAL_BACKOFF_MS);
   const onEventRef = useRef(onEvent);
   const connectRef = useRef<() => void>(() => { });
+  const lastEventIdRef = useRef<number>(0);
+  const pendingEventIdRef = useRef<number | null>(null);
 
   const connect = useCallback(() => {
     if (!enabled) return;
 
     const base = typeof window !== "undefined" ? window.location.origin : "";
-    const url = `${base}/api/events`;
+    const search = lastEventIdRef.current > 0
+      ? `?lastEventId=${encodeURIComponent(String(lastEventIdRef.current))}`
+      : "";
+    const url = `${base}/api/events${search}`;
     const controller = new AbortController();
     abortRef.current = controller;
 
@@ -91,8 +96,27 @@ export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeResult
           const lines = buffer.split("\n");
           buffer = lines.pop() ?? "";
           for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith("id: ")) {
+              const id = Number(trimmed.slice(4));
+              if (Number.isFinite(id) && id > 0) {
+                pendingEventIdRef.current = id;
+              }
+              continue;
+            }
             const event = parseSSELine(line);
             if (event) {
+              if (
+                typeof event.id !== "number" &&
+                pendingEventIdRef.current &&
+                Number.isFinite(pendingEventIdRef.current)
+              ) {
+                event.id = pendingEventIdRef.current;
+              }
+              if (typeof event.id === "number" && event.id > 0) {
+                lastEventIdRef.current = Math.max(lastEventIdRef.current, event.id);
+              }
+              pendingEventIdRef.current = null;
               setEvents((prev) => [...prev, event]);
               setLastEvent(event);
               onEventRef.current?.(event);
@@ -149,6 +173,7 @@ export function useRealtime(options: UseRealtimeOptions = {}): UseRealtimeResult
   const reconnect = useCallback(() => {
     disconnect();
     backoffRef.current = INITIAL_BACKOFF_MS;
+    pendingEventIdRef.current = null;
     setStatus("idle");
     setError(null);
     setTimeout(() => connect(), 0);

@@ -30,4 +30,4 @@ The Billing tab supports paid plans, and upgrades are handled through PayPal che
 
 - **Quality gate**: Run `npm run verify` before opening a PR (typecheck, ESLint, unit tests). Optional manual GitHub workflow runs the same gate—see [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Architecture, security, reliability, known limits**: [README — Production engineering for founders and reviewers](README.md#production-engineering-for-founders-and-reviewers), then [ARCHITECTURE.md](ARCHITECTURE.md) and [DEPLOYMENT.md](DEPLOYMENT.md).
-- **Cron / Vercel Hobby**: [DEPLOYMENT — Vercel Hobby cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook) (Bearer `CRON_SECRET`, external scheduler for higher frequency).
+- **Cron / Vercel Hobby**: [DEPLOYMENT — Vercel Hobby cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook) (Bearer `CRON_SECRET`; on Hobby each Vercel cron is **at most daily**—use an external scheduler for higher frequency).

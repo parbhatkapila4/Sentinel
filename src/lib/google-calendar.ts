@@ -2,6 +2,7 @@ import { retryWithBackoff } from "./retry";
 import { withCircuitBreaker } from "./circuit-breaker";
 import { ExternalServiceError, RetryableError } from "./errors";
 import { logError } from "./logger";
+import { fetchWithTimeout } from "./reliable-fetch";
 
 export interface GoogleCalendarValidationResult {
   valid: boolean;
@@ -42,6 +43,7 @@ export interface CreateEventParams {
 }
 
 const GOOGLE_CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
+const GOOGLE_CALENDAR_TIMEOUT_MS = 25_000;
 
 export async function validateGoogleCalendarCredentials(
   apiKey: string,
@@ -54,13 +56,17 @@ export async function validateGoogleCalendarCredentials(
         return await retryWithBackoff(
           async () => {
             const encodedCalendarId = encodeURIComponent(calendarId);
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodedCalendarId}?key=${apiKey}`,
               {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",
                 },
+              },
+              {
+                timeoutMs: GOOGLE_CALENDAR_TIMEOUT_MS,
+                timeoutMessage: "Google Calendar validation request timed out",
               }
             );
 
@@ -174,13 +180,17 @@ export async function fetchCalendarEvents(
               maxResults: "100",
             });
 
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodedCalendarId}/events?${params.toString()}`,
               {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",
                 },
+              },
+              {
+                timeoutMs: GOOGLE_CALENDAR_TIMEOUT_MS,
+                timeoutMessage: "Google Calendar events request timed out",
               }
             );
 
@@ -231,7 +241,7 @@ export async function createCalendarEvent(
           async () => {
             const encodedCalendarId = encodeURIComponent(calendarId);
 
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodedCalendarId}/events`,
               {
                 method: "POST",
@@ -240,6 +250,10 @@ export async function createCalendarEvent(
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify(event),
+              },
+              {
+                timeoutMs: GOOGLE_CALENDAR_TIMEOUT_MS,
+                timeoutMessage: "Google Calendar create event request timed out",
               }
             );
 
@@ -291,7 +305,7 @@ export async function updateCalendarEvent(
             const encodedCalendarId = encodeURIComponent(calendarId);
             const encodedEventId = encodeURIComponent(eventId);
 
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodedCalendarId}/events/${encodedEventId}`,
               {
                 method: "PATCH",
@@ -300,6 +314,10 @@ export async function updateCalendarEvent(
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify(updates),
+              },
+              {
+                timeoutMs: GOOGLE_CALENDAR_TIMEOUT_MS,
+                timeoutMessage: "Google Calendar update event request timed out",
               }
             );
 
@@ -350,13 +368,17 @@ export async function deleteCalendarEvent(
             const encodedCalendarId = encodeURIComponent(calendarId);
             const encodedEventId = encodeURIComponent(eventId);
 
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodedCalendarId}/events/${encodedEventId}`,
               {
                 method: "DELETE",
                 headers: {
                   Authorization: `Bearer ${accessToken}`,
                 },
+              },
+              {
+                timeoutMs: GOOGLE_CALENDAR_TIMEOUT_MS,
+                timeoutMessage: "Google Calendar delete event request timed out",
               }
             );
 

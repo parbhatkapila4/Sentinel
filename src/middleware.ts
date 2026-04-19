@@ -11,7 +11,7 @@ const isPublicRoute = createRouteMatcher([
   "/privacy",
   "/about",
   "/contact",
-  "/api/internal(.*)",
+  "/api/internal/metrics",
   "/api-docs",
   "/api-docs(.*)",
   "/docs",
@@ -45,6 +45,10 @@ function nextWithRequestId(req: NextRequest, requestId: string): NextResponse {
   return addRequestIdToResponse(response, requestId);
 }
 
+export function isExplicitlyPublicRoute(req: NextRequest): boolean {
+  return isPublicRoute(req);
+}
+
 export default clerkMiddleware(async (auth, req) => {
   const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
 
@@ -58,26 +62,8 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  if (isPublicRoute(req)) {
+  if (isExplicitlyPublicRoute(req)) {
     return nextWithRequestId(req, requestId);
-  }
-
-  const rsc = req.headers.get("RSC") || req.headers.get("rsc");
-  const prefetch = req.headers.get("Next-Router-Prefetch");
-  if (rsc === "1" || prefetch === "1") {
-    return nextWithRequestId(req, requestId);
-  }
-
-  const referer = req.headers.get("Referer") || req.headers.get("referer");
-  if (referer) {
-    try {
-      const refUrl = new URL(referer);
-      const requestUrl = new URL(req.url);
-      if (refUrl.origin === requestUrl.origin) {
-        return nextWithRequestId(req, requestId);
-      }
-    } catch {
-    }
   }
 
   const { userId } = await auth();

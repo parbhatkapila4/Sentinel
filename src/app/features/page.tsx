@@ -422,7 +422,7 @@ export default async function FeaturesPage() {
               <li className="flex items-start gap-2">
                 <span className="text-blue-400 mt-1">•</span>
                 <span>
-                  Auto-sync every 6 hours via cron job or manual on-demand sync
+                  Scheduled auto-sync (Vercel Hobby: at most daily per Vercel cron; use an external scheduler for tighter intervals) plus manual on-demand sync
                 </span>
               </li>
               <li className="flex items-start gap-2">

@@ -41,7 +41,7 @@ Evidence-based summary of how the system is built and operated—maps to code pa
 
 ### Vercel Hobby cron playbook
 
-1. **Once per day on Vercel (Hobby)** — schedule `GET /api/cron/sync-integrations` (example: `vercel.crons.example.json` → copy into `vercel.json`). Hobby allows only one daily cron with hourly precision; use that slot for lowest-risk batch sync.
+1. **Once per day on Vercel (Hobby)** — schedule `GET /api/cron/sync-integrations` (example: `vercel.crons.example.json` → copy into `vercel.json`). On **Hobby**, each Vercel cron must run **at most once per day** (more frequent expressions **fail at deploy**); timing is **hourly precision** (e.g. a 1:00 UTC job may fire any time 1:00–1:59). You can define multiple daily crons, but for this app one daily sync is usually enough—see [Vercel cron usage](https://vercel.com/docs/cron-jobs/usage-and-pricing).
 2. **More frequent runs** — use an external scheduler (e.g. cron-job.org) calling the same routes with `Authorization: Bearer <CRON_SECRET>`.
 3. **Idempotency** — assume retries and overlapping runs; sync logic upserts by external IDs where possible; avoid irreversible side effects without guards.
 
@@ -884,12 +884,12 @@ src/
 
 ## Testing
 
-| Command                 | Description       |
-| ----------------------- | ----------------- |
-| `npm run test`          | Vitest watch mode |
-| `npm run test:run`      | Unit tests (CI)   |
-| `npm run test:coverage` | Coverage report   |
-| `npm run test:e2e`      | Playwright E2E    |
+| Command                 | Description                                        |
+| ----------------------- | -------------------------------------------------- |
+| `npm run test`          | Vitest watch mode                                  |
+| `npm run test:run`      | Unit tests (CI)                                    |
+| `npm run test:coverage` | Coverage report                                    |
+| `npm run test:e2e`      | Playwright E2E                                     |
 | `npm run verify`        | Local quality gate (typecheck + lint + unit tests) |
 | `npm run verify:ci`     | Same as `verify` (for CI / docs parity)            |
 
@@ -991,13 +991,13 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 
 ## Production Lessons
 
-| Issue seen in real use | What changed in code | Evidence / measurable outcome |
-| --- | --- | --- |
-| Intermittent 503 from AI provider under load/transient upstream failures | Added model fallback candidates and per-model circuit-breaker isolation in `src/lib/ai-router.ts`; avoid retrying on open circuits in `src/lib/retry.ts` | `src/lib/__tests__/ai-router-openrouter.test.ts` validates retry/fallback and circuit-open behavior; `npm run verify` passes |
-| Cron auth was too permissive (header/query fallbacks) | Added centralized strict Bearer auth in `src/lib/cron-auth.ts`; cron routes now reject missing/invalid auth and missing `CRON_SECRET` | `src/lib/__tests__/cron-auth.test.ts` covers fail-closed behavior; all cron examples now use `Authorization: Bearer <CRON_SECRET>` |
-| Middleware auth boundary had spoofable bypass patterns | `src/middleware.ts` now only allows explicit public routes and removes referer/prefetch/RSC trust patterns | `src/__tests__/middleware-auth.test.ts` verifies protected routes cannot be bypassed by spoofable headers |
-| Integration secrets were stored as plaintext | Added AES-256-GCM envelope utility in `src/lib/integration-secrets.ts`; integration credentials/webhooks are encrypted before DB write, decrypted at use sites | `src/lib/__tests__/integration-secrets.test.ts` validates round-trip encryption + plaintext backward compatibility |
-| Realtime delivery could drop events with read-then-delete semantics | Replaced destructive consume with cursor-based `consumeUserEventsSince` and monotonic IDs in `src/lib/realtime.ts`; SSE sends/resumes using event IDs | `src/lib/__tests__/realtime.test.ts` validates at-least-once cursor semantics |
+| Issue seen in real use                                                   | What changed in code                                                                                                                                           | Evidence / measurable outcome                                                                                                      |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Intermittent 503 from AI provider under load/transient upstream failures | Added model fallback candidates and per-model circuit-breaker isolation in `src/lib/ai-router.ts`; avoid retrying on open circuits in `src/lib/retry.ts`       | `src/lib/__tests__/ai-router-openrouter.test.ts` validates retry/fallback and circuit-open behavior; `npm run verify` passes       |
+| Cron auth was too permissive (header/query fallbacks)                    | Added centralized strict Bearer auth in `src/lib/cron-auth.ts`; cron routes now reject missing/invalid auth and missing `CRON_SECRET`                          | `src/lib/__tests__/cron-auth.test.ts` covers fail-closed behavior; all cron examples now use `Authorization: Bearer <CRON_SECRET>` |
+| Middleware auth boundary had spoofable bypass patterns                   | `src/middleware.ts` now only allows explicit public routes and removes referer/prefetch/RSC trust patterns                                                     | `src/__tests__/middleware-auth.test.ts` verifies protected routes cannot be bypassed by spoofable headers                          |
+| Integration secrets were stored as plaintext                             | Added AES-256-GCM envelope utility in `src/lib/integration-secrets.ts`; integration credentials/webhooks are encrypted before DB write, decrypted at use sites | `src/lib/__tests__/integration-secrets.test.ts` validates round-trip encryption + plaintext backward compatibility                 |
+| Realtime delivery could drop events with read-then-delete semantics      | Replaced destructive consume with cursor-based `consumeUserEventsSince` and monotonic IDs in `src/lib/realtime.ts`; SSE sends/resumes using event IDs          | `src/lib/__tests__/realtime.test.ts` validates at-least-once cursor semantics                                                      |
 
 These changes are implementation-level hardening, not marketing claims. Remaining limits and tradeoffs are listed in this README and `ARCHITECTURE.md`.
 
@@ -1086,7 +1086,7 @@ Before production or a major release:
 
 1. **`npm run verify`** — typecheck, ESLint, Vitest (Windows: run as a single command).
 2. **Environment** — copy [.env.example](.env.example) → `.env.local` (or Vercel env UI): `DATABASE_URL`, `DIRECT_URL`, Clerk, `OPENROUTER_API_KEY`; add **`CRON_SECRET`** if cron is used; add **`INTEGRATION_ENCRYPTION_KEY`** if integrations encrypt at connect.
-3. **Cron** — [Vercel Hobby cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook): Hobby = one daily Vercel cron + Bearer; higher frequency = external scheduler with the same header.
+3. **Cron** — [Vercel Hobby cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook): Hobby = each Vercel cron **at most daily** (Bearer `CRON_SECRET`); tighter cadence = external scheduler with the same header.
 4. **Optional CI** — [CONTRIBUTING.md](CONTRIBUTING.md): Actions → **Verify (manual)** (`workflow_dispatch` only).
 5. **Demo** — [https://www.sentinels.in/](https://www.sentinels.in/) · [TRY_THIS.md](TRY_THIS.md) for a 2-minute walkthrough.
 

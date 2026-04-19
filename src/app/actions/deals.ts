@@ -5,11 +5,6 @@ import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { logInfo, logWarn } from "@/lib/logger";
 import { withErrorContext } from "@/lib/error-context";
-import {
-  calculateDealSignals,
-  formatRiskLevel,
-  getPrimaryRiskReason,
-} from "@/lib/dealRisk";
 import { STAGE_PRIORITY_FOR_RISK, TEAM_ROLES } from "@/lib/config";
 import { assertRiskFieldIntegrity } from "@/lib/riskAssertions";
 import { Prisma } from "@prisma/client";
@@ -17,13 +12,10 @@ import { prisma } from "@/lib/prisma";
 import { appendDealTimeline } from "@/lib/timeline";
 import {
   triggerStageChangeNotification,
-  triggerDealAtRiskNotification,
-  triggerActionOverdueNotification,
 } from "@/lib/notification-triggers";
 import { dispatchWebhookEvent } from "@/lib/webhooks";
 import {
   sendSlackNotification,
-  formatDealAtRiskSlackMessage,
   formatDealWonSlackMessage,
   formatStageChangeSlackMessage,
 } from "@/lib/slack";
@@ -36,6 +28,12 @@ import type { GetDealsOptions } from "@/types";
 import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
 import { notifyRealtimeEvent } from "@/lib/realtime";
 import { incrementMetric } from "@/lib/business-metrics";
+import {
+  buildRiskSettingsMap,
+  buildTimelineByDealId,
+  computeDealRiskSnapshot,
+} from "@/lib/deal-risk-enrichment";
+import { runDealStageRiskSideEffects } from "@/lib/deal-stage-side-effects";
 
 const DEAL_VALUE_AUDIT_THRESHOLD = 100000;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -187,15 +185,6 @@ export async function createDeal(formData: FormData) {
         orderBy: { createdAt: "desc" },
       });
 
-      const timelineEventsInput = timeline.map((e) => ({
-        eventType: e.eventType,
-        createdAt: e.createdAt || new Date(),
-        metadata:
-          e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
-            ? (e.metadata as Record<string, unknown>)
-            : null,
-      }));
-
       const riskSettings = await prisma.userRiskSettings.findUnique({
         where: { userId: deal.userId },
         select: {
@@ -204,14 +193,20 @@ export async function createDeal(formData: FormData) {
         },
       });
 
-      const signals = calculateDealSignals(
+      const riskSnapshot = computeDealRiskSnapshot(
         {
+          id: deal.id,
+          userId: deal.userId,
           stage: deal.stage,
           value: deal.value,
-          status: "active",
           createdAt: deal.createdAt,
         },
-        timelineEventsInput,
+        timeline.map((e) => ({
+          dealId: deal.id,
+          eventType: e.eventType,
+          createdAt: e.createdAt,
+          metadata: e.metadata,
+        })),
         riskSettings ?? undefined
       );
 
@@ -223,20 +218,7 @@ export async function createDeal(formData: FormData) {
         name: deal.name,
         stage: deal.stage,
         value: deal.value,
-        lastActivityAt: signals.lastActivityAt,
-        riskScore: signals.riskScore,
-        riskLevel: formatRiskLevel(signals.riskScore),
-        status: signals.status,
-        nextAction: signals.nextAction,
-        nextActionReason: null,
-        riskReasons: signals.reasons,
-        primaryRiskReason: getPrimaryRiskReason(signals.reasons),
-        recommendedAction: signals.recommendedAction,
-        riskStartedAt: signals.riskStartedAt,
-        riskAgeInDays: signals.riskAgeInDays,
-        actionDueAt: signals.actionDueAt,
-        actionOverdueByDays: signals.actionOverdueByDays,
-        isActionOverdue: signals.isActionOverdue,
+        ...riskSnapshot,
         createdAt: deal.createdAt,
       };
     }
@@ -286,59 +268,38 @@ export async function getAllDeals(options?: GetDealsOptions) {
       orderBy: { createdAt: "desc" },
     });
 
-    const timelineByDealId = new Map<string, typeof allTimelineEvents>();
-    for (const event of allTimelineEvents) {
-      if (!timelineByDealId.has(event.dealId)) {
-        timelineByDealId.set(event.dealId, []);
-      }
-      timelineByDealId.get(event.dealId)!.push(event);
-    }
+    const timelineByDealId = buildTimelineByDealId(
+      allTimelineEvents as Array<{
+        dealId: string;
+        eventType: string;
+        createdAt: Date | null;
+        metadata: unknown;
+      }>
+    );
 
     const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
-    const riskSettingsMap = new Map<string, { inactivityThresholdDays: number; enableCompetitiveSignals: boolean }>();
-    if (uniqueUserIds.length > 0) {
-      const riskSettings = await prisma.userRiskSettings.findMany({
-        where: { userId: { in: uniqueUserIds } },
-        select: {
-          userId: true,
-          inactivityThresholdDays: true,
-          enableCompetitiveSignals: true,
-        },
-      });
-      for (const setting of riskSettings) {
-        riskSettingsMap.set(setting.userId, {
-          inactivityThresholdDays: setting.inactivityThresholdDays,
-          enableCompetitiveSignals: setting.enableCompetitiveSignals,
-        });
-      }
-    }
+    const riskSettingsMap = await buildRiskSettingsMap(uniqueUserIds);
 
     return deals.map((deal) => {
       assertRiskFieldIntegrity(deal);
 
       const dealTimeline = timelineByDealId.get(deal.id) ?? [];
 
-      const timelineEvents = dealTimeline.map((e) => ({
-        eventType: e.eventType,
-        createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
-        metadata:
-          e.metadata &&
-            typeof e.metadata === "object" &&
-            !Array.isArray(e.metadata)
-            ? ({ ...e.metadata } as Record<string, unknown>)
-            : null,
-      }));
-
       const userRiskSettings = riskSettingsMap.get(deal.userId);
-
-      const signals = calculateDealSignals(
+      const riskSnapshot = computeDealRiskSnapshot(
         {
+          id: deal.id,
+          userId: deal.userId,
           stage: deal.stage,
           value: deal.value,
-          status: "active",
           createdAt: deal.createdAt,
         },
-        timelineEvents,
+        dealTimeline as Array<{
+          dealId: string;
+          eventType: string;
+          createdAt: Date | null;
+          metadata: unknown;
+        }>,
         userRiskSettings
       );
 
@@ -355,20 +316,7 @@ export async function getAllDeals(options?: GetDealsOptions) {
         value: deal.value,
         location: deal.location,
         isDemo: deal.isDemo,
-        lastActivityAt: signals.lastActivityAt,
-        riskScore: signals.riskScore,
-        riskLevel: formatRiskLevel(signals.riskScore),
-        status: signals.status,
-        nextAction: signals.nextAction,
-        nextActionReason: null,
-        riskReasons: signals.reasons,
-        primaryRiskReason: getPrimaryRiskReason(signals.reasons),
-        recommendedAction: signals.recommendedAction,
-        riskStartedAt: signals.riskStartedAt,
-        riskAgeInDays: signals.riskAgeInDays,
-        actionDueAt: signals.actionDueAt,
-        actionOverdueByDays: signals.actionOverdueByDays,
-        isActionOverdue: signals.isActionOverdue,
+        ...riskSnapshot,
         createdAt: deal.createdAt,
       };
     });
@@ -399,57 +347,36 @@ export async function getTeamDeals(teamId: string) {
       orderBy: { createdAt: "desc" },
     });
 
-    const timelineByDealId = new Map<string, typeof allTimelineEvents>();
-    for (const event of allTimelineEvents) {
-      if (!timelineByDealId.has(event.dealId)) {
-        timelineByDealId.set(event.dealId, []);
-      }
-      timelineByDealId.get(event.dealId)!.push(event);
-    }
+    const timelineByDealId = buildTimelineByDealId(
+      allTimelineEvents as Array<{
+        dealId: string;
+        eventType: string;
+        createdAt: Date | null;
+        metadata: unknown;
+      }>
+    );
 
     const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
-    const riskSettingsMap = new Map<string, { inactivityThresholdDays: number; enableCompetitiveSignals: boolean }>();
-    if (uniqueUserIds.length > 0) {
-      const riskSettings = await prisma.userRiskSettings.findMany({
-        where: { userId: { in: uniqueUserIds } },
-        select: {
-          userId: true,
-          inactivityThresholdDays: true,
-          enableCompetitiveSignals: true,
-        },
-      });
-      for (const setting of riskSettings) {
-        riskSettingsMap.set(setting.userId, {
-          inactivityThresholdDays: setting.inactivityThresholdDays,
-          enableCompetitiveSignals: setting.enableCompetitiveSignals,
-        });
-      }
-    }
+    const riskSettingsMap = await buildRiskSettingsMap(uniqueUserIds);
 
     return deals.map((deal) => {
       assertRiskFieldIntegrity(deal);
       const dealTimeline = timelineByDealId.get(deal.id) ?? [];
-      const timelineEvents = dealTimeline.map((e) => ({
-        eventType: e.eventType,
-        createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
-        metadata:
-          e.metadata &&
-            typeof e.metadata === "object" &&
-            !Array.isArray(e.metadata)
-            ? ({ ...e.metadata } as Record<string, unknown>)
-            : null,
-      }));
-
       const userRiskSettings = riskSettingsMap.get(deal.userId);
-
-      const signals = calculateDealSignals(
+      const riskSnapshot = computeDealRiskSnapshot(
         {
+          id: deal.id,
+          userId: deal.userId,
           stage: deal.stage,
           value: deal.value,
-          status: "active",
           createdAt: deal.createdAt,
         },
-        timelineEvents,
+        dealTimeline as Array<{
+          dealId: string;
+          eventType: string;
+          createdAt: Date | null;
+          metadata: unknown;
+        }>,
         userRiskSettings ?? undefined
       );
 
@@ -462,20 +389,7 @@ export async function getTeamDeals(teamId: string) {
         stage: deal.stage,
         value: deal.value,
         isDemo: deal.isDemo,
-        lastActivityAt: signals.lastActivityAt,
-        riskScore: signals.riskScore,
-        riskLevel: formatRiskLevel(signals.riskScore),
-        status: signals.status,
-        nextAction: signals.nextAction,
-        nextActionReason: null,
-        riskReasons: signals.reasons,
-        primaryRiskReason: getPrimaryRiskReason(signals.reasons),
-        recommendedAction: signals.recommendedAction,
-        riskStartedAt: signals.riskStartedAt,
-        riskAgeInDays: signals.riskAgeInDays,
-        actionDueAt: signals.actionDueAt,
-        actionOverdueByDays: signals.actionOverdueByDays,
-        isActionOverdue: signals.isActionOverdue,
+        ...riskSnapshot,
         createdAt: deal.createdAt,
         assignedTo: deal.assignedTo,
       };
@@ -508,23 +422,20 @@ export async function getDealById(dealId: string) {
       orderBy: { createdAt: "desc" },
     });
 
-    const timelineEventsInput = timeline.map((e) => ({
-      eventType: e.eventType,
-      createdAt: e.createdAt || new Date(),
-      metadata:
-        e.metadata && typeof e.metadata === "object" && !Array.isArray(e.metadata)
-          ? (e.metadata as Record<string, unknown>)
-          : null,
-    }));
-
-    const signals = calculateDealSignals(
+    const riskSnapshot = computeDealRiskSnapshot(
       {
+        id: deal.id,
+        userId: deal.userId,
         stage: deal.stage,
         value: deal.value,
-        status: "active",
         createdAt: deal.createdAt,
       },
-      timelineEventsInput
+      timeline.map((e) => ({
+        dealId: deal.id,
+        eventType: e.eventType,
+        createdAt: e.createdAt,
+        metadata: e.metadata,
+      }))
     );
 
     const events = await prisma.dealEvent.findMany({
@@ -544,20 +455,7 @@ export async function getDealById(dealId: string) {
       value: deal.value,
       source: dealWithSource.source ?? null,
       externalId: dealWithSource.externalId ?? null,
-      lastActivityAt: signals.lastActivityAt,
-      riskScore: signals.riskScore,
-      riskLevel: formatRiskLevel(signals.riskScore),
-      status: signals.status,
-      nextAction: signals.nextAction,
-      nextActionReason: null,
-      riskReasons: signals.reasons,
-      primaryRiskReason: getPrimaryRiskReason(signals.reasons),
-      recommendedAction: signals.recommendedAction,
-      riskStartedAt: signals.riskStartedAt,
-      riskAgeInDays: signals.riskAgeInDays,
-      actionDueAt: signals.actionDueAt,
-      actionOverdueByDays: signals.actionOverdueByDays,
-      isActionOverdue: signals.isActionOverdue,
+      ...riskSnapshot,
       createdAt: deal.createdAt,
       isDemo: deal.isDemo,
       events,
@@ -707,97 +605,12 @@ export async function updateDealStage(dealId: string, newStage: string) {
             formatDealWonSlackMessage({ name: deal.name, value: deal.value })
           );
         }
-        const enriched = await getDealById(dealId);
-        const riskLevel = enriched.riskLevel ?? formatRiskLevel(enriched.riskScore);
-        let alreadySentRiskEmail = false;
-        try {
-          const dealRecord = await prisma.deal.findUnique({
-            where: { id: dealId },
-            select: { riskEmailSentAt: true } as Prisma.DealSelect,
-          });
-          alreadySentRiskEmail = (dealRecord as { riskEmailSentAt?: Date | null } | null)?.riskEmailSentAt != null;
-        } catch {
-
-        }
-        if (
-          riskLevel === "High" ||
-          (riskLevel as string).toLowerCase() === "critical"
-        ) {
-          await triggerDealAtRiskNotification(
-            {
-              id: enriched.id,
-              name: enriched.name,
-              userId: enriched.userId,
-              riskLevel: riskLevel as string,
-              primaryRiskReason: enriched.primaryRiskReason ?? undefined,
-            },
-            { sendEmail: !alreadySentRiskEmail }
-          );
-          if (!alreadySentRiskEmail) {
-            try {
-              await prisma.deal.update({
-                where: { id: dealId },
-                data: { riskEmailSentAt: new Date() } as Prisma.DealUpdateInput,
-              });
-            } catch {
-
-            }
-          }
-          await dispatchWebhookEvent(userId, deal.teamId, "deal.at_risk", {
-            id: enriched.id,
-            name: enriched.name,
-            value: enriched.value,
-            stage: enriched.stage,
-            riskLevel: riskLevel as string,
-            primaryRiskReason: enriched.primaryRiskReason ?? undefined,
-          });
-          await sendSlackNotification(
-            userId,
-            deal.teamId,
-            "deal.at_risk",
-            formatDealAtRiskSlackMessage({
-              name: enriched.name,
-              value: enriched.value,
-              stage: enriched.stage,
-              riskLevel: riskLevel as string,
-              riskReason: enriched.primaryRiskReason ?? undefined,
-            })
-          );
-        } else if (enriched.status !== "at_risk") {
-          try {
-            await prisma.deal.update({
-              where: { id: dealId },
-              data: { riskEmailSentAt: null } as Prisma.DealUpdateInput,
-            });
-          } catch {
-
-          }
-        }
-        if (
-          enriched.isActionOverdue &&
-          enriched.recommendedAction &&
-          enriched.actionOverdueByDays != null
-        ) {
-          await triggerActionOverdueNotification(
-            { id: enriched.id, name: enriched.name, userId: enriched.userId },
-            enriched.recommendedAction.label,
-            enriched.actionOverdueByDays
-          );
-        }
-        try {
-          await notifyRealtimeEvent(userId, {
-            type: "deal.updated",
-            dealId,
-            stage: newStage,
-          });
-          if (
-            riskLevel === "High" ||
-            (riskLevel as string).toLowerCase() === "critical"
-          ) {
-            await notifyRealtimeEvent(userId, { type: "deal.at_risk", dealId });
-          }
-        } catch {
-        }
+        await runDealStageRiskSideEffects({
+          dealId,
+          userId,
+          teamId: deal.teamId,
+          loadEnrichedDeal: () => getDealById(dealId),
+        });
       } catch (e) {
         logWarn("Notification triggers failed", {
           userId,

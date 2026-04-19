@@ -12,6 +12,13 @@ import { logIntegrationAction } from "./integrations";
 import { enforceIntegrationLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
 import { notifySlackAfterCrmSync } from "@/lib/post-crm-sync-slack";
+import {
+  decryptIntegrationSecret,
+  encryptIntegrationSecret,
+} from "@/lib/integration-secrets";
+import { incrementMetric } from "@/lib/metrics";
+import { logInfo, logWarn } from "@/lib/logger";
+import { runWithConcurrency } from "@/lib/async-pool";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = prisma as any;
@@ -30,8 +37,12 @@ export interface SyncResult {
   synced: number;
   created: number;
   updated: number;
+  scanned?: number;
+  failed?: number;
   errors?: string[];
 }
+
+const HUBSPOT_SYNC_ITEM_CONCURRENCY = 2;
 
 async function findExistingHubSpotDeal(
   userId: string,
@@ -87,13 +98,13 @@ export async function connectHubSpot(
     where: { userId },
     create: {
       userId,
-      apiKey,
+      apiKey: encryptIntegrationSecret(apiKey),
       portalId: validation.portalId || null,
       isActive: true,
       syncEnabled: true,
     },
     update: {
-      apiKey,
+      apiKey: encryptIntegrationSecret(apiKey),
       portalId: validation.portalId || null,
       isActive: true,
     },
@@ -145,7 +156,9 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
   }
 
   try {
-    const hubspotDeals = await fetchHubSpotDeals(integration.apiKey);
+    const hubspotDeals = await fetchHubSpotDeals(
+      decryptIntegrationSecret(integration.apiKey)
+    );
 
     let created = 0;
     let updated = 0;
@@ -286,6 +299,7 @@ export async function updateHubSpotSettings(settings: {
 }
 
 export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResult> {
+  const startedAt = Date.now();
   const integration = await db.hubSpotIntegration.findUnique({
     where: { userId },
   });
@@ -295,33 +309,83 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
   }
 
   try {
-    const hubspotDeals = await fetchHubSpotDeals(integration.apiKey);
+    const fetchedHubspotDeals = await fetchHubSpotDeals(
+      decryptIntegrationSecret(integration.apiKey)
+    );
+    const hubspotDeals = fetchedHubspotDeals.filter((deal, index, arr) => {
+      return arr.findIndex((candidate) => candidate.id === deal.id) === index;
+    });
+
+    const mappedDeals = hubspotDeals.map((hubspotDeal) =>
+      mapHubSpotDealToDeal(hubspotDeal, userId)
+    );
+    const externalIds = mappedDeals.map((deal) => deal.externalId);
+    const candidateNames = [...new Set(mappedDeals.map((deal) => deal.name))];
+    const existingDeals = await prisma.deal.findMany({
+      where: {
+        userId,
+        OR: [
+          { externalId: { in: externalIds }, source: "hubspot" },
+          { name: { in: candidateNames }, OR: [{ source: "hubspot" }, { source: null }] },
+        ],
+      },
+      select: { id: true, externalId: true, name: true, source: true },
+    });
+    const existingByExternal = new Map(
+      existingDeals
+        .filter((deal) => deal.externalId && deal.source === "hubspot")
+        .map((deal) => [deal.externalId as string, deal])
+    );
+    const existingByName = new Map(
+      existingDeals
+        .filter((deal) => deal.source === "hubspot" || deal.source === null)
+        .map((deal) => [deal.name, deal])
+    );
 
     let created = 0;
     let updated = 0;
+    const errors: string[] = [];
 
-    for (const hubspotDeal of hubspotDeals) {
-      const dealData = mapHubSpotDealToDeal(hubspotDeal, userId);
+    await runWithConcurrency(
+      hubspotDeals,
+      HUBSPOT_SYNC_ITEM_CONCURRENCY,
+      async (hubspotDeal) => {
+        try {
+          const dealData = mapHubSpotDealToDeal(hubspotDeal, userId);
+          const existingDeal =
+            existingByExternal.get(dealData.externalId) ?? existingByName.get(dealData.name);
 
-      const existingDeal = await findExistingHubSpotDeal(userId, dealData);
+          if (existingDeal) {
+            await prisma.deal.update({
+              where: { id: existingDeal.id },
+              data: {
+                name: dealData.name,
+                value: dealData.value,
+                stage: dealData.stage,
+              },
+            });
+            updated++;
+            existingByExternal.set(dealData.externalId, existingDeal);
+            existingByName.set(dealData.name, existingDeal);
+            return;
+          }
 
-      if (existingDeal) {
-        await prisma.deal.update({
-          where: { id: existingDeal.id },
-          data: {
-            name: dealData.name,
-            value: dealData.value,
-            stage: dealData.stage,
-          },
-        });
-        updated++;
-      } else {
-        await prisma.deal.create({
-          data: dealData,
-        });
-        created++;
+          const createdDeal = await prisma.deal.create({
+            data: dealData,
+            select: { id: true, externalId: true, name: true, source: true },
+          });
+          created++;
+          if (createdDeal.externalId) {
+            existingByExternal.set(createdDeal.externalId, createdDeal);
+          }
+          existingByName.set(createdDeal.name, createdDeal);
+        } catch (error) {
+          errors.push(
+            `Failed to sync deal ${hubspotDeal.id}: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
       }
-    }
+    );
 
     await db.hubSpotIntegration.update({
       where: { userId },
@@ -329,10 +393,35 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
         lastSyncAt: new Date(),
         lastSyncStatus: "success",
         totalSynced: integration.totalSynced + created + updated,
+        syncErrors: errors.length > 0 ? errors.join("; ") : null,
       },
     });
 
-    return { success: true, synced: created + updated, created, updated };
+    const durationMs = Date.now() - startedAt;
+    void incrementMetric("sync.hubspot.duration_ms", durationMs);
+    void incrementMetric("sync.hubspot.success", 1);
+    if (errors.length > 0) {
+      void incrementMetric("sync.hubspot.item_errors", errors.length);
+    }
+    logInfo("HubSpot user sync completed", {
+      userId,
+      scanned: hubspotDeals.length,
+      created,
+      updated,
+      failed: errors.length,
+      failureReasons: errors.slice(0, 3),
+      durationMs,
+      concurrency: HUBSPOT_SYNC_ITEM_CONCURRENCY,
+    });
+    return {
+      success: true,
+      synced: created + updated,
+      created,
+      updated,
+      scanned: hubspotDeals.length,
+      failed: errors.length,
+      errors: errors.length > 0 ? errors : undefined,
+    };
   } catch (error) {
     await db.hubSpotIntegration.update({
       where: { userId },
@@ -343,6 +432,13 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
       },
     });
 
-    return { success: false, synced: 0, created: 0, updated: 0, errors: [String(error)] };
+    const durationMs = Date.now() - startedAt;
+    void incrementMetric("sync.hubspot.errors", 1);
+    logWarn("HubSpot user sync failed", {
+      userId,
+      durationMs,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return { success: false, synced: 0, created: 0, updated: 0, scanned: 0, failed: 1, errors: [String(error)] };
   }
 }

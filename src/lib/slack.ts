@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 import { retryWithBackoff } from "./retry";
 import { RetryableError } from "./errors";
 import { logWarn } from "./logger";
+import { decryptIntegrationSecret } from "./integration-secrets";
 
 interface SlackMessage {
   text?: string;
@@ -43,7 +44,8 @@ export async function sendSlackNotification(
     try {
       await retryWithBackoff(
         async () => {
-          const response = await fetch(integration.webhookUrl, {
+          const webhookUrl = decryptIntegrationSecret(integration.webhookUrl);
+          const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(message),

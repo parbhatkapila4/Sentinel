@@ -2,6 +2,7 @@ import { retryWithBackoff } from "./retry";
 import { withCircuitBreaker } from "./circuit-breaker";
 import { ExternalServiceError, RetryableError } from "./errors";
 import { logError } from "./logger";
+import { fetchWithTimeout } from "./reliable-fetch";
 
 export interface HubSpotValidationResult {
   valid: boolean;
@@ -42,6 +43,7 @@ export interface HubSpotCompany {
 }
 
 const HUBSPOT_API_BASE = "https://api.hubapi.com";
+const HUBSPOT_TIMEOUT_MS = 25_000;
 
 export async function validateHubSpotCredentials(
   apiKey: string
@@ -52,13 +54,20 @@ export async function validateHubSpotCredentials(
       async () => {
         return await retryWithBackoff(
           async () => {
-            const response = await fetch(`${HUBSPOT_API_BASE}/account-info/v3/details`, {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
+            const response = await fetchWithTimeout(
+              `${HUBSPOT_API_BASE}/account-info/v3/details`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${apiKey}`,
+                  "Content-Type": "application/json",
+                },
               },
-            });
+              {
+                timeoutMs: HUBSPOT_TIMEOUT_MS,
+                timeoutMessage: "HubSpot validation request timed out",
+              }
+            );
 
             if (response.ok) {
               const data = await response.json();
@@ -135,7 +144,7 @@ export async function fetchHubSpotDeals(apiKey: string): Promise<HubSpotDeal[]> 
                 params.append("after", after);
               }
 
-              const response = await fetch(
+              const response = await fetchWithTimeout(
                 `${HUBSPOT_API_BASE}/crm/v3/objects/deals?${params.toString()}`,
                 {
                   method: "GET",
@@ -143,6 +152,10 @@ export async function fetchHubSpotDeals(apiKey: string): Promise<HubSpotDeal[]> 
                     Authorization: `Bearer ${apiKey}`,
                     "Content-Type": "application/json",
                   },
+                },
+                {
+                  timeoutMs: HUBSPOT_TIMEOUT_MS,
+                  timeoutMessage: "HubSpot deals request timed out",
                 }
               );
 
@@ -197,7 +210,7 @@ export async function fetchHubSpotContacts(apiKey: string): Promise<HubSpotConta
               limit: "100",
             });
 
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${HUBSPOT_API_BASE}/crm/v3/objects/contacts?${params.toString()}`,
               {
                 method: "GET",
@@ -205,6 +218,10 @@ export async function fetchHubSpotContacts(apiKey: string): Promise<HubSpotConta
                   Authorization: `Bearer ${apiKey}`,
                   "Content-Type": "application/json",
                 },
+              },
+              {
+                timeoutMs: HUBSPOT_TIMEOUT_MS,
+                timeoutMessage: "HubSpot contacts request timed out",
               }
             );
 
@@ -254,7 +271,7 @@ export async function fetchHubSpotCompanies(apiKey: string): Promise<HubSpotComp
               limit: "100",
             });
 
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${HUBSPOT_API_BASE}/crm/v3/objects/companies?${params.toString()}`,
               {
                 method: "GET",
@@ -262,6 +279,10 @@ export async function fetchHubSpotCompanies(apiKey: string): Promise<HubSpotComp
                   Authorization: `Bearer ${apiKey}`,
                   "Content-Type": "application/json",
                 },
+              },
+              {
+                timeoutMs: HUBSPOT_TIMEOUT_MS,
+                timeoutMessage: "HubSpot companies request timed out",
               }
             );
 

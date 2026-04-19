@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
+import { encryptIntegrationSecret } from "@/lib/integration-secrets";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = prisma as any;
@@ -226,11 +227,11 @@ export async function createSalesforceIntegration(data: {
     where: { userId },
     create: {
       userId,
-      apiKey: data.apiKey,
+      apiKey: encryptIntegrationSecret(data.apiKey),
       instanceUrl: data.instanceUrl,
     },
     update: {
-      apiKey: data.apiKey,
+      apiKey: encryptIntegrationSecret(data.apiKey),
       instanceUrl: data.instanceUrl,
       isActive: true,
     },
@@ -299,11 +300,11 @@ export async function createHubSpotIntegration(data: {
     where: { userId },
     create: {
       userId,
-      apiKey: data.apiKey,
+      apiKey: encryptIntegrationSecret(data.apiKey),
       portalId: data.portalId || null,
     },
     update: {
-      apiKey: data.apiKey,
+      apiKey: encryptIntegrationSecret(data.apiKey),
       portalId: data.portalId || null,
       isActive: true,
     },
@@ -372,11 +373,11 @@ export async function createGoogleCalendarIntegration(data: {
     where: { userId },
     create: {
       userId,
-      apiKey: data.apiKey,
+      apiKey: encryptIntegrationSecret(data.apiKey),
       calendarId: data.calendarId || "primary",
     },
     update: {
-      apiKey: data.apiKey,
+      apiKey: encryptIntegrationSecret(data.apiKey),
       calendarId: data.calendarId || "primary",
       isActive: true,
     },

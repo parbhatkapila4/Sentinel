@@ -2,6 +2,7 @@ import { retryWithBackoff } from "./retry";
 import { withCircuitBreaker } from "./circuit-breaker";
 import { ExternalServiceError, RetryableError } from "./errors";
 import { logError } from "./logger";
+import { fetchWithTimeout } from "./reliable-fetch";
 
 export interface SalesforceValidationResult {
   valid: boolean;
@@ -30,6 +31,8 @@ export interface SalesforceContact {
   };
 }
 
+const SALESFORCE_TIMEOUT_MS = 25_000;
+
 export async function validateSalesforceCredentials(
   apiKey: string,
   instanceUrl: string
@@ -42,13 +45,20 @@ export async function validateSalesforceCredentials(
           async () => {
             const normalizedUrl = instanceUrl.replace(/\/$/, "");
 
-            const response = await fetch(`${normalizedUrl}/services/data/v58.0/`, {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
+            const response = await fetchWithTimeout(
+              `${normalizedUrl}/services/data/v58.0/`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${apiKey}`,
+                  "Content-Type": "application/json",
+                },
               },
-            });
+              {
+                timeoutMs: SALESFORCE_TIMEOUT_MS,
+                timeoutMessage: "Salesforce validation request timed out",
+              }
+            );
 
             if (response.ok) {
               return { valid: true };
@@ -120,7 +130,7 @@ export async function fetchSalesforceOpportunities(
               "SELECT Id, Name, Amount, StageName, CloseDate, Account.Name, OwnerId FROM Opportunity ORDER BY LastModifiedDate DESC LIMIT 100"
             );
 
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${normalizedUrl}/services/data/v58.0/query?q=${query}`,
               {
                 method: "GET",
@@ -128,6 +138,10 @@ export async function fetchSalesforceOpportunities(
                   Authorization: `Bearer ${apiKey}`,
                   "Content-Type": "application/json",
                 },
+              },
+              {
+                timeoutMs: SALESFORCE_TIMEOUT_MS,
+                timeoutMessage: "Salesforce opportunities request timed out",
               }
             );
 
@@ -180,7 +194,7 @@ export async function fetchSalesforceContacts(
               "SELECT Id, Name, Email, Phone, Account.Name FROM Contact ORDER BY LastModifiedDate DESC LIMIT 100"
             );
 
-            const response = await fetch(
+            const response = await fetchWithTimeout(
               `${normalizedUrl}/services/data/v58.0/query?q=${query}`,
               {
                 method: "GET",
@@ -188,6 +202,10 @@ export async function fetchSalesforceContacts(
                   Authorization: `Bearer ${apiKey}`,
                   "Content-Type": "application/json",
                 },
+              },
+              {
+                timeoutMs: SALESFORCE_TIMEOUT_MS,
+                timeoutMessage: "Salesforce contacts request timed out",
               }
             );
 

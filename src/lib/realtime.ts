@@ -4,7 +4,9 @@ import { logWarn } from "./logger";
 
 const REDIS_KEY_PREFIX = "user:";
 const REDIS_KEY_SUFFIX = ":events";
+const REDIS_SEQ_SUFFIX = ":events:seq";
 const REDIS_LIST_TTL_SEC = 86400;
+const MAX_EVENTS_PER_USER = 2000;
 
 
 export type RealtimeEventType =
@@ -24,6 +26,7 @@ export type RealtimeEventPayload =
   | { type: "team.updated"; teamId: string };
 
 export interface RealtimeEvent {
+  id: number;
   type: RealtimeEventType;
   payload: RealtimeEventPayload;
   timestamp: string;
@@ -39,16 +42,20 @@ export async function notifyRealtimeEvent(
 ): Promise<void> {
   if (!redis) return;
 
-  const event: RealtimeEvent = {
-    type: payload.type,
-    payload,
-    timestamp: new Date().toISOString(),
-  };
-
   try {
     const key = eventKey(userId);
+    const seqKey = `${REDIS_KEY_PREFIX}${userId}${REDIS_SEQ_SUFFIX}`;
+    const id = await redis.incr(seqKey);
+    const event: RealtimeEvent = {
+      id: Number(id),
+      type: payload.type,
+      payload,
+      timestamp: new Date().toISOString(),
+    };
     await redis.lpush(key, JSON.stringify(event));
+    await redis.ltrim(key, 0, MAX_EVENTS_PER_USER - 1);
     await redis.expire(key, REDIS_LIST_TTL_SEC);
+    await redis.expire(seqKey, REDIS_LIST_TTL_SEC);
   } catch (err) {
     logWarn("Realtime: failed to publish event", {
       userId,
@@ -59,22 +66,35 @@ export async function notifyRealtimeEvent(
 }
 
 export async function consumeUserEvents(userId: string): Promise<RealtimeEvent[]> {
+  return consumeUserEventsSince(userId, 0);
+}
+
+export async function consumeUserEventsSince(
+  userId: string,
+  afterEventId: number
+): Promise<RealtimeEvent[]> {
   if (!redis) return [];
 
   const key = eventKey(userId);
   try {
     const raw = await redis.lrange(key, 0, -1);
     if (raw.length === 0) return [];
-    await redis.del(key);
-    const events: RealtimeEvent[] = [];
+    const dedupedById = new Map<number, RealtimeEvent>();
     for (let i = raw.length - 1; i >= 0; i--) {
       try {
         const parsed = JSON.parse(raw[i] as string) as RealtimeEvent;
-        if (parsed.type && parsed.payload) events.push(parsed);
+        if (
+          typeof parsed.id === "number" &&
+          parsed.id > afterEventId &&
+          parsed.type &&
+          parsed.payload
+        ) {
+          dedupedById.set(parsed.id, parsed);
+        }
       } catch {
       }
     }
-    return events;
+    return [...dedupedById.values()].sort((a, b) => a.id - b.id);
   } catch {
     return [];
   }

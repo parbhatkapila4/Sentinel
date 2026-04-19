@@ -89,6 +89,10 @@ function filterPrimitives(obj: LogContext | undefined): Record<string, string | 
 
 function log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
   try {
+    if (process.env.NODE_ENV === "test" && process.env.TEST_LOGS !== "true") {
+      return;
+    }
+
     if (!shouldLog(level)) {
       return;
     }

@@ -2,16 +2,17 @@
 import { NextRequest } from "next/server";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { UnauthorizedError } from "@/lib/errors";
-import { consumeUserEvents } from "@/lib/realtime";
+import { consumeUserEventsSince } from "@/lib/realtime";
 import type { RealtimeEvent } from "@/lib/realtime";
 
 const POLL_MS = 2000;
 const HEARTBEAT_MS = 30000;
 
-function encodeSSE(data: unknown): string {
+function encodeSSE(data: unknown, id?: number): string {
   const line =
     typeof data === "string" ? data : JSON.stringify(data);
-  return `data: ${line}\n\n`;
+  const idLine = typeof id === "number" ? `id: ${id}\n` : "";
+  return `${idLine}data: ${line}\n\n`;
 }
 
 function encodeHeartbeat(): string {
@@ -40,6 +41,14 @@ export async function GET(request: NextRequest) {
     async start(controller) {
       const encoder = new TextEncoder();
       let lastHeartbeat = Date.now();
+      let lastEventId = Number(
+        request.nextUrl.searchParams.get("lastEventId") ??
+        request.headers.get("last-event-id") ??
+        "0"
+      );
+      if (!Number.isFinite(lastEventId) || lastEventId < 0) {
+        lastEventId = 0;
+      }
 
       const send = (text: string) => {
         try {
@@ -51,9 +60,10 @@ export async function GET(request: NextRequest) {
       while (!request.signal.aborted) {
         const now = Date.now();
 
-        const events = await consumeUserEvents(userId);
+        const events = await consumeUserEventsSince(userId, lastEventId);
         for (const event of events) {
-          send(encodeSSE(event as RealtimeEvent));
+          send(encodeSSE(event as RealtimeEvent, event.id));
+          lastEventId = Math.max(lastEventId, event.id);
         }
 
         if (now - lastHeartbeat >= HEARTBEAT_MS) {
