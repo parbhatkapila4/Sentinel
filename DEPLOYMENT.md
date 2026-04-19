@@ -31,15 +31,30 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
    - `OPENROUTER_API_KEY` (for AI insights)
    - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (optional; cache/rate limit)
    - `NEXT_PUBLIC_SENTRY_DSN`, Sentry env vars (optional)
-   - `CRON_SECRET` (optional; for cron routes like sync-integrations, process-emails, process-webhooks)
+   - `CRON_SECRET` (required to **invoke** `/api/cron/*`; routes fail closed if unset)
+   - `INTEGRATION_ENCRYPTION_KEY` (required to **encrypt** new integration secrets at write time; see `src/lib/integration-secrets.ts`)
    - **Supabase**: `DATABASE_URL` = **Transaction pooler** (host `*.pooler.supabase.com`, port **6543**). `DIRECT_URL` = **Direct** connection (port **5432**). Set both in Vercel.
 3. **Postgres**: Use [Vercel Postgres](https://vercel.com/storage/postgres) or attach an external PostgreSQL database and set `DATABASE_URL` (and `DIRECT_URL` when using Prisma migrations — same as `DATABASE_URL` for Vercel Postgres unless your provider documents otherwise).
 4. **Migrations**: Run `npx prisma migrate deploy` as part of the build (e.g. in a custom build script) or in a one-off step after first deploy. The default `npm run build` runs `prisma generate`; add a postinstall or build step for `prisma migrate deploy` if you deploy migrations from Vercel.
 5. **Crons**: Cron jobs are not defined in `vercel.json` by default. **Vercel plan limits:** On **Hobby**, cron can run only **once per day** with hourly precision (no every-5-min or every-15-min). On **Pro**, you can use per-minute intervals. To enable Vercel Cron:
    - **Hobby**: Add a single cron that runs once per day, e.g. `"schedule": "0 0 * * *"` (midnight UTC) for `/api/cron/sync-integrations`.
    - **Pro**: You can add multiple crons with finer schedules (e.g. every 6 h for sync, every 15 min for process-emails/process-webhooks).
-   - **Any plan**: For more frequent runs on Hobby (e.g. every 5 or 15 minutes), use an **external scheduler** (e.g. [cron-job.org](https://cron-job.org), GitHub Actions) and call the endpoints with `Authorization: Bearer <CRON_SECRET>`. See [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) for limits. Set `CRON_SECRET` in the Vercel dashboard for auth. An example once-daily cron config is in `vercel.crons.example.json` (copy the `crons` array into `vercel.json`).
+   - **Any plan**: For more frequent runs on Hobby (e.g. every 5 or 15 minutes), use an **external scheduler** (e.g. [cron-job.org](https://cron-job.org), GitHub Actions) and call the endpoints with `Authorization: Bearer <CRON_SECRET>`. See [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) for limits. Set `CRON_SECRET` in the Vercel dashboard for auth. An example once-daily cron config is in `vercel.crons.example.json` (copy the `crons` array into `vercel.json`). Full playbook: [Vercel Hobby cron playbook](#vercel-hobby-cron-playbook).
 6. **Deploy** - Vercel will run `npm run build` and serve the app.
+
+## Vercel Hobby cron playbook
+
+Two-tier strategy for **Hobby** (one scheduled cron per day) vs higher frequency via an **external scheduler**. All cron HTTP calls must send **`Authorization: Bearer <CRON_SECRET>`** (`src/lib/cron-auth.ts`); no query-string secrets.
+
+1. **Once/day on Vercel Cron (low-priority work)** — one daily hit to `/api/cron/sync-integrations` on Hobby; config in `vercel.crons.example.json` → `vercel.json`.
+2. **Higher frequency** — external scheduler (e.g. cron-job.org) calling the same routes with **`Authorization: Bearer <CRON_SECRET>`** (same enforcement as `src/lib/cron-auth.ts`; no query-param secrets). Assume **retries and overlaps**—handlers should stay idempotent (upsert by external IDs).
+
+Example external scheduler call:
+
+```bash
+curl -X GET "https://your-domain.com/api/cron/process-emails" \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
 
 ## Environment Variables
 
@@ -57,7 +72,8 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
 | `NEXT_PUBLIC_APP_URL`               | App base URL                                       | Optional           | `http://localhost:3000`               |
 | `NEXT_PUBLIC_SENTRY_DSN`            | Sentry DSN                                         | Optional           | -                                     |
 | `SENTRY_*`                          | Sentry config (sample rate, etc.)                  | Optional           | See [.env.example](.env.example)      |
-| `CRON_SECRET`                       | Secret for cron route auth (Bearer token)          | Optional           | Used by `/api/cron/*`                 |
+| `CRON_SECRET`                       | Bearer secret for `/api/cron/*`                    | Required to **invoke** cron routes | Missing/blank → 503; wrong token → 401 (see `src/lib/cron-auth.ts`) |
+| `INTEGRATION_ENCRYPTION_KEY`        | Base64-encoded 32-byte key (`openssl rand -base64 32`) | Required to **encrypt** new integration secrets on connect | See `src/lib/integration-secrets.ts`; decrypt accepts legacy plaintext DB values |
 | `NEXT_PUBLIC_ANALYTICS_ENABLED`     | Set to `false` to disable client-side analytics    | Optional           | Omit or `true` to enable              |
 | `ANALYTICS_API_KEY`                 | API key for GET `/api/metrics/summary` (internal)  | Optional           | Used by metrics summary endpoint      |
 
@@ -86,12 +102,20 @@ Docker is for local development and self-hosted deployment. Vercel remains the p
 
 ## Post-Deploy Verification
 
-- **Health**: Open the app URL and sign in (or hit a public route).
-- **Cron**: If using Vercel Cron or external scheduler for `/api/cron/sync-integrations`, `/api/cron/process-emails`, `/api/cron/process-webhooks`, call them with `Authorization: Bearer <CRON_SECRET>` and verify logs.
-- **Sentry**: Confirm events appear in Sentry if DSN is set.
-- **Clerk**: Confirm sign-in/sign-up and webhooks (if configured) work in production.
+- **Build + quality gate**: Run `npm run verify` before deployment; ensure all checks pass.
+- **Health**: Open the app URL and verify protected routes require sign-in.
+- **Cron security check**: Verify cron endpoints reject missing/invalid bearer token and accept only `Authorization: Bearer <CRON_SECRET>`.
+- **AI reliability check**: Exercise `/api/insights/chat` and confirm graceful responses during transient provider failures (fallback path should prevent single-model outages from fully blocking chat).
+- **Realtime check**: Verify `/api/events` reconnects cleanly and resumes using `lastEventId`.
+- **Sentry/monitoring**: Confirm events are visible if DSN is configured.
+
+## Quality gate (local and optional CI)
+
+- **Before deploy or push**: `npm run verify` runs `typecheck`, `lint`, and `vitest run` (same chain as `npm run verify:ci`). Works on Windows via `npm run verify` (do not rely on hand-typed `&&` in older shells).
+- **Optional GitHub Actions**: `.github/workflows/verify.yml` is **`workflow_dispatch` only** (manual); not a required PR check. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Links
 
-- [README](README.md) - Setup and overview
+- [README](README.md) - Setup and overview (includes [Ship checklist](README.md#ship-checklist))
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System overview
+- [TRY_THIS.md](TRY_THIS.md) - Quick product walkthrough

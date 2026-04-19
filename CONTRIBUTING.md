@@ -21,11 +21,21 @@ Examples: `feature/export-csv`, `fix/deal-risk-edge-case`, `docs/api-examples`.
 
 Run these locally before opening a pull request:
 
-1. **Lint**: `npm run lint`
-2. **Tests**: `npm run test` (or `npm run test:run`). Unit tests use Vitest; mocks are in `src/test/mocks/`.
-3. **Build**: `npm run build`
+1. **Mandatory local quality gate**: `npm run verify`
+2. **Build (optional but recommended)**: `npm run build`
 
-Fix any failures. Optionally run E2E tests: `npm run test:e2e` (requires app running and env configured). Run E2E: `npm run test:e2e`.
+Fix any failures. E2E tests are optional and should not be treated as a default gate unless explicitly requested: `npm run test:e2e`.
+
+### Optional: manual GitHub Actions
+
+The repo includes a **manual-only** workflow (trigger: `workflow_dispatch`) that runs the same gate as locally: `npm run verify` (same as `npm run verify:ci`). It does **not** run on push or pull request, so commits and PRs stay clean unless you run it. To use it: **GitHub → Actions → “Verify (manual)” → Run workflow**. Prefer passing `npm run verify` on your machine before every push.
+
+### GitHub status checks and the red X
+
+- **This repo’s workflows** do not auto-run on `push` or `pull_request`; nothing in `.github/workflows/` should add a check to every commit by default.
+- A **red X on a PR** can still come from **repository settings**, not from these files:
+  - **Branch protection → Require status checks**: if a check name is required but no workflow produces it (or the workflow was skipped), GitHub can show failing / pending expectations. Fix: **Settings → Branches → edit the rule → Status checks** — either remove obsolete required checks or align the name with a workflow you actually run.
+  - **“No required checks”** means branch protection is not waiting on a specific job; optional Actions you run manually still appear under the Actions tab only when you trigger them.
 
 ## PR Guidelines
 

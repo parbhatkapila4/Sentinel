@@ -20,6 +20,49 @@
 
 ---
 
+## Production engineering for founders and reviewers
+
+Evidence-based summary of how the system is built and operated—maps to code paths and tests, not roadmap claims.
+
+### Security model (hardened)
+
+- **Auth boundary**: Only explicitly listed public routes bypass Clerk in `src/middleware.ts` (no Referer / RSC / prefetch bypass tricks).
+- **Cron**: `src/lib/cron-auth.ts` enforces fail-closed `Authorization: Bearer <CRON_SECRET>` on `src/app/api/cron/*`; missing or blank secret rejects; no query-string secret fallbacks.
+- **Integration secrets at rest**: `src/lib/integration-secrets.ts` (AES-256-GCM); write paths encrypt; read paths decrypt; existing plaintext DB values still work until rotated.
+- **HTTP hardening**: CSP and related headers in `next.config.ts` (production reduces risky `script-src` allowances vs dev where tooling needs them).
+
+### Reliability & fallback
+
+- **Redis optional**: Cache, rate limits, queues, and realtime publish paths degrade when Upstash is unset; the app avoids hard-failing for missing Redis (see `src/lib/redis.ts` and callers).
+- **Upstream calls**: CRM and calendar clients use timeouts plus retry/circuit-breaker stacks (`src/lib/reliable-fetch.ts`, `retry.ts`, `circuit-breaker.ts`).
+- **AI**: `src/lib/ai-router.ts` uses model fallbacks and per-model circuit isolation; `src/lib/retry.ts` avoids hammering an open circuit.
+- **Cron sync**: `src/app/api/cron/sync-integrations/route.ts` runs providers with bounded concurrency and structured completion logs/metrics.
+- **Realtime**: `src/lib/realtime.ts` stores events in a bounded Redis list with monotonic IDs; `src/app/api/events/route.ts` streams SSE with heartbeats and cursor resume (`lastEventId` / `Last-Event-ID`)—**at-least-once oriented** (clients may see duplicates across reconnects; ordering and dedupe are handled in consumption paths).
+
+### Vercel Hobby cron playbook
+
+1. **Once per day on Vercel (Hobby)** — schedule `GET /api/cron/sync-integrations` (example: `vercel.crons.example.json` → copy into `vercel.json`). Hobby allows only one daily cron with hourly precision; use that slot for lowest-risk batch sync.
+2. **More frequent runs** — use an external scheduler (e.g. cron-job.org) calling the same routes with `Authorization: Bearer <CRON_SECRET>`.
+3. **Idempotency** — assume retries and overlapping runs; sync logic upserts by external IDs where possible; avoid irreversible side effects without guards.
+
+Full env and curl patterns: **[DEPLOYMENT.md — Vercel Hobby cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook)**.
+
+### How to evaluate this repo (employer checklist)
+
+- **Architecture**: Next.js App Router; domain layout `src/app/actions`, `src/app/api`, `src/lib`; PostgreSQL + Prisma; Clerk for identity.
+- **Quality gate**: `npm run verify` (typecheck → ESLint → `vitest run`); `npm run verify:ci` is the same script chain. Optional **manual-only** GitHub workflow runs that gate—see [CONTRIBUTING.md](CONTRIBUTING.md) (including **status checks / red X** if a PR shows unexpected failures from branch protection).
+- **Tests**: Targeted Vitest suites under `src/**/__tests__` (e.g. middleware boundary, cron auth, integration crypto, realtime, AI router)—verify behavioral claims against tests, not prose alone.
+
+### Known limits / next if at scale
+
+- Risk scoring runs on deal reads; very large pipelines may need pagination, async precomputation, or read replicas.
+- SSE + polling tradeoff for serverless; extreme event rates may need a dedicated queue/bus instead of Redis lists alone.
+- CRM sync is bounded and idempotent-friendly but not a full high-throughput ETL; at scale, queue-backed workers and stronger provider isolation become the next step.
+
+More depth: [ARCHITECTURE.md](ARCHITECTURE.md), [DEPLOYMENT.md](DEPLOYMENT.md), and [If Running at Scale](#if-running-at-scale) later in this file.
+
+---
+
 ## Overview
 
 Revenue teams lose an estimated **$1.3 trillion annually** due to poor pipeline visibility. Deals stall silently: prospects stop replying, meetings slip, proposals go unread. By the time traditional CRMs surface the problem, relationships have cooled and opportunities are lost.
@@ -235,41 +278,11 @@ Receive real-time notifications in Slack channels.
 
 ### Automatic Sync (Cron Job)
 
-Sentinel includes a cron job endpoint that automatically syncs all active integrations. You can run it on a schedule (Vercel Cron or external scheduler).
+**Endpoint:** `GET /api/cron/sync-integrations` — syncs active Salesforce, HubSpot, and Google Calendar integrations (`syncEnabled: true`), with structured logs/metrics.
 
-**Endpoint:** `GET /api/cron/sync-integrations`
+**Auth:** `Authorization: Bearer <CRON_SECRET>` only (fail-closed; see `src/lib/cron-auth.ts`). **Hobby vs Pro, external schedulers, idempotency:** see [Production engineering for founders and reviewers](#production-engineering-for-founders-and-reviewers) and **[DEPLOYMENT.md — Vercel Hobby cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook)**.
 
-**Security:** Protected by `CRON_SECRET` environment variable. Set in Vercel Cron or your scheduler:
-
-```bash
-CRON_SECRET=your-secret-key-here
-```
-
-**Vercel Cron (plan limits):** On **Hobby**, Vercel allows only **one run per day** with hourly precision (no every-5-min or every-15-min). On **Pro**, you can use per-minute schedules. For more frequent runs on Hobby, use an external scheduler (e.g. [cron-job.org](https://cron-job.org), GitHub Actions) and call the URL with `Authorization: Bearer <CRON_SECRET>`.
-
-**Example - Hobby (once per day):** Add to `vercel.json`:
-
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/sync-integrations",
-      "schedule": "0 0 * * *"
-    }
-  ]
-}
-```
-
-Runs at midnight UTC once per day. For **Pro**, you can use e.g. `"schedule": "0 */6 * * *"` to run every 6 hours.
-
-**What it does:**
-
-- Syncs all Salesforce integrations with `syncEnabled: true`
-- Syncs all HubSpot integrations with `syncEnabled: true`
-- Syncs all Google Calendar integrations with `syncEnabled: true`
-- Logs results and errors for monitoring
-
-**Manual Trigger:**
+**Manual trigger:**
 
 ```bash
 curl -X GET "https://your-domain.com/api/cron/sync-integrations" \
@@ -605,15 +618,20 @@ RESEND_FROM_EMAIL=notifications@yourdomain.com
 # App Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Cron Jobs (required for /api/cron/*)
+# Cron: required to invoke /api/cron/* (Bearer). Missing/blank secret → 503 from cron routes.
 CRON_SECRET=your-secret-key-here
+
+# Integration encryption (32-byte key, base64). Required when saving encrypted CRM/Slack webhook values.
+# openssl rand -base64 32
+INTEGRATION_ENCRYPTION_KEY=
 
 # Analytics (privacy-compliant; fail-safe)
 NEXT_PUBLIC_ANALYTICS_ENABLED=true
 ANALYTICS_API_KEY=optional-key-for-metrics-summary
 
-# Sentry
+# Sentry (optional; see .env.example for full set)
 NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/...
+NEXT_PUBLIC_SENTRY_ENABLE_PERFORMANCE=true
 SENTRY_PERFORMANCE_SAMPLE_RATE=0.1
 
 # Rate Limiting (Redis required; defaults apply if unset)
@@ -621,7 +639,7 @@ RATE_LIMIT_STRICT=30
 RATE_LIMIT_LENIENT=200
 ```
 
-**Note:** Integration API keys (Salesforce, HubSpot, Google Calendar) are stored per-user in the database and configured through the Settings UI, not as environment variables.
+**Notes:** Integration API keys (Salesforce, HubSpot, Google Calendar) are stored per-user via the Settings UI. **`INTEGRATION_ENCRYPTION_KEY`** encrypts those values at write time (see [.env.example](.env.example)). **`CRON_SECRET`** is only needed if you call `/api/cron/*`.
 
 ---
 
@@ -711,13 +729,12 @@ To verify that the “deal at risk” email is sent **once** per risk period:
    - After the stage change, an in-app notification “Deal at Risk: …” should appear, and one email job should be queued (only the first time for that risk period).
 
 3. **Process the email queue**
-   - Emails are sent when the cron runs. To test immediately, call the process-emails endpoint (replace with your app URL and `CRON_SECRET`):
+   - Emails are sent when the cron runs. To test immediately, call the process-emails endpoint with Bearer auth:
 
    ```bash
-   curl -X GET "http://localhost:3000/api/cron/process-emails?secret=YOUR_CRON_SECRET"
+   curl -X GET "http://localhost:3000/api/cron/process-emails" \
+     -H "Authorization: Bearer YOUR_CRON_SECRET"
    ```
-
-   Or: `Authorization: Bearer YOUR_CRON_SECRET` with GET `.../api/cron/process-emails`.
 
    - Response example: `{ "processed": 1 }` if one email was sent.
 
@@ -873,8 +890,20 @@ src/
 | `npm run test:run`      | Unit tests (CI)   |
 | `npm run test:coverage` | Coverage report   |
 | `npm run test:e2e`      | Playwright E2E    |
+| `npm run verify`        | Local quality gate (typecheck + lint + unit tests) |
+| `npm run verify:ci`     | Same as `verify` (for CI / docs parity)            |
 
 Unit tests live in `src/app/actions/__tests__`, `src/app/api/__tests__`, and `src/lib/__tests__`. E2E specs are in `e2e/` (home, dashboard, deals). Use `src/test/mocks` for auth and Prisma in tests. Run `npx playwright install` before E2E if browsers are not installed.
+
+### Mandatory pre-push quality gate
+
+Before pushing any branch (or opening a PR), run:
+
+```bash
+npm run verify
+```
+
+This is the default quality gate for the repo: **deterministic, local-first**, and avoids flaky CI red-cross spam.
 
 ---
 
@@ -938,6 +967,7 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 - **Input validation**: Zod in `src/lib/env`; validate request bodies in API routes.
 - **Rate limiting**: Redis-backed (`src/lib/api-rate-limit.ts`); per-user/IP tiers for chat, export, search. Graceful degradation when Redis unavailable.
 - **Request size**: Middleware caps body size (10MB) for POST/PUT/PATCH.
+- **Hardening summary**: Cron Bearer fail-closed, integration encryption, explicit middleware public routes—see [Production engineering for founders and reviewers](#production-engineering-for-founders-and-reviewers).
 
 ---
 
@@ -961,21 +991,15 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 
 ## Production Lessons
 
-**Early sync failures.** Initial CRM syncs failed silently when provider APIs returned non-standard errors or rate limits. We added structured logging, per-integration status (`lastSyncAt`, `lastSyncStatus`, `syncErrors`), and retry with backoff. Failures are now visible in Settings and logs; operators can trigger manual sync or fix credentials.
+| Issue seen in real use | What changed in code | Evidence / measurable outcome |
+| --- | --- | --- |
+| Intermittent 503 from AI provider under load/transient upstream failures | Added model fallback candidates and per-model circuit-breaker isolation in `src/lib/ai-router.ts`; avoid retrying on open circuits in `src/lib/retry.ts` | `src/lib/__tests__/ai-router-openrouter.test.ts` validates retry/fallback and circuit-open behavior; `npm run verify` passes |
+| Cron auth was too permissive (header/query fallbacks) | Added centralized strict Bearer auth in `src/lib/cron-auth.ts`; cron routes now reject missing/invalid auth and missing `CRON_SECRET` | `src/lib/__tests__/cron-auth.test.ts` covers fail-closed behavior; all cron examples now use `Authorization: Bearer <CRON_SECRET>` |
+| Middleware auth boundary had spoofable bypass patterns | `src/middleware.ts` now only allows explicit public routes and removes referer/prefetch/RSC trust patterns | `src/__tests__/middleware-auth.test.ts` verifies protected routes cannot be bypassed by spoofable headers |
+| Integration secrets were stored as plaintext | Added AES-256-GCM envelope utility in `src/lib/integration-secrets.ts`; integration credentials/webhooks are encrypted before DB write, decrypted at use sites | `src/lib/__tests__/integration-secrets.test.ts` validates round-trip encryption + plaintext backward compatibility |
+| Realtime delivery could drop events with read-then-delete semantics | Replaced destructive consume with cursor-based `consumeUserEventsSince` and monotonic IDs in `src/lib/realtime.ts`; SSE sends/resumes using event IDs | `src/lib/__tests__/realtime.test.ts` validates at-least-once cursor semantics |
 
-**AI hallucinations on deal detail.** The assistant sometimes invented deal attributes or stages that didn’t exist when context was too small or stale. We tightened context construction: we only include deals and fields the user can access, and we pass explicit schema (stage list, field names) so the model stays grounded. We also avoid letting the model perform mutations; it suggests, the user acts.
-
-**Retrieval mistakes.** When chat pulled “similar” deals by keyword alone, it sometimes surfaced the wrong deal or missed the one the user meant. We improved by always scoping to the current user (and team when relevant) and by including deal IDs in context so the model can refer to specific records. We still don’t do semantic search over a large corpus; we keep retrieval deterministic and narrow.
-
-**Real-time and serverless.** The first real-time design assumed a long-lived connection; serverless timeouts and cold starts made it unreliable. We switched to SSE with Redis-backed events and a polling loop inside the stream, plus heartbeats. Connections stay within function limits; when Redis is missing, we fall back to polling so the app still works.
-
-**Scaling concerns.** Deal list and risk computation run on every request for that view. For users with thousands of deals, we’d need pagination, caching, or background risk precomputation. We’ve kept the current design for “normal” pipeline sizes and documented that heavy usage would require read replicas or async jobs.
-
-**What required redesign.** Sync status and errors were initially buried in logs. We introduced `IntegrationLog` and per-integration status fields so the UI can show last sync time, status, and recent errors. That single change made operations and support much easier.
-
-**What improved performance the most.** Indexing `userId`, `teamId`, `dealId`, and `createdAt` on the main query paths; keeping AI context small and structured; and using Server Components for initial deal list so the client doesn’t refetch everything on load.
-
-**Rate limiting and optional Redis.** Early on, missing Redis caused runtime errors in rate-limit and cache code. We refactored to null-check Redis everywhere and bypass gracefully. That let us deploy without Redis for small setups while still using it when available for production hardening.
+These changes are implementation-level hardening, not marketing claims. Remaining limits and tradeoffs are listed in this README and `ARCHITECTURE.md`.
 
 ---
 
@@ -1016,7 +1040,8 @@ Ensure `output: "standalone"` is set in `next.config`. Run Prisma migrations bef
 ## Documentation
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System overview, tech stack, directory structure, data flow, caching, security
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Prerequisites, local setup, Vercel deployment, env vars
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Prerequisites, local setup, Vercel deployment, env vars, [cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook)
+- **[TRY_THIS.md](TRY_THIS.md)** - Short product walkthrough
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to run locally, branch naming, PR checks, code style
 - **[docs/API.md](docs/API.md)** - API index and links to full OpenAPI spec
 
@@ -1054,6 +1079,16 @@ We welcome contributions. Please read our [contributing guidelines](CONTRIBUTING
 - [Vercel](https://vercel.com) - Deployment and hosting
 
 ---
+
+## Ship checklist
+
+Before production or a major release:
+
+1. **`npm run verify`** — typecheck, ESLint, Vitest (Windows: run as a single command).
+2. **Environment** — copy [.env.example](.env.example) → `.env.local` (or Vercel env UI): `DATABASE_URL`, `DIRECT_URL`, Clerk, `OPENROUTER_API_KEY`; add **`CRON_SECRET`** if cron is used; add **`INTEGRATION_ENCRYPTION_KEY`** if integrations encrypt at connect.
+3. **Cron** — [Vercel Hobby cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook): Hobby = one daily Vercel cron + Bearer; higher frequency = external scheduler with the same header.
+4. **Optional CI** — [CONTRIBUTING.md](CONTRIBUTING.md): Actions → **Verify (manual)** (`workflow_dispatch` only).
+5. **Demo** — [https://www.sentinels.in/](https://www.sentinels.in/) · [TRY_THIS.md](TRY_THIS.md) for a 2-minute walkthrough.
 
 ## License
 

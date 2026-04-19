@@ -65,19 +65,48 @@ High-level system overview for the Sentinel revenue intelligence platform.
 
 - **Usage**: Deal lists and risk summaries cached per user with short TTL (e.g. 60s) via `withCache()` in `src/lib/cache.ts`. Keys include `userId` (and `teamId` when relevant).
 - **Rate limiting**: Redis used for API rate limit state.
-- **Real-time**: Optional Redis pub/sub for multi-instance event fan-out (see `src/lib/realtime.ts`).
+- **Real-time**: When Redis is present, events are stored in a per-user bounded list with monotonic IDs (`src/lib/realtime.ts`); SSE consumers read by cursor (`consumeUserEventsSince`) without destructive pop semantics—see `src/app/api/events/route.ts`.
 
 ## Security
 
-- **Auth**: Clerk middleware; `getAuthenticatedUserId()` used in actions and API routes.
-- **Rate limiting**: Applied on API routes (Redis-backed).
-- **CSP**: Content-Security-Policy and other security headers in `next.config.ts`.
-- **Request size**: Middleware caps body size (e.g. 10MB) for POST/PUT/PATCH.
-- **Audit**: Sensitive actions (e.g. deal updates, team changes) logged via `src/lib/audit-log.ts`.
+- **Authentication boundary**: `src/middleware.ts` allows only explicitly public routes; protected paths do not trust spoofable headers (referer, RSC, prefetch hints).
+- **Cron auth (fail-closed)**: `src/lib/cron-auth.ts` enforces `Authorization: Bearer <CRON_SECRET>`; missing secret or invalid token returns an error.
+- **Secrets at rest**: Integration credentials are encrypted/decrypted via `src/lib/integration-secrets.ts` (AES-256-GCM envelope format with compatibility for legacy plaintext rows).
+- **Headers and CSP**: CSP and security headers are set in `next.config.ts`; risky directives are constrained to development where possible.
+- **Rate limiting**: Redis-backed API limits in `src/lib/api-rate-limit.ts`; routes degrade gracefully when Redis is unavailable.
+- **Auditability**: Deal and team changes are logged in `src/lib/audit-log.ts`.
+
+## Reliability Model
+
+- **AI resilience**: `src/lib/ai-router.ts` uses model candidates and per-model circuit breaker names so one unhealthy provider/model does not block all AI traffic.
+- **Retry semantics**: `src/lib/retry.ts` retries transient upstream failures and skips retries when the circuit is already open.
+- **External API timeouts**: `src/lib/reliable-fetch.ts` wraps provider fetches with explicit timeout-based `RetryableError` behavior.
+- **Integration sync execution**: `src/app/api/cron/sync-integrations/route.ts` runs provider syncs concurrently with bounded per-provider concurrency.
+- **Realtime delivery**: `src/lib/realtime.ts` + `src/app/api/events/route.ts` use monotonic IDs and cursor-based consumption (`lastEventId`) for at-least-once semantics.
+
+## Verification Expectations
+
+- **Local quality gate**: `npm run verify` runs `typecheck`, `lint`, and `test:run`.
+- **Critical-path tests**:
+  - `src/__tests__/middleware-auth.test.ts`
+  - `src/lib/__tests__/cron-auth.test.ts`
+  - `src/lib/__tests__/integration-secrets.test.ts`
+  - `src/lib/__tests__/ai-router-openrouter.test.ts`
+  - `src/lib/__tests__/realtime.test.ts`
+- **Review expectation**: behavior claims in docs should map to a test, route handler, or utility in `src/lib` / `src/app/api`.
+
+## Operational Tradeoffs And Known Limits
+
+- **Redis optional mode**: App remains functional without Redis, but rate limiting, caching, queues, and realtime publishing are reduced or bypassed.
+- **Integration encryption key**: `INTEGRATION_ENCRYPTION_KEY` must be a base64-encoded 32-byte value to encrypt new integration secrets; missing key fails encrypt paths; legacy plaintext rows still decrypt as plaintext until re-saved.
+- **Serverless realtime tradeoff**: SSE is chosen over WebSockets for serverless simplicity; not intended for high-frequency bidirectional messaging.
+- **Sync freshness vs provider limits**: More frequent CRM sync improves freshness but increases provider quota pressure and failure surface.
+- **LLM variability**: AI routes are guarded for availability, but model outputs remain probabilistic and should not execute irreversible actions automatically.
 
 ## Further Reading
 
 - **Setup & usage**: [README](README.md)
+- **Quick walkthrough**: [TRY_THIS.md](TRY_THIS.md)
 - **API reference**: In-app [API Reference](/api-docs) (OpenAPI/Swagger)
 - **Developer docs**: In-app [Developer Docs](/docs/developers)
-- **Deployment**: [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Deployment & cron**: [DEPLOYMENT.md](DEPLOYMENT.md) · [Vercel Hobby cron playbook](DEPLOYMENT.md#vercel-hobby-cron-playbook)
