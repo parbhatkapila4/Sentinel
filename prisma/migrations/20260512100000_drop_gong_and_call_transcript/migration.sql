@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS "CallTranscript" CASCADE;
+DROP TABLE IF EXISTS "GongIntegration" CASCADE;

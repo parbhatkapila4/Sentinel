@@ -6,29 +6,27 @@ import { revalidatePath } from "next/cache";
 import {
   validateSalesforceCredentials,
   fetchSalesforceOpportunities,
+  fetchSalesforceContacts,
   mapSalesforceOpportunityToDeal,
 } from "@/lib/salesforce";
+import { normalizeContactEmail } from "@/lib/contact-utils";
 import { logIntegrationAction } from "./integrations";
-import { enforceIntegrationLimit } from "@/lib/plan-enforcement";
-import { incrementUsage } from "@/lib/plans";
+import { runIntegrationConnect } from "@/lib/integration-flow";
 import { notifySlackAfterCrmSync } from "@/lib/post-crm-sync-slack";
-import {
-  decryptIntegrationSecret,
-  encryptIntegrationSecret,
-} from "@/lib/integration-secrets";
+import { encryptIntegrationSecret } from "@/lib/integration-secrets";
 import { incrementMetric } from "@/lib/metrics";
 import { logInfo, logWarn } from "@/lib/logger";
 import { runWithConcurrency } from "@/lib/async-pool";
+import { deleteIfExists } from "@/lib/prisma-helpers";
 
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
 
 export interface SalesforceStatus {
   connected: boolean;
   lastSyncAt: Date | null;
   lastSyncStatus: string | null;
   totalSynced: number;
+  lastContactsSyncedAt: Date | null;
+  totalContactsSynced: number;
   syncEnabled: boolean;
   instanceUrl: string | null;
 }
@@ -72,68 +70,53 @@ async function findExistingSalesforceDeal(
 }
 
 export async function connectSalesforce(
-  apiKey: string,
+  consumerKey: string,
+  consumerSecret: string,
   instanceUrl: string
 ): Promise<{ success: boolean }> {
-  const userId = await getAuthenticatedUserId();
-
-  const existing = await db.salesforceIntegration.findUnique({
-    where: { userId },
-  });
-
-  const validation = await validateSalesforceCredentials(apiKey, instanceUrl);
-  if (!validation.valid) {
-    await logIntegrationAction(
-      "salesforce",
-      "connect",
-      "failed",
-      validation.error
-    );
-    throw new Error(validation.error || "Invalid Salesforce credentials");
-  }
-
-  if (!existing) {
-    await enforceIntegrationLimit(userId, "salesforce");
-  }
-
-  await db.salesforceIntegration.upsert({
-    where: { userId },
-    create: {
-      userId,
-      apiKey: encryptIntegrationSecret(apiKey),
-      instanceUrl: instanceUrl.replace(/\/$/, ""),
-      isActive: true,
-      syncEnabled: true,
+  return runIntegrationConnect({
+    provider: "salesforce",
+    hasExisting: async (userId) =>
+      Boolean(
+        await prisma.salesforceIntegration.findUnique({ where: { userId } })
+      ),
+    validate: () =>
+      validateSalesforceCredentials(consumerKey, consumerSecret, instanceUrl),
+    upsert: async ({ userId }) => {
+      const trimmedUrl = instanceUrl.replace(/\/$/, "");
+      const encryptedConsumerKey = encryptIntegrationSecret(consumerKey);
+      const encryptedConsumerSecret = encryptIntegrationSecret(consumerSecret);
+      await prisma.salesforceIntegration.upsert({
+        where: { userId },
+        create: {
+          userId,
+          consumerKey: encryptedConsumerKey,
+          consumerSecret: encryptedConsumerSecret,
+          instanceUrl: trimmedUrl,
+          isActive: true,
+          syncEnabled: true,
+        },
+        update: {
+          consumerKey: encryptedConsumerKey,
+          consumerSecret: encryptedConsumerSecret,
+          instanceUrl: trimmedUrl,
+          isActive: true,
+          accessToken: null,
+          accessTokenExpiresAt: null,
+        },
+      });
     },
-    update: {
-      apiKey: encryptIntegrationSecret(apiKey),
-      instanceUrl: instanceUrl.replace(/\/$/, ""),
-      isActive: true,
-    },
+    successMessage: () => "Successfully connected to Salesforce",
   });
-
-  if (!existing) {
-    await incrementUsage(userId, "integrations", 1);
-  }
-
-  await logIntegrationAction(
-    "salesforce",
-    "connect",
-    "success",
-    "Successfully connected to Salesforce"
-  );
-
-  revalidatePath("/settings");
-  return { success: true };
 }
 
 export async function disconnectSalesforce(): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
-  await db.salesforceIntegration.delete({
-    where: { userId },
-  }).catch(() => {
-  });
+  await deleteIfExists(
+    () => prisma.salesforceIntegration.delete({ where: { userId } }),
+    { resource: "salesforceIntegration", userId }
+  );
 
   await logIntegrationAction(
     "salesforce",
@@ -149,7 +132,7 @@ export async function disconnectSalesforce(): Promise<{ success: boolean }> {
 export async function syncSalesforceDeals(): Promise<SyncResult> {
   const userId = await getAuthenticatedUserId();
 
-  const integration = await db.salesforceIntegration.findUnique({
+  const integration = await prisma.salesforceIntegration.findUnique({
     where: { userId },
   });
 
@@ -157,11 +140,11 @@ export async function syncSalesforceDeals(): Promise<SyncResult> {
     throw new Error("Salesforce is not connected");
   }
 
+  let dealsResult: SyncResult | null = null;
+  let dealsError: unknown = null;
+
   try {
-    const opportunities = await fetchSalesforceOpportunities(
-      decryptIntegrationSecret(integration.apiKey),
-      integration.instanceUrl
-    );
+    const opportunities = await fetchSalesforceOpportunities(integration);
 
     let created = 0;
     let updated = 0;
@@ -185,7 +168,10 @@ export async function syncSalesforceDeals(): Promise<SyncResult> {
           updated++;
         } else {
           await prisma.deal.create({
-            data: dealData,
+            data: {
+              ...dealData,
+              value: dealData.value,
+            },
           });
           created++;
         }
@@ -196,7 +182,7 @@ export async function syncSalesforceDeals(): Promise<SyncResult> {
 
     const totalSynced = created + updated;
 
-    await db.salesforceIntegration.update({
+    await prisma.salesforceIntegration.update({
       where: { userId },
       data: {
         lastSyncAt: new Date(),
@@ -224,7 +210,7 @@ export async function syncSalesforceDeals(): Promise<SyncResult> {
       updated,
     });
 
-    return {
+    dealsResult = {
       success: true,
       synced: totalSynced,
       created,
@@ -232,7 +218,7 @@ export async function syncSalesforceDeals(): Promise<SyncResult> {
       errors: errors.length > 0 ? errors : undefined,
     };
   } catch (error) {
-    await db.salesforceIntegration.update({
+    await prisma.salesforceIntegration.update({
       where: { userId },
       data: {
         lastSyncAt: new Date(),
@@ -248,14 +234,26 @@ export async function syncSalesforceDeals(): Promise<SyncResult> {
       String(error)
     );
 
-    throw error;
+    dealsError = error;
   }
+
+  try {
+    await syncSalesforceContactsForUser(userId);
+  } catch (error) {
+    logWarn("Salesforce manual contact sync threw unexpectedly", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  if (dealsError) throw dealsError;
+  return dealsResult!;
 }
 
 export async function getSalesforceStatus(): Promise<SalesforceStatus> {
   const userId = await getAuthenticatedUserId();
 
-  const integration = await db.salesforceIntegration.findUnique({
+  const integration = await prisma.salesforceIntegration.findUnique({
     where: { userId },
   });
 
@@ -265,6 +263,8 @@ export async function getSalesforceStatus(): Promise<SalesforceStatus> {
       lastSyncAt: null,
       lastSyncStatus: null,
       totalSynced: 0,
+      lastContactsSyncedAt: null,
+      totalContactsSynced: 0,
       syncEnabled: false,
       instanceUrl: null,
     };
@@ -280,6 +280,8 @@ export async function getSalesforceStatus(): Promise<SalesforceStatus> {
     lastSyncAt: integration.lastSyncAt,
     lastSyncStatus: integration.lastSyncStatus,
     totalSynced: integration.totalSynced,
+    lastContactsSyncedAt: integration.lastContactsSyncedAt,
+    totalContactsSynced: integration.totalContactsSynced,
     syncEnabled: integration.syncEnabled,
     instanceUrl: maskedUrl,
   };
@@ -290,7 +292,7 @@ export async function updateSalesforceSettings(settings: {
 }): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
-  await db.salesforceIntegration.update({
+  await prisma.salesforceIntegration.update({
     where: { userId },
     data: settings,
   });
@@ -308,7 +310,7 @@ export async function updateSalesforceSettings(settings: {
 
 export async function syncSalesforceDealsForUser(userId: string): Promise<SyncResult> {
   const startedAt = Date.now();
-  const integration = await db.salesforceIntegration.findUnique({
+  const integration = await prisma.salesforceIntegration.findUnique({
     where: { userId },
   });
 
@@ -317,10 +319,7 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
   }
 
   try {
-    const fetchedOpportunities = await fetchSalesforceOpportunities(
-      decryptIntegrationSecret(integration.apiKey),
-      integration.instanceUrl
-    );
+    const fetchedOpportunities = await fetchSalesforceOpportunities(integration);
     const opportunities = fetchedOpportunities.filter((opportunity, index, arr) => {
       return arr.findIndex((candidate) => candidate.Id === opportunity.Id) === index;
     });
@@ -380,7 +379,10 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
           }
 
           const createdDeal = await prisma.deal.create({
-            data: dealData,
+            data: {
+              ...dealData,
+              value: dealData.value,
+            },
             select: { id: true, externalId: true, name: true, source: true },
           });
           created++;
@@ -396,7 +398,7 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
       }
     );
 
-    await db.salesforceIntegration.update({
+    await prisma.salesforceIntegration.update({
       where: { userId },
       data: {
         lastSyncAt: new Date(),
@@ -432,7 +434,7 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
       errors: errors.length > 0 ? errors : undefined,
     };
   } catch (error) {
-    await db.salesforceIntegration.update({
+    await prisma.salesforceIntegration.update({
       where: { userId },
       data: {
         lastSyncAt: new Date(),
@@ -450,4 +452,161 @@ export async function syncSalesforceDealsForUser(userId: string): Promise<SyncRe
     });
     return { success: false, synced: 0, created: 0, updated: 0, scanned: 0, failed: 1, errors: [String(error)] };
   }
+}
+
+export interface SalesforceContactSyncResult {
+  synced: number;
+  skipped: number;
+  errors: string[];
+}
+
+export async function syncSalesforceContactsForUser(
+  userId: string
+): Promise<SalesforceContactSyncResult> {
+  void incrementMetric("sync.salesforce.contacts.started", 1);
+
+  const integration = await prisma.salesforceIntegration.findUnique({
+    where: { userId },
+  });
+
+  if (!integration || !integration.isActive || !integration.syncEnabled) {
+    logInfo("Salesforce contact sync skipped: no active integration", { userId });
+    return {
+      synced: 0,
+      skipped: 0,
+      errors: ["No active Salesforce integration"],
+    };
+  }
+
+  const startedAt = Date.now();
+  const errors: string[] = [];
+  let synced = 0;
+  let skipped = 0;
+
+  let contacts: Awaited<ReturnType<typeof fetchSalesforceContacts>>;
+  try {
+    contacts = await fetchSalesforceContacts(integration);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    void incrementMetric("sync.salesforce.contacts.failed", 1);
+    logWarn("Salesforce contact fetch failed", { userId, error: msg });
+    return { synced: 0, skipped: 0, errors: [msg] };
+  }
+
+  for (const contact of contacts) {
+    const email = normalizeContactEmail(contact.Email);
+    if (!email) {
+      skipped++;
+      continue;
+    }
+
+    const firstName = contact.FirstName || null;
+    const lastName = contact.LastName || null;
+    const composedFullName =
+      firstName && lastName
+        ? `${firstName} ${lastName}`
+        : firstName ?? lastName ?? null;
+    const fullName = composedFullName ?? contact.Name ?? null;
+
+    const data = {
+      userId,
+      email,
+      firstName,
+      lastName,
+      fullName,
+      phone: contact.Phone || null,
+      companyName: contact.Account?.Name || null,
+      source: "salesforce",
+      externalId: contact.Id,
+      lastSyncedAt: new Date(),
+    };
+
+    try {
+      const [existingByEmail, existingByProviderKey] = await Promise.all([
+        prisma.contact.findUnique({
+          where: { userId_email: { userId, email } },
+        }),
+        prisma.contact.findUnique({
+          where: {
+            userId_source_externalId: {
+              userId,
+              source: "salesforce",
+              externalId: contact.Id,
+            },
+          },
+        }),
+      ]);
+
+      if (existingByEmail) {
+        if (
+          existingByProviderKey &&
+          existingByProviderKey.id !== existingByEmail.id
+        ) {
+          await prisma.$transaction([
+            prisma.contact.delete({
+              where: { id: existingByProviderKey.id },
+            }),
+            prisma.contact.update({
+              where: { id: existingByEmail.id },
+              data: { ...data, updatedAt: new Date() },
+            }),
+          ]);
+        } else {
+          await prisma.contact.update({
+            where: { id: existingByEmail.id },
+            data: { ...data, updatedAt: new Date() },
+          });
+        }
+      } else if (existingByProviderKey) {
+        await prisma.contact.update({
+          where: { id: existingByProviderKey.id },
+          data: { ...data, updatedAt: new Date() },
+        });
+      } else {
+        await prisma.contact.create({
+          data: { ...data, createdAt: new Date(), updatedAt: new Date() },
+        });
+      }
+      synced++;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      errors.push(`Failed to sync contact ${contact.Id}: ${msg}`);
+      logWarn("Salesforce contact upsert failed", {
+        userId,
+        externalId: contact.Id,
+        email,
+        error: msg,
+      });
+    }
+  }
+
+  try {
+    await prisma.salesforceIntegration.update({
+      where: { userId },
+      data: {
+        lastContactsSyncedAt: new Date(),
+        totalContactsSynced: integration.totalContactsSynced + synced,
+      },
+    });
+  } catch (error) {
+    logWarn("Salesforce contact sync metadata update failed", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  const durationMs = Date.now() - startedAt;
+  void incrementMetric("sync.salesforce.contacts.completed", 1);
+  void incrementMetric("sync.salesforce.contacts.duration_ms", durationMs);
+  logInfo("Salesforce contact sync completed", {
+    userId,
+    scanned: contacts.length,
+    synced,
+    skipped,
+    errors: errors.length,
+    failureReasons: errors.slice(0, 3),
+    durationMs,
+  });
+
+  return { synced, skipped, errors };
 }

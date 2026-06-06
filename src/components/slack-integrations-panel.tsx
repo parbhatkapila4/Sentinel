@@ -21,8 +21,37 @@ function maskWebhookUrl(url: string): string {
   }
 }
 
-const CARD_CLASS =
-  "rounded-xl p-5 sm:p-6 border border-white/8 bg-[#080808] transition-colors hover:border-white/10 card-elevated";
+const META_LABEL: React.CSSProperties = {
+  fontFamily: "var(--font-mono-jb)",
+  fontSize: 10,
+  letterSpacing: "0.18em",
+  textTransform: "uppercase",
+  color: "var(--cream-3)",
+};
+
+const GHOST_BUTTON: React.CSSProperties = {
+  fontFamily: "var(--font-mono-jb)",
+  fontSize: 10.5,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  padding: "8px 14px",
+  border: "1px solid var(--rule-strong)",
+  background: "transparent",
+  color: "var(--cream-2)",
+  cursor: "pointer",
+};
+
+const LINK_BUTTON: React.CSSProperties = {
+  fontFamily: "var(--font-mono-jb)",
+  fontSize: 10.5,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  padding: 0,
+  border: "none",
+  background: "transparent",
+  color: "var(--signal)",
+  cursor: "pointer",
+};
 
 export function SlackIntegrationsPanel({
   defaultExpanded = false,
@@ -59,7 +88,9 @@ export function SlackIntegrationsPanel({
       const list = await getMySlackIntegrations();
       setIntegrations(list);
     } catch {
-      toast.error("Failed to load Slack integrations");
+      toast.error("Failed to load Slack integrations", {
+        id: "slack-integrations-load-error",
+      });
       setIntegrations([]);
     } finally {
       setLoading(false);
@@ -98,7 +129,7 @@ export function SlackIntegrationsPanel({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this Slack integration?")) return;
+    if (typeof window !== "undefined" && !window.confirm("Remove this Slack integration?")) return;
     try {
       await deleteSlackIntegration(id);
       toast.success("Integration removed");
@@ -123,53 +154,105 @@ export function SlackIntegrationsPanel({
 
   if (!expanded && !alwaysExpanded) {
     return (
-      <div className={CARD_CLASS}>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="w-full flex items-center justify-between text-left gap-4"
-        >
-          <div>
-            <h3 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-              Slack notifications
-            </h3>
-            <p className="text-sm text-white/50 mt-1">
-              Deal alerts, stage changes, and optional CRM sync summaries
-            </p>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          padding: "22px 22px",
+          border: "1px solid var(--rule)",
+          background: "var(--ink-02)",
+          color: "var(--cream)",
+          textAlign: "left",
+          cursor: "pointer",
+        }}
+      >
+        <div>
+          <div style={{ ...META_LABEL, marginBottom: 6 }}>
+            § - SLACK NOTIFICATIONS
           </div>
-          <span className="text-[#0f766e] text-sm font-medium shrink-0">
-            Expand →
-          </span>
-        </button>
-      </div>
+          <div
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 18,
+              fontStyle: "italic",
+              color: "var(--cream)",
+              letterSpacing: "-0.01em",
+              marginBottom: 4,
+            }}
+          >
+            In-channel, in real time.
+          </div>
+          <div
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 13.5,
+              color: "var(--cream-3)",
+              lineHeight: 1.5,
+            }}
+          >
+            Deal alerts, stage changes, and optional CRM sync summaries.
+          </div>
+        </div>
+        <span
+          style={{
+            ...META_LABEL,
+            color: "var(--signal)",
+            flexShrink: 0,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          Expand
+          <span aria-hidden>→</span>
+        </span>
+      </button>
     );
   }
 
   return (
-    <div className={`${CARD_CLASS} space-y-4`} id="slack-integrations-panel">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="border-l-2 border-[#0f766e] pl-3">
-          <h3 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-            Slack
-          </h3>
-          <p className="text-sm text-white/50 mt-1">
-            Incoming webhooks for at-risk deals, wins, stage changes, and HubSpot
-            / Salesforce sync summaries.
-          </p>
-        </div>
-        {!alwaysExpanded && (
+    <div id="slack-integrations-panel">
+      {!alwaysExpanded && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: 12,
+          }}
+        >
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="text-sm text-white/50 hover:text-white"
+            style={LINK_BUTTON}
           >
             Collapse
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {showForm && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+        <div
+          style={{
+            border: "1px solid var(--rule-strong)",
+            background: "var(--ink-02)",
+            padding: "22px 22px 20px",
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              ...META_LABEL,
+              color: "var(--signal)",
+              marginBottom: 14,
+            }}
+          >
+            § - NEW WEBHOOK
+          </div>
           <SlackForm
             onSuccess={() => {
               setShowForm(false);
@@ -181,99 +264,244 @@ export function SlackIntegrationsPanel({
       )}
 
       {loading ? (
-        <div className="p-8 text-center text-white/50">Loading…</div>
-      ) : integrations.length === 0 ? (
-        <div className="p-8 text-center rounded-xl bg-white/[0.02] border border-white/6">
-          <p className="text-white/50 font-medium mb-2">
-            No Slack webhooks yet
-          </p>
-          <p className="text-sm text-white/40 mb-4">
+        <div
+          style={{
+            padding: "48px 0",
+            textAlign: "center",
+            fontFamily: "var(--font-serif)",
+            fontStyle: "italic",
+            fontSize: 15,
+            color: "var(--cream-3)",
+          }}
+        >
+          Loading webhooks…
+        </div>
+      ) : integrations.length === 0 && !showForm ? (
+        <div
+          style={{
+            border: "1px solid var(--rule)",
+            background: "var(--ink-02)",
+            padding: "44px 32px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 14,
+            textAlign: "center",
+          }}
+        >
+          <span
+            style={{
+              ...META_LABEL,
+              color: "var(--copper)",
+            }}
+          >
+            NO WEBHOOKS CONNECTED
+          </span>
+          <p
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontStyle: "italic",
+              fontSize: 16,
+              lineHeight: 1.55,
+              color: "var(--cream-2)",
+              margin: 0,
+              maxWidth: 480,
+            }}
+          >
             Get notified in-channel when deals are at risk, stages change, or
             after a CRM sync.
           </p>
-          {!showForm && (
-            <button
-              type="button"
-              onClick={() => setShowForm(true)}
-              className="px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors"
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            style={{
+              fontFamily: "var(--font-mono-jb)",
+              fontSize: 10.5,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              padding: "9px 18px",
+              border: "1px solid var(--signal)",
+              background: "transparent",
+              color: "var(--signal)",
+              cursor: "pointer",
+              marginTop: 4,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <svg
+              aria-hidden
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
             >
-              Connect Slack
-            </button>
-          )}
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Connect Slack
+          </button>
         </div>
-      ) : (
-        <div className="divide-y divide-white/6 rounded-xl border border-white/6 overflow-hidden">
-          {integrations.map((i) => (
-            <div
-              key={i.id}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 py-4 bg-white/[0.02]"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-medium text-white truncate">
-                    {i.channelName || maskWebhookUrl(i.webhookUrl)}
-                  </p>
-                  <span
-                    className={`shrink-0 px-2 py-0.5 rounded-lg text-xs font-medium ${i.isActive
-                        ? "bg-green-700/20 text-green-400"
-                        : "bg-white/10 text-white/50"
-                      }`}
+      ) : integrations.length > 0 ? (
+        <div
+          style={{
+            border: "1px solid var(--rule)",
+            background: "var(--ink-02)",
+          }}
+        >
+          <ul
+            style={{
+              listStyle: "none",
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            {integrations.map((i, idx) => (
+              <li
+                key={i.id}
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 20,
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  padding: "20px 22px",
+                  borderTop: idx === 0 ? "none" : "1px solid var(--rule)",
+                }}
+              >
+                <div style={{ minWidth: 0, flex: "1 1 320px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      flexWrap: "wrap",
+                    }}
                   >
-                    {i.isActive ? "Active" : "Inactive"}
-                  </span>
+                    <p
+                      style={{
+                        fontFamily: "var(--font-serif)",
+                        fontSize: 17,
+                        color: "var(--cream)",
+                        letterSpacing: "-0.005em",
+                        margin: 0,
+                      }}
+                    >
+                      {i.channelName || maskWebhookUrl(i.webhookUrl)}
+                    </p>
+                    <span
+                      style={{
+                        ...META_LABEL,
+                        color: i.isActive ? "var(--ivy)" : "var(--cream-4)",
+                        letterSpacing: "0.16em",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        style={{
+                          display: "inline-block",
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: i.isActive
+                            ? "var(--ivy)"
+                            : "var(--cream-4)",
+                        }}
+                      />
+                      {i.isActive ? "Live" : "Paused"}
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      ...META_LABEL,
+                      color: "var(--cream-3)",
+                      marginTop: 10,
+                      lineHeight: 1.6,
+                      letterSpacing: "0.12em",
+                    }}
+                  >
+                    {i.notifyOn.map((e) => e.replace(/\./g, " · ")).join("   /   ")}
+                  </p>
+                  {!i.notifyOn.includes("crm.sync_summary") && (
+                    <button
+                      type="button"
+                      onClick={() => enableSyncSummary(i.id, i.notifyOn)}
+                      style={{
+                        ...LINK_BUTTON,
+                        marginTop: 12,
+                      }}
+                    >
+                      + Enable CRM sync summaries
+                    </button>
+                  )}
                 </div>
-                <p className="text-sm text-white/50 mt-0.5 break-words">
-                  {i.notifyOn.map((e) => e.replace(/\./g, " · ")).join(", ")}
-                </p>
-                {!i.notifyOn.includes("crm.sync_summary") && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: 8,
+                    flexShrink: 0,
+                  }}
+                >
                   <button
                     type="button"
-                    onClick={() => enableSyncSummary(i.id, i.notifyOn)}
-                    className="mt-2 text-xs text-[#0f766e] hover:underline"
+                    onClick={() => handleToggleActive(i.id, i.isActive)}
+                    style={GHOST_BUTTON}
                   >
-                    + Enable CRM sync summaries
+                    {i.isActive ? "Pause" : "Resume"}
                   </button>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleToggleActive(i.id, i.isActive)}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/5"
-                >
-                  {i.isActive ? "Disable" : "Enable"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTest(i.id)}
-                  disabled={testingId === i.id}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 disabled:opacity-50"
-                >
-                  {testingId === i.id ? "Sending…" : "Test"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(i.id)}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-700/10"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ))}
-          {!showForm && (
-            <div className="px-4 py-3 bg-white/[0.02]">
-              <button
-                type="button"
-                onClick={() => setShowForm(true)}
-                className="text-sm text-[#0f766e] hover:underline"
+                  <button
+                    type="button"
+                    onClick={() => handleTest(i.id)}
+                    disabled={testingId === i.id}
+                    style={{
+                      ...GHOST_BUTTON,
+                      opacity: testingId === i.id ? 0.55 : 1,
+                      cursor: testingId === i.id ? "wait" : "pointer",
+                    }}
+                  >
+                    {testingId === i.id ? "Sending…" : "Test"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(i.id)}
+                    style={{
+                      ...GHOST_BUTTON,
+                      borderColor: "var(--wine)",
+                      color: "var(--wine)",
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            ))}
+            {!showForm && (
+              <li
+                style={{
+                  borderTop: "1px solid var(--rule)",
+                  padding: "14px 22px",
+                }}
               >
-                + Add another webhook
-              </button>
-            </div>
-          )}
+                <button
+                  type="button"
+                  onClick={() => setShowForm(true)}
+                  style={LINK_BUTTON}
+                >
+                  + Add another webhook
+                </button>
+              </li>
+            )}
+          </ul>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

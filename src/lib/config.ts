@@ -12,6 +12,38 @@ export const STAGES = {
   CLOSED_LOST: "closed_lost",
 } as const satisfies Record<string, Stage>;
 
+export const CANONICAL_STAGES: readonly Stage[] = [
+  STAGES.DISCOVER,
+  STAGES.QUALIFY,
+  STAGES.PROPOSAL,
+  STAGES.NEGOTIATION,
+  STAGES.CLOSED_WON,
+  STAGES.CLOSED_LOST,
+] as const;
+
+export function isCanonicalStage(value: unknown): value is Stage {
+  return (
+    typeof value === "string" &&
+    (CANONICAL_STAGES as readonly string[]).includes(value)
+  );
+}
+
+export function normalizeStage(value: unknown): Stage | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim().toLowerCase().replace(/[^a-z_ ]/g, "");
+  const collapsed = trimmed.replace(/\s+/g, "_");
+  if (isCanonicalStage(collapsed)) return collapsed;
+  const aliases: Record<string, Stage> = {
+    discovery: STAGES.DISCOVER,
+    qualification: STAGES.QUALIFY,
+    negotiate: STAGES.NEGOTIATION,
+    won: STAGES.CLOSED_WON,
+    lost: STAGES.CLOSED_LOST,
+    closed: STAGES.CLOSED_WON,
+  };
+  return aliases[collapsed] ?? null;
+}
+
 export const STAGE_ORDER: Record<string, number> = {
   discover: 1,
   qualify: 2,
@@ -31,6 +63,61 @@ export const STAGE_TO_SOURCE: Record<string, string> = {
   closed_lost: "Other",
   closed: "Partnerships",
 };
+
+export const DEAL_CHANNELS = [
+  "direct",
+  "organic",
+  "outbound",
+  "referrals",
+  "partners",
+] as const;
+
+export type DealChannel = (typeof DEAL_CHANNELS)[number];
+
+export const DEAL_CHANNEL_LABELS: Record<DealChannel, string> = {
+  direct: "Direct",
+  organic: "Organic",
+  outbound: "Outbound",
+  referrals: "Referrals",
+  partners: "Partners",
+};
+
+export const DEAL_CHANNEL_DESCRIPTIONS: Record<DealChannel, string> = {
+  direct: "Inbound interest the prospect initiated — website, demo request.",
+  organic: "Found you through content, search, or community without paid push.",
+  outbound: "Your team reached out first — cold email, calls, prospecting.",
+  referrals: "Introduced by a customer, advisor, investor, or peer.",
+  partners: "Came in through a channel partner, reseller, or alliance.",
+};
+
+export const STAGE_TO_CHANNEL_FALLBACK: Record<string, DealChannel> = {
+  discover: "direct",
+  qualify: "organic",
+  proposal: "outbound",
+  negotiation: "referrals",
+  closed_won: "partners",
+  closed_lost: "outbound",
+  closed: "partners",
+};
+
+export function normalizeChannel(value: unknown): DealChannel | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, "_");
+  if ((DEAL_CHANNELS as readonly string[]).includes(normalized)) {
+    return normalized as DealChannel;
+  }
+  const aliases: Record<string, DealChannel> = {
+    inbound: "direct",
+    paid: "outbound",
+    paid_ads: "outbound",
+    "paid-ads": "outbound",
+    partnerships: "partners",
+    partner: "partners",
+    referral: "referrals",
+    cold: "outbound",
+  };
+  return aliases[normalized] ?? null;
+}
 
 export const STAGE_PRIORITY_FOR_RISK: Record<string, number> = {
   negotiation: 2,
@@ -133,7 +220,7 @@ export const AI_CONFIG = {
     provider: "openrouter" as const,
   },
   financial_reasoning: {
-    model: "anthropic/claude-3.5-sonnet",
+    model: "anthropic/claude-sonnet-4.5",
     temperature: 0.3,
     maxTokens: 2000,
     provider: "openrouter" as const,
@@ -145,7 +232,7 @@ export const AI_CONFIG = {
     provider: "openrouter" as const,
   },
   planning_multimodal: {
-    model: "google/gemini-pro",
+    model: "google/gemini-2.5-pro",
     temperature: 0.4,
     maxTokens: 2000,
     provider: "openrouter" as const,
@@ -165,6 +252,8 @@ export const RISK_REASONS = {
   NEGOTIATION_STALLED: "Negotiation stalled without response",
   HIGH_VALUE: "High value deal requires attention",
   COMPETITIVE_PRESSURE: "Competitive signals detected",
+  STAGE_STALL: "Stalled in stage longer than typical",
+  CHAMPION_DORMANT: "Champion gone quiet — no inbound in 14+ days",
 } as const;
 
 export const TEAM_ROLES = {

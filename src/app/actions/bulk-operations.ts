@@ -8,7 +8,8 @@ import { appendDealTimeline } from "@/lib/timeline";
 import { notifyRealtimeEvent } from "@/lib/realtime";
 import { seedDemoDataForUser } from "@/lib/demo-data";
 import { ValidationError } from "@/lib/errors";
-import { logInfo } from "@/lib/logger";
+import { logInfo, logWarn } from "@/lib/logger";
+import { normalizeStage } from "@/lib/config";
 
 export type BulkUpdateResult = {
   updated: number;
@@ -86,6 +87,14 @@ export async function bulkUpdateDeals(
     });
   }
 
+  let canonicalStage: string | null = null;
+  if (updates.stage) {
+    canonicalStage = normalizeStage(updates.stage);
+    if (!canonicalStage) {
+      throw new ValidationError("Invalid stage value", { stage: "Invalid" });
+    }
+  }
+
   const { editableDeals, errors } = await validateDealAccess(userId, dealIds);
 
   if (editableDeals.length === 0) {
@@ -97,7 +106,7 @@ export async function bulkUpdateDeals(
   }
 
   const updateData: { stage?: string; assignedToId?: string | null } = {};
-  if (updates.stage) updateData.stage = updates.stage;
+  if (canonicalStage) updateData.stage = canonicalStage;
   if (updates.assignedToId !== undefined) updateData.assignedToId = updates.assignedToId;
 
   const idsToUpdate = editableDeals.map((d) => d.id);
@@ -112,8 +121,8 @@ export async function bulkUpdateDeals(
   );
 
   for (const id of idsToUpdate) {
-    if (updates.stage) {
-      await appendDealTimeline(id, "stage_changed", { stage: updates.stage });
+    if (canonicalStage) {
+      await appendDealTimeline(id, "stage_changed", { stage: canonicalStage });
     }
   }
 
@@ -130,8 +139,12 @@ export async function bulkUpdateDeals(
     for (const id of idsToUpdate) {
       await notifyRealtimeEvent(userId, { type: "deal.updated", dealId: id });
     }
-  } catch {
-
+  } catch (err) {
+    logWarn("Failed to publish realtime events for bulk update", {
+      userId,
+      count: idsToUpdate.length,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   logInfo("Bulk update completed", {
@@ -193,8 +206,12 @@ export async function bulkDeleteDeals(
     for (const id of idsToDelete) {
       await notifyRealtimeEvent(userId, { type: "deal.deleted", dealId: id });
     }
-  } catch {
-
+  } catch (err) {
+    logWarn("Failed to publish realtime events for bulk delete", {
+      userId,
+      count: idsToDelete.length,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   logInfo("Bulk delete completed", {

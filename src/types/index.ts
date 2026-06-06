@@ -52,6 +52,7 @@ export type DealForAnalytics = {
   status?: string;
   recommendedAction?: { label: string; urgency: string } | null;
   isActionOverdue?: boolean;
+  channel?: string | null;
 };
 
 export type PipelineMetrics = {

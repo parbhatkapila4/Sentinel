@@ -191,6 +191,84 @@ export async function createChatFolder(name: string, color?: string) {
   return folder;
 }
 
+export interface AISessionSummary {
+  id: string;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+  messageCount: number;
+  firstUserMessage: string | null;
+}
+
+export interface AIRecentQuestion {
+  id: string;
+  content: string;
+  createdAt: Date;
+  chatId: string;
+  chatTitle: string | null;
+}
+
+export async function getAISessionSummaries(): Promise<AISessionSummary[]> {
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return [];
+
+  const chats = await prisma.chat.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    take: 50,
+    select: {
+      id: true,
+      title: true,
+      createdAt: true,
+      updatedAt: true,
+      _count: { select: { messages: true } },
+      messages: {
+        where: { role: "user" },
+        orderBy: { createdAt: "asc" },
+        take: 1,
+        select: { content: true },
+      },
+    },
+  });
+
+  return chats.map((c) => ({
+    id: c.id,
+    title: c.title || c.messages[0]?.content?.slice(0, 60) || "New thread",
+    createdAt: c.createdAt,
+    updatedAt: c.updatedAt,
+    messageCount: c._count.messages,
+    firstUserMessage: c.messages[0]?.content ?? null,
+  }));
+}
+
+export async function getRecentUserQuestions(
+  limit = 3
+): Promise<AIRecentQuestion[]> {
+  const userId = await getAuthenticatedUserIdSafe();
+  if (!userId) return [];
+
+  const messages = await prisma.chatMessage.findMany({
+    where: { role: "user", chat: { userId } },
+    orderBy: { createdAt: "desc" },
+    take: Math.max(1, Math.min(limit, 20)),
+    select: {
+      id: true,
+      content: true,
+      createdAt: true,
+      chatId: true,
+      chat: { select: { title: true } },
+    },
+  });
+
+  return messages.map((m) => ({
+    id: m.id,
+    content: m.content,
+    createdAt: m.createdAt,
+    chatId: m.chatId,
+    chatTitle: m.chat?.title ?? null,
+  }));
+}
+
 export async function deleteChat(chatId: string) {
   const userId = await getAuthenticatedUserIdSafe();
   if (!userId) return;

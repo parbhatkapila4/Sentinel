@@ -1,264 +1,357 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
-export default async function ContactPage() {
+function BackLink() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="border-b border-white/10 sticky top-0 z-50 bg-black/95 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors -ml-76"
+    <div className="border-b border-white/10 sticky top-0 z-50 bg-black/80 backdrop-blur">
+      <div className="px-6 lg:px-8 py-4 flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Back
-          </Link>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to home
+        </Link>
+        <a
+          href="mailto:help@sentinels.in"
+          className="text-sm text-white/60 hover:text-white transition-colors"
+        >
+          help@sentinels.in →
+        </a>
       </div>
+    </div>
+  );
+}
 
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              CONTACT US
-            </h1>
+const reasons = [
+  "Reporting a bug or something broken",
+  "Requesting a specific integration",
+  "Questions about pricing, Enterprise terms, or a BAA",
+  "Responsible disclosure of a security issue",
+  "Feedback on a feature, or a feature you wish existed",
+];
+
+const channels = [
+  {
+    kicker: "Email",
+    label: "help@sentinels.in",
+    href: "mailto:help@sentinels.in",
+    note: "Primary channel. Replies come from a human within one business day.",
+    external: true,
+  },
+  {
+    kicker: "Twitter / X",
+    label: "@Parbhat03",
+    href: "https://x.com/Parbhat03",
+    note: "Quick questions, shipping updates, occasional thinking-out-loud about the product.",
+    external: true,
+  },
+  {
+    kicker: "LinkedIn",
+    label: "parbhat-kapila",
+    href: "https://www.linkedin.com/in/parbhat-kapila/",
+    note: "Work-mode conversations - procurement, partnerships, hiring notes.",
+    external: true,
+  },
+  {
+    kicker: "GitHub",
+    label: "parbhatkapila4/Sentinel",
+    href: "https://github.com/parbhatkapila4/Sentinel",
+    note: "Issues, commit history, and the changelog's source of truth.",
+    external: true,
+  },
+] as const;
+
+export default function ContactPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [topic, setTopic] = useState("General");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "opening">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedMessage = message.trim();
+
+    const missing: string[] = [];
+    if (!trimmedName) missing.push("name");
+    if (!trimmedEmail) missing.push("reply-to email");
+    if (!trimmedMessage) missing.push("message");
+
+    if (missing.length > 0) {
+      setError(
+        `Please fill in: ${missing.join(", ")}. The form opens your mail app — empty fields would send an empty draft.`,
+      );
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError("That reply-to email looks off. Double-check it before sending.");
+      return;
+    }
+
+    setError(null);
+
+    const subject = `[Sentinel · ${topic}] from ${trimmedName}`;
+    const body = [
+      trimmedMessage,
+      "",
+      "---",
+      `From:  ${trimmedName}`,
+      `Reply: ${trimmedEmail}`,
+      `Topic: ${topic}`,
+    ].join("\n");
+
+    const mailto = `mailto:help@sentinels.in?subject=${encodeURIComponent(
+      subject,
+    )}&body=${encodeURIComponent(body)}`;
+
+    setStatus("opening");
+    window.location.href = mailto;
+    window.setTimeout(() => setStatus("idle"), 2500);
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <BackLink />
+
+      <section className="px-6 lg:px-8 pt-20 pb-12">
+        <div className="max-w-[1700px] mx-auto">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-4">
+            Contact
           </div>
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-5 max-w-3xl leading-[1.05]">
+            Say hello, report a bug, or ask the hard questions.
+          </h1>
+          <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
+            Sentinel is built by one engineer. Every message lands directly in
+            his inbox and gets a reply from a person, not a ticketing system.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
+            <span>Average reply time: within 1 business day</span>
+            <span className="text-white/20">·</span>
+            <span>No sales funnel, no drip sequence</span>
+          </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      <section className="px-6 lg:px-8 pb-20">
+        <div className="max-w-[1700px] mx-auto border-t border-white/10 pt-12">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-x-14 gap-y-12">
+            <div>
+              <h2 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
+                Send a message
+              </h2>
 
-            <div className="bg-[#1a1a1a] rounded-2xl p-8 border border-white/10">
-              <h2 className="text-2xl font-bold text-white mb-6">GET IN TOUCH</h2>
-              <form className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label
                       htmlFor="name"
-                      className="block text-sm font-medium text-white/80 mb-2"
+                      className="block text-[11px] font-mono uppercase tracking-[0.18em] text-white/50 mb-2"
                     >
-                      NAME
+                      Name
                     </label>
                     <input
                       type="text"
                       id="name"
                       name="name"
-                      placeholder="Enter your name*"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
                       required
-                      className="w-full px-4 py-3 bg-[#0a0a0a] border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      autoComplete="name"
+                      className="w-full bg-transparent border-b border-white/15 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-white transition-colors"
                     />
                   </div>
                   <div>
                     <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-white/80 mb-2"
+                      htmlFor="email"
+                      className="block text-[11px] font-mono uppercase tracking-[0.18em] text-white/50 mb-2"
                     >
-                      PHONE NUMBER
+                      Reply-to email
                     </label>
-                    <div className="flex gap-2">
-                      <select
-                        id="countryCode"
-                        name="countryCode"
-                        required
-                        className="px-2 py-3 bg-[#0a0a0a] border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer"
-                        style={{ width: "85px", flexShrink: 0 }}
-                      >
-                        <option value="+1">🇺🇸 (+1)</option>
-                        <option value="+49">🇩🇪 (+49)</option>
-                        <option value="+91">🇮🇳 (+91)</option>
-                        <option value="+1">🇨🇦 (+1)</option>
-                        <option value="+61">🇦🇺 (+61)</option>
-                      </select>
-                      <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        placeholder="Enter phone number*"
-                        required
-                        pattern="[0-9]*"
-                        inputMode="numeric"
-                        className="flex-1 min-w-0 px-4 py-3 bg-[#0a0a0a] border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@company.com"
+                      required
+                      autoComplete="email"
+                      className="w-full bg-transparent border-b border-white/15 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-white transition-colors"
+                    />
                   </div>
                 </div>
+
                 <div>
                   <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-white/80 mb-2"
+                    htmlFor="topic"
+                    className="block text-[11px] font-mono uppercase tracking-[0.18em] text-white/50 mb-2"
                   >
-                    EMAIL
+                    Topic
                   </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="Enter your email*"
-                    required
-                    className="w-full px-4 py-3 bg-[#0a0a0a] border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  <select
+                    id="topic"
+                    name="topic"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    className="w-full bg-transparent border-b border-white/15 py-2.5 text-white focus:outline-none focus:border-white transition-colors appearance-none cursor-pointer"
+                  >
+                    <option className="bg-black" value="General">
+                      General question
+                    </option>
+                    <option className="bg-black" value="Bug">
+                      Bug / something broken
+                    </option>
+                    <option className="bg-black" value="Integration">
+                      Integration request
+                    </option>
+                    <option className="bg-black" value="Pricing">
+                      Pricing / Enterprise
+                    </option>
+                    <option className="bg-black" value="Security">
+                      Security / disclosure
+                    </option>
+                    <option className="bg-black" value="Feedback">
+                      Feedback
+                    </option>
+                  </select>
                 </div>
+
                 <div>
                   <label
                     htmlFor="message"
-                    className="block text-sm font-medium text-white/80 mb-2"
+                    className="block text-[11px] font-mono uppercase tracking-[0.18em] text-white/50 mb-2"
                   >
-                    YOUR MESSAGE
+                    Message
                   </label>
                   <textarea
                     id="message"
                     name="message"
-                    rows={6}
-                    placeholder="Enter your message"
+                    rows={7}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Tell me what's going on. Specific examples help a lot."
                     required
-                    className="w-full px-4 py-3 bg-[#0a0a0a] border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full bg-transparent border-b border-white/15 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-white transition-colors resize-none"
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="w-full px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-                >
-                  SEND MESSAGE
-                </button>
+
+                {error ? (
+                  <div
+                    role="alert"
+                    className="text-xs leading-relaxed border border-red-500/30 bg-red-500/5 text-red-200/90 px-3 py-2 rounded-sm"
+                  >
+                    {error}
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
+                  <button
+                    type="submit"
+                    disabled={status === "opening"}
+                    className="inline-flex items-center justify-center gap-2 bg-white text-black px-5 py-2.5 rounded-md text-sm font-medium hover:bg-white/90 transition-colors disabled:opacity-60"
+                  >
+                    {status === "opening"
+                      ? "Opening your mail app…"
+                      : "Send via your mail app"}
+                  </button>
+                  <p className="text-xs text-white/45 leading-relaxed max-w-sm">
+                    Submitting opens your default mail client pre-filled. No
+                    form data is stored here - the message goes straight to{" "}
+                    <a
+                      href="mailto:help@sentinels.in"
+                      className="text-white/70 underline underline-offset-2 hover:text-white"
+                    >
+                      help@sentinels.in
+                    </a>
+                    . If your mail app doesn&apos;t open, copy that address
+                    and email directly.
+                  </p>
+                </div>
               </form>
             </div>
 
-
             <div>
-              <p className="text-white/60 leading-relaxed text-center mb-6">
-                If you have any questions, please feel free to get in touch with us
-                via phone, text, email, the form below, or even on social media!
-              </p>
+              <h2 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
+                Other channels
+              </h2>
 
-              <div className="space-y-6">
-                <div className="bg-[#1a1a1a] rounded-2xl p-8 border border-white/10">
-                  <h2 className="text-2xl font-bold text-white mb-6 text-center">
-                    CONTACT INFORMATION
-                  </h2>
-                  <div className="space-y-6">
-                    <div className="flex items-start gap-4">
-                      <svg
-                        className="w-5 h-5 text-red-500 mt-1 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
-                      </svg>
-                      <div>
-                        <div className="text-sm font-medium text-white/80 mb-1">
-                          PHONE
+              <div className="border-t border-white/10">
+                {channels.map((c) => (
+                  <a
+                    key={c.label}
+                    href={c.href}
+                    target={c.external ? "_blank" : undefined}
+                    rel={c.external ? "noopener noreferrer" : undefined}
+                    className="group block border-b border-white/10 py-5 transition-colors hover:bg-white/2"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/45 mb-1">
+                          {c.kicker}
                         </div>
-                        <div className="text-white">890-477-9446</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-4">
-                      <svg
-                        className="w-5 h-5 text-red-500 mt-1 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                      <div>
-                        <div className="text-sm font-medium text-white/80 mb-1">
-                          ADDRESS
-                        </div>
-                        <div className="text-white">
-                          1 Market Plaza, Fl 9, San Francisco, CA 94105
+                        <div className="text-white font-medium tracking-tight group-hover:underline underline-offset-4 decoration-white/40 truncate">
+                          {c.label}
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-start gap-4">
-                      <svg
-                        className="w-5 h-5 text-red-500 mt-1 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
+                      <span
+                        aria-hidden
+                        className="text-white/40 transition-transform group-hover:translate-x-0.5"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <div>
-                        <div className="text-sm font-medium text-white/80 mb-1">
-                          EMAIL
-                        </div>
-                        <a
-                          href="mailto:help@sentinels.in"
-                          className="text-white hover:text-blue-400 transition-colors"
-                        >
-                          help@sentinels.in
-                        </a>
-                      </div>
+                        →
+                      </span>
                     </div>
-                  </div>
-                </div>
+                    <p className="text-sm text-white/55 leading-relaxed mt-2 max-w-md">
+                      {c.note}
+                    </p>
+                  </a>
+                ))}
+              </div>
 
-
-                <div className="bg-[#1a1a1a] rounded-2xl p-8 border border-white/10">
-                  <h2 className="text-2xl font-bold text-white mb-6">
-                    BUSINESS HOURS
-                  </h2>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                      <div className="text-white/80 font-medium">MONDAY - FRIDAY</div>
-                      <div className="text-white">9:00 am - 8:00 pm</div>
-                    </div>
-                    <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                      <div className="text-white/80 font-medium">SATURDAY</div>
-                      <div className="text-white">9:00 am - 6:00 pm</div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-white/80 font-medium">SUNDAY</div>
-                      <div className="text-white">9:00 am - 5:00 pm</div>
-                    </div>
-                  </div>
-                </div>
+              <div className="mt-10">
+                <h2 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-5">
+                  What to include
+                </h2>
+                <ul className="space-y-3">
+                  {reasons.map((r) => (
+                    <li
+                      key={r}
+                      className="flex gap-3 text-[15px] text-white/70 leading-relaxed"
+                    >
+                      <span
+                        aria-hidden
+                        className="mt-[10px] h-[5px] w-[5px] flex-none rounded-full bg-white/50"
+                      />
+                      <span>{r}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-sm text-white/45 leading-relaxed mt-6 max-w-md">
+                  For bugs: a screenshot, the URL you were on, and roughly
+                  when it happened cuts triage time in half.
+                </p>
               </div>
             </div>
-          </div>
-
-
-          <div className="bg-[#1a1a1a] rounded-2xl border border-white/10 overflow-hidden">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.185124035647!2d-122.3947!3d37.7878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085809c6c8f4459%3A0xb10ed6d9b5050fa5!2s1%20Market%20Plaza%2C%20San%20Francisco%2C%20CA%2094105!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
-              width="100%"
-              height="450"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full"
-            />
           </div>
         </div>
       </section>

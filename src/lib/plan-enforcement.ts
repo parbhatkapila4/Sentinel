@@ -1,6 +1,5 @@
 import { checkUsageLimit, incrementUsage } from "./plans";
 import { ForbiddenError } from "./errors";
-import { prisma } from "./prisma";
 
 export interface PlanLimitError {
   message: string;
@@ -26,24 +25,12 @@ export async function enforceTeamMemberLimit(
   _teamId: string
 ): Promise<void> {
   void _teamId;
-  const userTeams = await prisma.teamMember.findMany({
-    where: { userId },
-    select: { teamId: true },
-  });
-
-  const uniqueTeamIds = [...new Set(userTeams.map((tm) => tm.teamId))];
-
-  const totalMembers = await prisma.teamMember.count({
-    where: {
-      teamId: { in: uniqueTeamIds },
-    },
-  });
 
   const usage = await checkUsageLimit(userId, "teamMembers");
 
-  if (usage.limit !== 999999 && totalMembers >= usage.limit) {
+  if (usage.limit !== 999999 && !usage.allowed) {
     throw new ForbiddenError(
-      `You've reached your plan limit of ${usage.limit} team members across all teams. You currently have ${totalMembers} members. Upgrade your plan to add more team members.`
+      `You've reached your plan limit of ${usage.limit} team members. You currently have ${usage.current} members. Upgrade your plan to add more team members.`
     );
   }
 }

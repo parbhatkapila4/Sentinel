@@ -1,12 +1,16 @@
 "use server";
 
-import { unstable_noStore as noStore } from "next/cache";
-import { revalidatePath } from "next/cache";
+import { unstable_noStore, revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { logInfo, logWarn } from "@/lib/logger";
 import { withErrorContext } from "@/lib/error-context";
-import { STAGE_PRIORITY_FOR_RISK, TEAM_ROLES } from "@/lib/config";
-import { assertRiskFieldIntegrity } from "@/lib/riskAssertions";
+import {
+  STAGE_PRIORITY_FOR_RISK,
+  STAGES,
+  TEAM_ROLES,
+  normalizeStage,
+  normalizeChannel,
+} from "@/lib/config";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { appendDealTimeline } from "@/lib/timeline";
@@ -23,43 +27,23 @@ import { removeDemoDataForUser, hasDemoData, seedDemoDataForUser } from "@/lib/d
 import { NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
 import { getUserTeamRole } from "@/lib/team-utils";
 import { enforceDealLimit } from "@/lib/plan-enforcement";
+import { incrementUsage } from "@/lib/plans";
 import { withCache, invalidateCachePattern, invalidateCache } from "@/lib/cache";
 import type { GetDealsOptions } from "@/types";
-import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
 import { notifyRealtimeEvent } from "@/lib/realtime";
 import { incrementMetric } from "@/lib/business-metrics";
 import {
+  assertRiskFieldIntegrity,
   buildRiskSettingsMap,
   buildTimelineByDealId,
   computeDealRiskSnapshot,
 } from "@/lib/deal-risk-enrichment";
 import { runDealStageRiskSideEffects } from "@/lib/deal-stage-side-effects";
 
-const DEAL_VALUE_AUDIT_THRESHOLD = 100000;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function logDealValueChangeIfNeeded(
-  userId: string,
-  dealId: string,
-  oldValue: number,
-  newValue: number
-): Promise<void> {
-  if (
-    (oldValue >= DEAL_VALUE_AUDIT_THRESHOLD || newValue >= DEAL_VALUE_AUDIT_THRESHOLD) &&
-    oldValue !== newValue
-  ) {
-    await logAuditEvent(
-      userId,
-      AUDIT_ACTIONS.DEAL_VALUE_CHANGED,
-      "deal",
-      dealId,
-      {
-        oldValue,
-        newValue,
-        change: newValue - oldValue,
-        changePercent: oldValue > 0 ? ((newValue - oldValue) / oldValue) * 100 : 0,
-      }
-    );
-  }
+const MAX_DEAL_VALUE = 20_000_000_000;
+
+function toDealValueNumber(value: number | bigint): number {
+  return typeof value === "bigint" ? Number(value) : value;
 }
 
 export async function canUserAccessDeal(
@@ -89,19 +73,57 @@ export async function createDeal(formData: FormData) {
   return await withErrorContext(
     { userId, actionType: "create_deal" },
     async () => {
-      const name = formData.get("name") as string;
+      const name = ((formData.get("name") as string) ?? "").trim();
       const stage = formData.get("stage") as string;
-      const value = parseInt(formData.get("value") as string, 10);
+      const rawValue = parseInt(formData.get("value") as string, 10);
       const location = (formData.get("location") as string) || null;
       const teamId = (formData.get("teamId") as string) || null;
       const assignedToId = (formData.get("assignedToId") as string) || null;
+      const rawChannel = (formData.get("channel") as string) || null;
+      const channel = rawChannel ? normalizeChannel(rawChannel) : null;
+      if (rawChannel && !channel) {
+        throw new ValidationError("Invalid channel value", {
+          channel: "Pick one of the listed channels",
+        });
+      }
 
-      if (!name || !stage || isNaN(value)) {
+      if (!name || !stage || isNaN(rawValue)) {
         const errors: Record<string, string> = {};
         if (!name) errors.name = "Required";
         if (!stage) errors.stage = "Required";
-        if (isNaN(value)) errors.value = "Required";
+        if (isNaN(rawValue)) errors.value = "Required";
         throw new ValidationError("Missing required fields", errors);
+      }
+      if (rawValue <= 0) {
+        throw new ValidationError("Deal value must be greater than 0", {
+          value: "Must be greater than 0",
+        });
+      }
+      if (rawValue > MAX_DEAL_VALUE) {
+        throw new ValidationError(
+          `Deal value cannot exceed $${MAX_DEAL_VALUE.toLocaleString("en-US")} (20 billion).`,
+          { value: "Exceeds maximum allowed amount" }
+        );
+      }
+      const value = BigInt(rawValue);
+
+      const canonicalStage = normalizeStage(stage);
+      if (!canonicalStage) {
+        throw new ValidationError("Invalid stage value", { stage: "Invalid" });
+      }
+
+      const duplicate = await prisma.deal.findFirst({
+        where: {
+          userId,
+          name: { equals: name, mode: "insensitive" },
+        },
+        select: { id: true, name: true },
+      });
+      if (duplicate) {
+        throw new ValidationError(
+          `A deal named "${duplicate.name}" already exists. Please choose a different name.`,
+          { name: "Already in use — choose a different name" }
+        );
       }
 
       await enforceDealLimit(userId);
@@ -111,29 +133,23 @@ export async function createDeal(formData: FormData) {
         if (!role) throw new ForbiddenError("You are not a member of this team");
       }
 
-      logInfo("Creating deal", {
-        userId,
-        name,
-        stage,
-        value,
-        teamId,
-        assignedToId,
-      });
-
       const deal = await prisma.deal.create({
         data: {
           userId,
           name,
-          stage,
+          stage: canonicalStage,
           value,
           location,
+          ...(channel && { channel }),
           ...(teamId && { teamId }),
           ...(assignedToId && { assignedToId }),
         },
       });
 
+      await incrementUsage(userId, "deals");
+
       await appendDealTimeline(deal.id, "stage_changed", {
-        stage,
+        stage: canonicalStage,
       });
 
       await invalidateCachePattern(`deals:all:${userId}:*`);
@@ -143,7 +159,7 @@ export async function createDeal(formData: FormData) {
         await dispatchWebhookEvent(userId, teamId, "deal.created", {
           id: deal.id,
           name: deal.name,
-          value: deal.value,
+          value: toDealValueNumber(deal.value),
           stage: deal.stage,
         });
       } catch (e) {
@@ -159,15 +175,25 @@ export async function createDeal(formData: FormData) {
         dealId: deal.id,
         name: deal.name,
         stage: deal.stage,
-        value: deal.value,
+        value: toDealValueNumber(deal.value),
       });
 
       void incrementMetric("deal_created");
 
       try {
         await notifyRealtimeEvent(userId, { type: "deal.created", dealId: deal.id });
-      } catch {
+      } catch (err) {
+        logWarn("Failed to publish realtime event for deal.created", {
+          userId,
+          dealId: deal.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { hasCreatedAnyDeal: true },
+      });
 
       const hadDemo = await hasDemoData(userId);
       if (hadDemo) {
@@ -185,20 +211,15 @@ export async function createDeal(formData: FormData) {
         orderBy: { createdAt: "desc" },
       });
 
-      const riskSettings = await prisma.userRiskSettings.findUnique({
-        where: { userId: deal.userId },
-        select: {
-          inactivityThresholdDays: true,
-          enableCompetitiveSignals: true,
-        },
-      });
+      const riskSettingsMap = await buildRiskSettingsMap([deal.userId]);
+      const riskSettings = riskSettingsMap.get(deal.userId);
 
       const riskSnapshot = computeDealRiskSnapshot(
         {
           id: deal.id,
           userId: deal.userId,
           stage: deal.stage,
-          value: deal.value,
+          value: toDealValueNumber(deal.value),
           createdAt: deal.createdAt,
         },
         timeline.map((e) => ({
@@ -217,7 +238,7 @@ export async function createDeal(formData: FormData) {
         assignedToId: deal.assignedToId,
         name: deal.name,
         stage: deal.stage,
-        value: deal.value,
+        value: toDealValueNumber(deal.value),
         ...riskSnapshot,
         createdAt: deal.createdAt,
       };
@@ -226,7 +247,7 @@ export async function createDeal(formData: FormData) {
 }
 
 export async function getAllDeals(options?: GetDealsOptions) {
-  noStore();
+  unstable_noStore();
   const userId = await getAuthenticatedUserId();
 
   await seedDemoDataForUser(userId);
@@ -262,7 +283,12 @@ export async function getAllDeals(options?: GetDealsOptions) {
       },
     });
 
-    const dealIds = deals.map((d) => d.id);
+    const hasRealDeals = deals.some((d) => !d.isDemo);
+    const visibleDeals = hasRealDeals
+      ? deals.filter((d) => !d.isDemo)
+      : deals;
+
+    const dealIds = visibleDeals.map((d) => d.id);
     const allTimelineEvents = await prisma.dealTimeline.findMany({
       where: { dealId: { in: dealIds } },
       orderBy: { createdAt: "desc" },
@@ -277,10 +303,10 @@ export async function getAllDeals(options?: GetDealsOptions) {
       }>
     );
 
-    const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
+    const uniqueUserIds = [...new Set(visibleDeals.map((d) => d.userId))];
     const riskSettingsMap = await buildRiskSettingsMap(uniqueUserIds);
 
-    return deals.map((deal) => {
+    return visibleDeals.map((deal) => {
       assertRiskFieldIntegrity(deal);
 
       const dealTimeline = timelineByDealId.get(deal.id) ?? [];
@@ -291,7 +317,7 @@ export async function getAllDeals(options?: GetDealsOptions) {
           id: deal.id,
           userId: deal.userId,
           stage: deal.stage,
-          value: deal.value,
+          value: toDealValueNumber(deal.value),
           createdAt: deal.createdAt,
         },
         dealTimeline as Array<{
@@ -303,6 +329,7 @@ export async function getAllDeals(options?: GetDealsOptions) {
         userRiskSettings
       );
 
+      const dealWithExtras = deal as typeof deal & { channel?: string | null };
       return {
         id: deal.id,
         userId: deal.userId,
@@ -313,8 +340,9 @@ export async function getAllDeals(options?: GetDealsOptions) {
           : null,
         name: deal.name,
         stage: deal.stage,
-        value: deal.value,
+        value: toDealValueNumber(deal.value),
         location: deal.location,
+        channel: dealWithExtras.channel ?? null,
         isDemo: deal.isDemo,
         ...riskSnapshot,
         createdAt: deal.createdAt,
@@ -324,7 +352,7 @@ export async function getAllDeals(options?: GetDealsOptions) {
 }
 
 export async function getTeamDeals(teamId: string) {
-  noStore();
+  unstable_noStore();
   const userId = await getAuthenticatedUserId();
   const role = await getUserTeamRole(userId, teamId);
   if (!role) throw new ForbiddenError("You are not a member of this team");
@@ -341,7 +369,12 @@ export async function getTeamDeals(teamId: string) {
       },
     });
 
-    const dealIds = deals.map((d) => d.id);
+    const hasRealDeals = deals.some((d) => !d.isDemo);
+    const visibleDeals = hasRealDeals
+      ? deals.filter((d) => !d.isDemo)
+      : deals;
+
+    const dealIds = visibleDeals.map((d) => d.id);
     const allTimelineEvents = await prisma.dealTimeline.findMany({
       where: { dealId: { in: dealIds } },
       orderBy: { createdAt: "desc" },
@@ -356,10 +389,10 @@ export async function getTeamDeals(teamId: string) {
       }>
     );
 
-    const uniqueUserIds = [...new Set(deals.map((d) => d.userId))];
+    const uniqueUserIds = [...new Set(visibleDeals.map((d) => d.userId))];
     const riskSettingsMap = await buildRiskSettingsMap(uniqueUserIds);
 
-    return deals.map((deal) => {
+    return visibleDeals.map((deal) => {
       assertRiskFieldIntegrity(deal);
       const dealTimeline = timelineByDealId.get(deal.id) ?? [];
       const userRiskSettings = riskSettingsMap.get(deal.userId);
@@ -368,7 +401,7 @@ export async function getTeamDeals(teamId: string) {
           id: deal.id,
           userId: deal.userId,
           stage: deal.stage,
-          value: deal.value,
+          value: toDealValueNumber(deal.value),
           createdAt: deal.createdAt,
         },
         dealTimeline as Array<{
@@ -387,7 +420,7 @@ export async function getTeamDeals(teamId: string) {
         assignedToId: deal.assignedToId,
         name: deal.name,
         stage: deal.stage,
-        value: deal.value,
+        value: toDealValueNumber(deal.value),
         isDemo: deal.isDemo,
         ...riskSnapshot,
         createdAt: deal.createdAt,
@@ -427,7 +460,7 @@ export async function getDealById(dealId: string) {
         id: deal.id,
         userId: deal.userId,
         stage: deal.stage,
-        value: deal.value,
+        value: toDealValueNumber(deal.value),
         createdAt: deal.createdAt,
       },
       timeline.map((e) => ({
@@ -443,7 +476,11 @@ export async function getDealById(dealId: string) {
       orderBy: { createdAt: "desc" },
     });
 
-    const dealWithSource = deal as typeof deal & { source?: string | null; externalId?: string | null };
+    const dealWithSource = deal as typeof deal & {
+      source?: string | null;
+      channel?: string | null;
+      externalId?: string | null;
+    };
 
     return {
       id: deal.id,
@@ -452,8 +489,9 @@ export async function getDealById(dealId: string) {
       assignedToId: deal.assignedToId,
       name: deal.name,
       stage: deal.stage,
-      value: deal.value,
+      value: toDealValueNumber(deal.value),
       source: dealWithSource.source ?? null,
+      channel: dealWithSource.channel ?? null,
       externalId: dealWithSource.externalId ?? null,
       ...riskSnapshot,
       createdAt: deal.createdAt,
@@ -484,7 +522,6 @@ export async function deleteDeal(dealId: string) {
       await prisma.dealEvent.deleteMany({ where: { dealId } });
       await prisma.action.deleteMany({ where: { dealId } });
       await prisma.deal.delete({ where: { id: dealId } });
-
       await invalidateCachePattern(`deals:all:${userId}:*`);
       await invalidateCachePattern(`deals:team:*:${userId}`);
       await invalidateCache(`deal:${dealId}:${userId}`);
@@ -513,7 +550,12 @@ export async function deleteDeal(dealId: string) {
 
       try {
         await notifyRealtimeEvent(userId, { type: "deal.deleted", dealId });
-      } catch {
+      } catch (err) {
+        logWarn("Failed to publish realtime event for deal.deleted", {
+          userId,
+          dealId,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
 
       logInfo("Deal deleted", { userId, dealId, dealName: deal.name });
@@ -529,6 +571,11 @@ export async function updateDealStage(dealId: string, newStage: string) {
   return await withErrorContext(
     { userId, actionType: "update_deal_stage", dealId },
     async () => {
+      const canonicalNewStage = normalizeStage(newStage);
+      if (!canonicalNewStage) {
+        throw new ValidationError("Invalid stage value", { stage: "Invalid" });
+      }
+
       const deal = await prisma.deal.findUnique({ where: { id: dealId } });
       if (!deal) throw new NotFoundError("Deal");
 
@@ -541,12 +588,12 @@ export async function updateDealStage(dealId: string, newStage: string) {
         userId,
         dealId,
         oldStage,
-        newStage,
+        newStage: canonicalNewStage,
       });
 
       await prisma.deal.update({
         where: { id: dealId },
-        data: { stage: newStage },
+        data: { stage: canonicalNewStage },
       });
 
       await invalidateCachePattern(`deals:all:${userId}:*`);
@@ -554,7 +601,7 @@ export async function updateDealStage(dealId: string, newStage: string) {
       await invalidateCache(`deal:${dealId}:${userId}`);
 
       await appendDealTimeline(dealId, "stage_changed", {
-        stage: newStage,
+        stage: canonicalNewStage,
       });
 
       revalidatePath(`/deals/${dealId}`);
@@ -562,17 +609,17 @@ export async function updateDealStage(dealId: string, newStage: string) {
       if (deal.teamId) revalidatePath(`/teams/${deal.teamId}`);
 
       try {
-        if (oldStage !== newStage) {
+        if (oldStage !== canonicalNewStage) {
           await triggerStageChangeNotification(
             { id: deal.id, name: deal.name, userId: deal.userId },
             oldStage,
-            newStage
+            canonicalNewStage
           );
           await dispatchWebhookEvent(userId, deal.teamId, "deal.stage_changed", {
             id: deal.id,
             name: deal.name,
             oldStage,
-            newStage,
+            newStage: canonicalNewStage,
           });
           await sendSlackNotification(
             userId,
@@ -580,29 +627,32 @@ export async function updateDealStage(dealId: string, newStage: string) {
             "deal.stage_changed",
             formatStageChangeSlackMessage({
               name: deal.name,
-              value: deal.value,
+              value: toDealValueNumber(deal.value),
               oldStage,
-              newStage,
+              newStage: canonicalNewStage,
             })
           );
         }
-        if (newStage === "closed_won") {
+        if (canonicalNewStage === "closed_won") {
           logInfo("Deal closed won", {
             userId,
             dealId: deal.id,
             dealName: deal.name,
-            value: deal.value,
+            value: toDealValueNumber(deal.value),
           });
           await dispatchWebhookEvent(userId, deal.teamId, "deal.closed_won", {
             id: deal.id,
             name: deal.name,
-            value: deal.value,
+            value: toDealValueNumber(deal.value),
           });
           await sendSlackNotification(
             userId,
             deal.teamId,
             "deal.closed_won",
-            formatDealWonSlackMessage({ name: deal.name, value: deal.value })
+            formatDealWonSlackMessage({
+              name: deal.name,
+              value: toDealValueNumber(deal.value),
+            })
           );
         }
         await runDealStageRiskSideEffects({
@@ -623,7 +673,7 @@ export async function updateDealStage(dealId: string, newStage: string) {
         userId,
         dealId,
         oldStage,
-        newStage,
+        newStage: canonicalNewStage,
       });
     }
   );
@@ -769,7 +819,7 @@ export async function moveDealToPersonal(dealId: string) {
 }
 
 export async function getFounderRiskOverview(teamId?: string) {
-  noStore();
+  unstable_noStore();
   const userId = await getAuthenticatedUserId();
   const cacheKey = `deals:risk:overview:${userId}:${teamId ?? "personal"}`;
 
@@ -823,13 +873,20 @@ export async function getFounderRiskOverview(teamId?: string) {
 }
 
 export async function getDealCountsByCountry() {
-  noStore();
+  unstable_noStore();
   const userId = await getAuthenticatedUserId();
-
-  const cacheKey = `deals:counts:country:${userId}`;
+  const cacheKey = `deals:counts:country:active:${userId}`;
   return withCache(cacheKey, 120, async () => {
+    const hasRealDeals = await prisma.deal.count({
+      where: { userId, isDemo: false },
+    });
+
     const deals = await prisma.deal.findMany({
-      where: { userId },
+      where: {
+        userId,
+        ...(hasRealDeals > 0 ? { isDemo: false } : {}),
+        stage: { notIn: [STAGES.CLOSED_WON, STAGES.CLOSED_LOST, "closed"] },
+      },
       select: { location: true },
     });
 
@@ -851,7 +908,7 @@ export async function getDealCountsByCountry() {
 }
 
 export async function getFounderActionQueue(teamId?: string) {
-  noStore();
+  unstable_noStore();
   const userId = await getAuthenticatedUserId();
   const cacheKey = `deals:action:queue:${userId}:${teamId ?? "personal"}`;
 

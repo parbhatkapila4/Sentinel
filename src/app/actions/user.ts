@@ -5,9 +5,6 @@ import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { sendEmail, teamInviteEmailHtml } from "@/lib/email";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
-
 export type UserProfile = {
   id: string;
   name: string;
@@ -16,6 +13,7 @@ export type UserProfile = {
   company: string | null;
   role: string | null;
   imageUrl: string | null;
+  createdAt: string;
 };
 
 export async function updateUserProfile(data: {
@@ -60,6 +58,7 @@ type UserWithProfile = {
   company?: string | null;
   role?: string | null;
   imageUrl?: string | null;
+  createdAt: Date;
 };
 
 export async function getUserProfile(): Promise<UserProfile | null> {
@@ -79,6 +78,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
     company: user.company ?? null,
     role: user.role ?? null,
     imageUrl: user.imageUrl ?? null,
+    createdAt: user.createdAt.toISOString(),
   };
 }
 
@@ -89,7 +89,7 @@ export async function inviteUserByEmail(
   try {
     const userId = await getAuthenticatedUserId();
 
-    const inviter = await db.user.findUnique({
+    const inviter = await prisma.user.findUnique({
       where: { id: userId },
       select: { name: true, surname: true, email: true },
     });
@@ -106,7 +106,7 @@ export async function inviteUserByEmail(
       throw new Error("Please enter a valid email address");
     }
 
-    const existingUser = await db.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
@@ -218,7 +218,7 @@ export async function acceptUserInvite(
     throw new Error("Invitation has already been accepted");
   }
 
-  const user = await db.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true },
   });

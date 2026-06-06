@@ -1,30 +1,68 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardLoadingShell } from "@/components/dashboard-loading-shell";
+import {
+  EditorialSkeletonShell,
+  MastheadSkeleton,
+  SkeletonBox,
+  SkeletonRow,
+} from "@/components/sentinel/skeleton/EditorialSkeleton";
 
 export default function NewDealLoading() {
   return (
-    <DashboardLoadingShell>
-      <div
-        className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-3xl mx-auto min-h-screen"
-        aria-live="polite"
-        aria-label="Loading new deal form"
-      >
-        <header>
-          <Skeleton className="h-2.5 w-14 rounded mb-3" />
-          <Skeleton className="h-12 w-44 rounded-lg mb-4" />
-          <Skeleton className="h-4 w-64 rounded" />
-        </header>
+    <EditorialSkeletonShell
+      label="Loading new deal form"
+      padding="0"
+      maxWidth="100%"
+    >
+      <MastheadSkeleton />
 
-        <section className="rounded-xl border border-white/[0.06] bg-[#080808] p-5 sm:p-6 space-y-6">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-3 w-20 rounded" />
-              <Skeleton className="h-11 w-full rounded-lg" />
+      <div
+        style={{
+          maxWidth: 760,
+          margin: "0 auto",
+          padding: "56px 32px 80px",
+        }}
+      >
+        <SkeletonRow width={180} height={10} delay={0} />
+        <div style={{ height: 18 }} />
+        <SkeletonRow width={420} height={54} delay={60} />
+        <div style={{ height: 14 }} />
+        <SkeletonRow width={360} height={14} delay={120} />
+
+        <div
+          style={{
+            marginTop: 36,
+            padding: 28,
+            border: "1px solid var(--rule)",
+            background: "var(--ink-02)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 20,
+          }}
+        >
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              style={{ display: "flex", flexDirection: "column", gap: 8 }}
+            >
+              <SkeletonRow width={100} height={10} delay={160 + i * 40} />
+              <SkeletonBox height={42} delay={180 + i * 40} />
             </div>
           ))}
-          <Skeleton className="h-11 w-32 rounded-lg mt-4" />
-        </section>
+
+          <div
+            style={{
+              marginTop: 12,
+              paddingTop: 18,
+              borderTop: "1px solid var(--rule)",
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 10,
+            }}
+          >
+            <SkeletonRow width={100} height={36} delay={420} />
+            <SkeletonRow width={140} height={36} delay={460} />
+          </div>
+        </div>
       </div>
-    </DashboardLoadingShell>
+    </EditorialSkeletonShell>
   );
 }

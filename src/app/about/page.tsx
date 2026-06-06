@@ -1,339 +1,284 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { isAuthenticated } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "About · Sentinel",
+  description:
+    "Why Sentinel exists, what problem it solves, and who's building it. Written by the founder, not marketing.",
+};
+
+function BackLink() {
+  return (
+    <div className="border-b border-white/10 sticky top-0 z-50 bg-black/80 backdrop-blur">
+      <div className="px-6 lg:px-8 py-4 flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to home
+        </Link>
+        <Link
+          href="/contact"
+          className="text-sm text-white/60 hover:text-white transition-colors"
+        >
+          Get in touch →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+const principles = [
+  {
+    label: "Act early, not after",
+    body:
+      "Most CRMs are rear-view mirrors. They tell you what happened, not what's about to. Sentinel reads the same signals your team is already generating and surfaces the risk while you can still do something about it.",
+  },
+  {
+    label: "Explainable by default",
+    body:
+      "Every risk score carries plain-English reasons. No opaque AI black box. If Sentinel flags a deal, it tells you exactly which signals triggered the flag, and you can override it.",
+  },
+  {
+    label: "Read-mostly by design",
+    body:
+      "We don't want to own your CRM. Sentinel reads pipeline state, keeps the risk context it generates inside the Sentinel workspace, and never writes back to your CRM, sends mail from your domain, or changes your pipeline structure.",
+  },
+  {
+    label: "Paid, not venture-priced",
+    body:
+      "Sentinel charges because it should. No investors to grow out of, no quarterly board targets chasing your usage up. The price reflects the cost to run the software well.",
+  },
+];
 
 export default async function AboutPage() {
   const user = await isAuthenticated();
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="border-b border-white/10 sticky top-0 z-50 bg-black/95 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors -ml-76"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Back
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <BackLink />
 
-
-      <section className="py-20 px-6 lg:px-8 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-            About Sentinel
+      <section className="px-6 lg:px-8 pt-20 pb-12">
+        <div className="max-w-[1700px] mx-auto">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-4">
+            About
+          </div>
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-5 max-w-3xl leading-[1.05]">
+            A revenue tool that actually reads the signals your pipeline is
+            already sending.
           </h1>
-          <p className="text-xl text-white/60 leading-relaxed">
-            Proactive revenue management for teams who refuse to lose deals to
-            silent decay
+          <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
+            Sentinel is a small, independent product built for revenue teams
+            who are tired of learning about lost deals in the postmortem. It
+            lives next to your CRM, not on top of it.
           </p>
-        </div>
-      </section>
-
-
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            What is Sentinel?
-          </h2>
-          <div className="space-y-4 text-lg text-white/70 leading-relaxed">
-            <p>
-              Sentinel is a modern revenue management platform designed
-              to help sales and revenue teams proactively manage their pipeline
-              and prevent deals from going cold. Unlike traditional CRMs that
-              focus on historical data, Sentinel provides real-time
-              insights into your pipeline health, identifies at-risk deals
-              early, and gives you the intelligence you need to act before
-              opportunities slip away.
-            </p>
-            <p>
-              Our platform combines AI-powered risk analysis with intuitive
-              pipeline management tools, giving you visibility into every deal
-              and actionable recommendations to keep your pipeline healthy and
-              moving forward.
-            </p>
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
+            <span>Independent, bootstrapped</span>
+            <span className="text-white/20">·</span>
+            <span>Shipping since Jan 2026</span>
+            <span className="text-white/20">·</span>
+            <span>Written end-to-end by one engineer</span>
           </div>
         </div>
       </section>
 
-
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            The Problem We Solve
-          </h2>
-          <div className="space-y-4 text-lg text-white/70 leading-relaxed">
-            <p>
-              Revenue teams lose deals every single day not because the product
-              is wrong or the price is too high, but because they don&apos;t see
-              the warning signs until it&apos;s too late. This phenomenon, known
-              as &quot;silent decay,&quot; happens when deals gradually lose
-              momentum without anyone noticing.
-            </p>
-            <p>
-              Traditional CRMs are reactive. They tell you what happened
-              yesterday, last week, or last month. By the time you see a deal
-              has stalled, the relationship may have already cooled, the
-              decision-maker has moved on, or a competitor has stepped in.
-            </p>
-            <p>
-              Sentinel changes that. We give you real-time visibility
-              into your pipeline health, identify risks before they become
-              problems, and provide actionable insights to help you intervene at
-              the right moment.
-            </p>
-          </div>
-        </div>
-      </section>
-
-
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Why Sentinel?
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6 bg-[#1a1a1a] rounded-xl border border-white/10">
-              <div className="flex items-center gap-3 mb-4">
-                <svg
-                  className="w-6 h-6 text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
-                <h3 className="text-xl font-semibold text-white">
-                  Proactive Risk Detection
-                </h3>
-              </div>
-              <p className="text-white/70">
-                Identify at-risk deals before they stall. Our AI analyzes
-                patterns and flags potential issues early, giving you time to
-                act.
-              </p>
-            </div>
-
-            <div className="p-6 bg-[#1a1a1a] rounded-xl border border-white/10">
-              <div className="flex items-center gap-3 mb-4">
-                <svg
-                  className="w-6 h-6 text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-                <h3 className="text-xl font-semibold text-white">
-                  Real-Time Insights
-                </h3>
-              </div>
-              <p className="text-white/70">
-                Get instant visibility into your pipeline health. Know exactly
-                which deals need attention, right now.
-              </p>
-            </div>
-
-            <div className="p-6 bg-[#1a1a1a] rounded-xl border border-white/10">
-              <div className="flex items-center gap-3 mb-4">
-                <svg
-                  className="w-6 h-6 text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-                <h3 className="text-xl font-semibold text-white">
-                  Intelligent Pipeline Management
-                </h3>
-              </div>
-              <p className="text-white/70">
-                Track your entire pipeline with precision. Understand deal
-                velocity, stage progression, and pipeline health at a glance.
-              </p>
-            </div>
-
-            <div className="p-6 bg-[#1a1a1a] rounded-xl border border-white/10">
-              <div className="flex items-center gap-3 mb-4">
-                <svg
-                  className="w-6 h-6 text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                  />
-                </svg>
-                <h3 className="text-xl font-semibold text-white">
-                  Actionable Intelligence
-                </h3>
-              </div>
-              <p className="text-white/70">
-                Every insight comes with clear recommendations. Know not just
-                what&apos;s wrong, but what to do about it.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Our Mission
-          </h2>
-          <div className="space-y-4 text-lg text-white/70 leading-relaxed">
-            <p>
-              Sentinel exists to solve a real problem: the silent
-              decay of deals that could have been won. We&apos;re committed to
-              building tools that genuinely help revenue teams succeed, not just
-              track what&apos;s already happened.
-            </p>
-            <p>
-              Behind every deal is a real opportunity, a real relationship, and
-              a real impact on your business. That&apos;s why we built
-              Sentinel to ensure those opportunities don&apos;t slip away
-              unnoticed.
-            </p>
-            <p>
-              We believe revenue professionals deserve better tools. Tools that
-              help them win, not just report on what they&apos;ve already done.
-              Tools that give them the intelligence they need to make decisions
-              that drive real results.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-[#1a1a1a] rounded-2xl p-6 md:p-8 border border-white/10">
-            <div className="space-y-4 text-base text-white/70 leading-relaxed">
+      <section className="px-6 lg:px-8 pb-16">
+        <div className="max-w-[1700px] mx-auto border-t border-white/10 pt-12">
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 md:gap-10">
+            <h2 className="text-xs uppercase tracking-[0.2em] text-white/40">
+              What Sentinel does
+            </h2>
+            <div className="text-white/75 leading-relaxed space-y-4 max-w-2xl">
               <p>
-                I built Sentinel because I was tired of watching revenue
-                teams lose deals they never saw coming. Too many times, I&apos;ve
-                seen promising opportunities fade away silently not because the
-                product was wrong, but simply because no one noticed the warning
-                signs until it was too late.
+                Sentinel is a revenue-ops layer that sits between your CRM and
+                your team. It ingests the activity you&apos;re already tracking -
+                emails, meetings, stage transitions - and turns it into two
+                things revenue leaders actually need: a composite risk score
+                per deal, and a short list of what to do about the ones that
+                are slipping.
               </p>
-
               <p>
-                This platform was born from a simple idea: what if you could see
-                which deals are at risk before they actually fail? What if you
-                had real-time visibility into your pipeline health? What if your
-                tools actually helped you prevent problems instead of just
-                reporting them?
-              </p>
-
-              <p>
-                I&apos;m constantly improving Sentinel based on feedback
-                from revenue professionals. If you have ideas or suggestions, I&apos;d
-                love to hear from you at{" "}
-                <a
-                  href="mailto:help@sentinels.in"
-                  className="text-blue-400 hover:text-blue-300 underline"
-                >
-                  help@sentinels.in
-                </a>
-                .
-              </p>
-
-              <p className="pt-2 text-white/60 text-sm">
-                - Parbhat Kapila, the creator of Sentinel
+                It connects to Salesforce, HubSpot, Google Calendar, and Slack
+                out of the box as a read-only layer - nothing is written back
+                to your CRM or calendar. The AI that powers it runs scoped to
+                your workspace, not trained across customers.
               </p>
             </div>
           </div>
         </div>
       </section>
 
+      <section className="px-6 lg:px-8 pb-16">
+        <div className="max-w-[1700px] mx-auto border-t border-white/10 pt-12">
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 md:gap-10">
+            <h2 className="text-xs uppercase tracking-[0.2em] text-white/40">
+              The problem
+            </h2>
+            <div className="text-white/75 leading-relaxed space-y-4 max-w-2xl">
+              <p>
+                Revenue teams lose deals every day - not because the product
+                is wrong or the price is too high, but because the warning
+                signs were visible three weeks earlier and nobody was looking
+                at them.
+              </p>
+              <p>
+                This is silent decay. A champion goes quiet. A stakeholder
+                stops replying. A deal that was in Proposal two months ago
+                still is. Traditional CRMs are reactive; they tell you what
+                happened yesterday, last week, last month. By the time the
+                stall is visible in a dashboard, the relationship has
+                typically already cooled and a competitor has stepped in.
+              </p>
+              <p>
+                Sentinel exists to close that gap. Same signals, same data,
+                but surfaced while you can still act on them.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="py-16 px-6 lg:px-8 border-t border-white/10">
-        <div className="max-w-4xl mx-auto text-center">
-          {user ? (
-            <>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Ready to get started?
+      <section className="px-6 lg:px-8 pb-16">
+        <div className="max-w-[1700px] mx-auto border-t border-white/10 pt-12">
+          <h2 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-8">
+            Principles
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-10">
+            {principles.map((p, i) => (
+              <div key={p.label} className="flex gap-5">
+                <span className="font-mono text-xs text-white/30 pt-1 w-6 flex-none">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3 className="text-white font-semibold text-lg tracking-tight mb-2">
+                    {p.label}
+                  </h3>
+                  <p className="text-white/65 leading-relaxed">{p.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-8 pb-16">
+        <div className="max-w-[1700px] mx-auto border-t border-white/10 pt-12">
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 md:gap-10">
+            <h2 className="text-xs uppercase tracking-[0.2em] text-white/40">
+              Founder&apos;s note
+            </h2>
+            <div className="max-w-2xl">
+              <div className="text-white/80 leading-relaxed space-y-4 text-[17px]">
+                <p>
+                  Sentinel started after the third time I watched a friend lose
+                  a deal that had been clearly cooling for two weeks. The
+                  signals were all in the CRM. Nobody was reading them.
+                </p>
+                <p>
+                  So the bet is small and specific: pull the activity that&apos;s
+                  already there, score it, surface what&apos;s going quiet. No
+                  new data to enter, no separate workflow, no AI that pretends
+                  to forecast quarters. Just the gap between &ldquo;the data
+                  exists&rdquo; and &ldquo;someone notices in time&rdquo;.
+                </p>
+                <p>
+                  Bugs, feature requests, or anything that broke for you —{" "}
+                  <a
+                    href="mailto:help@sentinels.in"
+                    className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors"
+                  >
+                    help@sentinels.in
+                  </a>{" "}
+                  reaches me directly.
+                </p>
+              </div>
+              <div className="mt-6 pt-5 border-t border-white/10 flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-linear-to-br from-white/20 to-white/5 border border-white/10 flex items-center justify-center font-mono text-xs text-white/70">
+                  PK
+                </div>
+                <div>
+                  <div className="text-sm text-white font-medium">
+                    Parbhat Kapila
+                  </div>
+                  <div className="text-xs text-white/50">
+                    Founder & engineer, Sentinel
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-8 pb-24">
+        <div className="max-w-[1700px] mx-auto border-t border-white/10 pt-14">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:items-end">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-3">
+                Next
+              </div>
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-white mb-3 max-w-xl leading-tight">
+                {user
+                  ? "Jump back in and see what moved today."
+                  : "Try it against your real pipeline."}
               </h2>
-              <p className="text-white/60 mb-8">
-                Join revenue teams using Sentinel to proactively manage
-                deals and prevent silent decay.
+              <p className="text-white/60 leading-relaxed max-w-xl">
+                {user
+                  ? "Your dashboard shows current risk distribution, deals that went quiet, and the next actions Sentinel suggests."
+                  : "Starter is free. It runs the same risk engine on your live data, so evaluation isn't a demo - it's the product."}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/dashboard"
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Go to Dashboard
-                </Link>
-                <Link
-                  href="/features"
-                  className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
-                >
-                  View Features
-                </Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Login Required
-              </h2>
-              <p className="text-white/60 mb-8">
-                Please log in first to access the dashboard and start managing
-                your deals.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/sign-in"
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/sign-up"
-                  className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            </>
-          )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
+              {user ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center justify-center gap-2 bg-white text-black px-5 py-2.5 rounded-md text-sm font-medium hover:bg-white/90 transition-colors"
+                  >
+                    Go to dashboard
+                  </Link>
+                  <Link
+                    href="/features"
+                    className="inline-flex items-center justify-center gap-2 border border-white/15 text-white/80 px-5 py-2.5 rounded-md text-sm hover:border-white/30 hover:text-white transition-colors"
+                  >
+                    View features
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-in"
+                    className="inline-flex items-center justify-center gap-2 bg-white text-black px-5 py-2.5 rounded-md text-sm font-medium hover:bg-white/90 transition-colors"
+                  >
+                    Start free
+                  </Link>
+                  <Link
+                    href="/features"
+                    className="inline-flex items-center justify-center gap-2 border border-white/15 text-white/80 px-5 py-2.5 rounded-md text-sm hover:border-white/30 hover:text-white transition-colors"
+                  >
+                    See what it does
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </section>
     </div>
   );
 }
+  

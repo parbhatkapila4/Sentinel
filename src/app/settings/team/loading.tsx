@@ -1,38 +1,101 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardLoadingShell } from "@/components/dashboard-loading-shell";
+import {
+  EditorialSkeletonShell,
+  MastheadSkeleton,
+  SectionRuleSkeleton,
+  SkeletonRow,
+} from "@/components/sentinel/skeleton/EditorialSkeleton";
 
 export default function TeamSettingsLoading() {
   return (
-    <DashboardLoadingShell>
-      <div
-        className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-[1600px] mx-auto min-h-screen"
-        aria-live="polite"
-        aria-label="Loading team settings"
-      >
-        <header>
-          <Skeleton className="h-2.5 w-14 rounded mb-3" />
-          <Skeleton className="h-12 w-48 rounded-lg mb-4" />
-          <Skeleton className="h-4 w-64 rounded" />
-        </header>
+    <EditorialSkeletonShell label="Loading team settings" padding="0">
+      <MastheadSkeleton />
 
-        <section>
-          <div className="rounded-xl border border-white/[0.06] bg-[#080808] p-5 sm:p-6 space-y-5">
-            <Skeleton className="h-5 w-28 rounded" />
-            <div className="space-y-3">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.02]">
-                  <Skeleton className="h-9 w-9 rounded-full shrink-0" />
-                  <div className="flex-1 space-y-1.5">
-                    <Skeleton className="h-3.5 w-28 rounded" />
-                    <Skeleton className="h-2.5 w-36 rounded" />
-                  </div>
-                  <Skeleton className="h-5 w-14 rounded-full" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "18px 32px",
+          borderBottom: "1px solid var(--rule)",
+        }}
+      >
+        <SkeletonRow width={70} height={10} delay={0} />
+        <span
+          aria-hidden
+          style={{ color: "var(--cream-4)", fontFamily: "var(--font-mono-jb)", fontSize: 10 }}
+        >
+          /
+        </span>
+        <SkeletonRow width={90} height={10} delay={40} />
       </div>
-    </DashboardLoadingShell>
+
+      <div style={{ padding: "40px 32px 28px" }}>
+        <SkeletonRow width={180} height={10} delay={80} />
+        <div style={{ height: 18 }} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            gap: 20,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <SkeletonRow width={460} height={54} delay={120} />
+            <SkeletonRow width={420} height={14} delay={180} />
+          </div>
+          <SkeletonRow width={150} height={36} delay={220} />
+        </div>
+      </div>
+
+      <div style={{ padding: "0 32px" }}>
+        <SectionRuleSkeleton labelWidth={200} metaWidth={160} delayBase={260} />
+      </div>
+
+      <div style={{ padding: "8px 32px 64px" }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "44px 1fr auto auto",
+              gap: 16,
+              alignItems: "center",
+              padding: "18px 0",
+              borderBottom: "1px solid var(--rule)",
+            }}
+          >
+            <div
+              aria-hidden
+              className="anim-rise"
+              style={{
+                width: 44,
+                height: 44,
+                background:
+                  "linear-gradient(135deg, var(--ink-02), var(--ink-03))",
+                border: "1px solid var(--rule-strong)",
+                borderRadius: "50%",
+                animationDelay: `${i * 40}ms`,
+              }}
+            />
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+              <SkeletonRow
+                width={`${40 - (i % 3) * 4}%`}
+                height={14}
+                delay={i * 40 + 20}
+              />
+              <SkeletonRow
+                width={`${26 - (i % 3) * 3}%`}
+                height={10}
+                delay={i * 40 + 40}
+              />
+            </div>
+            <SkeletonRow width={80} height={22} delay={i * 40 + 60} />
+            <SkeletonRow width={60} height={28} delay={i * 40 + 80} />
+          </div>
+        ))}
+      </div>
+    </EditorialSkeletonShell>
   );
 }

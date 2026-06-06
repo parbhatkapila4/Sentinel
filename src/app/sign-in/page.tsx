@@ -1,18 +1,24 @@
-"use client";
-
-import { SignInGate } from "@/components/sign-in-gate";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 
-export default function SignInPage() {
+import { SignInClient } from "./sign-in-client";
+
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect?: string | string[] }>;
+}) {
+  const { userId } = await auth();
+  const sp = await searchParams;
+  const raw = Array.isArray(sp.redirect) ? sp.redirect[0] : sp.redirect;
+  const target = raw && raw.startsWith("/") ? raw : "/dashboard";
+
+  if (userId) redirect(target);
+
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen w-full flex items-center justify-center bg-[#030303]">
-          <div className="text-white">Loading...</div>
-        </div>
-      }
-    >
-      <SignInGate />
+    <Suspense fallback={null}>
+      <SignInClient />
     </Suspense>
   );
 }

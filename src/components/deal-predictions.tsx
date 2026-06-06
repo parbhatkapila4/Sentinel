@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+
 import {
-  predictDaysToClose,
   calculateWinProbability,
   findSimilarDeals,
+  predictDaysToClose,
   type DealForPrediction,
 } from "@/lib/predictions";
 
@@ -21,7 +22,10 @@ function toDeal(d: unknown): DealForPrediction {
     stage: String(x.stage),
     value: Number(x.value),
     createdAt: x.createdAt instanceof Date ? x.createdAt : new Date(String(x.createdAt)),
-    lastActivityAt: x.lastActivityAt instanceof Date ? x.lastActivityAt : new Date(String(x.lastActivityAt ?? x.createdAt)),
+    lastActivityAt:
+      x.lastActivityAt instanceof Date
+        ? x.lastActivityAt
+        : new Date(String(x.lastActivityAt ?? x.createdAt)),
     riskScore: Number(x.riskScore ?? 0),
     riskLevel: x.riskLevel != null ? String(x.riskLevel) : undefined,
     status: x.status != null ? String(x.status) : undefined,
@@ -38,54 +42,270 @@ export function DealPredictions({ deal, allDeals }: DealPredictionsProps) {
   const winProb = closed ? null : calculateWinProbability(d, deals);
   const similar = findSimilarDeals(d, deals);
 
-  const trendLabel = winProb ? (winProb.trend === "up" ? "Improving" : winProb.trend === "down" ? "Declining" : "Stable") : null;
+  const trendLabel = winProb
+    ? winProb.trend === "up"
+      ? "Improving"
+      : winProb.trend === "down"
+        ? "Declining"
+        : "Stable"
+    : null;
 
-  const trendColorClass = winProb ? (winProb.trend === "up" ? "text-green-500" : winProb.trend === "down" ? "text-amber-500" : "text-white/50") : "";
+  const trendColor = winProb
+    ? winProb.trend === "up"
+      ? "var(--ivy)"
+      : winProb.trend === "down"
+        ? "var(--copper)"
+        : "var(--cream-3)"
+    : "var(--cream-3)";
 
   return (
-    <div className="rounded-xl p-5 sm:p-6 border border-white/[0.08] bg-[#080808] transition-colors hover:border-white/[0.1] card-elevated">
-      <h2 className="text-base font-semibold text-white mb-6 border-l-2 border-[#0f766e] pl-3 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-        Predictions
-      </h2>
+    <section
+      className="sentinel-deal-forecast"
+      style={{
+        border: "1px solid var(--rule)",
+        background: "var(--ink-02)",
+        padding: "28px 26px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+          marginBottom: 20,
+          paddingBottom: 14,
+          borderBottom: "1px solid var(--rule)",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 10,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "var(--cream-3)",
+          }}
+        >
+          § - FORECAST
+        </span>
+        <h2
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: 24,
+            fontWeight: 400,
+            color: "var(--cream)",
+            letterSpacing: "-0.02em",
+            margin: 0,
+          }}
+        >
+          The house&apos;s{" "}
+          <em style={{ fontStyle: "italic", color: "var(--signal)" }}>
+            prediction
+          </em>
+          .
+        </h2>
+      </div>
 
       {closed ? (
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-white/[0.04] border border-white/[0.06]">
-          <span className={`inline-flex px-3 py-1.5 rounded-md text-sm font-medium border ${d.stage === "closed_won" ? "bg-green-700/15 text-green-400 border-green-700/25" : "bg-red-700/15 text-red-400 border-red-700/25"}`}>
-            {d.stage === "closed_won" ? "Won" : "Lost"}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "16px 18px",
+            border: "1px solid var(--rule)",
+            background: "var(--ink)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-mono-jb)",
+              fontSize: 10.5,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              padding: "4px 12px",
+              color: d.stage === "closed_won" ? "var(--ivy)" : "var(--wine)",
+              border: `1px solid ${d.stage === "closed_won" ? "var(--ivy)" : "var(--wine)"}`,
+              background:
+                d.stage === "closed_won"
+                  ? "rgba(116, 125, 79, 0.08)"
+                  : "rgba(119, 47, 47, 0.08)",
+            }}
+          >
+            {d.stage === "closed_won" ? "WON" : "LOST"}
           </span>
-          <span className="text-white/50 text-sm">Deal closed.</span>
+          <span
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontStyle: "italic",
+              fontSize: 15,
+              color: "var(--cream-2)",
+            }}
+          >
+            Deal closed. The book is shut on this one.
+          </span>
         </div>
       ) : (
         <>
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div
+            className="sentinel-deal-forecast-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 24,
+            }}
+          >
             <div>
-              <p className="text-xs font-medium text-white/50 mb-2">Win probability</p>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+              <p
+                style={{
+                  fontFamily: "var(--font-mono-jb)",
+                  fontSize: 10,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "var(--cream-3)",
+                  margin: "0 0 8px",
+                }}
+              >
+                Win probability
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  marginBottom: 6,
+                }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    height: 3,
+                    background: "var(--rule)",
+                    overflow: "hidden",
+                  }}
+                >
                   <div
-                    className="h-full rounded-full bg-linear-to-r from-[#0f766e] to-green-500 transition-all"
-                    style={{ width: `${winProb!.probability}%` }}
+                    style={{
+                      height: "100%",
+                      width: `${winProb!.probability}%`,
+                      background: "var(--signal)",
+                      transition: "width 420ms ease",
+                    }}
                   />
                 </div>
-                <span className="text-lg font-bold text-white w-12 text-right tabular-nums">{winProb!.probability}%</span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontSize: 22,
+                    color: "var(--cream)",
+                    fontVariantNumeric: "tabular-nums",
+                    minWidth: 52,
+                    textAlign: "right",
+                  }}
+                >
+                  {winProb!.probability}%
+                </span>
               </div>
-              {trendLabel && <p className={`text-xs font-medium ${trendColorClass}`}>{trendLabel}</p>}
+              {trendLabel && (
+                <p
+                  style={{
+                    fontFamily: "var(--font-mono-jb)",
+                    fontSize: 10,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    color: trendColor,
+                    margin: 0,
+                  }}
+                >
+                  {trendLabel}
+                </p>
+              )}
             </div>
 
             <div>
-              <p className="text-xs font-medium text-white/50 mb-2">Est. days to close</p>
-              <p className="text-2xl font-bold text-white tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">{daysPred!.estimatedDays}</p>
-              <p className="text-xs text-white/50 capitalize">{daysPred!.confidence} confidence</p>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono-jb)",
+                  fontSize: 10,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "var(--cream-3)",
+                  margin: "0 0 8px",
+                }}
+              >
+                Est. days to close
+              </p>
+              <p
+                style={{
+                  fontFamily: "var(--font-serif)",
+                  fontSize: 34,
+                  color: "var(--cream)",
+                  margin: 0,
+                  fontVariantNumeric: "tabular-nums",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                }}
+              >
+                {daysPred!.estimatedDays}
+              </p>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono-jb)",
+                  fontSize: 10,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "var(--cream-3)",
+                  margin: "4px 0 0",
+                }}
+              >
+                {daysPred!.confidence} confidence
+              </p>
             </div>
           </div>
 
           {winProb!.factors.length > 0 && (
-            <div className="mt-6">
-              <p className="text-xs font-medium text-white/50 mb-2">Factors</p>
-              <ul className="space-y-1.5">
+            <div style={{ marginTop: 24 }}>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono-jb)",
+                  fontSize: 10,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "var(--cream-3)",
+                  margin: "0 0 10px",
+                }}
+              >
+                Factors
+              </p>
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
                 {winProb!.factors.slice(0, 4).map((f, i) => (
-                  <li key={i} className="text-sm text-white/70 flex items-start gap-2">
-                    <span className="text-white/40 mt-0.5">·</span>
+                  <li
+                    key={i}
+                    style={{
+                      fontFamily: "var(--font-serif)",
+                      fontSize: 14,
+                      lineHeight: 1.55,
+                      color: "var(--cream-2)",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{ color: "var(--signal)", fontStyle: "italic", fontSize: 14, marginTop: 1 }}
+                    >
+                      -
+                    </span>
                     <span>{f}</span>
                   </li>
                 ))}
@@ -96,32 +316,100 @@ export function DealPredictions({ deal, allDeals }: DealPredictionsProps) {
       )}
 
       {similar.similar.length > 0 && (
-        <div className="mt-6 pt-5 border-t border-white/[0.06]">
-          <p className="text-xs font-medium text-white/50 mb-3">Similar deals</p>
-          <p className="text-xs text-white/50 mb-3">
-            Win rate {Math.round(similar.winRate * 100)}% · Avg {similar.avgDaysToClose} days to close
+        <div
+          style={{
+            marginTop: 24,
+            paddingTop: 20,
+            borderTop: "1px solid var(--rule)",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "var(--font-mono-jb)",
+              fontSize: 10,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "var(--cream-3)",
+              margin: "0 0 6px",
+            }}
+          >
+            Similar entries
           </p>
-          <ul className="space-y-2">
+          <p
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontStyle: "italic",
+              fontSize: 13,
+              color: "var(--cream-3)",
+              margin: "0 0 14px",
+            }}
+          >
+            Win rate {Math.round(similar.winRate * 100)}% · avg {similar.avgDaysToClose} days to close.
+          </p>
+          <ul
+            className="sentinel-deal-forecast-similar-list"
+            style={{
+              listStyle: "none",
+              padding: 0,
+              margin: 0,
+              border: "1px solid var(--rule)",
+              borderBottom: "none",
+            }}
+          >
             {similar.similar.slice(0, 5).map((s) => (
-              <li key={s.id} className="flex items-center justify-between text-sm">
+              <li
+                key={s.id}
+                className="sentinel-deal-forecast-similar-row"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto auto",
+                  gap: 14,
+                  alignItems: "center",
+                  padding: "12px 16px",
+                  borderBottom: "1px solid var(--rule)",
+                }}
+              >
                 <Link
                   href={`/deals/${s.id}`}
-                  className="text-white/80 hover:text-white transition-colors truncate mr-2"
+                  className="sentinel-link-signal"
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontSize: 14,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   {s.name}
                 </Link>
-                <span className="shrink-0 flex items-center gap-1.5">
-                  <span
-                    className={`px-2 py-0.5 rounded text-xs font-medium border ${s.outcome === "won"
-                      ? "bg-green-700/15 text-green-400 border-green-700/20"
-                      : "bg-red-700/15 text-red-400 border-red-700/20"
-                      }`}
-                  >
-                    {s.outcome}
-                  </span>
-                  {s.daysToClose != null && (
-                    <span className="text-white/40 text-xs">{s.daysToClose}d</span>
-                  )}
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono-jb)",
+                    fontSize: 9.5,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    padding: "3px 9px",
+                    color: s.outcome === "won" ? "var(--ivy)" : "var(--wine)",
+                    border: `1px solid ${s.outcome === "won" ? "var(--ivy)" : "var(--wine)"}`,
+                    background:
+                      s.outcome === "won"
+                        ? "rgba(116, 125, 79, 0.08)"
+                        : "rgba(119, 47, 47, 0.08)",
+                  }}
+                >
+                  {s.outcome}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono-jb)",
+                    fontSize: 10,
+                    letterSpacing: "0.1em",
+                    color: "var(--cream-3)",
+                    minWidth: 36,
+                    textAlign: "right",
+                  }}
+                >
+                  {s.daysToClose != null ? `${s.daysToClose}d` : "-"}
                 </span>
               </li>
             ))}
@@ -129,9 +417,20 @@ export function DealPredictions({ deal, allDeals }: DealPredictionsProps) {
         </div>
       )}
 
-      {similar.similar.length === 0 && !deals.some((x) => x.stage === "closed_won" || x.stage === "closed_lost") && (
-        <p className="mt-5 text-sm text-white/45">Close more deals to see similar-deal comparisons.</p>
-      )}
-    </div>
+      {similar.similar.length === 0 &&
+        !deals.some((x) => x.stage === "closed_won" || x.stage === "closed_lost") && (
+          <p
+            style={{
+              marginTop: 18,
+              fontFamily: "var(--font-serif)",
+              fontStyle: "italic",
+              fontSize: 14,
+              color: "var(--cream-3)",
+            }}
+          >
+            Close a few more deals and the house will have comparisons to draw from.
+          </p>
+        )}
+    </section>
   );
 }

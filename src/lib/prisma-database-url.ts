@@ -1,12 +1,3 @@
-/**
- * Supabase transaction pooler (host `*.pooler.supabase.com` or port `6543`) must use
- * `pgbouncer=true` with Prisma. A modest `connection_limit` reduces connection churn and
- * "forcibly closed by the remote host" / max-clients issues when many workers run.
- *
- * Important: the same pooler hostname on port **5432** is Supabase **session** pooler mode.
- * Prisma + Next.js should use port **6543** (transaction pooler). We rewrite 5432 → 6543
- * automatically when the host is a Supabase pooler host.
- */
 let loggedSessionPoolerRewrite = false;
 
 export function normalizeSupabasePoolerDatabaseUrl(
@@ -25,7 +16,7 @@ export function normalizeSupabasePoolerDatabaseUrl(
         loggedSessionPoolerRewrite = true;
         console.warn(
           "[prisma] DATABASE_URL used Supabase pooler on port 5432 (session mode). " +
-            "Rewrote to port 6543 (transaction pooler) for Prisma — use the \"Transaction\" URI from Supabase."
+          "Rewrote to port 6543 (transaction pooler) for Prisma - use the \"Transaction\" URI from Supabase."
         );
       }
     }

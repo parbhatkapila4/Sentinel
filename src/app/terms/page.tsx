@@ -1,308 +1,408 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { isAuthenticated } from "@/lib/auth";
 
-export default async function TermsPage() {
-  const user = await isAuthenticated();
+export const metadata: Metadata = {
+  title: "Terms of Service · Sentinel",
+  description:
+    "The agreement between you and Sentinel. Readable, scoped to how the product actually works.",
+};
 
+const lastUpdated = "January 26, 2026";
+
+function BackLink() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="border-b border-white/10 sticky top-0 z-50 bg-black/95 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors -ml-76"
+    <div className="border-b border-white/10 sticky top-0 z-50 bg-black/80 backdrop-blur">
+      <div className="px-6 lg:px-8 py-4 flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Back
-          </Link>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to home
+        </Link>
+        <Link
+          href="/privacy"
+          className="text-sm text-white/60 hover:text-white transition-colors"
+        >
+          Privacy policy →
+        </Link>
       </div>
+    </div>
+  );
+}
 
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Terms of Service
+type Section = {
+  id: string;
+  number: string;
+  title: string;
+  body: React.ReactNode;
+};
+
+const sections: Section[] = [
+  {
+    id: "agreement",
+    number: "01",
+    title: "Agreement",
+    body: (
+      <>
+        <p>
+          By accessing or using Sentinel (the "Service"), you agree to
+          these Terms of Service ("Terms"). If you don't agree, don't use
+          the Service. These Terms apply to every user of every plan,
+          including the free Starter plan.
+        </p>
+        <p className="pt-3">
+          If you're using Sentinel on behalf of a company or team, you
+          represent that you have the authority to bind that organization
+          to these Terms.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "accounts",
+    number: "02",
+    title: "Accounts",
+    body: (
+      <>
+        <p>
+          Account information you provide must be accurate and current.
+          You're responsible for maintaining the confidentiality of your
+          credentials (managed by Clerk) and for any activity that
+          happens under your account.
+        </p>
+        <p className="pt-3">
+          Notify us at{" "}
+          <a
+            href="mailto:help@sentinels.in"
+            className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white"
+          >
+            help@sentinels.in
+          </a>{" "}
+          immediately if you suspect unauthorized access. We can disable a
+          compromised account while you regain control.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "license",
+    number: "03",
+    title: "License to use Sentinel",
+    body: (
+      <>
+        <p>
+          We grant you a limited, non-exclusive, non-transferable,
+          revocable license to access and use Sentinel for your internal
+          business purposes, subject to these Terms and your plan's
+          limits.
+        </p>
+        <p className="pt-3">Under this license you may not:</p>
+        <ul className="space-y-3 pt-2">
+          {[
+            "Reverse engineer, decompile, or attempt to extract the source code of any Sentinel software.",
+            "Use the Service to build a directly competing product.",
+            "Resell, sublicense, or redistribute access to the Service.",
+            "Remove proprietary notices or copyright marks from the Service or its output.",
+          ].map((item) => (
+            <li key={item} className="flex gap-3">
+              <span
+                aria-hidden
+                className="mt-[10px] h-[5px] w-[5px] flex-none rounded-full bg-white/60"
+              />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "acceptable-use",
+    number: "04",
+    title: "Acceptable use",
+    body: (
+      <>
+        <p>You agree not to use the Service to:</p>
+        <ul className="space-y-3 pt-2">
+          {[
+            "Violate any applicable law, regulation, or third-party right.",
+            "Send unsolicited commercial communications or otherwise spam anyone through integrations or webhooks we deliver on your behalf.",
+            "Upload malware, probe, scan, or interfere with the Service's security or integrity.",
+            "Impersonate another person, team, or organization.",
+            "Scrape or harvest data from the Service beyond what the API explicitly supports.",
+          ].map((item) => (
+            <li key={item} className="flex gap-3">
+              <span
+                aria-hidden
+                className="mt-[10px] h-[5px] w-[5px] flex-none rounded-full bg-white/60"
+              />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "your-data",
+    number: "05",
+    title: "Your data",
+    body: (
+      <>
+        <p>
+          You retain all rights to the deals, events, and configuration
+          you put into Sentinel (collectively, "Customer Data"). Sentinel
+          doesn't claim ownership. You grant us a limited license to
+          process Customer Data solely to operate and improve the Service
+          for you.
+        </p>
+        <p className="pt-3">
+          How we actually handle Customer Data - storage, security,
+          retention, deletion - is described in the{" "}
+          <Link
+            href="/privacy"
+            className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white"
+          >
+            Privacy Policy
+          </Link>{" "}
+          and the{" "}
+          <Link
+            href="/security"
+            className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white"
+          >
+            Security
+          </Link>{" "}
+          page. Those documents are part of this agreement.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "subscriptions",
+    number: "06",
+    title: "Subscriptions and billing",
+    body: (
+      <>
+        <p>
+          Paid plans are billed in advance on the billing cycle you
+          choose (monthly or annual). Billing is handled by PayPal; we
+          don't store your card details.
+        </p>
+        <p className="pt-3">
+          Subscriptions auto-renew at the end of each cycle unless
+          cancelled. You can cancel any time from your PayPal account
+          or by emailing us; cancellation stops future renewals and
+          doesn't refund the current period except where required by
+          law.
+        </p>
+        <p className="pt-3">
+          Prices shown on the Pricing page include applicable tax. If
+          tax rates or rules change, we may update published prices for
+          new cycles with reasonable notice.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "service-levels",
+    number: "07",
+    title: "Service levels",
+    body: (
+      <>
+        <p>
+          We work hard to keep Sentinel reliable, but the Service is
+          provided on an "as-is, as-available" basis. We don't currently
+          offer a contractual uptime SLA on the Starter or Professional
+          plans. Enterprise customers can request SLA terms as part of
+          their agreement.
+        </p>
+        <p className="pt-3">
+          Incidents affecting the Service will be posted to our status
+          communication channel and - for material issues - emailed to
+          active account holders.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "termination",
+    number: "08",
+    title: "Termination",
+    body: (
+      <>
+        <p>
+          You can stop using the Service and delete your account at any
+          time from Settings, or by emailing{" "}
+          <a
+            href="mailto:help@sentinels.in"
+            className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white"
+          >
+            help@sentinels.in
+          </a>
+          . Deletion revokes integration tokens within 24 hours and
+          removes workspace data within 30 days.
+        </p>
+        <p className="pt-3">
+          We may suspend or terminate access if you materially breach
+          these Terms, if payment fails and isn't resolved, or if
+          continuing to provide the Service would violate the law. We'll
+          give notice and a reasonable opportunity to cure where
+          practical.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "disclaimer",
+    number: "09",
+    title: "Disclaimer and liability",
+    body: (
+      <>
+        <p>
+          The Service is provided "as is" and "as available" without
+          warranties of any kind, whether express or implied, to the
+          fullest extent permitted by law. Sentinel does not warrant that
+          the Service will be uninterrupted, error-free, or that any risk
+          scores or recommendations will be accurate for every deal.
+        </p>
+        <p className="pt-3">
+          To the maximum extent permitted by law, Sentinel's aggregate
+          liability arising out of or relating to the Service will not
+          exceed the greater of (a) the amount you paid Sentinel in the
+          twelve months preceding the claim, or (b) US$100. Sentinel will
+          not be liable for indirect, incidental, special, consequential,
+          or punitive damages, including lost profits, revenue, or data.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "changes",
+    number: "10",
+    title: "Changes to these Terms",
+    body: (
+      <>
+        <p>
+          We may update these Terms as the product evolves. Material
+          changes will be announced by email and with a banner in-product
+          at least 30 days before they take effect. Continued use of
+          Sentinel after the effective date means you accept the revised
+          Terms.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "governing",
+    number: "11",
+    title: "Governing law and contact",
+    body: (
+      <>
+        <p>
+          These Terms are governed by the laws of India, excluding
+          conflict-of-laws rules. Disputes will be handled in the courts
+          of competent jurisdiction where Sentinel is registered.
+        </p>
+        <p className="pt-3">
+          Questions, legal notices, and contract requests:{" "}
+          <a
+            href="mailto:help@sentinels.in"
+            className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white"
+          >
+            help@sentinels.in
+          </a>
+          .
+        </p>
+      </>
+    ),
+  },
+];
+
+export default function TermsPage() {
+  return (
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <BackLink />
+
+      <section className="px-6 lg:px-8 pt-20 pb-12">
+        <div className="max-w-[1700px] mx-auto">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-4">
+            Terms of service
+          </div>
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-5 max-w-3xl leading-[1.05]">
+            The agreement between you and Sentinel.
           </h1>
-          <p className="text-lg text-white/60 leading-relaxed">
-            Last Updated: January 2026
+          <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
+            Readable on purpose. Scoped to how the product actually works,
+            not a generic template. If anything here is unclear, email us
+            and we'll explain it in human terms.
           </p>
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
+            <span>Last updated {lastUpdated}</span>
+            <span className="text-white/20">·</span>
+            <a
+              href="mailto:help@sentinels.in"
+              className="hover:text-white transition-colors underline underline-offset-4 decoration-white/20"
+            >
+              help@sentinels.in
+            </a>
+          </div>
+
+          <nav aria-label="Table of contents" className="mt-10">
+            <ol className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+              {sections.map((s) => (
+                <li key={s.id}>
+                  <a
+                    href={`#${s.id}`}
+                    className="inline-flex items-baseline gap-2 text-white/50 hover:text-white transition-colors"
+                  >
+                    <span className="font-mono text-xs text-white/35">
+                      {s.number}
+                    </span>
+                    <span>{s.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
         </div>
       </section>
 
-      <section className="px-6 lg:px-8 pt-8 pb-16">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Agreement to Terms
-            </h2>
-            <p className="text-white/70 leading-relaxed">
-              By accessing or using Sentinel (&quot;the Service&quot;), you agree to be
-              bound by these Terms of Service (&quot;Terms&quot;). If you disagree with
-              any part of these terms, you may not access the Service.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Use License
-            </h2>
-            <p className="text-white/70 mb-4 leading-relaxed">
-              Permission is granted to temporarily use Sentinel for personal or
-              commercial use. This is the grant of a license, not a transfer of
-              title, and under this license you may not:
-            </p>
-            <ul className="space-y-2 text-white/80 ml-6">
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-1">•</span>
-                <span>Modify or copy the materials</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-1">•</span>
-                <span>Use the materials for any commercial purpose without
-                  explicit written permission</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-1">•</span>
-                <span>Attempt to reverse engineer any software contained in
-                  Sentinel</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-1">•</span>
-                <span>Remove any copyright or other proprietary notations from
-                  the materials</span>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              User Accounts
-            </h2>
-            <p className="text-white/70 mb-4 leading-relaxed">
-              When you create an account with us, you must provide information
-              that is accurate, complete, and current at all times. You are
-              responsible for safeguarding the password and for all activities
-              that occur under your account.
-            </p>
-            <p className="text-white/70 leading-relaxed">
-              You agree not to disclose your password to any third party and to
-              take sole responsibility for any activities or actions under your
-              account, whether or not you have authorized such activities or
-              actions.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Acceptable Use
-            </h2>
-            <p className="text-white/70 mb-4 leading-relaxed">
-              You agree not to use the Service:
-            </p>
-            <ul className="space-y-2 text-white/80 ml-6">
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-1">•</span>
-                <span>In any way that violates any applicable national or
-                  international law or regulation</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-1">•</span>
-                <span>To transmit, or procure the sending of, any advertising or
-                  promotional material without our prior written consent</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-1">•</span>
-                <span>To impersonate or attempt to impersonate the company, a
-                  company employee, another user, or any other person or entity</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-400 mt-1">•</span>
-                <span>In any way that infringes upon the rights of others, or in
-                  any way is illegal, threatening, fraudulent, or harmful</span>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Subscription and Billing
-            </h2>
-            <p className="text-white/70 mb-4 leading-relaxed">
-              Some parts of the Service are billed on a subscription basis
-              (&quot;Subscription(s)&quot;). You will be billed in advance on a
-              recurring and periodic basis (&quot;Billing Cycle&quot;). Billing cycles
-              are set on a monthly or annual basis.
-            </p>
-            <p className="text-white/70 mb-4 leading-relaxed">
-              At the end of each Billing Cycle, your Subscription will
-              automatically renew under the exact same conditions unless you
-              cancel it or Sentinel cancels it. You may cancel your
-              Subscription renewal through your account settings.
-            </p>
-            <p className="text-white/70 leading-relaxed">
-              A valid payment method, including credit card or PayPal, is
-              required to process the payment for your Subscription. You shall
-              provide Sentinel with accurate and complete billing information.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Data and Privacy
-            </h2>
-            <p className="text-white/70 mb-4 leading-relaxed">
-              You retain all rights to your data. Sentinel does not claim
-              ownership of your data. You are responsible for maintaining
-              backups of your data.
-            </p>
-            <p className="text-white/70 leading-relaxed">
-              Your use of the Service is also governed by our Privacy Policy.
-              Please review our Privacy Policy, which also governs your use of
-              the Service, to understand our practices.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Termination
-            </h2>
-            <p className="text-white/70 mb-4 leading-relaxed">
-              We may terminate or suspend your account and bar access to the
-              Service immediately, without prior notice or liability, under our
-              sole discretion, for any reason whatsoever and without limitation,
-              including but not limited to a breach of the Terms.
-            </p>
-            <p className="text-white/70 leading-relaxed">
-              If you wish to terminate your account, you may simply discontinue
-              using the Service or cancel your subscription through your account
-              settings.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Disclaimer
-            </h2>
-            <p className="text-white/70 leading-relaxed">
-              The information on this Service is provided on an &quot;as is&quot; basis.
-              To the fullest extent permitted by law, Sentinel excludes all
-              representations, warranties, conditions, and terms relating to our
-              website and the use of this website.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Limitation of Liability
-            </h2>
-            <p className="text-white/70 leading-relaxed">
-              In no event shall Sentinel, nor its directors, employees,
-              partners, agents, suppliers, or affiliates, be liable for any
-              indirect, incidental, special, consequential, or punitive damages,
-              including without limitation, loss of profits, data, use, goodwill,
-              or other intangible losses, resulting from your use of the Service.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Changes to Terms
-            </h2>
-            <p className="text-white/70 leading-relaxed">
-              We reserve the right, at our sole discretion, to modify or replace
-              these Terms at any time. If a revision is material, we will
-              provide at least 30 days notice prior to any new terms taking
-              effect.
-            </p>
-            <p className="text-white/70 leading-relaxed">
-              What constitutes a material change will be determined at our sole
-              discretion. By continuing to access or use our Service after those
-              revisions become effective, you agree to be bound by the revised
-              terms.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Contact Information
-            </h2>
-            <p className="text-white/70 leading-relaxed">
-              If you have any questions about these Terms of Service, please
-              contact us at{" "}
-              <a
-                href="mailto:help@sentinels.in"
-                className="text-blue-400 hover:text-blue-300 underline"
-              >
-                help@sentinels.in
-              </a>
-              .
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 px-6 lg:px-8 border-t border-white/10">
-        <div className="max-w-4xl mx-auto text-center">
-          {user ? (
-            <>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Ready to get started?
-              </h2>
-              <p className="text-white/60 mb-8">
-                Start managing your deals and preventing silent decay today.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/dashboard"
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Go to Dashboard
-                </Link>
-                <Link
-                  href="/deals/new"
-                  className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
-                >
-                  Create Your First Deal
-                </Link>
+      <section className="px-6 lg:px-8 pb-24">
+        <div className="max-w-[1700px] mx-auto space-y-14">
+          {sections.map((section) => (
+            <article
+              key={section.id}
+              id={section.id}
+              className="border-t border-white/10 pt-10 scroll-mt-24"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-[96px_1fr] gap-6 md:gap-10">
+                <div className="font-mono text-xs uppercase tracking-[0.2em] text-white/35 pt-2">
+                  {section.number}
+                </div>
+                <div>
+                  <h2 className="text-2xl md:text-[1.75rem] font-semibold tracking-tight text-white mb-5">
+                    {section.title}
+                  </h2>
+                  <div className="text-white/75 leading-relaxed space-y-3 max-w-2xl">
+                    {section.body}
+                  </div>
+                </div>
               </div>
-            </>
-          ) : (
-            <>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Login Required
-              </h2>
-              <p className="text-white/60 mb-8">
-                Please log in first to access the dashboard and start managing
-                your deals.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/sign-in"
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/sign-up"
-                  className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            </>
-          )}
+            </article>
+          ))}
         </div>
       </section>
     </div>

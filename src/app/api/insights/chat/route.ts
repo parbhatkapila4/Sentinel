@@ -3,6 +3,8 @@ import { getAuthenticatedUserId } from "@/lib/auth";
 import {
   routeToAI,
   analyzeTaskType,
+  isAIMode,
+  type AIMode,
   type ChatCompletionContentPart,
   type ChatMessageContent,
 } from "@/lib/ai-router";
@@ -45,6 +47,7 @@ interface RequestBody {
     size: number;
     data?: string;
   }>;
+  mode?: string;
 }
 
 interface Message {
@@ -454,9 +457,12 @@ async function chatHandler(request: NextRequest) {
       content: m.content,
     }));
 
+    const mode: AIMode | undefined = isAIMode(body.mode) ? body.mode : undefined;
+
     const content = await trackPerformance("ai.chat", async () => {
       return await routeToAI(aiMessages, lastUserMessage, {
         dealContext: dealContext ?? undefined,
+        mode,
       });
     });
 

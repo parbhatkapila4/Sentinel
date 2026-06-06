@@ -27,6 +27,8 @@ export async function getMyRiskSettings() {
         userId,
         inactivityThresholdDays: DEFAULT_INACTIVITY_THRESHOLD,
         enableCompetitiveSignals: true,
+        enableStageStall: false,
+        enableChampionDormancy: false,
       };
     }
     return {
@@ -34,6 +36,8 @@ export async function getMyRiskSettings() {
       userId: row.userId,
       inactivityThresholdDays: row.inactivityThresholdDays,
       enableCompetitiveSignals: row.enableCompetitiveSignals,
+      enableStageStall: row.enableStageStall,
+      enableChampionDormancy: row.enableChampionDormancy,
     };
   } catch (error) {
     logError("Failed to get risk settings", error, {
@@ -45,6 +49,8 @@ export async function getMyRiskSettings() {
       userId: "",
       inactivityThresholdDays: DEFAULT_INACTIVITY_THRESHOLD,
       enableCompetitiveSignals: true,
+      enableStageStall: false,
+      enableChampionDormancy: false,
     };
   }
 }
@@ -52,6 +58,8 @@ export async function getMyRiskSettings() {
 export async function updateMyRiskSettings(settings: {
   inactivityThresholdDays?: number;
   enableCompetitiveSignals?: boolean;
+  enableStageStall?: boolean;
+  enableChampionDormancy?: boolean;
 }) {
   return await withErrorContext(
     {
@@ -83,6 +91,9 @@ export async function updateMyRiskSettings(settings: {
                   settings.inactivityThresholdDays ?? DEFAULT_INACTIVITY_THRESHOLD,
                 enableCompetitiveSignals:
                   settings.enableCompetitiveSignals ?? true,
+                enableStageStall: settings.enableStageStall ?? false,
+                enableChampionDormancy:
+                  settings.enableChampionDormancy ?? false,
               },
               update: {
                 ...(settings.inactivityThresholdDays !== undefined && {
@@ -90,6 +101,12 @@ export async function updateMyRiskSettings(settings: {
                 }),
                 ...(settings.enableCompetitiveSignals !== undefined && {
                   enableCompetitiveSignals: settings.enableCompetitiveSignals,
+                }),
+                ...(settings.enableStageStall !== undefined && {
+                  enableStageStall: settings.enableStageStall,
+                }),
+                ...(settings.enableChampionDormancy !== undefined && {
+                  enableChampionDormancy: settings.enableChampionDormancy,
                 }),
               },
             }),

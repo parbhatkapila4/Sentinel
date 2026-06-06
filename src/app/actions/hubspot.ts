@@ -6,28 +6,27 @@ import { revalidatePath } from "next/cache";
 import {
   validateHubSpotCredentials,
   fetchHubSpotDeals,
+  fetchHubSpotContacts,
   mapHubSpotDealToDeal,
 } from "@/lib/hubspot";
+import { normalizeContactEmail } from "@/lib/contact-utils";
 import { logIntegrationAction } from "./integrations";
-import { enforceIntegrationLimit } from "@/lib/plan-enforcement";
-import { incrementUsage } from "@/lib/plans";
+import { runIntegrationConnect } from "@/lib/integration-flow";
 import { notifySlackAfterCrmSync } from "@/lib/post-crm-sync-slack";
-import {
-  decryptIntegrationSecret,
-  encryptIntegrationSecret,
-} from "@/lib/integration-secrets";
+import { encryptIntegrationSecret } from "@/lib/integration-secrets";
+import { getHubSpotAccessToken } from "@/lib/hubspot-auth";
 import { incrementMetric } from "@/lib/metrics";
 import { logInfo, logWarn } from "@/lib/logger";
 import { runWithConcurrency } from "@/lib/async-pool";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
+import { deleteIfExists } from "@/lib/prisma-helpers";
 
 export interface HubSpotStatus {
   connected: boolean;
   lastSyncAt: Date | null;
   lastSyncStatus: string | null;
   totalSynced: number;
+  lastContactsSyncedAt: Date | null;
+  totalContactsSynced: number;
   syncEnabled: boolean;
   portalId: string | null;
 }
@@ -73,65 +72,44 @@ async function findExistingHubSpotDeal(
 export async function connectHubSpot(
   apiKey: string
 ): Promise<{ success: boolean }> {
-  const userId = await getAuthenticatedUserId();
-
-  const existing = await db.hubSpotIntegration.findUnique({
-    where: { userId },
-  });
-
-  const validation = await validateHubSpotCredentials(apiKey);
-  if (!validation.valid) {
-    await logIntegrationAction(
-      "hubspot",
-      "connect",
-      "failed",
-      validation.error
-    );
-    throw new Error(validation.error || "Invalid HubSpot credentials");
-  }
-
-  if (!existing) {
-    await enforceIntegrationLimit(userId, "hubspot");
-  }
-
-  await db.hubSpotIntegration.upsert({
-    where: { userId },
-    create: {
-      userId,
-      apiKey: encryptIntegrationSecret(apiKey),
-      portalId: validation.portalId || null,
-      isActive: true,
-      syncEnabled: true,
+  return runIntegrationConnect({
+    provider: "hubspot",
+    hasExisting: async (userId) =>
+      Boolean(
+        await prisma.hubSpotIntegration.findUnique({ where: { userId } })
+      ),
+    validate: () => validateHubSpotCredentials(apiKey),
+    upsert: async ({ userId }, validation) => {
+      const portalId = validation.portalId || null;
+      const encryptedKey = encryptIntegrationSecret(apiKey);
+      await prisma.hubSpotIntegration.upsert({
+        where: { userId },
+        create: {
+          userId,
+          apiKey: encryptedKey,
+          portalId,
+          isActive: true,
+          syncEnabled: true,
+        },
+        update: {
+          apiKey: encryptedKey,
+          portalId,
+          isActive: true,
+        },
+      });
     },
-    update: {
-      apiKey: encryptIntegrationSecret(apiKey),
-      portalId: validation.portalId || null,
-      isActive: true,
-    },
+    successMessage: (validation) =>
+      `Successfully connected to HubSpot (Portal ID: ${validation.portalId})`,
   });
-
-  if (!existing) {
-    await incrementUsage(userId, "integrations", 1);
-  }
-
-  await logIntegrationAction(
-    "hubspot",
-    "connect",
-    "success",
-    `Successfully connected to HubSpot (Portal ID: ${validation.portalId})`
-  );
-
-  revalidatePath("/settings");
-  return { success: true };
 }
 
 export async function disconnectHubSpot(): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
-  await db.hubSpotIntegration.delete({
-    where: { userId },
-  }).catch(() => {
-  });
+  await deleteIfExists(
+    () => prisma.hubSpotIntegration.delete({ where: { userId } }),
+    { resource: "hubSpotIntegration", userId }
+  );
 
   await logIntegrationAction(
     "hubspot",
@@ -147,7 +125,7 @@ export async function disconnectHubSpot(): Promise<{ success: boolean }> {
 export async function syncHubSpotDeals(): Promise<SyncResult> {
   const userId = await getAuthenticatedUserId();
 
-  const integration = await db.hubSpotIntegration.findUnique({
+  const integration = await prisma.hubSpotIntegration.findUnique({
     where: { userId },
   });
 
@@ -155,10 +133,12 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
     throw new Error("HubSpot is not connected");
   }
 
+  let dealsResult: SyncResult | null = null;
+  let dealsError: unknown = null;
+
   try {
-    const hubspotDeals = await fetchHubSpotDeals(
-      decryptIntegrationSecret(integration.apiKey)
-    );
+    const accessToken = await getHubSpotAccessToken(userId);
+    const hubspotDeals = await fetchHubSpotDeals(accessToken);
 
     let created = 0;
     let updated = 0;
@@ -182,7 +162,10 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
           updated++;
         } else {
           await prisma.deal.create({
-            data: dealData,
+            data: {
+              ...dealData,
+              value: dealData.value,
+            },
           });
           created++;
         }
@@ -193,7 +176,7 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
 
     const totalSynced = created + updated;
 
-    await db.hubSpotIntegration.update({
+    await prisma.hubSpotIntegration.update({
       where: { userId },
       data: {
         lastSyncAt: new Date(),
@@ -221,7 +204,7 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
       updated,
     });
 
-    return {
+    dealsResult = {
       success: true,
       synced: totalSynced,
       created,
@@ -229,7 +212,7 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
       errors: errors.length > 0 ? errors : undefined,
     };
   } catch (error) {
-    await db.hubSpotIntegration.update({
+    await prisma.hubSpotIntegration.update({
       where: { userId },
       data: {
         lastSyncAt: new Date(),
@@ -245,14 +228,26 @@ export async function syncHubSpotDeals(): Promise<SyncResult> {
       String(error)
     );
 
-    throw error;
+    dealsError = error;
   }
+
+  try {
+    await syncHubSpotContactsForUser(userId);
+  } catch (error) {
+    logWarn("HubSpot manual contact sync threw unexpectedly", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  if (dealsError) throw dealsError;
+  return dealsResult!;
 }
 
 export async function getHubSpotStatus(): Promise<HubSpotStatus> {
   const userId = await getAuthenticatedUserId();
 
-  const integration = await db.hubSpotIntegration.findUnique({
+  const integration = await prisma.hubSpotIntegration.findUnique({
     where: { userId },
   });
 
@@ -262,6 +257,8 @@ export async function getHubSpotStatus(): Promise<HubSpotStatus> {
       lastSyncAt: null,
       lastSyncStatus: null,
       totalSynced: 0,
+      lastContactsSyncedAt: null,
+      totalContactsSynced: 0,
       syncEnabled: false,
       portalId: null,
     };
@@ -272,6 +269,8 @@ export async function getHubSpotStatus(): Promise<HubSpotStatus> {
     lastSyncAt: integration.lastSyncAt,
     lastSyncStatus: integration.lastSyncStatus,
     totalSynced: integration.totalSynced,
+    lastContactsSyncedAt: integration.lastContactsSyncedAt,
+    totalContactsSynced: integration.totalContactsSynced,
     syncEnabled: integration.syncEnabled,
     portalId: integration.portalId,
   };
@@ -282,7 +281,7 @@ export async function updateHubSpotSettings(settings: {
 }): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
-  await db.hubSpotIntegration.update({
+  await prisma.hubSpotIntegration.update({
     where: { userId },
     data: settings,
   });
@@ -300,7 +299,7 @@ export async function updateHubSpotSettings(settings: {
 
 export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResult> {
   const startedAt = Date.now();
-  const integration = await db.hubSpotIntegration.findUnique({
+  const integration = await prisma.hubSpotIntegration.findUnique({
     where: { userId },
   });
 
@@ -309,9 +308,8 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
   }
 
   try {
-    const fetchedHubspotDeals = await fetchHubSpotDeals(
-      decryptIntegrationSecret(integration.apiKey)
-    );
+    const accessToken = await getHubSpotAccessToken(userId);
+    const fetchedHubspotDeals = await fetchHubSpotDeals(accessToken);
     const hubspotDeals = fetchedHubspotDeals.filter((deal, index, arr) => {
       return arr.findIndex((candidate) => candidate.id === deal.id) === index;
     });
@@ -371,7 +369,10 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
           }
 
           const createdDeal = await prisma.deal.create({
-            data: dealData,
+            data: {
+              ...dealData,
+              value: dealData.value,
+            },
             select: { id: true, externalId: true, name: true, source: true },
           });
           created++;
@@ -387,7 +388,7 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
       }
     );
 
-    await db.hubSpotIntegration.update({
+    await prisma.hubSpotIntegration.update({
       where: { userId },
       data: {
         lastSyncAt: new Date(),
@@ -423,7 +424,7 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
       errors: errors.length > 0 ? errors : undefined,
     };
   } catch (error) {
-    await db.hubSpotIntegration.update({
+    await prisma.hubSpotIntegration.update({
       where: { userId },
       data: {
         lastSyncAt: new Date(),
@@ -441,4 +442,161 @@ export async function syncHubSpotDealsForUser(userId: string): Promise<SyncResul
     });
     return { success: false, synced: 0, created: 0, updated: 0, scanned: 0, failed: 1, errors: [String(error)] };
   }
+}
+
+export interface ContactSyncResult {
+  synced: number;
+  skipped: number;
+  errors: string[];
+}
+
+export async function syncHubSpotContactsForUser(
+  userId: string
+): Promise<ContactSyncResult> {
+  const integration = await prisma.hubSpotIntegration.findUnique({
+    where: { userId },
+  });
+
+  if (!integration || !integration.isActive || !integration.syncEnabled) {
+    logInfo("HubSpot contact sync skipped: no active integration", { userId });
+    return { synced: 0, skipped: 0, errors: [] };
+  }
+
+  const startedAt = Date.now();
+  let synced = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  let contacts: Awaited<ReturnType<typeof fetchHubSpotContacts>>;
+  try {
+    const accessToken = await getHubSpotAccessToken(userId);
+    contacts = await fetchHubSpotContacts(accessToken);
+  } catch (error) {
+    void incrementMetric("sync.hubspot.contacts.errors", 1);
+    const msg = error instanceof Error ? error.message : String(error);
+    logWarn("HubSpot contact fetch failed", {
+      userId,
+      error: msg,
+    });
+    return { synced: 0, skipped: 0, errors: [msg] };
+  }
+
+  for (const contact of contacts) {
+    const email = normalizeContactEmail(contact.properties?.email);
+    if (!email) {
+      skipped++;
+      continue;
+    }
+
+    const firstName = contact.properties?.firstname || null;
+    const lastName = contact.properties?.lastname || null;
+    const fullName =
+      firstName && lastName
+        ? `${firstName} ${lastName}`
+        : firstName ?? lastName ?? null;
+
+    const data = {
+      userId,
+      email,
+      firstName,
+      lastName,
+      fullName,
+      phone: contact.properties?.phone || null,
+      companyName: contact.properties?.company || null,
+      source: "hubspot",
+      externalId: contact.id,
+      lastSyncedAt: new Date(),
+    };
+
+    try {
+      const [existingByEmail, existingByProviderKey] = await Promise.all([
+        prisma.contact.findUnique({
+          where: { userId_email: { userId, email } },
+        }),
+        prisma.contact.findUnique({
+          where: {
+            userId_source_externalId: {
+              userId,
+              source: "hubspot",
+              externalId: contact.id,
+            },
+          },
+        }),
+      ]);
+
+      if (existingByEmail) {
+        if (
+          existingByProviderKey &&
+          existingByProviderKey.id !== existingByEmail.id
+        ) {
+          await prisma.$transaction([
+            prisma.contact.delete({
+              where: { id: existingByProviderKey.id },
+            }),
+            prisma.contact.update({
+              where: { id: existingByEmail.id },
+              data: { ...data, updatedAt: new Date() },
+            }),
+          ]);
+        } else {
+          await prisma.contact.update({
+            where: { id: existingByEmail.id },
+            data: { ...data, updatedAt: new Date() },
+          });
+        }
+      } else if (existingByProviderKey) {
+        await prisma.contact.update({
+          where: { id: existingByProviderKey.id },
+          data: { ...data, updatedAt: new Date() },
+        });
+      } else {
+        await prisma.contact.create({
+          data: { ...data, createdAt: new Date(), updatedAt: new Date() },
+        });
+      }
+      synced++;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      errors.push(`Failed to sync contact ${contact.id}: ${msg}`);
+      logWarn("HubSpot contact upsert failed", {
+        userId,
+        externalId: contact.id,
+        email,
+        error: msg,
+      });
+    }
+  }
+
+  try {
+    await prisma.hubSpotIntegration.update({
+      where: { userId },
+      data: {
+        lastContactsSyncedAt: new Date(),
+        totalContactsSynced: integration.totalContactsSynced + synced,
+      },
+    });
+  } catch (error) {
+    logWarn("HubSpot contact sync metadata update failed", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  const durationMs = Date.now() - startedAt;
+  void incrementMetric("sync.hubspot.contacts.duration_ms", durationMs);
+  void incrementMetric("sync.hubspot.contacts.success", 1);
+  if (errors.length > 0) {
+    void incrementMetric("sync.hubspot.contacts.item_errors", errors.length);
+  }
+  logInfo("HubSpot contact sync completed", {
+    userId,
+    scanned: contacts.length,
+    synced,
+    skipped,
+    errors: errors.length,
+    failureReasons: errors.slice(0, 3),
+    durationMs,
+  });
+
+  return { synced, skipped, errors };
 }

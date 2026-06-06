@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { redis } from "./redis";
 import { notifyRealtimeEvent } from "./realtime";
+import { logWarn } from "./logger";
 
 const EMAIL_QUEUE = "email_queue";
 
@@ -55,7 +56,12 @@ export async function createNotification(
       type: "notification.new",
       notificationId: notification.id,
     });
-  } catch {
+  } catch (err) {
+    logWarn("Failed to publish realtime event for new notification", {
+      userId: notification.userId,
+      notificationId: notification.id,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   if (data.sendEmail && redis) {

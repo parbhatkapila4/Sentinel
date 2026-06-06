@@ -139,19 +139,32 @@ describe("calculateChartData", () => {
 });
 
 describe("calculateRevenueBySource", () => {
-  it("returns all ordered sources", () => {
+  it("returns the canonical channel set in stable order", () => {
     const r = calculateRevenueBySource([]);
     expect(r).toHaveLength(5);
     expect(r.map((s) => s.source)).toEqual([
       "Direct",
       "Organic",
-      "Paid Ads",
+      "Outbound",
       "Referrals",
-      "Partnerships",
+      "Partners",
     ]);
   });
 
-  it("maps stage to source and sums value", () => {
+  it("sums by the deal-supplied channel when set", () => {
+    const d = new Date();
+    const deals = [
+      createDeal({ stage: "discover", value: 1000, createdAt: d, channel: "referrals" }),
+      createDeal({ stage: "negotiation", value: 500, createdAt: d, channel: "referrals" }),
+      createDeal({ stage: "qualify", value: 2000, createdAt: d, channel: "outbound" }),
+    ];
+    const r = calculateRevenueBySource(deals);
+    expect(r.find((s) => s.source === "Referrals")?.value).toBe(1500);
+    expect(r.find((s) => s.source === "Outbound")?.value).toBe(2000);
+    expect(r.find((s) => s.source === "Direct")?.value).toBe(0);
+  });
+
+  it("falls back to a stage-derived label for deals without a channel", () => {
     const d = new Date();
     const deals = [
       createDeal({ stage: "discover", value: 1000, createdAt: d }),
@@ -159,10 +172,8 @@ describe("calculateRevenueBySource", () => {
       createDeal({ stage: "qualify", value: 2000, createdAt: d }),
     ];
     const r = calculateRevenueBySource(deals);
-    const direct = r.find((s) => s.source === "Direct");
-    const organic = r.find((s) => s.source === "Organic");
-    expect(direct?.value).toBe(1500);
-    expect(organic?.value).toBe(2000);
+    expect(r.find((s) => s.source === "Direct")?.value).toBe(1500);
+    expect(r.find((s) => s.source === "Organic")?.value).toBe(2000);
   });
 });
 

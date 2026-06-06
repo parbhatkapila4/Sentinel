@@ -322,22 +322,25 @@ export async function fetchHubSpotCompanies(apiKey: string): Promise<HubSpotComp
 
 function mapHubSpotStage(hubspotStage: string): string {
   const stageMapping: Record<string, string> = {
-    "appointmentscheduled": "Discovery",
-    "qualifiedtobuy": "Discovery",
-    "presentationscheduled": "Proposal",
-    "decisionmakerboughtin": "Proposal",
-    "contractsent": "Negotiation",
-    "closedwon": "Closed Won",
-    "closedlost": "Closed Lost",
-    "qualification": "Discovery",
-    "proposal": "Proposal",
-    "negotiation": "Negotiation",
-    "closed_won": "Closed Won",
-    "closed_lost": "Closed Lost",
+    "appointmentscheduled": "discover",
+    "qualifiedtobuy": "qualify",
+    "presentationscheduled": "proposal",
+    "decisionmakerboughtin": "proposal",
+    "contractsent": "negotiation",
+    "closedwon": "closed_won",
+    "closedlost": "closed_lost",
+    "discover": "discover",
+    "discovery": "discover",
+    "qualify": "qualify",
+    "qualification": "qualify",
+    "proposal": "proposal",
+    "negotiation": "negotiation",
+    "closed_won": "closed_won",
+    "closed_lost": "closed_lost",
   };
 
-  const normalizedStage = hubspotStage.toLowerCase().replace(/[^a-z]/g, "");
-  return stageMapping[normalizedStage] || "Discovery";
+  const normalizedStage = hubspotStage.toLowerCase().replace(/[^a-z_]/g, "");
+  return stageMapping[normalizedStage] || "discover";
 }
 
 export function mapHubSpotDealToDeal(

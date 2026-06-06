@@ -341,16 +341,17 @@ export function forecastPipelineValue(deals: DealForPrediction[]): PipelineForec
   const months: PipelineForecast["monthly"] = [];
   const names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const now = new Date();
-  const third = expected / 3;
-  const bestThird = bestCase / 3;
-  const worstThird = Math.max(0, worstCase) / 3;
-  for (let i = 1; i <= 3; i++) {
+  const horizonMonths = 6;
+  const monthlyExpected = expected / horizonMonths;
+  const monthlyBest = bestCase / horizonMonths;
+  const monthlyWorst = Math.max(0, worstCase) / horizonMonths;
+  for (let i = 1; i <= horizonMonths; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
     months.push({
       month: names[d.getMonth()],
-      value: Math.round(third),
-      bestCase: Math.round(bestThird),
-      worstCase: Math.round(worstThird),
+      value: Math.round(monthlyExpected),
+      bestCase: Math.round(monthlyBest),
+      worstCase: Math.round(monthlyWorst),
     });
   }
 

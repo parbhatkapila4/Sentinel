@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { updateDealStage } from "@/app/actions/deals";
 import { toast } from "sonner";
+
+import { updateDealStage } from "@/app/actions/deals";
 import { STAGES } from "@/lib/config";
 
 interface StageSelectorProps {
@@ -23,12 +24,11 @@ export function StageSelector({ dealId, currentStage }: StageSelectorProps) {
       setIsOpen(false);
       return;
     }
-
     setIsOpen(false);
     setIsLoading(true);
     try {
       await updateDealStage(dealId, newStage);
-      toast.success(`Stage changed to ${newStage}`);
+      toast.success(`Stage changed to ${newStage.replace(/_/g, " ")}`);
       router.refresh();
     } catch (error) {
       console.error("Failed to update stage:", error);
@@ -39,61 +39,112 @@ export function StageSelector({ dealId, currentStage }: StageSelectorProps) {
   }
 
   return (
-    <div className="relative">
+    <div style={{ position: "relative", display: "inline-block" }}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white bg-white/[0.04] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.1] transition-colors disabled:opacity-50 disabled:cursor-wait min-w-[140px] justify-between"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 10,
+          justifyContent: "space-between",
+          minWidth: 200,
+          padding: "10px 14px",
+          border: "1px solid var(--rule-strong)",
+          background: "var(--ink-02)",
+          color: "var(--cream)",
+          fontFamily: "var(--font-serif)",
+          fontSize: 15,
+          cursor: isLoading ? "wait" : "pointer",
+          opacity: isLoading ? 0.6 : 1,
+        }}
       >
-        {isLoading ? (
-          <>
-            <span className="text-white/80 animate-pulse">Changing stage, hang on...</span>
-            <svg
-              className="w-4 h-4 animate-spin shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </>
-        ) : (
-          <>
-            <span className="capitalize">{currentStage.replace(/_/g, " ")}</span>
-            <svg
-              className={`w-4 h-4 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </>
-        )}
+        <span style={{ textTransform: "capitalize" }}>
+          {isLoading
+            ? "Updating…"
+            : currentStage.replace(/_/g, " ")}
+        </span>
+        <span
+          aria-hidden
+          style={{
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 10,
+            letterSpacing: "0.1em",
+            color: "var(--cream-3)",
+            transition: "transform 140ms ease",
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        >
+          ▾
+        </span>
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-48 rounded-lg overflow-hidden z-50 bg-[#0a0a0a] border border-white/[0.08] shadow-xl shadow-black/50">
-          {stages.map((stage) => (
-            <button
-              key={stage}
-              onClick={() => handleStageChange(stage)}
-              disabled={isLoading}
-              className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${stage === currentStage
-                ? "bg-white/10 text-white font-medium"
-                : "text-white/70 hover:bg-white/5 hover:text-white"
-                }`}
-            >
-              <span className="capitalize">{stage.replace(/_/g, " ")}</span>
-              {stage === currentStage && (
-                <span className="ml-2 text-xs text-green-400">Current</span>
-              )}
-            </button>
-          ))}
-        </div>
+        <>
+          <div
+            aria-hidden
+            onClick={() => setIsOpen(false)}
+            style={{ position: "fixed", inset: 0, zIndex: 40 }}
+          />
+          <div
+            role="listbox"
+            style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              left: 0,
+              minWidth: 220,
+              zIndex: 50,
+              background: "var(--ink)",
+              border: "1px solid var(--rule-strong)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+            }}
+          >
+            {stages.map((stage) => {
+              const active = stage === currentStage;
+              return (
+                <button
+                  key={stage}
+                  onClick={() => handleStageChange(stage)}
+                  disabled={isLoading}
+                  role="option"
+                  aria-selected={active}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    padding: "12px 16px",
+                    border: "none",
+                    borderBottom: "1px solid var(--rule)",
+                    textAlign: "left",
+                    background: active ? "rgba(200, 71, 46, 0.06)" : "transparent",
+                    color: active ? "var(--signal)" : "var(--cream-2)",
+                    fontFamily: "var(--font-serif)",
+                    fontSize: 14,
+                    fontStyle: active ? "italic" : "normal",
+                    cursor: isLoading ? "wait" : "pointer",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  <span>{stage.replace(/_/g, " ")}</span>
+                  {active && (
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono-jb)",
+                        fontSize: 9,
+                        letterSpacing: "0.18em",
+                        color: "var(--signal)",
+                        fontStyle: "normal",
+                      }}
+                    >
+                      NOW
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

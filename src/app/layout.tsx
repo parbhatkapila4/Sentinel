@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Syne } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/theme-provider";
 import { Toaster } from "sonner";
@@ -7,22 +6,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { CommandPalette } from "@/components/command-palette";
 import { WebVitalsTracker } from "@/components/web-vitals-tracker";
 import { SkipLink } from "@/components/skip-link";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const syne = Syne({
-  variable: "--font-syne",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
+import { TopProgressBar } from "@/components/top-progress-bar";
+import { ServerActionErrorBoundary } from "@/components/sentinel/ServerActionErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Sentinel",
@@ -44,14 +29,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-in"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+      afterSignOutUrl="/"
+      appearance={{
+        elements: {
+          footer: { display: "none" },
+          badge: { display: "none" },
+        },
+      }}
+    >
       <html lang="en" suppressHydrationWarning>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} antialiased`}
+          className="antialiased"
         >
           <SkipLink />
           <WebVitalsTracker />
+          <ServerActionErrorBoundary />
           <Providers>
+            <TopProgressBar />
             <CommandPalette />
             {children}
           </Providers>

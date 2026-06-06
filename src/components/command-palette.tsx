@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 interface Command {
   id: string;
@@ -19,6 +20,8 @@ export function CommandPalette() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  useKeyboardShortcuts();
 
   const commands: Command[] = [
     { id: "dashboard", label: "Go to Dashboard", category: "navigation", action: () => router.push("/dashboard") },

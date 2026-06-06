@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { appendDealTimeline } from "@/lib/timeline";
+import { invalidateCache, invalidateCachePattern } from "@/lib/cache";
 
 type EventType = "email_received" | "email_sent" | "meeting_held";
 
@@ -37,6 +38,9 @@ export async function createDealEvent(
       payload: payload as Prisma.InputJsonValue,
     },
   });
+  await invalidateCache(`deal:${dealId}:${userId}`);
+  await invalidateCachePattern(`deals:all:${userId}:*`);
+  await invalidateCachePattern(`deals:team:*:${userId}`);
 
   revalidatePath(`/deals/${dealId}`);
   revalidatePath("/dashboard");

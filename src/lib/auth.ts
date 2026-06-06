@@ -66,7 +66,6 @@ async function ensureUserExistsInDb(userId: string): Promise<void> {
               name: clerkUser.firstName || clerkUser.username || "User",
               surname: clerkUser.lastName || "",
               email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
-              password: "",
             },
           }),
         2,
@@ -170,7 +169,6 @@ export async function getAuthenticatedUser() {
               name: clerkUser.firstName || clerkUser.username || "User",
               surname: clerkUser.lastName || "",
               email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
-              password: "",
             },
             select: {
               id: true,

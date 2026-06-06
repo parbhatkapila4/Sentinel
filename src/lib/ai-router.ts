@@ -89,22 +89,30 @@ export function analyzeTaskType(query: string): TaskType {
     return "financial_reasoning";
   }
 
-  if (
-    lowerQuery.includes("code") ||
-    lowerQuery.includes("sql") ||
-    lowerQuery.includes("query") ||
-    lowerQuery.includes("function") ||
-    lowerQuery.includes("script") ||
-    lowerQuery.includes("programming") ||
-    lowerQuery.includes("database") ||
-    lowerQuery.includes("select") ||
-    lowerQuery.includes("create") ||
-    lowerQuery.includes("update") ||
-    lowerQuery.includes("delete") ||
-    lowerQuery.includes("javascript") ||
-    lowerQuery.includes("typescript") ||
-    lowerQuery.includes("python")
-  ) {
+  const strongCodeSignals = [
+    "sql",
+    "query",
+    "function",
+    "script",
+    "programming",
+    "database",
+    "select * from",
+    "javascript",
+    "typescript",
+    "python",
+    "stored procedure",
+    "schema",
+  ];
+  if (strongCodeSignals.some((s) => lowerQuery.includes(s))) {
+    return "code_sql_generation";
+  }
+  const codeishVerbs = /\b(create|update|delete|insert)\b/i;
+  const codeyContext =
+    /\b(table|row|column|index|migration|seed|view|join|where clause|stored proc|cte|primary key|foreign key|null|not null|drop|alter)\b/i;
+  if (codeishVerbs.test(lowerQuery) && codeyContext.test(lowerQuery)) {
+    return "code_sql_generation";
+  }
+  if (/\bcode\b/.test(lowerQuery) && !/\bdiscount\s+code\b/.test(lowerQuery)) {
     return "code_sql_generation";
   }
 
@@ -179,8 +187,53 @@ Do the following:
   }
 }
 
+export type AIMode = "RESEARCH" | "DRAFT" | "FAST";
+
+const ACCURACY_RULES = `
+
+ACCURACY RULES — NON-NEGOTIABLE. THESE OVERRIDE EVERY OTHER INSTRUCTION:
+1. Every fact you state (deal names, values, stages, dates, counts, percentages, risk scores, locations, activity, owners) must come from the DEAL & PIPELINE CONTEXT in this conversation. Never invent. Never estimate. Never approximate ("about", "roughly", "around") unless the user explicitly asks for a rough figure.
+2. Quote numbers exactly as they appear in the context. Do not round. Do not extrapolate.
+3. If something the user asks about is NOT in the context, say so plainly: "I don't have that in the data I can see" or "That isn't in your pipeline context." Then either ask the user to clarify or stop. Do not guess.
+4. Never invent industry benchmarks, statistics, competitor names, or external facts. If you must reference something outside the user's data, attribute it generically ("commonly observed in SaaS pipelines") or omit it.
+5. When drafting deliverables (emails, briefs, summaries, scripts), use bracketed placeholders like [Customer name] or [Specific value] for anything you cannot confirm from the context. Do not fabricate details to make a draft feel complete.
+6. It is always better to say "I don't know" than to provide a confident-sounding answer that may be wrong. The user will trust an honest "I don't know" more than a polished bluff.
+7. If you catch yourself about to assert something you can't verify, stop and rephrase as a question or a placeholder.`;
+
+const MODE_OVERRIDES: Record<AIMode, {
+  maxTokensMultiplier: number;
+  temperatureDelta: number;
+  promptSuffix: string;
+}> = {
+  RESEARCH: {
+    maxTokensMultiplier: 1.4,
+    temperatureDelta: -0.1,
+    promptSuffix:
+      "\n\nMODE — RESEARCH. The user wants a thoughtful read, not a one-liner. When the question merits it, show your reasoning, cite specific deal data, and surface what's surprising or non-obvious. Avoid filler phrases ('great question', 'let me help'). Lead with the answer, support it with evidence FROM THE PROVIDED CONTEXT — never from memory or speculation.",
+  },
+  DRAFT: {
+    maxTokensMultiplier: 1.2,
+    temperatureDelta: 0.1,
+    promptSuffix:
+      "\n\nMODE — DRAFT. The user wants a polished deliverable: an email, a follow-up note, a brief, a script, talking points. Lead with the deliverable itself. Skip preamble. If the user hasn't said what to draft, ask one focused question and stop. For any deal-specific detail you cannot confirm from the context, use a bracketed placeholder like [Customer name] — never invent.",
+  },
+  FAST: {
+    maxTokensMultiplier: 0.45,
+    temperatureDelta: -0.2,
+    promptSuffix:
+      "\n\nMODE — FAST. Be terse. Aim for one or two sentences. Drop the preamble. Drop the wrap-up. If the question genuinely needs more, give the minimum extra that earns its keep. Brevity never excuses making things up — if the data isn't there, the right answer is 'I don't have that.'",
+  },
+};
+
+const MAX_TEMPERATURE = 0.5;
+
+export function isAIMode(value: unknown): value is AIMode {
+  return value === "RESEARCH" || value === "DRAFT" || value === "FAST";
+}
+
 export interface RouteToAIOptions {
   dealContext?: string;
+  mode?: AIMode;
 }
 
 export type ChatCompletionContentPart =
@@ -248,6 +301,21 @@ export async function routeToAI(
   } else if (taskType === "embedding_search") {
     model = AI_EMBEDDING_SEARCH_CHAT_MODEL;
   }
+
+  const mode = options?.mode;
+  if (mode) {
+    const override = MODE_OVERRIDES[mode];
+    const defaultSystem =
+      "You are a helpful assistant for Sentinel, a revenue intelligence platform.";
+    systemPrompt = (systemPrompt ?? defaultSystem) + override.promptSuffix;
+    maxTokens = Math.max(120, Math.round(maxTokens * override.maxTokensMultiplier));
+    temperature = Math.max(0, Math.min(1, temperature + override.temperatureDelta));
+  }
+
+  const baselineSystem =
+    "You are a helpful assistant for Sentinel, a revenue intelligence platform that surfaces a user's own deal pipeline.";
+  systemPrompt = (systemPrompt ?? baselineSystem) + ACCURACY_RULES;
+  temperature = Math.min(temperature, MAX_TEMPERATURE);
 
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
 
@@ -463,19 +531,21 @@ export async function callOpenRouterForGeneration(
 
           if (!response.ok) {
             const err = await response.text();
-            console.error("OpenRouter generation error:", response.status, err);
+            console.error("OpenRouter generation error:", response.status, err, "model=", model);
             const status = response.status;
             const message =
               status === 401
-                ? "AI service configuration issue. Please check your provider settings."
-                : status === 429
-                  ? "AI service is busy. Please try again in a moment."
-                  : status >= 500
-                    ? "AI service is temporarily unavailable. Please try again in a moment."
-                    : "AI assistant is temporarily unavailable. Please try again.";
+                ? "AI service is not authenticated. Check OPENROUTER_API_KEY in your environment."
+                : status === 404
+                  ? `AI model "${model}" is not available on OpenRouter. Update AI_CONFIG to a current model slug.`
+                  : status === 429
+                    ? "AI service is busy. Please try again in a moment."
+                    : status >= 500
+                      ? "AI service is temporarily unavailable. Please try again in a moment."
+                      : "AI assistant is temporarily unavailable. Please try again.";
             throw new AppError(message, {
-              statusCode: 503,
-              code: "SERVICE_UNAVAILABLE",
+              statusCode: status === 404 ? 502 : 503,
+              code: status === 404 ? "UPSTREAM_MODEL_NOT_FOUND" : "SERVICE_UNAVAILABLE",
             });
           }
 

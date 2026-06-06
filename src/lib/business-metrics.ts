@@ -1,5 +1,5 @@
-
 import { redis } from "./redis";
+import { logWarn } from "./logger";
 
 const DEFAULT_TTL = 60 * 60 * 24 * 7;
 export async function incrementMetric(name: string, value: number = 1): Promise<void> {
@@ -9,8 +9,11 @@ export async function incrementMetric(name: string, value: number = 1): Promise<
     await redis.incrby(key, value);
     const ttl = await redis.ttl(key);
     if (ttl === -1) await redis.expire(key, DEFAULT_TTL);
-  } catch {
-
+  } catch (err) {
+    logWarn("Failed to increment business metric", {
+      metric: name,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 }
 

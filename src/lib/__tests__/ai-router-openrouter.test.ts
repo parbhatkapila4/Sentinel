@@ -85,7 +85,6 @@ describe("ai-router OpenRouter retry and circuit breaker", () => {
         ).rejects.toThrow();
       }
       expect(getCircuitBreakerState("openrouter")).toBe("OPEN");
-      // Each call does retry (up to 3 fetches per call)
       expect(mockFetch).toHaveBeenCalledTimes(failureThreshold * 3);
 
       mockFetch.mockClear();
@@ -124,7 +123,6 @@ describe("ai-router OpenRouter retry and circuit breaker", () => {
       });
       const result = await callOpenRouterForGeneration("sys", "user");
       expect(result).toBe("recovered");
-      // 5 failed calls × 3 fetches each + 1 successful fetch
       expect(mockFetch).toHaveBeenCalledTimes(failureThreshold * 3 + 1);
     });
   });

@@ -1,12 +1,14 @@
 "use client";
 
-import { usePricing } from "./pricing-toggle";
+import {
+  CANONICAL_CHECKOUT_LINKS,
+  getDisplayedPrice,
+} from "@/lib/pricing-catalog";
 
 export function PricingCards() {
-  const { isAnnual } = usePricing();
 
   const starterFeatures = [
-    "Track up to 25 active deals",
+    "Track up to 5 active deals",
     "Real-time risk detection",
     "Activity tracking (emails & meetings)",
     "Basic deal timeline & history",
@@ -19,7 +21,7 @@ export function PricingCards() {
   ];
 
   const proFeatures = [
-    { text: "Track up to 500 active deals", included: true },
+    { text: "Track up to 100 active deals", included: true },
     { text: "Real-time risk detection & scoring", included: true },
     { text: "AI-powered action recommendations", included: true },
     { text: "Advanced activity tracking & analytics", included: true },
@@ -32,7 +34,7 @@ export function PricingCards() {
   ];
 
   const enterpriseFeatures = [
-    "Unlimited active deals",
+    "Track up to 500 active deals",
     "Unlimited team members",
     "Unlimited API calls",
     "Unlimited webhooks",
@@ -45,22 +47,6 @@ export function PricingCards() {
     "SLA guarantees & priority support",
     "On-premise deployment options",
   ];
-
-  const getProPrice = () => {
-    return isAnnual ? "$20" : "$31";
-  };
-
-  const getProOriginalPrice = () => {
-    return isAnnual ? "$31" : "$31";
-  };
-
-  const getEnterprisePrice = () => {
-    return isAnnual ? "$56" : "$85";
-  };
-
-  const getEnterpriseOriginalPrice = () => {
-    return isAnnual ? "$85" : "$85";
-  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
@@ -89,7 +75,9 @@ export function PricingCards() {
           </p>
 
           <div className="flex items-baseline gap-1">
-            <span className="text-white font-bold text-4xl">$0</span>
+            <span className="text-white font-bold text-4xl">
+              {getDisplayedPrice("starter", false)}
+            </span>
             <span className="text-white/40 text-sm">/month</span>
           </div>
         </div>
@@ -181,13 +169,8 @@ export function PricingCards() {
             </p>
 
             <div className="flex items-baseline gap-2">
-              {isAnnual && (
-                <span className="text-white/40 line-through text-base">
-                  {getProOriginalPrice()}
-                </span>
-              )}
               <span className="text-white font-bold text-4xl">
-                {getProPrice()}
+                {getDisplayedPrice("pro", false)}
               </span>
               <span className="text-white/40 text-sm">/month</span>
             </div>
@@ -200,6 +183,10 @@ export function PricingCards() {
           </div>
 
           <div className="px-2 flex-1 flex flex-col">
+            <p className="text-white/45 text-xs mb-3 leading-relaxed">
+              Use the same email on PayPal as your Sentinel account for instant
+              automatic upgrade after payment confirmation.
+            </p>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-1 h-px bg-white/15"></div>
               <span className="text-white/40 text-xs">
@@ -230,31 +217,17 @@ export function PricingCards() {
               ))}
             </ul>
 
-            {!isAnnual ? (
-              <a
-                href="https://www.paypal.com/ncp/payment/VMD5RE6KLUJUE"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 rounded-xl text-sm font-medium text-white transition-colors inline-flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, #991b1b 0%, #b91c1c 100%)",
-                }}
-              >
-                Subscribe now
-              </a>
-            ) : (
-              <a
-                href="https://www.paypal.com/ncp/payment/ZVFF5ALD7ZYMJ"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 rounded-xl text-sm font-medium text-white transition-colors inline-flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, #991b1b 0%, #b91c1c 100%)",
-                }}
-              >
-                Subscribe now
-              </a>
-            )}
+            <a
+              href={CANONICAL_CHECKOUT_LINKS.pro.monthly}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3.5 rounded-xl text-sm font-medium text-white transition-colors inline-flex items-center justify-center"
+              style={{
+                background: "linear-gradient(135deg, #991b1b 0%, #b91c1c 100%)",
+              }}
+            >
+              Subscribe now
+            </a>
           </div>
         </div>
       </div>
@@ -282,13 +255,8 @@ export function PricingCards() {
           </p>
 
           <div className="flex items-baseline gap-2">
-            {isAnnual && (
-              <span className="text-white/40 line-through text-base">
-                {getEnterpriseOriginalPrice()}
-              </span>
-            )}
             <span className="text-white font-bold text-4xl">
-              {getEnterprisePrice()}
+              {getDisplayedPrice("enterprise", false)}
             </span>
             <span className="text-white/40 text-sm">/month</span>
           </div>
@@ -301,6 +269,10 @@ export function PricingCards() {
         </div>
 
         <div className="px-2 flex-1 flex flex-col">
+          <p className="text-white/45 text-xs mb-3 leading-relaxed">
+            Use the same email on PayPal as your Sentinel account for instant
+            automatic upgrade after payment confirmation.
+          </p>
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-white/10"></div>
             <span className="text-white/30 text-xs">What&apos;s Included?</span>
@@ -328,35 +300,19 @@ export function PricingCards() {
             ))}
           </ul>
 
-          {!isAnnual ? (
-            <a
-              href="https://www.paypal.com/ncp/payment/X6JYZYK6WBRBA"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3.5 rounded-xl text-sm font-medium transition-colors inline-flex items-center justify-center"
-              style={{
-                background: "transparent",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "rgba(255, 255, 255, 0.7)",
-              }}
-            >
-              Get Started
-            </a>
-          ) : (
-            <a
-              href="https://www.paypal.com/ncp/payment/RD8DBKTWRS8EY"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3.5 rounded-xl text-sm font-medium transition-colors inline-flex items-center justify-center"
-              style={{
-                background: "transparent",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "rgba(255, 255, 255, 0.7)",
-              }}
-            >
-              Get Started
-            </a>
-          )}
+          <a
+            href={CANONICAL_CHECKOUT_LINKS.enterprise.monthly}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3.5 rounded-xl text-sm font-medium transition-colors inline-flex items-center justify-center"
+            style={{
+              background: "transparent",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              color: "rgba(255, 255, 255, 0.7)",
+            }}
+          >
+            Get Started
+          </a>
         </div>
       </div>
     </div>

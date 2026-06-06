@@ -147,7 +147,7 @@ describe("forecastPipelineValue", () => {
     expect(r.expected).toBeGreaterThanOrEqual(0);
     expect(r.bestCase).toBeGreaterThanOrEqual(r.expected);
     expect(r.worstCase).toBeLessThanOrEqual(r.expected);
-    expect(r.monthly.length).toBe(3);
+    expect(r.monthly.length).toBe(6);
     expect(r.monthly.every((m) => typeof m.month === "string" && typeof m.value === "number")).toBe(
       true
     );
@@ -158,7 +158,7 @@ describe("forecastPipelineValue", () => {
     expect(r.expected).toBe(0);
     expect(r.bestCase).toBe(0);
     expect(r.worstCase).toBe(0);
-    expect(r.monthly.length).toBe(3);
+    expect(r.monthly.length).toBe(6);
   });
 });
 

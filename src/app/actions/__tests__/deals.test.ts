@@ -279,7 +279,7 @@ describe("createDeal", () => {
         userId: TEST_USER_ID,
         name: "New Deal",
         stage: STAGES.PROPOSAL,
-        value: 3000,
+        value: BigInt(3000),
         location: null,
       },
     });
@@ -305,6 +305,69 @@ describe("createDeal", () => {
 
     await expect(createDeal(formData)).rejects.toThrow("Missing required fields");
     expect(prismaMock.deal.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-canonical stage values", async () => {
+    const formData = new FormData();
+    formData.set("name", "Bad Stage Deal");
+    formData.set("stage", "completely-unknown");
+    formData.set("value", "1000");
+
+    await expect(createDeal(formData)).rejects.toThrow("Invalid stage value");
+    expect(prismaMock.deal.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a duplicate name within the same user's pipeline (case-insensitive, whitespace-trimmed)", async () => {
+    prismaMock.deal.findFirst.mockResolvedValue({
+      id: "existing-deal",
+      name: "Y Combinator",
+    } as never);
+
+    const formData = new FormData();
+    formData.set("name", "  y combinator  ");
+    formData.set("stage", STAGES.DISCOVER);
+    formData.set("value", "1000");
+
+    await expect(createDeal(formData)).rejects.toThrow(
+      /A deal named "Y Combinator" already exists/
+    );
+    expect(prismaMock.deal.create).not.toHaveBeenCalled();
+
+    expect(prismaMock.deal.findFirst).toHaveBeenCalledWith({
+      where: {
+        userId: TEST_USER_ID,
+        name: { equals: "y combinator", mode: "insensitive" },
+      },
+      select: { id: true, name: true },
+    });
+  });
+
+  it("normalizes title-cased stage values to canonical lowercase", async () => {
+    const created = createMockDealRecord({
+      id: "tc-deal",
+      name: "Title-Cased Deal",
+      stage: STAGES.DISCOVER,
+      value: 1000,
+    });
+    prismaMock.deal.create.mockResolvedValue(created as never);
+    prismaMock.dealTimeline.findMany.mockResolvedValue([
+      createMockTimelineRecord({
+        dealId: "tc-deal",
+        eventType: "stage_changed",
+        metadata: { stage: STAGES.DISCOVER },
+      }),
+    ] as never);
+
+    const formData = new FormData();
+    formData.set("name", "Title-Cased Deal");
+    formData.set("stage", "Discovery");
+    formData.set("value", "1000");
+
+    await createDeal(formData);
+
+    expect(prismaMock.deal.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ stage: STAGES.DISCOVER }),
+    });
   });
 });
 
@@ -344,5 +407,13 @@ describe("updateDealStage", () => {
     ).rejects.toThrow("Deal not found");
     expect(prismaMock.deal.update).not.toHaveBeenCalled();
     expect(appendDealTimeline).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-canonical stage values before hitting the database", async () => {
+    await expect(
+      updateDealStage("any-id", "made-up-stage")
+    ).rejects.toThrow("Invalid stage value");
+    expect(prismaMock.deal.findUnique).not.toHaveBeenCalled();
+    expect(prismaMock.deal.update).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,3 @@
-
 type TimelineEventInput = {
   eventType: string;
   createdAt: Date;

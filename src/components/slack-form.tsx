@@ -10,7 +10,8 @@ const SLACK_EVENTS = [
   { value: "deal.stage_changed", label: "Deal stage changed" },
   {
     value: "crm.sync_summary",
-    label: "CRM sync summary (after HubSpot/Salesforce sync)",
+    label: "CRM sync summary",
+    caption: "After HubSpot / Salesforce sync",
   },
 ] as const;
 
@@ -18,6 +19,51 @@ interface SlackFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
 }
+
+const META_LABEL: React.CSSProperties = {
+  fontFamily: "var(--font-mono-jb)",
+  fontSize: 10,
+  letterSpacing: "0.18em",
+  textTransform: "uppercase",
+  color: "var(--cream-3)",
+};
+
+const INPUT_STYLE: React.CSSProperties = {
+  width: "100%",
+  fontFamily: "var(--font-mono-jb)",
+  fontSize: 13,
+  letterSpacing: "0.04em",
+  padding: "11px 14px",
+  background: "var(--ink)",
+  border: "1px solid var(--rule-strong)",
+  color: "var(--cream)",
+  outline: "none",
+};
+
+const GHOST_BUTTON: React.CSSProperties = {
+  fontFamily: "var(--font-mono-jb)",
+  fontSize: 10.5,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  padding: "9px 16px",
+  border: "1px solid var(--rule-strong)",
+  background: "transparent",
+  color: "var(--cream-2)",
+  cursor: "pointer",
+};
+
+const PRIMARY_BUTTON: React.CSSProperties = {
+  fontFamily: "var(--font-mono-jb)",
+  fontSize: 10.5,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  padding: "9px 18px",
+  border: "1px solid var(--signal)",
+  background: "var(--signal)",
+  color: "var(--ink)",
+  cursor: "pointer",
+  fontWeight: 600,
+};
 
 export function SlackForm({ onSuccess, onCancel }: SlackFormProps) {
   const [webhookUrl, setWebhookUrl] = useState("");
@@ -74,73 +120,193 @@ export function SlackForm({ onSuccess, onCancel }: SlackFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 20,
+      }}
+    >
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
-          Slack Incoming Webhook URL
+        <label
+          htmlFor="slack-webhook"
+          style={{ ...META_LABEL, display: "block", marginBottom: 8 }}
+        >
+          Incoming webhook URL *
         </label>
         <input
+          id="slack-webhook"
           type="url"
           value={webhookUrl}
           onChange={(e) => setWebhookUrl(e.target.value)}
           placeholder="https://hooks.slack.com/services/…"
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-red-600/50 focus:outline-none"
+          style={INPUT_STYLE}
         />
-        <p className="text-xs text-white/40 mt-1">
+        <p
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontStyle: "italic",
+            fontSize: 13,
+            color: "var(--cream-3)",
+            margin: "8px 0 0",
+            lineHeight: 1.5,
+          }}
+        >
           Create an Incoming Webhook in your Slack workspace and paste the URL
           here.
         </p>
       </div>
+
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
-          Channel name <span className="text-white/40">(optional)</span>
+        <label
+          htmlFor="slack-channel"
+          style={{ ...META_LABEL, display: "block", marginBottom: 8 }}
+        >
+          Channel name{" "}
+          <span style={{ color: "var(--cream-4)", letterSpacing: "0.1em" }}>
+            (optional)
+          </span>
         </label>
         <input
+          id="slack-channel"
           type="text"
           value={channelName}
           onChange={(e) => setChannelName(e.target.value)}
-          placeholder="e.g. #deals"
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-red-600/50 focus:outline-none"
+          placeholder="#deals"
+          style={INPUT_STYLE}
         />
       </div>
+
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
-          Notify on
-        </label>
-        <div className="flex flex-wrap gap-3">
-          {SLACK_EVENTS.map((ev) => (
-            <label
-              key={ev.value}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={notifyOn.has(ev.value)}
-                onChange={() => toggleEvent(ev.value)}
-                className="rounded border-white/20 bg-white/5 text-red-500 focus:ring-red-600/50"
-              />
-              <span className="text-sm text-white/80">{ev.label}</span>
-            </label>
-          ))}
+        <div style={{ ...META_LABEL, marginBottom: 10 }}>Notify on</div>
+        <div
+          style={{
+            border: "1px solid var(--rule-strong)",
+            background: "var(--ink)",
+          }}
+        >
+          {SLACK_EVENTS.map((ev, i) => {
+            const checked = notifyOn.has(ev.value);
+            return (
+              <label
+                key={ev.value}
+                htmlFor={`slack-ev-${ev.value}`}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 14,
+                  padding: "12px 16px",
+                  borderTop: i === 0 ? "none" : "1px solid var(--rule)",
+                  cursor: "pointer",
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    flexShrink: 0,
+                    width: 16,
+                    height: 16,
+                    marginTop: 2,
+                    border: `1px solid ${checked ? "var(--signal)" : "var(--rule-strong)"}`,
+                    background: checked ? "var(--signal)" : "transparent",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "background 120ms ease, border-color 120ms ease",
+                  }}
+                >
+                  {checked && (
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="var(--ink)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </span>
+                <input
+                  id={`slack-ev-${ev.value}`}
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleEvent(ev.value)}
+                  style={{
+                    position: "absolute",
+                    opacity: 0,
+                    width: 0,
+                    height: 0,
+                    pointerEvents: "none",
+                  }}
+                />
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-serif)",
+                      fontSize: 15,
+                      color: "var(--cream)",
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {ev.label}
+                  </div>
+                  {"caption" in ev && ev.caption && (
+                    <div
+                      style={{
+                        ...META_LABEL,
+                        marginTop: 4,
+                        color: "var(--cream-4)",
+                        letterSpacing: "0.1em",
+                      }}
+                    >
+                      {ev.caption}
+                    </div>
+                  )}
+                </div>
+              </label>
+            );
+          })}
         </div>
       </div>
-      <div className="flex gap-3 max-sm:flex-col max-sm:gap-2">
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] disabled:opacity-50 transition-colors max-sm:min-h-[44px]"
-        >
-          {saving ? "Saving…" : "Connect"}
-        </button>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 10,
+          paddingTop: 6,
+        }}
+      >
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2.5 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors max-sm:min-h-[44px]"
+            disabled={saving}
+            style={{
+              ...GHOST_BUTTON,
+              opacity: saving ? 0.55 : 1,
+              cursor: saving ? "not-allowed" : "pointer",
+            }}
           >
             Cancel
           </button>
         )}
+        <button
+          type="submit"
+          disabled={saving}
+          style={{
+            ...PRIMARY_BUTTON,
+            opacity: saving ? 0.7 : 1,
+            cursor: saving ? "wait" : "pointer",
+          }}
+        >
+          {saving ? "Connecting…" : "Connect webhook"}
+        </button>
       </div>
     </form>
   );

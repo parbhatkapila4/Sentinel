@@ -65,6 +65,14 @@ export function getPrimaryRiskReason(reasons: string[]): string | null {
     return RISK_REASONS.COMPETITIVE_PRESSURE;
   }
 
+  if (reasons.includes(RISK_REASONS.CHAMPION_DORMANT)) {
+    return RISK_REASONS.CHAMPION_DORMANT;
+  }
+
+  if (reasons.includes(RISK_REASONS.STAGE_STALL)) {
+    return RISK_REASONS.STAGE_STALL;
+  }
+
   if (reasons.includes(RISK_REASONS.HIGH_VALUE)) {
     return RISK_REASONS.HIGH_VALUE;
   }
@@ -73,7 +81,80 @@ export function getPrimaryRiskReason(reasons: string[]): string | null {
 }
 
 function isClosedStage(stage: string): boolean {
-  return stage === STAGES.CLOSED_WON || stage === STAGES.CLOSED_LOST || stage === "Closed Won" || stage === "Closed Lost";
+  return stage === STAGES.CLOSED_WON || stage === STAGES.CLOSED_LOST;
+}
+
+const DAY_MS = 1000 * 60 * 60 * 24;
+
+function metadataEventTypeMatches(
+  e: TimelineEventInput,
+  expected: string
+): boolean {
+  const metadata = e.metadata as Record<string, unknown> | null;
+  return Boolean(metadata && metadata.eventType === expected);
+}
+
+function computeRiskScoreAtPoint(
+  deal: DealInput,
+  humanEventsBefore: TimelineEventInput[],
+  pointInTime: Date,
+  inactivityThreshold: number,
+  enableCompetitiveSignals: boolean,
+  competitiveSignalEvents: TimelineEventInput[]
+): number {
+  let score = 0;
+  if (deal.stage === STAGES.NEGOTIATION) {
+    score = 0.3;
+  } else if (deal.stage === STAGES.DISCOVER) {
+    score = 0.1;
+  }
+
+  if (enableCompetitiveSignals) {
+    const sig = detectCompetitiveSignals(deal, competitiveSignalEvents);
+    if (sig.detected) {
+      score += getCompetitiveRiskAdjustment(sig);
+    }
+  }
+
+  const lastActivityAt =
+    humanEventsBefore.length > 0
+      ? humanEventsBefore[0].createdAt
+      : deal.createdAt;
+  const daysSinceLastActivity = Math.floor(
+    (pointInTime.getTime() - lastActivityAt.getTime()) / DAY_MS
+  );
+
+  const hasRecentEmailSent = humanEventsBefore.some((e) => {
+    if (!metadataEventTypeMatches(e, "email_sent")) return false;
+    return (pointInTime.getTime() - e.createdAt.getTime()) / DAY_MS <= 5;
+  });
+
+  const hasRecentEmailReceived = humanEventsBefore.some((e) => {
+    if (!metadataEventTypeMatches(e, "email_received")) return false;
+    return (pointInTime.getTime() - e.createdAt.getTime()) / DAY_MS <= 5;
+  });
+
+  const hasRecentMeeting = humanEventsBefore.some((e) => {
+    if (!metadataEventTypeMatches(e, "meeting_held")) return false;
+    return (
+      (pointInTime.getTime() - e.createdAt.getTime()) / DAY_MS <=
+      inactivityThreshold
+    );
+  });
+
+  if (hasRecentEmailSent) score -= 0.2;
+  if (hasRecentEmailReceived) score -= 0.3;
+  if (hasRecentMeeting) score -= 0.4;
+
+  if (daysSinceLastActivity > inactivityThreshold) score += 0.4;
+
+  if (deal.stage === STAGES.NEGOTIATION) {
+    if (!(hasRecentEmailSent || hasRecentEmailReceived)) score += 0.4;
+  }
+
+  if (deal.value > HIGH_VALUE_THRESHOLD) score += 0.2;
+
+  return Math.max(0, Math.min(score, 1));
 }
 
 export function calculateDealSignals(
@@ -82,6 +163,9 @@ export function calculateDealSignals(
   options?: {
     inactivityThresholdDays?: number;
     enableCompetitiveSignals?: boolean;
+    enableStageStall?: boolean;
+    enableChampionDormancy?: boolean;
+    avgStageDurationDays?: Record<string, number> | null;
   }
 ): DealSignals {
   const now = new Date();
@@ -109,6 +193,9 @@ export function calculateDealSignals(
 
   const inactivityThreshold = options?.inactivityThresholdDays ?? INACTIVITY_DAYS;
   const enableCompetitiveSignals = options?.enableCompetitiveSignals ?? true;
+  const enableStageStall = options?.enableStageStall ?? false;
+  const enableChampionDormancy = options?.enableChampionDormancy ?? false;
+  const avgStageDurationDays = options?.avgStageDurationDays ?? null;
 
   const humanEvents = timelineEvents.filter((e) => {
     if (e.eventType === "event_created") {
@@ -131,19 +218,18 @@ export function calculateDealSignals(
   let riskScore = 0;
   const reasons: string[] = [];
 
-  if (enableCompetitiveSignals) {
-    const competitiveSignal = detectCompetitiveSignals(deal, timelineEvents);
-    if (competitiveSignal.detected) {
-      const adjustment = getCompetitiveRiskAdjustment(competitiveSignal);
-      riskScore += adjustment;
-      reasons.push(RISK_REASONS.COMPETITIVE_PRESSURE);
-    }
-  }
-
   if (deal.stage === STAGES.NEGOTIATION) {
     riskScore = 0.3;
   } else if (deal.stage === STAGES.DISCOVER) {
     riskScore = 0.1;
+  }
+
+  if (enableCompetitiveSignals) {
+    const competitiveSignal = detectCompetitiveSignals(deal, timelineEvents);
+    if (competitiveSignal.detected) {
+      riskScore += getCompetitiveRiskAdjustment(competitiveSignal);
+      reasons.push(RISK_REASONS.COMPETITIVE_PRESSURE);
+    }
   }
 
   const hasRecentEmailSent = humanEvents.some((e) => {
@@ -200,6 +286,49 @@ export function calculateDealSignals(
     reasons.push(RISK_REASONS.HIGH_VALUE);
   }
 
+  if (enableChampionDormancy) {
+    const CHAMPION_DORMANCY_DAYS = 14;
+    const latestInbound = humanEvents
+      .filter((e) => {
+        const meta = e.metadata as Record<string, unknown> | null;
+        return meta?.eventType === "email_received";
+      })
+      .reduce<Date | null>((latest, e) => {
+        if (!latest || e.createdAt > latest) return e.createdAt;
+        return latest;
+      }, null);
+    const daysSinceInbound = latestInbound
+      ? (now.getTime() - latestInbound.getTime()) / DAY_MS
+      : Infinity;
+    if (daysSinceInbound >= CHAMPION_DORMANCY_DAYS) {
+      riskScore += 0.25;
+      reasons.push(RISK_REASONS.CHAMPION_DORMANT);
+    }
+  }
+
+  if (enableStageStall && avgStageDurationDays) {
+    const avgForStage = avgStageDurationDays[deal.stage];
+    if (avgForStage && avgForStage > 0) {
+      let stageEnteredAt: Date | null = null;
+      for (let i = timelineEvents.length - 1; i >= 0; i--) {
+        const e = timelineEvents[i];
+        if (e.eventType !== "stage_changed") continue;
+        const meta = e.metadata as Record<string, unknown> | null;
+        if (meta?.stage === deal.stage) {
+          stageEnteredAt = e.createdAt;
+          break;
+        }
+      }
+      if (!stageEnteredAt) stageEnteredAt = deal.createdAt;
+      const daysInStage =
+        (now.getTime() - stageEnteredAt.getTime()) / DAY_MS;
+      if (daysInStage > avgForStage * 2) {
+        riskScore += 0.25;
+        reasons.push(RISK_REASONS.STAGE_STALL);
+      }
+    }
+  }
+
   riskScore = Math.max(0, Math.min(riskScore, 1));
 
   let newStatus: string;
@@ -242,72 +371,19 @@ export function calculateDealSignals(
       const pointInTime =
         i < sortedEvents.length ? sortedEvents[i].createdAt : now;
 
-      const eventsAtPoint = humanEvents.filter(
+      const humanEventsBefore = humanEvents.filter(
         (e) => e.createdAt <= pointInTime
       );
+      const allEventsBefore = sortedEvents.slice(0, i);
 
-      const lastActivityAtPoint =
-        eventsAtPoint.length > 0 ? eventsAtPoint[0].createdAt : deal.createdAt;
-
-      const daysSinceActivityAtPoint = Math.floor(
-        (pointInTime.getTime() - lastActivityAtPoint.getTime()) /
-        (1000 * 60 * 60 * 24)
+      const scoreAtPoint = computeRiskScoreAtPoint(
+        deal,
+        humanEventsBefore,
+        pointInTime,
+        inactivityThreshold,
+        enableCompetitiveSignals,
+        allEventsBefore
       );
-
-      let scoreAtPoint = 0;
-      if (deal.stage === STAGES.NEGOTIATION) {
-        scoreAtPoint = 0.3;
-      } else if (deal.stage === STAGES.DISCOVER) {
-        scoreAtPoint = 0.1;
-      }
-
-      const hasEmailSentAtPoint = eventsAtPoint.some((e) => {
-        const metadata = e.metadata as Record<string, unknown> | null;
-        if (!metadata || metadata.eventType !== "email_sent") return false;
-        const daysAgo =
-          (pointInTime.getTime() - e.createdAt.getTime()) /
-          (1000 * 60 * 60 * 24);
-        return daysAgo <= 5;
-      });
-
-      const hasEmailReceivedAtPoint = eventsAtPoint.some((e) => {
-        const metadata = e.metadata as Record<string, unknown> | null;
-        if (!metadata || metadata.eventType !== "email_received") return false;
-        const daysAgo =
-          (pointInTime.getTime() - e.createdAt.getTime()) /
-          (1000 * 60 * 60 * 24);
-        return daysAgo <= 5;
-      });
-
-      const hasMeetingAtPoint = eventsAtPoint.some((e) => {
-        const metadata = e.metadata as Record<string, unknown> | null;
-        if (!metadata || metadata.eventType !== "meeting_held") return false;
-        const daysAgo =
-          (pointInTime.getTime() - e.createdAt.getTime()) /
-          (1000 * 60 * 60 * 24);
-        return daysAgo <= inactivityThreshold;
-      });
-
-      if (hasEmailSentAtPoint) scoreAtPoint -= 0.2;
-      if (hasEmailReceivedAtPoint) scoreAtPoint -= 0.3;
-      if (hasMeetingAtPoint) scoreAtPoint -= 0.4;
-
-      if (daysSinceActivityAtPoint > inactivityThreshold) {
-        scoreAtPoint += 0.4;
-      }
-
-      if (deal.stage === STAGES.NEGOTIATION) {
-        const hasEmailActivity = hasEmailSentAtPoint || hasEmailReceivedAtPoint;
-        if (!hasEmailActivity) {
-          scoreAtPoint += 0.4;
-        }
-      }
-
-      if (deal.value > HIGH_VALUE_THRESHOLD) {
-        scoreAtPoint += 0.2;
-      }
-
-      scoreAtPoint = Math.max(0, Math.min(scoreAtPoint, 1));
 
       if (scoreAtPoint >= RISK_THRESHOLDS.MEDIUM_HIGH_BOUNDARY) {
         riskStartedAt = pointInTime;

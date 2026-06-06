@@ -100,13 +100,52 @@ ${deal.timelineSummary}
 EVENTS:
 ${deal.eventsSummary}
 
-Provide a formatted summary (plain text, 4-6 short paragraphs) covering:
-1. Current status and health (2-3 sentences)
-2. Key milestones and timeline highlights
-3. Risks and concerns, if any
-4. Recommended next steps
+Write a founder-grade executive brief on this deal: substantive,
+considered, the way a CEO would read it on a Monday morning before
+deciding where to spend the week's attention. The deal name and value
+are already shown above the brief — do NOT repeat them as a title.
 
-Keep it scannable. Use short paragraphs and bullet points where helpful.`;
+Structure: four sections, each prefixed by an ALL CAPS label on its
+own line, followed by a blank line, followed by 3-5 sentences of
+real prose. Aim for roughly 220-300 words total — long enough that the
+reader closes the brief understanding the SHAPE of the deal, not just
+its label. Short enough to read in under a minute.
+
+STATUS
+Where the deal sits today and what the numbers actually mean. Stage,
+status, risk rating, value relative to the pipeline. Don't just
+restate the data above — interpret it. Why is the risk grade what it
+is? What does this stage imply about urgency and what's expected of
+the team next?
+
+MOMENTUM
+What has actually happened on this deal recently. Reference concrete
+dates, the cadence of activity, which side has been driving. Call out
+whether engagement is healthy, cooling, or accelerating, and what the
+timeline pattern implies about buyer intent. Cite the specific events
+and timeline entries provided.
+
+RISK
+What could go wrong, in specific terms. Name the actual concerns
+(competitive pressure, pricing, stakeholder gaps, timeline drift,
+inactivity, sentiment, etc.) and explain why each one matters for
+THIS deal at THIS stage and value. If nothing material is surfacing,
+say so plainly in one sentence rather than padding.
+
+NEXT
+Two or three concrete plays the team should run this week. Each must
+earn its place: tie it back to a specific risk or momentum signal
+above so the reader sees the through-line. Avoid generic CRM advice
+("follow up regularly", "stay engaged") — be specific to this deal.
+
+Hard constraints — the brief is rendered with editorial typography
+and any markdown character will be visible as a glyph on the page:
+- No # or ## hashes. No **bold** or __bold__. No * or _ italics.
+- No bullet points of any kind (no -, *, •, or numbered lists).
+- No backticks. No tables. No markdown of any kind.
+- Plain prose only. Section labels are the ONLY all-caps lines.
+- Refer to the deal by specific details (dates, stages, values, named
+  events) rather than abstract CRM platitudes.`;
 }
 
 export function getWinStrategyPrompt(deal: {

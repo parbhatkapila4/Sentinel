@@ -8,6 +8,7 @@ import {
 } from "@/lib/slack";
 import { notifyRealtimeEvent } from "@/lib/realtime";
 import { formatRiskLevel } from "@/lib/dealRisk";
+import { logWarn } from "@/lib/logger";
 
 type EnrichedDeal = {
   id: string;
@@ -47,7 +48,11 @@ export async function runDealStageRiskSideEffects(params: {
     });
     alreadySentRiskEmail =
       (dealRecord as { riskEmailSentAt?: Date | null } | null)?.riskEmailSentAt != null;
-  } catch {
+  } catch (err) {
+    logWarn("Failed to read riskEmailSentAt; assuming email not yet sent", {
+      dealId,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   if (isHighRisk) {
@@ -67,7 +72,11 @@ export async function runDealStageRiskSideEffects(params: {
           where: { id: dealId },
           data: { riskEmailSentAt: new Date() } as Prisma.DealUpdateInput,
         });
-      } catch {
+      } catch (err) {
+        logWarn("Failed to mark riskEmailSentAt", {
+          dealId,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
     await dispatchWebhookEvent(userId, teamId, "deal.at_risk", {
@@ -96,7 +105,11 @@ export async function runDealStageRiskSideEffects(params: {
         where: { id: dealId },
         data: { riskEmailSentAt: null } as Prisma.DealUpdateInput,
       });
-    } catch {
+    } catch (err) {
+      logWarn("Failed to clear riskEmailSentAt", {
+        dealId,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -121,6 +134,11 @@ export async function runDealStageRiskSideEffects(params: {
     if (isHighRisk) {
       await notifyRealtimeEvent(userId, { type: "deal.at_risk", dealId });
     }
-  } catch {
+  } catch (err) {
+    logWarn("Failed to publish realtime event for deal stage change", {
+      userId,
+      dealId,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 }

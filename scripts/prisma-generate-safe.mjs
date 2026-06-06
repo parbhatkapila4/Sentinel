@@ -5,7 +5,6 @@ function sleep(ms) {
 }
 
 function runGenerate() {
-  // Use npx to match the workspace's Prisma version.
   return spawnSync("npx", ["prisma", "generate"], {
     encoding: "utf8",
     shell: true,
@@ -13,10 +12,6 @@ function runGenerate() {
   });
 }
 
-// On Windows, Prisma can fail to replace the query engine DLL if another Node
-// process (e.g. `next dev`) is currently using it. We retry a few times; if it
-// still fails with an EPERM rename error, we continue so `next build` can run
-// against the already-generated client.
 const MAX_ATTEMPTS = 4;
 const BASE_DELAY_MS = 800;
 

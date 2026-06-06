@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { NextRequest } from "next/server";
-import { isExplicitlyPublicRoute } from "@/middleware";
+import { isExplicitlyPublicRoute } from "@/proxy";
 
 function makeReq(path: string, headers?: Record<string, string>) {
   return new NextRequest(`http://localhost${path}`, {

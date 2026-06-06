@@ -100,10 +100,10 @@ export function AnimatedNav() {
                   SIGN IN
                 </Link>
                 <Link
-                  href="/sign-up"
+                  href="/sign-in"
                   className="px-6 py-2 bg-blue-500 rounded-lg text-white font-semibold flex items-center gap-2 hover:bg-blue-600 transition-colors"
                 >
-                  SIGN UP
+                  GET STARTED
                   <svg
                     className="w-4 h-4"
                     fill="none"

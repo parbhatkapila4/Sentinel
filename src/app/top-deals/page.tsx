@@ -1,22 +1,83 @@
-import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
+import { format, formatDistanceToNow, differenceInDays } from "date-fns";
+import Link from "next/link";
+
 import { getAllDeals } from "@/app/actions/deals";
+import { getAllIntegrationStatuses } from "@/app/actions/integrations";
 import { formatRiskLevel } from "@/lib/dealRisk";
-import { formatDistanceToNow, differenceInDays } from "date-fns";
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { PipelineValueCard } from "@/components/pipeline-value-card";
-import { formatRevenue, formatValueInMillions } from "@/lib/utils";
+import { formatValueInMillions } from "@/lib/utils";
 import { UnauthorizedError } from "@/lib/errors";
+
+import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
+import { SectionRule } from "@/components/sentinel/sections/SectionRule";
+import { Colophon } from "@/components/sentinel/Colophon";
+
+import { DealsMasthead } from "@/components/sentinel/deals/DealsMasthead";
+import { DealsKPIs } from "@/components/sentinel/deals/DealsKPIs";
+import { Panel } from "@/components/sentinel/analytics/Panel";
+import {
+  ValueByStageBars,
+  type ValueByStageItem,
+} from "@/components/sentinel/analytics/ValueByStageBars";
+import {
+  Leaderboard,
+  type LeaderboardRow,
+} from "@/components/sentinel/top-deals/Leaderboard";
+import {
+  ConcentrationMeter,
+  RankedList,
+  KeyValueList,
+  RiskTicker,
+  type RankedItem,
+  type KeyValueRow,
+} from "@/components/sentinel/top-deals/ConcentrationMeter";
+
+import {
+  buildSentinelShellContext,
+  mapRawDealsToSentinel,
+} from "@/components/sentinel/shell-context";
+import { formatShortMoney } from "@/lib/format-money";
 
 export const dynamic = "force-dynamic";
 
+type RawDeal = Awaited<ReturnType<typeof getAllDeals>>[number];
+
+function formatTightMoney(n: number) {
+  const f = formatValueInMillions(n);
+  return `$${f.value}${f.suffix}`;
+}
+
+const STAGE_DISPLAY: Record<string, string> = {
+  lead: "Lead",
+  discover: "Discover",
+  discovery: "Discover",
+  qualify: "Qualify",
+  qualified: "Qualified",
+  qualification: "Qualify",
+  proposal: "Proposal",
+  negotiation: "Negotiation",
+  negotiate: "Negotiation",
+  closed_won: "Won",
+  closed_lost: "Lost",
+};
+
+function prettyStage(s: string) {
+  const k = s.toLowerCase().replace(/\s+/g, "_");
+  return (
+    STAGE_DISPLAY[k] ??
+    s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
+}
+
 export default async function TopDealsPage() {
   noStore();
-  let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  const now = new Date();
+
+  let dealsRaw: RawDeal[] = [];
   let dataError = false;
   try {
-    deals = await getAllDeals();
+    dealsRaw = await getAllDeals();
   } catch (err) {
     if (err instanceof UnauthorizedError) {
       redirect("/sign-in?redirect=/top-deals");
@@ -24,510 +85,528 @@ export default async function TopDealsPage() {
     dataError = true;
   }
 
-  const topDeals = [...deals].sort((a, b) => b.value - a.value);
-  const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
-  const topDealValue = topDeals[0]?.value || 0;
+  let integrationStatuses: Awaited<
+    ReturnType<typeof getAllIntegrationStatuses>
+  > | null = null;
+  try {
+    integrationStatuses = await getAllIntegrationStatuses();
+  } catch {
+    integrationStatuses = null;
+  }
 
-  const top10Deals = topDeals.slice(0, 10);
-  const top10Value = top10Deals.reduce((sum, deal) => sum + deal.value, 0);
-  const top10Percentage = totalValue > 0 ? (top10Value / totalValue) * 100 : 0;
+  const ranked = [...dealsRaw].sort((a, b) => b.value - a.value);
+  const totalValue = dealsRaw.reduce((sum, d) => sum + d.value, 0);
+  const topDealValue = ranked[0]?.value ?? 0;
 
-  const top3Deals = topDeals.slice(0, 3);
-  const top3Value = top3Deals.reduce((sum, deal) => sum + deal.value, 0);
-  const top3Percentage = totalValue > 0 ? (top3Value / totalValue) * 100 : 0;
+  const top10 = ranked.slice(0, 10);
+  const top10Value = top10.reduce((sum, d) => sum + d.value, 0);
+  const top10Pct = totalValue > 0 ? (top10Value / totalValue) * 100 : 0;
 
-  const top20PercentCount = Math.ceil(deals.length * 0.2);
-  const top20PercentDeals = topDeals.slice(0, top20PercentCount);
-  const top20PercentValue = top20PercentDeals.reduce(
-    (sum, deal) => sum + deal.value,
-    0
-  );
-  const top20PercentPercentage =
-    totalValue > 0 ? (top20PercentValue / totalValue) * 100 : 0;
+  const top3 = ranked.slice(0, 3);
+  const top3Value = top3.reduce((sum, d) => sum + d.value, 0);
+  const top3Pct = totalValue > 0 ? (top3Value / totalValue) * 100 : 0;
 
-  const top10HighRisk = top10Deals.filter(
+  const top20Count = Math.max(Math.ceil(dealsRaw.length * 0.2), 0);
+  const top20 = ranked.slice(0, top20Count);
+  const top20Value = top20.reduce((sum, d) => sum + d.value, 0);
+  const top20Pct = totalValue > 0 ? (top20Value / totalValue) * 100 : 0;
+
+  const top10HighRisk = top10.filter(
     (d) => formatRiskLevel(d.riskScore) === "High"
   ).length;
-  const top10MediumRisk = top10Deals.filter(
+  const top10MediumRisk = top10.filter(
     (d) => formatRiskLevel(d.riskScore) === "Medium"
   ).length;
-  const top10LowRisk = top10Deals.filter(
+  const top10LowRisk = top10.filter(
     (d) => formatRiskLevel(d.riskScore) === "Low"
   ).length;
-  const top10RiskValue = top10Deals
+  const top10RiskValue = top10
     .filter((d) => formatRiskLevel(d.riskScore) === "High")
     .reduce((sum, d) => sum + d.value, 0);
 
-  const top10StageDistribution = top10Deals.reduce((acc, deal) => {
-    acc[deal.stage] = (acc[deal.stage] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const restOfDeals = topDeals.slice(10);
-  const restAvgValue =
-    restOfDeals.length > 0
-      ? restOfDeals.reduce((sum, d) => sum + d.value, 0) / restOfDeals.length
-      : 0;
-  const top10AvgValue =
-    top10Deals.length > 0
-      ? top10Deals.reduce((sum, d) => sum + d.value, 0) / top10Deals.length
-      : 0;
-
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const recentTopDeals = topDeals.filter(
-    (deal) => new Date(deal.createdAt) >= thirtyDaysAgo
-  ).length;
-
-  const now = new Date();
-  const oldestTopDeals = top10Deals
-    .map((deal) => ({
-      deal,
-      age: differenceInDays(now, new Date(deal.createdAt)),
-    }))
-    .sort((a, b) => b.age - a.age)
-    .slice(0, 3);
-
-  const topDealsWithActions = top10Deals.filter(
+  const top10WithActions = top10.filter(
     (d) => d.recommendedAction !== null
   ).length;
 
-  const stageTopValues: Record<string, number> = {};
-  deals.forEach((deal) => {
-    if (
-      !stageTopValues[deal.stage] ||
-      deal.value > stageTopValues[deal.stage]
-    ) {
-      stageTopValues[deal.stage] = deal.value;
-    }
+  const restOfDeals = ranked.slice(10);
+  const restAvg =
+    restOfDeals.length > 0
+      ? restOfDeals.reduce((s, d) => s + d.value, 0) / restOfDeals.length
+      : 0;
+  const top10Avg = top10.length > 0 ? top10Value / top10.length : 0;
+  const headroomMultiplier = restAvg > 0 ? top10Avg / restAvg : 0;
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const recentTopDeals = ranked.filter(
+    (d) => new Date(d.createdAt) >= thirtyDaysAgo
+  ).length;
+
+  const oldestTop10 = top10
+    .map((d) => ({
+      d,
+      age: differenceInDays(now, new Date(d.createdAt)),
+    }))
+    .sort((a, b) => b.age - a.age)
+    .slice(0, 4);
+
+  const top10StageDistribution = top10.reduce<Record<string, number>>(
+    (acc, d) => {
+      const k = d.stage.toLowerCase().replace(/\s+/g, "_");
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  const top10StageItems: ValueByStageItem[] = Object.entries(
+    top10StageDistribution
+  )
+    .sort(([, a], [, b]) => b - a)
+    .map(([stage, count]) => ({
+      stage,
+      label: prettyStage(stage),
+      value: count,
+    }));
+
+  const isDemoMode =
+    dealsRaw.length > 0 && dealsRaw.every((d) => d.isDemo);
+  const hasAnyDeals = dealsRaw.length > 0;
+  const closedWonAll = dealsRaw.filter((d) => {
+    const s = d.stage.toLowerCase().replace(/\s+/g, "_");
+    return s === "closed_won";
+  }).length;
+  const coveragePercent =
+    dealsRaw.length > 0 ? (closedWonAll / dealsRaw.length) * 100 : 0;
+
+  const deals = mapRawDealsToSentinel(dealsRaw);
+  const shellContext = buildSentinelShellContext({
+    deals,
+    integrationStatuses,
+    coveragePercent,
+    hasAnyDeals,
+    isDemoMode,
+    now,
   });
 
-  const CARD_CLASS = "rounded-xl p-5 sm:p-6 border border-white/[0.08] bg-[#080808] transition-colors hover:border-white/[0.1] card-elevated";
+  const kpiItems = [
+    {
+      index: "01",
+      label: "Highest Deal",
+      value: formatShortMoney(topDealValue),
+      support: ranked[0]?.name
+        ? truncateUpper(ranked[0].name, 28)
+        : "NO DEALS",
+      trendTone: "neutral" as const,
+    },
+    {
+      index: "02",
+      label: "Top 10 Value",
+      value: formatShortMoney(top10Value),
+      support: `${top10Pct.toFixed(1)}% OF BOOK`,
+      trendTone: top10Pct >= 60 ? ("down" as const) : ("up" as const),
+    },
+    {
+      index: "03",
+      label: "At Risk · Top 10",
+      value: String(top10HighRisk),
+      support:
+        top10HighRisk > 0
+          ? `${formatShortMoney(top10RiskValue)} EXPOSED`
+          : "NONE FLAGGED",
+      trendTone: top10HighRisk > 0 ? ("down" as const) : ("up" as const),
+    },
+    {
+      index: "04",
+      label: "Total Pipeline",
+      value: formatShortMoney(totalValue),
+      support: `${dealsRaw.length} DEALS ON BOOK`,
+      trendTone: "neutral" as const,
+    },
+  ];
+
+  const leaderboardRows: LeaderboardRow[] = ranked.map((d, i) => ({
+    id: d.id,
+    rank: i + 1,
+    name: d.name,
+    stage: prettyStage(d.stage).toUpperCase(),
+    value: d.value,
+    valueDisplay: formatTightMoney(d.value),
+    shareOfPipeline: totalValue > 0 ? (d.value / totalValue) * 100 : 0,
+    riskLabel: formatRiskLevel(d.riskScore) as "Low" | "Medium" | "High",
+    lastActivityNote: formatDistanceToNow(new Date(d.lastActivityAt), {
+      addSuffix: true,
+    }).toUpperCase(),
+    recommendedAction: d.recommendedAction?.label ?? null,
+  }));
+
+  const top3Items: RankedItem[] = top3.map((d, i) => ({
+    id: d.id,
+    rank: i + 1,
+    name: d.name,
+    trail: formatTightMoney(d.value),
+    tone: i === 0 ? "signal" : i === 1 ? "copper" : "ivy",
+  }));
+
+  const distRows: KeyValueRow[] = [
+    {
+      label: "Top 10 Avg",
+      value: formatShortMoney(top10Avg),
+      tone: "cream",
+    },
+    {
+      label: "Rest Avg",
+      value: formatShortMoney(restAvg),
+      tone: "cream",
+    },
+    {
+      label: "Headroom",
+      value:
+        headroomMultiplier > 0
+          ? `${headroomMultiplier.toFixed(headroomMultiplier >= 10 ? 0 : 1)}×`
+          : "-",
+      tone: headroomMultiplier >= 5 ? "ivy" : "signal",
+    },
+  ];
+
+  const riskRows: KeyValueRow[] = [
+    {
+      label: "Value at Risk",
+      value: formatShortMoney(top10RiskValue),
+      tone: top10RiskValue > 0 ? "wine" : "cream",
+    },
+    {
+      label: "Needing Action",
+      value: String(top10WithActions),
+      tone: top10WithActions > 0 ? "signal" : "ivy",
+    },
+    {
+      label: "Recent · 30d",
+      value: String(recentTopDeals),
+      tone: "cream",
+    },
+  ];
+
+  const oldestRows: RankedItem[] = oldestTop10.map(({ d, age }, i) => ({
+    id: d.id,
+    rank: i + 1,
+    name: d.name,
+    trail: `${age}D OLD`,
+    tone: age >= 90 ? "wine" : age >= 45 ? "copper" : "cream",
+  }));
+
+  const dateLine = format(now, "EEEE - MMMM d, yyyy").toUpperCase();
+  const masthHeadMeta = [
+    { label: "Edition", value: format(now, "HH:mm") },
+    { label: "Total Deals", value: String(dealsRaw.length) },
+    { label: "Top 10 Share", value: `${top10Pct.toFixed(1)}%` },
+    { label: "T10 Risk", value: String(top10HighRisk) },
+  ];
 
   return (
-    <DashboardLayout>
-      <div className="relative min-h-screen w-full">
-        <div className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-[1600px] mx-auto">
-          {dataError && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 shadow-lg shadow-amber-500/10">
-              <p className="text-sm font-medium text-amber-200">Data temporarily unavailable</p>
-              <p className="text-xs text-amber-200/70 mt-1">Check your connection and try again.</p>
-            </div>
-          )}
+    <SentinelShell
+      syncTime={shellContext.syncTime}
+      coveragePercent={shellContext.coveragePercent}
+      sourceLabels={shellContext.sourceLabels}
+      alertCount={shellContext.alertCount}
+      tickerItems={shellContext.tickerItems}
+      onboarding={shellContext.onboarding}
+    >
+      {dataError && (
+        <div
+          role="alert"
+          style={{
+            margin: "16px 56px 0",
+            padding: "12px 16px",
+            border: "1px solid var(--copper)",
+            borderLeft: "3px solid var(--copper)",
+            background: "rgba(217,153,90,0.06)",
+            color: "var(--cream-2)",
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 11,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
+          DATA TEMPORARILY UNAVAILABLE - DESK RUNNING ON CACHE
+        </div>
+      )}
 
-          <header className="animate-fade-in-up">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
-                <p className="text-[11px] sm:text-xs font-medium tracking-[0.24em] uppercase text-white/50 mb-3">
-                  Pipeline
-                </p>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.03em] text-white leading-[1.12] [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  Top
-                  <span className="text-[#0f766e]" style={{ textShadow: "0 0 32px rgba(15,118,110,0.35)" }}> deals</span>
-                </h1>
-                <p className="mt-4 text-base sm:text-lg text-white/60 max-w-xl leading-relaxed">
-                  Your highest value opportunities with comprehensive analytics.
-                </p>
-              </div>
-              <Link
-                href="/deals/new"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors whitespace-nowrap"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                New Deal
-              </Link>
-            </div>
-          </header>
+      <DealsMasthead
+        kicker={`Top of the Book · ${dateLine}`}
+        headline="The largest deals - by"
+        italicWord="value."
+        deck="A standings page for your pipeline. The biggest opportunities, ranked, with the concentration figures and risk weather your desk should know before the day gets loud."
+        meta={masthHeadMeta}
+      />
 
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.05s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
-              Key metrics
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7">
-              <div className={`${CARD_CLASS} min-w-0 flex flex-col space-y-3`}>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                    </svg>
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45 truncate">Highest Deal</p>
-                    <p className="text-[11px] text-white/40 truncate">Top opportunity</p>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white truncate tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  {formatRevenue(topDealValue)}
-                </p>
-                <p className="text-xs text-white/40 truncate">{topDeals[0]?.name || "No deals"}</p>
-              </div>
+      <section
+        aria-label="Top deals controls"
+        className="flex flex-wrap items-center"
+        style={{
+          gap: 14,
+          padding: "16px 56px",
+          borderBottom: "1px solid var(--rule)",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 10,
+            letterSpacing: "0.18em",
+            color: "var(--cream-3)",
+            textTransform: "uppercase",
+          }}
+        >
+          Sorted descending - by deal value
+        </span>
+        <span className="flex-1" />
+        <span
+          className="tabular"
+          style={{
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 10,
+            letterSpacing: "0.16em",
+            color: "var(--cream-4)",
+            textTransform: "uppercase",
+          }}
+        >
+          {ranked.length} ENTRIES · {formatShortMoney(totalValue)} AGGREGATE
+        </span>
+        <Link
+          href="/deals/new"
+          className="sentinel-editorial-button inline-flex items-center"
+          style={{ gap: 6, padding: "8px 14px" }}
+        >
+          + New Deal
+        </Link>
+      </section>
 
-              <div className={`${CARD_CLASS} min-w-0 flex flex-col space-y-3`}>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-red-700/10 text-red-400 border border-red-700/20">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                    </svg>
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45 truncate">Top 10 Value</p>
-                    <p className="text-[11px] text-white/40 truncate">Concentration</p>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white truncate tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  {formatRevenue(top10Value)}
-                </p>
-                <p className="text-xs text-white/40 truncate">{top10Percentage.toFixed(1)}% of total pipeline</p>
-              </div>
+      <SectionRule
+        number="01"
+        label="HEADLINE METRICS"
+        meta={`${dealsRaw.length} DEALS · ${formatShortMoney(totalValue)}`}
+      />
+      <DealsKPIs items={kpiItems} />
 
-              <div className={`${CARD_CLASS} min-w-0 flex flex-col space-y-3`}>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-red-700/10 text-red-400 border border-red-700/20">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45 truncate">At Risk</p>
-                    <p className="text-[11px] text-white/40 truncate">In top 10</p>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white truncate tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  {top10HighRisk}
-                </p>
-                <p className="text-xs text-white/40 truncate">{formatRevenue(top10RiskValue)} at risk</p>
-              </div>
-
-              <PipelineValueCard
-                totalValue={totalValue}
-                className="!border-white/[0.08] !bg-[#080808] hover:!border-white/[0.1] !shadow-none card-elevated"
+      <SectionRule
+        number="02"
+        label="CONCENTRATION & RISK"
+        meta={`TOP 3 = ${top3Pct.toFixed(0)}% · TOP 10 = ${top10Pct.toFixed(0)}%`}
+      />
+      <section
+        className="grid grid-cols-1 lg:grid-cols-3"
+        style={{
+          gap: 0,
+          borderBottom: "1px solid var(--rule)",
+        }}
+      >
+        <div
+          style={{
+            padding: "32px 32px 36px",
+            borderRight: "1px solid var(--rule)",
+          }}
+        >
+          <Panel
+            kicker="Top 3 concentration"
+            title="Three deals,"
+            italicWord="one decision."
+            accent="signal"
+            meta={`${top3Pct.toFixed(1)}%`}
+          >
+            <div style={{ marginBottom: 24 }}>
+              <ConcentrationMeter
+                label="Top 3 share"
+                value={formatShortMoney(top3Value)}
+                percent={top3Pct}
+                caption={`${top3Pct.toFixed(1)}% of total pipeline`}
+                tone="signal"
               />
             </div>
-          </section>
-
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.1s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
-              Concentration & risk
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-7">
-              <div className={`${CARD_CLASS} w-full min-w-0`}>
-                <h3 className="text-sm font-semibold text-white mb-4 truncate [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  Top 3 Concentration
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between gap-2 text-sm mb-2">
-                      <span className="truncate flex-1 min-w-0 text-white/50">Value</span>
-                      <span className="shrink-0 font-medium text-white tabular-nums">
-                        {formatRevenue(top3Value)}
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-linear-to-r from-amber-400 to-amber-600 rounded-full"
-                        style={{ width: `${top3Percentage}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-white/40 truncate mt-1">
-                      {top3Percentage.toFixed(1)}% of total pipeline
-                    </p>
-                  </div>
-                  <div className="pt-4 border-t border-white/10 space-y-3">
-                    {top3Deals.map((deal, index) => {
-                      const formatted = formatValueInMillions(deal.value);
-                      return (
-                        <div
-                          key={deal.id}
-                          className="flex items-center justify-between gap-2 text-sm p-2.5 rounded-xl bg-white/5 border border-white/5"
-                        >
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <span className="text-xs font-bold text-amber-400 shrink-0">#{index + 1}</span>
-                            <span className="text-sm text-white truncate flex-1 min-w-0">{deal.name}</span>
-                          </div>
-                          <span className="shrink-0 font-medium text-white tabular-nums">
-                            ${formatted.value}{formatted.suffix}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${CARD_CLASS} w-full min-w-0`}>
-                <h3 className="text-sm font-semibold text-white mb-4 truncate [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  Value Distribution
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between gap-2 text-sm mb-2">
-                      <span className="truncate flex-1 min-w-0 text-white/50">Top 20%</span>
-                      <span className="shrink-0 font-medium text-white tabular-nums">
-                        {formatRevenue(top20PercentValue)}
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-linear-to-r from-red-700 to-red-600 rounded-full"
-                        style={{ width: `${top20PercentPercentage}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-white/40 truncate mt-1">
-                      {top20PercentCount} deals = {top20PercentPercentage.toFixed(1)}% of value
-                    </p>
-                  </div>
-                  <div className="pt-4 border-t border-white/10 space-y-3">
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <span className="truncate flex-1 min-w-0 text-white/50">Top 10 Avg</span>
-                      <span className="shrink-0 font-medium text-white tabular-nums">{formatRevenue(top10AvgValue)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <span className="truncate flex-1 min-w-0 text-white/50">Rest Avg</span>
-                      <span className="shrink-0 font-medium text-white tabular-nums">{formatRevenue(restAvgValue)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 text-sm pt-2 border-t border-white/10">
-                      <span className="truncate flex-1 min-w-0 text-white/50">Difference</span>
-                      <span className="shrink-0 font-medium text-green-400 tabular-nums">
-                        {restAvgValue > 0 ? ((top10AvgValue / restAvgValue - 1) * 100).toFixed(0) : "0"}x
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${CARD_CLASS} w-full min-w-0`}>
-                <h3 className="text-sm font-semibold text-white mb-4 truncate [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  Top 10 Risk Profile
-                </h3>
-                <div className="space-y-3">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className="w-3 h-3 rounded-full bg-red-700/70 shrink-0" />
-                        <span className="truncate flex-1 min-w-0 text-white/50">High Risk</span>
-                      </div>
-                      <span className="shrink-0 font-medium text-white">{top10HighRisk}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className="w-3 h-3 rounded-full bg-amber-700/70 shrink-0" />
-                        <span className="truncate flex-1 min-w-0 text-white/50">Medium Risk</span>
-                      </div>
-                      <span className="shrink-0 font-medium text-white">{top10MediumRisk}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className="w-3 h-3 rounded-full bg-green-700/70 shrink-0" />
-                        <span className="truncate flex-1 min-w-0 text-white/50">Low Risk</span>
-                      </div>
-                      <span className="shrink-0 font-medium text-white">{top10LowRisk}</span>
-                    </div>
-                  </div>
-                  <div className="pt-4 border-t border-white/10 space-y-3">
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <span className="truncate flex-1 min-w-0 text-white/50">Value at Risk</span>
-                      <span className="shrink-0 font-medium text-red-400 tabular-nums">{formatRevenue(top10RiskValue)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <span className="truncate flex-1 min-w-0 text-white/50">Deals Needing Action</span>
-                      <span className="shrink-0 font-medium text-white">{topDealsWithActions}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div
+              style={{
+                paddingTop: 18,
+                borderTop: "1px solid var(--rule)",
+              }}
+            >
+              <RankedList items={top3Items} />
             </div>
-          </section>
-
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.15s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
-              Ranked by value
-            </p>
-            <div className={CARD_CLASS}>
-              <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-5">
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-1 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                    Top Deals Ranked by Value
-                  </h3>
-                  <p className="text-sm text-white/50">
-                    {topDeals.length} deals sorted by highest value
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                    <span className="text-xs text-white/50">Top {topDeals.length}</span>
-                  </div>
-                </div>
-              </div>
-
-              {deals.length === 0 ? (
-                <div className="p-16 text-center">
-                  <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-white/5 border border-white/10">
-                    <svg className="w-10 h-10 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-2 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">No deals yet</h3>
-                  <p className="text-white/50 mb-8 max-w-md mx-auto">Create your first deal to see your top opportunities ranked by value.</p>
-                  <Link
-                    href="/deals/new"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Create Your First Deal
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {topDeals.map((deal, index) => {
-                    const riskLevel = formatRiskLevel(deal.riskScore);
-                    const percentOfTotal = totalValue > 0 ? (deal.value / totalValue) * 100 : 0;
-                    const formatted = formatValueInMillions(deal.value);
-                    return (
-                      <Link
-                        key={deal.id}
-                        href={`/deals/${deal.id}`}
-                        className={`group flex items-center gap-6 p-5 rounded-xl border transition-all max-sm:gap-3 max-sm:p-4 bg-white/3 border-white/10 hover:border-white/15 hover:bg-white/5`}
-                      >
-                        <div
-                          className={`w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 max-sm:w-10 max-sm:h-10 max-sm:text-sm ${index === 0
-                            ? "bg-amber-600/20 text-amber-400 border border-amber-600/30"
-                            : index === 1
-                              ? "bg-white/10 text-white/90 border border-white/15"
-                              : index === 2
-                                ? "bg-amber-700/20 text-amber-300 border border-amber-700/30"
-                                : "bg-white/5 text-white/60 border border-white/10"
-                            }`}
-                        >
-                          #{index + 1}
-                        </div>
-
-                        <div className="flex-1 min-w-0 max-sm:overflow-hidden max-sm:min-w-0">
-                          <div className="flex items-center gap-3 mb-2 max-sm:min-w-0 max-sm:overflow-hidden">
-                            <p className="text-base font-semibold text-white truncate group-hover:text-teal-400 transition-colors max-sm:min-w-0">
-                              {deal.name}
-                            </p>
-                            <span
-                              className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${riskLevel === "High"
-                                ? "bg-red-700/15 text-red-400 border border-red-700/25"
-                                : riskLevel === "Medium"
-                                  ? "bg-amber-700/15 text-amber-400 border border-amber-700/25"
-                                  : "bg-green-700/15 text-green-400 border border-green-700/25"
-                                }`}
-                            >
-                              {riskLevel}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-white/50 max-sm:gap-2">
-                            <span className="capitalize max-sm:truncate max-sm:shrink-0">{deal.stage}</span>
-                            <span className="max-sm:shrink-0">•</span>
-                            <span className="max-sm:truncate max-sm:min-w-0 max-sm:shrink">
-                              {formatDistanceToNow(new Date(deal.lastActivityAt), { addSuffix: true })}
-                            </span>
-                            {deal.recommendedAction && (
-                              <>
-                                <span className="max-sm:shrink-0">•</span>
-                                <span className="text-red-400 max-sm:truncate max-sm:block max-sm:min-w-0 max-sm:max-w-[90px]">
-                                  {deal.recommendedAction.label}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="text-right shrink-0 max-sm:min-w-[72px] max-sm:shrink-0">
-                          <p className="text-2xl font-bold text-white mb-2 max-sm:text-lg max-sm:truncate tabular-nums">
-                            ${formatted.value}{formatted.suffix}
-                          </p>
-                          <div className="flex items-center gap-2 max-sm:flex-col max-sm:items-end max-sm:gap-0.5">
-                            <div className="w-32 h-2 rounded-full bg-white/10 overflow-hidden max-sm:w-16">
-                              <div
-                                className="h-full rounded-full bg-linear-to-r from-rose-500/80 to-rose-600/80"
-                                style={{ width: `${Math.min(percentOfTotal, 100)}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-white/40 min-w-[40px] max-sm:min-w-0 tabular-nums">
-                              {percentOfTotal.toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
-
-                        <svg className="w-5 h-5 text-white/40 shrink-0 group-hover:text-white transition-colors max-sm:w-4 max-sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </section>
-
-          {deals.length > 0 && (
-            <section className="animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
-              <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
-                Insights
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-7">
-                <div className={`${CARD_CLASS} max-sm:overflow-visible`}>
-                  <h3 className="text-sm font-semibold text-white mb-4 truncate [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                    Stage Distribution (Top 10)
-                  </h3>
-                  <div className="space-y-3 max-sm:space-y-4 max-sm:overflow-visible">
-                    {Object.entries(top10StageDistribution)
-                      .sort(([, a], [, b]) => b - a)
-                      .map(([stage, count]) => {
-                        const percentage = (count / top10Deals.length) * 100;
-                        return (
-                          <div key={stage} className="max-sm:min-h-12">
-                            <div className="flex items-center justify-between mb-1 max-sm:gap-2 max-sm:min-w-0 max-sm:mb-1.5">
-                              <span className="text-sm text-white capitalize max-sm:truncate max-sm:min-w-0">{stage}</span>
-                              <span className="text-sm font-semibold text-white max-sm:shrink-0 tabular-nums">
-                                {count} ({percentage.toFixed(0)}%)
-                              </span>
-                            </div>
-                            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                              <div
-                                className="h-full bg-linear-to-r from-red-700 to-red-600 rounded-full"
-                                style={{ width: `${percentage}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-
-                <div className={CARD_CLASS}>
-                  <h3 className="text-sm font-semibold text-white mb-4 truncate [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                    Pipeline Insights
-                  </h3>
-                  <div className="space-y-4 max-sm:space-y-3">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 max-sm:min-w-0 max-sm:gap-2">
-                      <span className="text-sm text-white/50 max-sm:truncate max-sm:min-w-0">Recent Top Deals (30d)</span>
-                      <span className="text-sm font-semibold text-white max-sm:shrink-0 tabular-nums">{recentTopDeals}</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 max-sm:min-w-0 max-sm:overflow-hidden">
-                      <p className="text-sm text-white/50 mb-2">Oldest Top Deals</p>
-                      <div className="space-y-2 max-sm:space-y-2">
-                        {oldestTopDeals.map(({ deal, age }) => (
-                          <div key={deal.id} className="flex items-center justify-between text-xs max-sm:gap-2 max-sm:min-w-0">
-                            <span className="text-white truncate max-w-[200px] max-sm:max-w-[140px] max-sm:min-w-0">{deal.name}</span>
-                            <span className="text-white/40 max-sm:shrink-0 tabular-nums">{age} days</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
+          </Panel>
         </div>
-      </div>
-    </DashboardLayout>
+
+        <div
+          style={{
+            padding: "32px 32px 36px",
+            borderRight: "1px solid var(--rule)",
+          }}
+        >
+          <Panel
+            kicker="Value distribution"
+            title="The 80 / 20"
+            italicWord="of your book."
+            accent="copper"
+            meta={`${top20Count} = ${top20Pct.toFixed(0)}%`}
+          >
+            <div style={{ marginBottom: 24 }}>
+              <ConcentrationMeter
+                label={`Top 20% (${top20Count})`}
+                value={formatShortMoney(top20Value)}
+                percent={top20Pct}
+                caption={`${top20Count} deals = ${top20Pct.toFixed(1)}% of value`}
+                tone="copper"
+              />
+            </div>
+            <div
+              style={{
+                paddingTop: 18,
+                borderTop: "1px solid var(--rule)",
+              }}
+            >
+              <KeyValueList rows={distRows} />
+            </div>
+          </Panel>
+        </div>
+
+        <div style={{ padding: "32px 32px 36px" }}>
+          <Panel
+            kicker="Top 10 risk profile"
+            title="Where exposure"
+            italicWord="lives."
+            accent={top10HighRisk > 0 ? "wine" : "ivy"}
+            meta={
+              top10HighRisk > 0
+                ? `${top10HighRisk} HIGH`
+                : "ALL CLEAR"
+            }
+          >
+            <div style={{ marginBottom: 24 }}>
+              <RiskTicker
+                high={top10HighRisk}
+                medium={top10MediumRisk}
+                low={top10LowRisk}
+              />
+            </div>
+            <div
+              style={{
+                paddingTop: 18,
+                borderTop: "1px solid var(--rule)",
+              }}
+            >
+              <KeyValueList rows={riskRows} />
+            </div>
+          </Panel>
+        </div>
+      </section>
+
+      <SectionRule
+        number="03"
+        label="THE STANDINGS"
+        meta={`${ranked.length} RANKED · ${formatShortMoney(totalValue)} AGGREGATE`}
+      />
+      <section
+        aria-label="Top deals leaderboard"
+        style={{ padding: "28px 56px 40px" }}
+      >
+        <Leaderboard rows={leaderboardRows} total={totalValue} />
+      </section>
+
+      {ranked.length > 0 && (
+        <>
+          <SectionRule
+            number="04"
+            label="DESK NOTES"
+            meta={`${recentTopDeals} ADDED · 30D`}
+          />
+          <section
+            className="grid grid-cols-1 lg:grid-cols-2"
+            style={{
+              gap: 0,
+              paddingBottom: 4,
+            }}
+          >
+            <div
+              style={{
+                padding: "32px 32px 36px",
+                borderRight: "1px solid var(--rule)",
+              }}
+            >
+              <Panel
+                kicker="Stage distribution"
+                title="Top 10 across"
+                italicWord="the funnel."
+                accent="signal"
+              >
+                {top10StageItems.length > 0 ? (
+                  <ValueByStageBars
+                    items={top10StageItems}
+                    formatMoney={(n) =>
+                      `${n} (${((n / Math.max(top10.length, 1)) * 100).toFixed(0)}%)`
+                    }
+                  />
+                ) : (
+                  <p
+                    style={{
+                      fontFamily: "var(--font-mono-jb)",
+                      fontSize: 10.5,
+                      letterSpacing: "0.14em",
+                      color: "var(--cream-4)",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    No top deals to chart yet.
+                  </p>
+                )}
+              </Panel>
+            </div>
+
+            <div style={{ padding: "32px 32px 36px" }}>
+              <Panel
+                kicker="Aging - Top 10"
+                title="The deals sitting"
+                italicWord="longest."
+                accent="copper"
+              >
+                {oldestRows.length > 0 ? (
+                  <RankedList items={oldestRows} />
+                ) : (
+                  <p
+                    style={{
+                      fontFamily: "var(--font-mono-jb)",
+                      fontSize: 10.5,
+                      letterSpacing: "0.14em",
+                      color: "var(--cream-4)",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    No top-tier deals yet.
+                  </p>
+                )}
+                <Link
+                  href="/deals"
+                  style={{
+                    display: "inline-block",
+                    marginTop: 18,
+                    fontFamily: "var(--font-mono-jb)",
+                    fontSize: 10.5,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    color: "var(--signal)",
+                  }}
+                >
+                  Open the book →
+                </Link>
+              </Panel>
+            </div>
+          </section>
+        </>
+      )}
+
+      <Colophon systemStatus={dataError ? "degraded" : "operational"} />
+    </SentinelShell>
   );
+}
+
+function truncateUpper(s: string, max: number): string {
+  const u = s.toUpperCase();
+  return u.length > max ? `${u.slice(0, max - 1)}…` : u;
 }

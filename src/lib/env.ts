@@ -7,7 +7,6 @@ const envSchema = z.object({
     },
     { message: "Invalid database URL" }
   ),
-  /** Supabase: direct connection (port 5432) for Prisma migrations; runtime uses DATABASE_URL */
   DIRECT_URL: z.string().url().optional(),
 
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),

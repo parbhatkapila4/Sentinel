@@ -188,8 +188,8 @@ export default async function InvitePage({ params }: InvitePageProps) {
     );
   }
 
-  const signUpUrl = `/sign-up?email=${encodeURIComponent(invite.email)}&token=${encodeURIComponent(token)}`;
   const signInUrl = `/sign-in?email=${encodeURIComponent(invite.email)}&token=${encodeURIComponent(token)}`;
+  const signUpUrl = signInUrl;
   const expirationDate = new Date(invite.expiresAt).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",

@@ -1,47 +1,92 @@
 import { unstable_noStore as noStore } from "next/cache";
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { format, subDays } from "date-fns";
+import Link from "next/link";
+
 import { getAllDeals } from "@/app/actions/deals";
+import { getAllIntegrationStatuses } from "@/app/actions/integrations";
 import { formatRiskLevel } from "@/lib/dealRisk";
-import { formatRevenue } from "@/lib/utils";
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { ExportButton } from "@/components/export-button";
-import { AnalyticsDateFilter } from "@/components/analytics-date-filter";
-import { RiskDistributionChart } from "@/components/risk-distribution-chart";
-import { subDays } from "date-fns";
 import { UnauthorizedError } from "@/lib/errors";
+
+import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
+import { SectionRule } from "@/components/sentinel/sections/SectionRule";
+import { Colophon } from "@/components/sentinel/Colophon";
+
+import { DealsMasthead } from "@/components/sentinel/deals/DealsMasthead";
+import { DealsKPIs } from "@/components/sentinel/deals/DealsKPIs";
+import {
+  AnalyticsRangeFilter,
+  type AnalyticsRange,
+} from "@/components/sentinel/analytics/AnalyticsRangeFilter";
+import { RiskDonut } from "@/components/sentinel/analytics/RiskDonut";
+import {
+  DealList,
+  type DealListItem,
+} from "@/components/sentinel/analytics/DealList";
+import {
+  ValueByStageBars,
+  type ValueByStageItem,
+} from "@/components/sentinel/analytics/ValueByStageBars";
+import {
+  StageVelocityList,
+  type VelocityRow,
+} from "@/components/sentinel/analytics/StageVelocityList";
+import { QuickInsights } from "@/components/sentinel/analytics/QuickInsights";
+import { Panel } from "@/components/sentinel/analytics/Panel";
+import { ExportButton } from "@/components/export-button";
+
+import {
+  buildSentinelShellContext,
+  mapRawDealsToSentinel,
+} from "@/components/sentinel/shell-context";
+import { formatShortMoney } from "@/lib/format-money";
 
 export const dynamic = "force-dynamic";
 
-function filterDealsByDateRange(
-  deals: Awaited<ReturnType<typeof getAllDeals>>,
-  range: string
-) {
-  if (range === "all") {
-    return deals;
-  }
+type RawDeal = Awaited<ReturnType<typeof getAllDeals>>[number];
 
-  const now = new Date();
-  let cutoffDate: Date;
+function filterByRange(deals: RawDeal[], range: AnalyticsRange, now: Date): RawDeal[] {
+  if (range === "all") return deals;
+  const days = range === "7d" ? 7 : range === "90d" ? 90 : 30;
+  const cutoff = subDays(now, days);
+  return deals.filter((d) => new Date(d.createdAt) >= cutoff);
+}
 
+function rangeLabel(range: AnalyticsRange): string {
   switch (range) {
     case "7d":
-      cutoffDate = subDays(now, 7);
-      break;
-    case "30d":
-      cutoffDate = subDays(now, 30);
-      break;
+      return "LAST 7D";
     case "90d":
-      cutoffDate = subDays(now, 90);
-      break;
+      return "LAST 90D";
+    case "all":
+      return "ALL TIME";
+    case "30d":
     default:
-      cutoffDate = subDays(now, 30);
+      return "LAST 30D";
   }
+}
 
-  return deals.filter((deal) => {
-    const dealDate = new Date(deal.createdAt);
-    return dealDate >= cutoffDate;
-  });
+const STAGE_DISPLAY: Record<string, string> = {
+  lead: "Lead",
+  discover: "Discover",
+  qualify: "Qualify",
+  qualified: "Qualified",
+  proposal: "Proposal",
+  negotiation: "Negotiation",
+  closed_won: "Won",
+  closed_lost: "Lost",
+};
+
+function prettyStage(s: string) {
+  const k = s.toLowerCase().replace(/\s+/g, "_");
+  return (
+    STAGE_DISPLAY[k] ??
+    s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
+}
+
+function trendArrow(positive: boolean) {
+  return positive ? "↑" : "↓";
 }
 
 export default async function AnalyticsPage({
@@ -51,492 +96,575 @@ export default async function AnalyticsPage({
 }) {
   noStore();
   const params = await searchParams;
-  const range = params?.range || "30d";
+  const rangeRaw = (params?.range || "all") as string;
+  const range: AnalyticsRange =
+    rangeRaw === "7d" || rangeRaw === "90d" || rangeRaw === "all"
+      ? rangeRaw
+      : "all";
 
-  let allDeals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  let allDealsRaw: RawDeal[] = [];
   let dataError = false;
   try {
-    allDeals = await getAllDeals();
+    allDealsRaw = await getAllDeals();
   } catch (err) {
     if (err instanceof UnauthorizedError) {
-      redirect("/sign-in?redirect=" + encodeURIComponent("/analytics?range=" + (range || "30d")));
+      redirect(
+        "/sign-in?redirect=" +
+        encodeURIComponent("/analytics?range=" + range)
+      );
     }
     dataError = true;
   }
-  const deals = filterDealsByDateRange(allDeals, range);
 
-  const totalDeals = deals.length;
-  const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
+  let integrationStatuses: Awaited<
+    ReturnType<typeof getAllIntegrationStatuses>
+  > | null = null;
+  try {
+    integrationStatuses = await getAllIntegrationStatuses();
+  } catch {
+    integrationStatuses = null;
+  }
+
+  const now = new Date();
+  const dealsInRange = filterByRange(allDealsRaw, range, now);
+
+  const totalDeals = dealsInRange.length;
+  const totalValue = dealsInRange.reduce((s, d) => s + d.value, 0);
   const avgDealValue = totalDeals > 0 ? totalValue / totalDeals : 0;
 
-  const highRiskDeals = deals.filter(
-    (deal) => formatRiskLevel(deal.riskScore) === "High"
-  ).length;
-  const mediumRiskDeals = deals.filter(
-    (deal) => formatRiskLevel(deal.riskScore) === "Medium"
-  ).length;
-  const lowRiskDeals = deals.filter(
-    (deal) => formatRiskLevel(deal.riskScore) === "Low"
-  ).length;
+  const lowDeals = dealsInRange.filter(
+    (d) => formatRiskLevel(d.riskScore) === "Low"
+  );
+  const mediumDeals = dealsInRange.filter(
+    (d) => formatRiskLevel(d.riskScore) === "Medium"
+  );
+  const highDeals = dealsInRange.filter(
+    (d) => formatRiskLevel(d.riskScore) === "High"
+  );
 
   const avgRiskScore =
     totalDeals > 0
-      ? deals.reduce((sum, deal) => sum + deal.riskScore, 0) / totalDeals
+      ? dealsInRange.reduce((s, d) => s + d.riskScore, 0) / totalDeals
       : 0;
 
-  const dealsNeedingAction = deals.filter(
-    (deal) => deal.recommendedAction?.urgency === "high"
+  const dealsNeedingAction = dealsInRange.filter(
+    (d) => d.recommendedAction?.urgency === "high"
   ).length;
 
-  const lowNeedingAction = deals.filter(
-    (d) => formatRiskLevel(d.riskScore) === "Low" && d.recommendedAction?.urgency === "high"
+  const lowAction = lowDeals.filter(
+    (d) => d.recommendedAction?.urgency === "high"
   ).length;
-  const mediumNeedingAction = deals.filter(
-    (d) => formatRiskLevel(d.riskScore) === "Medium" && d.recommendedAction?.urgency === "high"
+  const mediumAction = mediumDeals.filter(
+    (d) => d.recommendedAction?.urgency === "high"
   ).length;
-  const highNeedingAction = deals.filter(
-    (d) => formatRiskLevel(d.riskScore) === "High" && d.recommendedAction?.urgency === "high"
+  const highAction = highDeals.filter(
+    (d) => d.recommendedAction?.urgency === "high"
   ).length;
 
-  const won = deals.filter((d) => d.stage === "closed_won").length;
-  const lost = deals.filter((d) => d.stage === "closed_lost").length;
+  const won = dealsInRange.filter((d) => {
+    const s = d.stage.toLowerCase().replace(/\s+/g, "_");
+    return s === "closed_won";
+  }).length;
+  const lost = dealsInRange.filter((d) => {
+    const s = d.stage.toLowerCase().replace(/\s+/g, "_");
+    return s === "closed_lost";
+  }).length;
   const closedTotal = won + lost;
   const winRate = closedTotal > 0 ? (won / closedTotal) * 100 : 0;
 
-  const CARD_CLASS = "rounded-xl p-5 sm:p-6 border border-white/[0.08] bg-[#080808] transition-colors hover:border-white/[0.1] card-elevated";
+  const activeDeals = dealsInRange.filter((d) => d.status === "active");
+
+  const periodDays = range === "7d" ? 7 : range === "90d" ? 90 : range === "all" ? null : 30;
+  let pipelineDelta: { positive: boolean; pct: number } | null = null;
+  let avgDealDelta: { positive: boolean; pct: number } | null = null;
+  if (periodDays) {
+    const priorStart = subDays(now, periodDays * 2);
+    const priorEnd = subDays(now, periodDays);
+    const priorWindow = allDealsRaw.filter((d) => {
+      const t = new Date(d.createdAt);
+      return t >= priorStart && t < priorEnd;
+    });
+    const priorTotal = priorWindow.reduce((s, d) => s + d.value, 0);
+    const priorAvg =
+      priorWindow.length > 0 ? priorTotal / priorWindow.length : 0;
+
+    if (priorTotal > 0) {
+      const change = ((totalValue - priorTotal) / priorTotal) * 100;
+      pipelineDelta = { positive: change >= 0, pct: Math.abs(change) };
+    }
+    if (priorAvg > 0) {
+      const change = ((avgDealValue - priorAvg) / priorAvg) * 100;
+      avgDealDelta = { positive: change >= 0, pct: Math.abs(change) };
+    }
+  }
+
+  const isDemoMode =
+    allDealsRaw.length > 0 && allDealsRaw.every((d) => d.isDemo);
+  const hasAnyDeals = allDealsRaw.length > 0;
+  const closedWonAll = allDealsRaw.filter((d) => {
+    const s = d.stage.toLowerCase().replace(/\s+/g, "_");
+    return s === "closed_won";
+  }).length;
+  const coveragePercent =
+    allDealsRaw.length > 0 ? (closedWonAll / allDealsRaw.length) * 100 : 0;
+
+  const allDeals = mapRawDealsToSentinel(allDealsRaw);
+  const shellContext = buildSentinelShellContext({
+    deals: allDeals,
+    integrationStatuses,
+    coveragePercent,
+    hasAnyDeals,
+    isDemoMode,
+    now,
+  });
+
+  const kpiItems = [
+    {
+      index: "01",
+      label: "Total Pipeline",
+      value: formatShortMoney(totalValue),
+      support: pipelineDelta
+        ? `${trendArrow(pipelineDelta.positive)} ${pipelineDelta.pct.toFixed(1)}% VS PRIOR`
+        : `${totalDeals} DEALS IN RANGE`,
+      trendTone: pipelineDelta
+        ? pipelineDelta.positive
+          ? ("up" as const)
+          : ("down" as const)
+        : ("neutral" as const),
+    },
+    {
+      index: "02",
+      label: "Avg Deal",
+      value: formatShortMoney(avgDealValue),
+      support: avgDealDelta
+        ? `${trendArrow(avgDealDelta.positive)} ${avgDealDelta.pct.toFixed(1)}% VS PRIOR`
+        : `${activeDeals.length} ACTIVE`,
+      trendTone: avgDealDelta
+        ? avgDealDelta.positive
+          ? ("up" as const)
+          : ("down" as const)
+        : ("neutral" as const),
+    },
+    {
+      index: "03",
+      label: "Risk Index",
+      value: `${(avgRiskScore * 100).toFixed(0)}%`,
+      support:
+        highDeals.length > 0
+          ? `${highDeals.length} FLAGGED`
+          : "DESK CLEAR",
+      trendTone:
+        avgRiskScore >= 0.6
+          ? ("down" as const)
+          : avgRiskScore >= 0.35
+            ? ("neutral" as const)
+            : ("up" as const),
+    },
+    {
+      index: "04",
+      label: "Needs Action",
+      value: String(dealsNeedingAction),
+      support:
+        dealsNeedingAction > 0
+          ? `${highAction} HIGH · ${mediumAction} MED · ${lowAction} LOW`
+          : "NONE PENDING",
+      trendTone:
+        dealsNeedingAction > 0 ? ("down" as const) : ("up" as const),
+    },
+  ];
+
+  const topPerformers: DealListItem[] = [...lowDeals]
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5)
+    .map((d, i) => ({
+      id: d.id,
+      index: i + 1,
+      name: d.name,
+      meta: `${prettyStage(d.stage).toUpperCase()} · LOW RISK`,
+      trail: formatShortMoney(d.value),
+      trailTone: "ivy",
+    }));
+
+  const atRiskList: DealListItem[] = [...highDeals]
+    .sort((a, b) => b.riskScore - a.riskScore)
+    .slice(0, 5)
+    .map((d, i) => ({
+      id: d.id,
+      index: i + 1,
+      name: d.name,
+      meta:
+        d.recommendedAction?.label?.toUpperCase() ??
+        `${prettyStage(d.stage).toUpperCase()} · NEEDS REVIEW`,
+      trail: `${(d.riskScore * 100).toFixed(0)}% RISK`,
+      trailTone: "wine",
+    }));
+
+  const attentionRows: DealListItem[] = [...highDeals]
+    .slice(0, 5)
+    .map((d, i) => ({
+      id: d.id,
+      index: i + 1,
+      name: d.name,
+      meta: `${prettyStage(d.stage).toUpperCase()} · ${formatShortMoney(d.value)}`,
+      trail: "HIGH",
+      trailTone: "wine",
+    }));
+
+  const stageOrder = ["lead", "qualify", "proposal", "negotiation", "closed_won"];
+  const valueByStage: ValueByStageItem[] = stageOrder.map((stage) => {
+    const matched = dealsInRange.filter(
+      (d) => d.stage.toLowerCase().replace(/\s+/g, "_") === stage
+    );
+    return {
+      stage,
+      label: prettyStage(stage),
+      value: matched.reduce((s, d) => s + d.value, 0),
+    };
+  });
+
+  const velocityStages = ["lead", "qualify", "proposal", "negotiation"];
+  const velocityRows: VelocityRow[] = velocityStages
+    .map((stage) => {
+      const matched = dealsInRange.filter(
+        (d) => d.stage.toLowerCase().replace(/\s+/g, "_") === stage
+      );
+      const avgDays =
+        matched.length > 0
+          ? Math.round(
+            matched.reduce((acc, d) => {
+              const days = Math.floor(
+                (now.getTime() - new Date(d.createdAt).getTime()) /
+                (1000 * 60 * 60 * 24)
+              );
+              return acc + days;
+            }, 0) / matched.length
+          )
+          : 0;
+      return {
+        stage,
+        label: prettyStage(stage),
+        avgDays,
+        count: matched.length,
+      };
+    })
+    .filter((v) => v.count > 0 || v.stage === "lead" || v.stage === "qualify");
+
+  const insightItems = [
+    {
+      label: "Win Rate",
+      value: closedTotal > 0 ? `${Math.round(winRate)}%` : "-",
+      support:
+        closedTotal > 0
+          ? `${won} won, ${lost} lost in range.`
+          : "No closed deals in this window yet.",
+      tone:
+        closedTotal === 0
+          ? ("neutral" as const)
+          : winRate >= 50
+            ? ("ivy" as const)
+            : winRate >= 30
+              ? ("copper" as const)
+              : ("wine" as const),
+    },
+    {
+      label: "Avg Deal Size",
+      value:
+        dealsInRange.length > 0
+          ? formatShortMoney(avgDealValue)
+          : "$0",
+      support: avgDealDelta
+        ? `${avgDealDelta.positive ? "Up" : "Down"} ${avgDealDelta.pct.toFixed(1)}% versus the prior window.`
+        : "No prior period to compare against.",
+      tone: avgDealDelta
+        ? avgDealDelta.positive
+          ? ("ivy" as const)
+          : ("wine" as const)
+        : ("neutral" as const),
+    },
+    {
+      label: "Active Deals",
+      value: String(activeDeals.length),
+      support: `${dealsInRange.length - activeDeals.length} resolved or paused in range.`,
+      tone: "signal" as const,
+    },
+  ];
+
+  const dateLine = format(now, "EEEE - MMMM d, yyyy").toUpperCase();
+  const masthHeadMeta = [
+    { label: "Edition", value: format(now, "HH:mm") },
+    { label: "Range", value: rangeLabel(range) },
+    { label: "On Wire", value: String(totalDeals) },
+    { label: "Risk Index", value: `${(avgRiskScore * 100).toFixed(0)}%` },
+  ];
 
   return (
-    <DashboardLayout>
-      <div className="relative min-h-screen w-full">
-        <div className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-[1600px] mx-auto">
-          {dataError && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 shadow-lg shadow-amber-500/10">
-              <p className="text-sm font-medium text-amber-200">Data temporarily unavailable</p>
-              <p className="text-xs text-amber-200/70 mt-1">Check your connection and try again.</p>
-            </div>
-          )}
-
-          <header className="animate-fade-in-up">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
-                <p className="text-[11px] sm:text-xs font-medium tracking-[0.24em] uppercase text-white/50 mb-3">
-                  Analytics
-                </p>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.03em] text-white leading-[1.12] [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  Revenue
-                  <span className="text-[#0ea5e9]" style={{ textShadow: "0 0 48px rgba(14,165,233,0.4)" }}> breakdown</span>
-                </h1>
-                <p className="mt-4 text-base sm:text-lg text-white/60 max-w-xl leading-relaxed">
-                  Track your finances and achieve your financial goals.
-                </p>
-              </div>
-              <div className="flex flex-col gap-3 items-stretch sm:items-end">
-                <ExportButton
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white/80 hover:text-white transition-colors w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed bg-[#050505] border border-white/6 hover:border-white/10"
-                />
-                <Suspense fallback={
-                  <div className="h-10 w-36 sm:w-auto rounded-xl relative overflow-hidden bg-white/[0.04] border border-white/[0.06] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/[0.07] before:to-transparent before:animate-[skeleton-shimmer_2s_ease-in-out_infinite] before:-translate-x-full" />
-                }>
-                  <AnalyticsDateFilter />
-                </Suspense>
-              </div>
-            </div>
-          </header>
-
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.05s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
-              Key metrics
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7">
-              <div className={CARD_CLASS}>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45">Total Pipeline</p>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                    <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
-                    </svg>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  {formatRevenue(totalValue)}
-                </p>
-                <p className="text-xs text-emerald-400/90 mt-1">+12.5% from last month</p>
-              </div>
-              <div className={CARD_CLASS}>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45">Average Deal</p>
-                  <div className="w-8 h-8 rounded-lg bg-[#0f766e]/10 flex items-center justify-center border border-[#0f766e]/20">
-                    <svg className="w-4 h-4 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                    </svg>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  {formatRevenue(avgDealValue)}
-                </p>
-                <p className="text-xs text-emerald-400/90 mt-1">+8.2% from last month</p>
-              </div>
-              <div className={CARD_CLASS}>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45">Risk Score</p>
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                    <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                    </svg>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  {(avgRiskScore * 100).toFixed(0)}%
-                </p>
-                <p className="text-xs text-red-400/90 mt-1">-3.1% from last month</p>
-              </div>
-              <div className={CARD_CLASS}>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-medium tracking-[0.18em] uppercase text-white/45">Needs Action</p>
-                  <div className="w-8 h-8 rounded-lg bg-red-600/10 flex items-center justify-center border border-red-500/20">
-                    <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                    </svg>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  {dealsNeedingAction}
-                </p>
-                <p className={`text-xs mt-1 ${dealsNeedingAction > 0 ? "text-amber-400" : "text-emerald-400"}`}>
-                  {dealsNeedingAction > 0 ? "Urgent" : "None pending"}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.1s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
-              Risk & attention
-            </p>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-7">
-              <div className={CARD_CLASS}>
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-6 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  Risk Distribution
-                </h3>
-
-                <div className="flex flex-col items-center justify-center mb-6">
-                  <RiskDistributionChart
-                    lowRisk={lowRiskDeals}
-                    mediumRisk={mediumRiskDeals}
-                    highRisk={highRiskDeals}
-                    lowNeedingAction={lowNeedingAction}
-                    mediumNeedingAction={mediumNeedingAction}
-                    highNeedingAction={highNeedingAction}
-                    total={totalDeals}
-                    className="min-h-[260px]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { label: "Low", value: lowRiskDeals, dot: "bg-cyan-400", card: "border-cyan-500/25 bg-cyan-500/10" },
-                    { label: "Medium", value: mediumRiskDeals, dot: "bg-violet-400", card: "border-violet-500/25 bg-violet-500/10" },
-                    { label: "High", value: highRiskDeals, dot: "bg-rose-400", card: "border-rose-500/25 bg-rose-500/10" },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className={`rounded-xl border p-3 text-center ${item.card}`}
-                    >
-                      <div className="flex items-center justify-center gap-1.5 mb-2">
-                        <div className={`w-2 h-2 rounded-full ${item.dot} ring-2 ring-white/10`} />
-                        <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-white/50">{item.label}</span>
-                      </div>
-                      <p className="text-xl font-bold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">{item.value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={CARD_CLASS}>
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Deals Requiring Attention</h3>
-
-                <div className="space-y-3">
-                  {deals
-                    .filter((deal) => {
-                      const riskLevel = formatRiskLevel(deal.riskScore);
-                      return riskLevel === "High";
-                    })
-                    .slice(0, 5)
-                    .map((deal) => {
-                      const riskLevel = formatRiskLevel(deal.riskScore);
-                      return (
-                        <div
-                          key={deal.id}
-                          className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/6 hover:border-red-500/30 transition-colors"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-2 h-2 rounded-full shrink-0 bg-red-500" />
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-white truncate">{deal.name}</p>
-                              <p className="text-xs text-white/50">{deal.stage} • ${deal.value.toLocaleString("en-US")}</p>
-                            </div>
-                          </div>
-                          <div className="shrink-0 ml-3">
-                            <span className="text-xs font-medium px-2 py-1 rounded bg-red-500/20 text-red-400">
-                              {riskLevel}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                  {deals.filter((deal) => {
-                    const riskLevel = formatRiskLevel(deal.riskScore);
-                    return riskLevel === "High";
-                  }).length === 0 && (
-                      <div className="text-center py-8 text-white/40">
-                        <p className="text-sm">No high-risk deals</p>
-                        <p className="text-xs mt-1">All deals are in good health</p>
-                      </div>
-                    )}
-                </div>
-
-                {deals.filter((deal) => {
-                  const riskLevel = formatRiskLevel(deal.riskScore);
-                  return riskLevel === "High";
-                }).length > 5 && (
-                    <a
-                      href="/risk-overview"
-                      className="block mt-4 text-center text-sm text-teal-400 hover:text-teal-300 transition-colors"
-                    >
-                      View all at-risk deals →
-                    </a>
-                  )}
-              </div>
-            </div>
-          </section>
-
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.15s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
-              Top & at-risk deals
-            </p>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-7">
-              <div className={`${CARD_CLASS} min-w-0`}>
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center gap-2 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  <svg
-                    className="w-5 h-5 text-emerald-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
-                    />
-                  </svg>
-                  Top Performing Deals
-                </h3>
-
-                {deals.filter((d) => formatRiskLevel(d.riskScore) === "Low")
-                  .length > 0 ? (
-                  <div className="space-y-3">
-                    {deals
-                      .filter((d) => formatRiskLevel(d.riskScore) === "Low")
-                      .slice(0, 4)
-                      .map((deal, i) => (
-                        <div
-                          key={deal.id}
-                          className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white/5 border border-white/6 min-w-0"
-                        >
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="w-8 h-8 shrink-0 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-sm font-bold">
-                              {i + 1}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-white truncate">
-                                {deal.name}
-                              </p>
-                              <p className="text-xs text-white/40">{deal.stage}</p>
-                            </div>
-                          </div>
-                          <p className="text-sm font-semibold text-white shrink-0">
-                            ${deal.value.toLocaleString("en-US")}
-                          </p>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-white/40 text-sm">No low-risk deals yet</p>
-                  </div>
-                )}
-              </div>
-
-              <div className={`${CARD_CLASS} min-w-0`}>
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center gap-2 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  <svg
-                    className="w-5 h-5 text-red-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-                    />
-                  </svg>
-                  At Risk Deals
-                </h3>
-
-                {deals.filter((d) => formatRiskLevel(d.riskScore) === "High")
-                  .length > 0 ? (
-                  <div className="space-y-3">
-                    {deals
-                      .filter((d) => formatRiskLevel(d.riskScore) === "High")
-                      .slice(0, 4)
-                      .map((deal) => (
-                        <div
-                          key={deal.id}
-                          className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white/5 border border-white/6 min-w-0"
-                        >
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="w-8 h-8 shrink-0 rounded-lg bg-red-500/10 flex items-center justify-center">
-                              <svg
-                                className="w-4 h-4 text-red-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M12 9v2m0 4h.01"
-                                />
-                              </svg>
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-white truncate">
-                                {deal.name}
-                              </p>
-                              <p className="text-xs text-red-400/70 truncate">
-                                {deal.recommendedAction?.label || "Needs attention"}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold text-red-400 px-2 py-1 rounded-lg bg-red-500/10 shrink-0">
-                            {(deal.riskScore * 100).toFixed(0)}%
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
-                      <svg
-                        className="w-6 h-6 text-emerald-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-white/40 text-sm">No high-risk deals!</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">
-              Velocity & insights
-            </p>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
-              <div className={CARD_CLASS}>
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Stage Velocity</h3>
-                <div className="space-y-3">
-                  {["lead", "qualified", "proposal", "negotiation"].map((stage) => {
-                    const stageDeals = deals.filter((d) => d.stage === stage);
-                    const avgDays = stageDeals.length > 0
-                      ? Math.round(stageDeals.reduce((acc, d) => {
-                        const days = Math.floor((Date.now() - new Date(d.createdAt).getTime()) / (1000 * 60 * 60 * 24));
-                        return acc + days;
-                      }, 0) / stageDeals.length)
-                      : 0;
-                    return (
-                      <div key={stage} className="flex items-center justify-between">
-                        <span className="text-sm text-white/70 capitalize">{stage}</span>
-                        <span className="text-sm font-medium text-white">{avgDays} days avg</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className={CARD_CLASS}>
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Value by Stage</h3>
-                <div className="space-y-3">
-                  {["lead", "qualified", "proposal", "negotiation", "closed_won"].map((stage) => {
-                    const stageValue = deals
-                      .filter((d) => d.stage === stage)
-                      .reduce((acc, d) => acc + d.value, 0);
-                    const maxValue = Math.max(...["lead", "qualified", "proposal", "negotiation", "closed_won"].map((s) =>
-                      deals.filter((d) => d.stage === s).reduce((acc, d) => acc + d.value, 0)
-                    ), 1);
-                    const percentage = maxValue > 0 ? (stageValue / maxValue) * 100 : 0;
-                    return (
-                      <div key={stage}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-white/60 capitalize">{stage.replace("_", " ")}</span>
-                          <span className="text-xs font-medium text-white">{formatRevenue(stageValue)}</span>
-                        </div>
-                        <div className="h-2 bg-white/8 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-linear-to-r from-[#0f766e] to-[#14b8a6] rounded-full transition-all"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className={CARD_CLASS}>
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Quick Insights</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                    <span className="text-sm text-white/70">Win Rate</span>
-                    <span className="text-lg font-bold text-green-400">
-                      {closedTotal > 0 ? Math.round(winRate) : 0}%
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                    <span className="text-sm text-white/70">Avg Deal Size</span>
-                    <span className="text-lg font-bold text-blue-400">
-                      ${deals.length > 0
-                        ? Math.round(deals.reduce((acc, d) => acc + d.value, 0) / deals.length / 1000)
-                        : 0}K
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-red-600/10 rounded-lg border border-red-600/20">
-                    <span className="text-sm text-white/70">Active Deals</span>
-                    <span className="text-lg font-bold text-red-400">
-                      {deals.filter((d) => d.status === "active").length}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+    <SentinelShell
+      syncTime={shellContext.syncTime}
+      coveragePercent={shellContext.coveragePercent}
+      sourceLabels={shellContext.sourceLabels}
+      alertCount={shellContext.alertCount}
+      tickerItems={shellContext.tickerItems}
+      onboarding={shellContext.onboarding}
+    >
+      {dataError && (
+        <div
+          role="alert"
+          style={{
+            margin: "16px 56px 0",
+            padding: "12px 16px",
+            border: "1px solid var(--copper)",
+            borderLeft: "3px solid var(--copper)",
+            background: "rgba(217,153,90,0.06)",
+            color: "var(--cream-2)",
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 11,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
+          DATA TEMPORARILY UNAVAILABLE - DESK RUNNING ON CACHE
         </div>
-      </div>
-    </DashboardLayout>
+      )}
+
+      <DealsMasthead
+        kicker={`Analytics · ${dateLine}`}
+        headline="Read the desk's"
+        italicWord="appetite."
+        deck="Where revenue is forming, what risk is brewing, and where attention is best spent. Adjust the range below to read the past week, month, quarter, or the whole book."
+        meta={masthHeadMeta}
+      />
+
+      <section
+        aria-label="Analytics controls"
+        className="flex flex-wrap items-center"
+        style={{
+          gap: 14,
+          padding: "16px 56px",
+          borderBottom: "1px solid var(--rule)",
+        }}
+      >
+        <AnalyticsRangeFilter currentRange={range} />
+        <span className="flex-1" />
+        <span
+          className="tabular"
+          style={{
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 10,
+            letterSpacing: "0.16em",
+            color: "var(--cream-4)",
+            textTransform: "uppercase",
+          }}
+        >
+          {totalDeals} ON WIRE · {rangeLabel(range)}
+        </span>
+        <ExportButton className="sentinel-editorial-button inline-flex items-center gap-2 px-3 py-2" />
+      </section>
+
+      <SectionRule
+        number="01"
+        label="KEY METRICS"
+        meta={`${totalDeals} DEALS · ${formatShortMoney(totalValue)}`}
+      />
+      <DealsKPIs items={kpiItems} />
+
+      <SectionRule
+        number="02"
+        label="RISK DESK"
+        meta={`${highDeals.length} HIGH · ${mediumDeals.length} MED · ${lowDeals.length} LOW`}
+      />
+      <section
+        className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+        style={{
+          gap: 0,
+          borderBottom: "1px solid var(--rule)",
+        }}
+      >
+        <div
+          style={{
+            padding: "32px 32px 36px",
+            borderRight: "1px solid var(--rule)",
+          }}
+        >
+          <Panel
+            kicker="Distribution"
+            title="The book's"
+            italicWord="risk weather."
+            accent="signal"
+            meta={
+              dealsNeedingAction > 0
+                ? `${dealsNeedingAction} URGENT`
+                : "ALL CLEAR"
+            }
+          >
+            <RiskDonut
+              low={lowDeals.length}
+              medium={mediumDeals.length}
+              high={highDeals.length}
+              lowAction={lowAction}
+              mediumAction={mediumAction}
+              highAction={highAction}
+            />
+          </Panel>
+        </div>
+
+        <div style={{ padding: "32px 32px 36px" }}>
+          <DealList
+            kicker="Attention list"
+            title="Deals demanding"
+            italicWord="a second look."
+            accent="wine"
+            items={attentionRows}
+            empty={{
+              headline: "All clear",
+              body: "No high-risk deals in this range. Take a breath.",
+            }}
+            footer={
+              highDeals.length > 5
+                ? { label: "View all at-risk", href: "/risk-overview" }
+                : undefined
+            }
+          />
+        </div>
+      </section>
+
+      <SectionRule
+        number="03"
+        label="STANDINGS"
+        meta={`${topPerformers.length} TOP · ${atRiskList.length} AT RISK`}
+      />
+      <section
+        className="grid grid-cols-1 lg:grid-cols-2"
+        style={{
+          gap: 0,
+          borderBottom: "1px solid var(--rule)",
+        }}
+      >
+        <div
+          style={{
+            padding: "32px 32px 36px",
+            borderRight: "1px solid var(--rule)",
+          }}
+        >
+          <DealList
+            kicker="Top of the order"
+            title="Healthiest deals"
+            italicWord="on the book."
+            accent="ivy"
+            items={topPerformers}
+            empty={{
+              headline: "No low-risk deals",
+              body: "Once a few deals trend healthy they'll surface here.",
+            }}
+          />
+        </div>
+        <div style={{ padding: "32px 32px 36px" }}>
+          <DealList
+            kicker="The watch list"
+            title="Most fragile, ranked"
+            italicWord="by risk."
+            accent="wine"
+            items={atRiskList}
+            empty={{
+              headline: "No at-risk deals",
+              body: "The desk is clear. Keep it that way.",
+            }}
+            footer={
+              highDeals.length > 5
+                ? { label: "View all at-risk", href: "/risk-overview" }
+                : undefined
+            }
+          />
+        </div>
+      </section>
+
+      <SectionRule
+        number="04"
+        label="VELOCITY & TEMPO"
+        meta={`${velocityRows.length} STAGES · ${formatShortMoney(totalValue)} STAGED`}
+      />
+      <section
+        className="grid grid-cols-1 lg:grid-cols-3"
+        style={{
+          gap: 0,
+          paddingBottom: 4,
+        }}
+      >
+        <div
+          style={{
+            padding: "32px 32px 36px",
+            borderRight: "1px solid var(--rule)",
+          }}
+        >
+          <Panel
+            kicker="Stage velocity"
+            title="Days in"
+            italicWord="each chair."
+            accent="copper"
+          >
+            {velocityRows.length > 0 ? (
+              <StageVelocityList rows={velocityRows} />
+            ) : (
+              <p
+                style={{
+                  fontFamily: "var(--font-mono-jb)",
+                  fontSize: 10.5,
+                  letterSpacing: "0.14em",
+                  color: "var(--cream-4)",
+                  textTransform: "uppercase",
+                }}
+              >
+                No active stages in range.
+              </p>
+            )}
+          </Panel>
+        </div>
+
+        <div
+          style={{
+            padding: "32px 32px 36px",
+            borderRight: "1px solid var(--rule)",
+          }}
+        >
+          <Panel
+            kicker="Value by stage"
+            title="Where the dollars"
+            italicWord="are sitting."
+            accent="signal"
+          >
+            <ValueByStageBars
+              items={valueByStage}
+              formatMoney={formatShortMoney}
+            />
+          </Panel>
+        </div>
+
+        <div style={{ padding: "32px 32px 36px" }}>
+          <Panel
+            kicker="Quick insights"
+            title="Three numbers"
+            italicWord="worth knowing."
+            accent="ivy"
+          >
+            <QuickInsights items={insightItems} />
+            <Link
+              href="/deals"
+              style={{
+                display: "inline-block",
+                marginTop: 18,
+                fontFamily: "var(--font-mono-jb)",
+                fontSize: 10.5,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--signal)",
+              }}
+            >
+              Open the book →
+            </Link>
+          </Panel>
+        </div>
+      </section>
+
+      <Colophon systemStatus={dataError ? "degraded" : "operational"} />
+    </SentinelShell>
   );
 }

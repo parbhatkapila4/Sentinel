@@ -1,16 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { createWebhook, updateWebhook } from "@/app/actions/webhooks";
 import { toast } from "sonner";
 
+import { createWebhook, updateWebhook } from "@/app/actions/webhooks";
+import {
+  EditorialButton,
+  EditorialInput,
+  Field,
+  Toggle,
+} from "@/components/sentinel/settings/primitives";
+
 const WEBHOOK_EVENTS = [
-  { value: "deal.created", label: "Deal created" },
-  { value: "deal.updated", label: "Deal updated" },
-  { value: "deal.stage_changed", label: "Deal stage changed" },
-  { value: "deal.at_risk", label: "Deal at risk" },
-  { value: "deal.closed_won", label: "Deal closed won" },
-  { value: "deal.closed_lost", label: "Deal closed lost" },
+  { value: "deal.created", label: "Deal · created" },
+  { value: "deal.updated", label: "Deal · updated" },
+  { value: "deal.stage_changed", label: "Deal · stage changed" },
+  { value: "deal.at_risk", label: "Deal · at risk" },
+  { value: "deal.closed_won", label: "Deal · closed (won)" },
+  { value: "deal.closed_lost", label: "Deal · closed (lost)" },
 ] as const;
 
 interface WebhookFormProps {
@@ -25,11 +32,7 @@ interface WebhookFormProps {
   };
 }
 
-export function WebhookForm({
-  onSuccess,
-  onCancel,
-  edit,
-}: WebhookFormProps) {
+export function WebhookForm({ onSuccess, onCancel, edit }: WebhookFormProps) {
   const [name, setName] = useState(edit?.name ?? "");
   const [url, setUrl] = useState(edit?.url ?? "");
   const [events, setEvents] = useState<Set<string>>(
@@ -90,78 +93,159 @@ export function WebhookForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label className="block text-sm font-medium text-white mb-2">Name</label>
-        <input
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: "flex", flexDirection: "column", gap: 24 }}
+    >
+      <Field label="Name" note="REQUIRED">
+        <EditorialInput
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Production webhook"
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-red-600/50 focus:outline-none"
+          placeholder="Production · relay"
+          disabled={saving}
         />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-white mb-2">URL</label>
-        <input
+      </Field>
+
+      <Field label="Endpoint URL" note="REQUIRED">
+        <EditorialInput
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://your-endpoint.com/webhook"
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/5 border border-white/10 focus:border-red-600/50 focus:outline-none"
+          disabled={saving}
         />
-      </div>
+      </Field>
+
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
-          Events
-        </label>
-        <div className="flex flex-wrap gap-3">
-          {WEBHOOK_EVENTS.map((ev) => (
-            <label
-              key={ev.value}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={events.has(ev.value)}
-                onChange={() => toggleEvent(ev.value)}
-                className="rounded border-white/20 bg-white/5 text-red-500 focus:ring-red-600/50"
-              />
-              <span className="text-sm text-white/80">{ev.label}</span>
-            </label>
-          ))}
+        <div
+          style={{
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 10,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "var(--cream-3)",
+            marginBottom: 12,
+          }}
+        >
+          Events <span style={{ color: "var(--signal)" }}>· subscribe</span>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            border: "1px solid var(--rule)",
+          }}
+        >
+          {WEBHOOK_EVENTS.map((ev) => {
+            const active = events.has(ev.value);
+            return (
+              <label
+                key={ev.value}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "14px 16px",
+                  borderRight: "1px solid var(--rule)",
+                  borderBottom: "1px solid var(--rule)",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  background: active ? "rgba(200, 71, 46, 0.05)" : "transparent",
+                  transition: "background 140ms ease",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={active}
+                  onChange={() => toggleEvent(ev.value)}
+                  disabled={saving}
+                  style={{
+                    width: 14,
+                    height: 14,
+                    accentColor: "var(--signal)",
+                    cursor: saving ? "not-allowed" : "pointer",
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontSize: 14,
+                    color: active ? "var(--cream)" : "var(--cream-2)",
+                  }}
+                >
+                  {ev.label}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
+
       {edit && (
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="webhook-active"
-            checked={isActive}
-            onChange={(e) => setIsActive(e.target.checked)}
-            className="rounded border-white/20 bg-white/5 text-red-500 focus:ring-red-600/50"
-          />
-          <label htmlFor="webhook-active" className="text-sm text-white/80">
-            Active
-          </label>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingTop: 20,
+            borderTop: "1px solid var(--rule)",
+            gap: 16,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span
+              style={{
+                fontFamily: "var(--font-serif)",
+                fontSize: 15,
+                color: "var(--cream)",
+              }}
+            >
+              {isActive ? (
+                <>
+                  <em style={{ fontStyle: "italic", color: "var(--ivy)" }}>Live</em>
+                  . The wire is open.
+                </>
+              ) : (
+                <>
+                  <em style={{ fontStyle: "italic", color: "var(--cream-3)" }}>
+                    Paused
+                  </em>
+                  . No events will be sent.
+                </>
+              )}
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-mono-jb)",
+                fontSize: 10,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--cream-3)",
+              }}
+            >
+              TOGGLE TO {isActive ? "PAUSE" : "RESUME"}
+            </span>
+          </div>
+          <Toggle checked={isActive} onChange={setIsActive} ariaLabel="Active" />
         </div>
       )}
-      <div className="flex gap-3 max-sm:flex-col max-sm:gap-2">
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-[#8b1a1a] hover:bg-[#6b0f0f] disabled:opacity-50 transition-colors max-sm:min-h-[44px]"
-        >
-          {saving ? "Saving…" : edit ? "Update" : "Create"}
-        </button>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          paddingTop: 20,
+          borderTop: "1px solid var(--rule)",
+          flexWrap: "wrap",
+        }}
+      >
+        <EditorialButton type="submit" disabled={saving} variant="primary">
+          {saving ? "Saving…" : edit ? "Update webhook" : "Create webhook"}
+        </EditorialButton>
         {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2.5 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors max-sm:min-h-[44px]"
-          >
+          <EditorialButton type="button" onClick={onCancel} disabled={saving}>
             Cancel
-          </button>
+          </EditorialButton>
         )}
       </div>
     </form>

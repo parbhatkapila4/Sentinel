@@ -1,37 +1,158 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardLoadingShell } from "@/components/dashboard-loading-shell";
-
 export default function TopDealsLoading() {
   return (
-    <DashboardLoadingShell>
+    <div
+      aria-live="polite"
+      aria-label="Loading top deals"
+      style={{
+        minHeight: "100vh",
+        background: "var(--ink)",
+        color: "var(--cream)",
+        position: "relative",
+      }}
+      className="sentinel-grain sentinel-vignette"
+    >
       <div
-        className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-[1600px] mx-auto min-h-screen"
-        aria-live="polite"
-        aria-label="Loading top deals"
+        style={{
+          padding: "48px 56px 64px",
+          maxWidth: 1600,
+          margin: "0 auto",
+        }}
       >
-        <header>
-          <Skeleton className="h-2.5 w-14 rounded mb-3" />
-          <Skeleton className="h-12 w-48 rounded-lg sm:w-64 mb-4" />
-          <Skeleton className="h-4 w-72 rounded" />
-        </header>
+        <SkeletonRow width={180} height={10} delay={0} />
+        <div style={{ height: 24 }} />
+        <SkeletonRow width={520} height={56} delay={60} />
+        <div style={{ height: 14 }} />
+        <SkeletonRow width={420} height={14} delay={120} />
+        <div style={{ height: 56 }} />
 
-        <section>
-          <Skeleton className="h-2.5 w-28 rounded mb-5" />
-          <div className="space-y-3">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="rounded-xl border border-white/[0.06] bg-[#080808] p-5 sm:p-6 flex items-center gap-4">
-                <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
-                <div className="flex-1 space-y-1.5 min-w-0">
-                  <Skeleton className="h-4 w-40 rounded" />
-                  <Skeleton className="h-3 w-28 rounded" />
-                </div>
-                <Skeleton className="h-5 w-16 rounded-full" />
-                <Skeleton className="h-6 w-20 rounded" />
+        <SectionHeader />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            borderTop: "1px solid var(--rule-strong)",
+            borderBottom: "1px solid var(--rule-strong)",
+          }}
+        >
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                padding: "26px 24px 28px",
+                borderLeft: i === 0 ? "none" : "1px solid var(--rule)",
+              }}
+            >
+              <SkeletonRow width={120} height={10} delay={i * 60} />
+              <div style={{ height: 16 }} />
+              <SkeletonRow width={180} height={42} delay={i * 60 + 40} />
+              <div style={{ height: 12 }} />
+              <SkeletonRow width={140} height={10} delay={i * 60 + 80} />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ height: 48 }} />
+        <SectionHeader />
+        <div style={{ marginTop: 16 }}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "auto 1fr auto",
+                gap: 24,
+                alignItems: "center",
+                padding: "22px 24px",
+                borderTop:
+                  i === 0
+                    ? "1px solid var(--rule-strong)"
+                    : "1px solid var(--rule)",
+              }}
+            >
+              <div
+                style={{
+                  width: 64,
+                  height: 56,
+                  border: "1px solid var(--rule-strong)",
+                  background: "var(--ink-02)",
+                }}
+              />
+              <div style={{ minWidth: 0 }}>
+                <SkeletonRow
+                  width={Math.min(280 + i * 8, 460)}
+                  height={20}
+                  delay={i * 30}
+                />
+                <div style={{ height: 8 }} />
+                <SkeletonRow width={220} height={10} delay={i * 30 + 40} />
               </div>
-            ))}
-          </div>
-        </section>
+              <div style={{ minWidth: 168, textAlign: "right" }}>
+                <SkeletonRow
+                  width={120}
+                  height={26}
+                  delay={i * 30 + 60}
+                  align="right"
+                />
+                <div style={{ height: 8 }} />
+                <SkeletonRow
+                  width={168}
+                  height={2}
+                  delay={i * 30 + 100}
+                  align="right"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </DashboardLoadingShell>
+    </div>
+  );
+}
+
+function SectionHeader() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        gap: 14,
+        padding: "16px 0",
+        borderTop: "1px solid var(--rule-strong)",
+        borderBottom: "1px solid var(--rule)",
+      }}
+    >
+      <SkeletonRow width={28} height={10} delay={0} />
+      <SkeletonRow width={140} height={10} delay={40} />
+      <span style={{ flex: 1 }} />
+      <SkeletonRow width={120} height={10} delay={80} />
+    </div>
+  );
+}
+
+function SkeletonRow({
+  width,
+  height,
+  delay,
+  align,
+}: {
+  width: number;
+  height: number;
+  delay: number;
+  align?: "right";
+}) {
+  return (
+    <span
+      aria-hidden
+      className="anim-rise"
+      style={{
+        display: "block",
+        width,
+        height,
+        background:
+          "linear-gradient(90deg, var(--ink-02) 0%, var(--ink-03) 50%, var(--ink-02) 100%)",
+        animationDelay: `${delay}ms`,
+        marginLeft: align === "right" ? "auto" : undefined,
+      }}
+    />
   );
 }

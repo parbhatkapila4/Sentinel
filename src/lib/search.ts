@@ -91,5 +91,8 @@ export async function searchDeals(
     select: { id: true, name: true, stage: true, value: true },
   });
 
-  return deals;
+  return deals.map((deal) => ({
+    ...deal,
+    value: Number(deal.value),
+  }));
 }

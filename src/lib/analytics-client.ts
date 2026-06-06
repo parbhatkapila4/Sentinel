@@ -1,4 +1,3 @@
-
 const TRACK_ENDPOINT = "/api/analytics/track";
 
 export const ANALYTICS_EVENTS = {
@@ -44,9 +43,9 @@ export function trackPageView(path: string): void {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       keepalive: true,
-    }).catch(() => { });
+    }).catch(() => {
+    });
   } catch {
-
   }
 }
 
@@ -63,8 +62,8 @@ export function trackEvent(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       keepalive: true,
-    }).catch(() => { });
+    }).catch(() => {
+    });
   } catch {
-
   }
 }

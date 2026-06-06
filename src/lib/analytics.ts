@@ -1,6 +1,12 @@
 import { subDays, differenceInDays, isAfter } from "date-fns";
 import { formatRiskLevel } from "@/lib/dealRisk";
-import { STAGE_TO_SOURCE } from "@/lib/config";
+import {
+  DEAL_CHANNELS,
+  DEAL_CHANNEL_LABELS,
+  STAGE_TO_CHANNEL_FALLBACK,
+  normalizeChannel,
+  type DealChannel,
+} from "@/lib/config";
 import type {
   DealForAnalytics,
   PipelineMetrics,
@@ -16,13 +22,17 @@ const MONTH_NAMES = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-const REVENUE_SOURCES_ORDER = [
-  "Direct",
-  "Organic",
-  "Paid Ads",
-  "Referrals",
-  "Partnerships",
-];
+const REVENUE_SOURCES_ORDER: string[] = DEAL_CHANNELS.map(
+  (c) => DEAL_CHANNEL_LABELS[c]
+);
+
+function resolveChannelLabel(deal: { stage: string; channel?: string | null }): string {
+  const normalized = normalizeChannel(deal.channel);
+  if (normalized) return DEAL_CHANNEL_LABELS[normalized];
+  const fallback: DealChannel | undefined = STAGE_TO_CHANNEL_FALLBACK[deal.stage];
+  if (fallback) return DEAL_CHANNEL_LABELS[fallback];
+  return DEAL_CHANNEL_LABELS.direct;
+}
 
 export function calculatePipelineMetrics(
   deals: DealForAnalytics[]
@@ -77,29 +87,37 @@ export function calculateChartData(deals: DealForAnalytics[]): {
   avgGrowthRate: number;
 } {
   const monthlyRevenue = calculateMonthlyRevenue(deals);
-  const year = 2026;
-  const data: ChartDataPoint[] = [];
-  let prevActual = 0;
 
-  for (let monthIndex = 0; monthIndex <= 5; monthIndex++) {
-    const key = `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+  const now = new Date();
+  const PAST_MONTHS = 2;
+  const FUTURE_MONTHS = 3;
+  const data: ChartDataPoint[] = [];
+
+  for (let offset = -PAST_MONTHS; offset <= FUTURE_MONTHS; offset++) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const priorYearDate = new Date(
+      monthDate.getFullYear() - 1,
+      monthDate.getMonth(),
+      1
+    );
+    const key = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, "0")}`;
+    const priorKey = `${priorYearDate.getFullYear()}-${String(priorYearDate.getMonth() + 1).padStart(2, "0")}`;
     const actual = monthlyRevenue[key] ?? 0;
     data.push({
-      month: MONTH_NAMES[monthIndex],
+      month: MONTH_NAMES[monthDate.getMonth()],
       actual,
       prediction: actual > 0 ? actual * 1.05 : 0,
-      lastMonth: prevActual,
+      lastMonth: monthlyRevenue[priorKey] ?? 0,
     });
-    prevActual = actual;
   }
 
-  const sortedMonths = data.map((d) => [d.month, d.actual] as const);
+  const pastAndCurrent = data.slice(0, PAST_MONTHS + 1);
   let avgGrowthRate = 0;
-  if (sortedMonths.length >= 2) {
+  if (pastAndCurrent.length >= 2) {
     const rates: number[] = [];
-    for (let i = 1; i < sortedMonths.length; i++) {
-      const prev = sortedMonths[i - 1][1];
-      const curr = sortedMonths[i][1];
+    for (let i = 1; i < pastAndCurrent.length; i++) {
+      const prev = pastAndCurrent[i - 1].actual;
+      const curr = pastAndCurrent[i].actual;
       if (prev > 0) rates.push((curr - prev) / prev);
     }
     if (rates.length > 0) {
@@ -117,7 +135,7 @@ export function calculateRevenueBySource(
 
   const revenueBySource: Record<string, { value: number; previousValue: number }> = {};
   for (const d of deals) {
-    const source = STAGE_TO_SOURCE[d.stage] ?? "Direct";
+    const source = resolveChannelLabel(d);
     if (!revenueBySource[source]) {
       revenueBySource[source] = { value: 0, previousValue: 0 };
     }
@@ -127,7 +145,7 @@ export function calculateRevenueBySource(
   const previousBySource: Record<string, number> = {};
   for (const d of deals) {
     if (new Date(d.createdAt) < thirtyDaysAgo) {
-      const source = STAGE_TO_SOURCE[d.stage] ?? "Direct";
+      const source = resolveChannelLabel(d);
       previousBySource[source] = (previousBySource[source] ?? 0) + d.value;
     }
   }

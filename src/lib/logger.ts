@@ -43,31 +43,24 @@ function shouldLog(level: LogLevel): boolean {
 function formatLogEntry(entry: LogEntry): string {
   if (process.env.NODE_ENV === "production") {
     return JSON.stringify(entry);
-  } else {
-    const timestamp = new Date(entry.timestamp).toISOString();
-    const levelEmoji = {
-      debug: "🔍",
-      info: "ℹ️",
-      warn: "⚠️",
-      error: "❌",
-    }[entry.level];
-
-    const reqPart = entry.requestId ? ` [req:${entry.requestId}]` : "";
-    let output = `${levelEmoji} [${timestamp}]${reqPart} ${entry.level.toUpperCase()}: ${entry.message}`;
-
-    if (entry.context && Object.keys(entry.context).length > 0) {
-      output += `\n  Context: ${JSON.stringify(entry.context, null, 2)}`;
-    }
-
-    if (entry.error) {
-      output += `\n  Error: ${entry.error.name}: ${entry.error.message}`;
-      if (entry.error.stack) {
-        output += `\n  Stack: ${entry.error.stack}`;
-      }
-    }
-
-    return output;
   }
+
+  const timestamp = new Date(entry.timestamp).toISOString();
+  const reqPart = entry.requestId ? ` [req:${entry.requestId}]` : "";
+  let output = `[${timestamp}]${reqPart} ${entry.level.toUpperCase()}: ${entry.message}`;
+
+  if (entry.context && Object.keys(entry.context).length > 0) {
+    output += `\n  Context: ${JSON.stringify(entry.context, null, 2)}`;
+  }
+
+  if (entry.error) {
+    output += `\n  Error: ${entry.error.name}: ${entry.error.message}`;
+    if (entry.error.stack) {
+      output += `\n  Stack: ${entry.error.stack}`;
+    }
+  }
+
+  return output;
 }
 
 function filterPrimitives(obj: LogContext | undefined): Record<string, string | number | boolean | null> | undefined {

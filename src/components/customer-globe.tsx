@@ -114,8 +114,7 @@ function GlobeWithPoints({ points, textureUrl }: { points: GlobePoint[]; texture
       scene.remove(globe);
       globeRef.current = null;
     };
-  
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, textureUrl]);
 
   useEffect(() => {
@@ -156,7 +155,7 @@ export function CustomerGlobe({ points, className }: CustomerGlobeProps) {
   const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    
+
     const fallbackId = setTimeout(() => setTextureUrl(getFallbackEarthDataUrl()), 0);
     let cancelled = false;
     fetch("/api/globe-texture")
@@ -167,7 +166,8 @@ export function CustomerGlobe({ points, className }: CustomerGlobeProps) {
         blobUrlRef.current = URL.createObjectURL(blob);
         setTextureUrl(blobUrlRef.current);
       })
-      .catch(() => {});
+      .catch(() => {
+      });
     return () => {
       cancelled = true;
       clearTimeout(fallbackId);

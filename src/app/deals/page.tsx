@@ -1,67 +1,114 @@
-import Link from "next/link";
-import { Suspense } from "react";
 import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
+import { format } from "date-fns";
+
 import { getAllDeals } from "@/app/actions/deals";
-import { formatRiskLevel } from "@/lib/dealRisk";
+import { getAllIntegrationStatuses } from "@/app/actions/integrations";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { ExportButton } from "@/components/export-button";
-import { DealsFilter } from "@/components/deals-filter";
-import { DealsScopeFilter } from "@/components/deals-scope-filter";
-import { PipelineValueCard } from "@/components/pipeline-value-card";
-import { DemoBanner } from "@/components/demo-banner";
-import { DealsTableWithBulk } from "@/components/deals-table-with-bulk";
+import { formatRiskLevel } from "@/lib/dealRisk";
+
+import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
+import { SectionRule } from "@/components/sentinel/sections/SectionRule";
+import { Colophon } from "@/components/sentinel/Colophon";
+
+import { DealsMasthead } from "@/components/sentinel/deals/DealsMasthead";
+import { DealsKPIs } from "@/components/sentinel/deals/DealsKPIs";
+import {
+  StageFlowBand,
+  type StageFlowItem,
+} from "@/components/sentinel/deals/StageFlowBand";
+import {
+  DealsToolbar,
+  type DealsFilterType,
+  type DealsScopeType,
+} from "@/components/sentinel/deals/DealsToolbar";
+import { DealsTable } from "@/components/sentinel/deals/DealsTable";
+
+import {
+  buildSentinelShellContext,
+  mapRawDealsToSentinel,
+} from "@/components/sentinel/shell-context";
+import { formatShortMoney } from "@/lib/format-money";
 
 export const dynamic = "force-dynamic";
 
-type FilterType = "all" | "active" | "at-risk" | "closed";
+type RawDeal = Awaited<ReturnType<typeof getAllDeals>>[number];
 
-function filterDeals(
-  deals: Awaited<ReturnType<typeof getAllDeals>>,
-  filter: FilterType,
+function applyFilter(
+  deals: RawDeal[],
+  filter: DealsFilterType,
   searchQuery?: string
 ) {
   let filtered = deals;
 
   if (searchQuery && searchQuery.trim().length > 0) {
-    const query = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase();
     filtered = filtered.filter(
-      (deal) =>
-        deal.name.toLowerCase().includes(query) ||
-        deal.stage.toLowerCase().includes(query)
+      (d) =>
+        d.name.toLowerCase().includes(q) ||
+        d.stage.toLowerCase().includes(q)
     );
   }
 
   switch (filter) {
-    case "all":
-      return filtered;
     case "active":
-      return filtered.filter((deal) => deal.status === "active");
+      return filtered.filter((d) => d.status === "active");
     case "at-risk":
-      return filtered.filter(
-        (deal) => formatRiskLevel(deal.riskScore) === "High"
-      );
+      return filtered.filter((d) => formatRiskLevel(d.riskScore) === "High");
     case "closed":
       return filtered.filter(
-        (deal) => deal.status === "saved" || deal.status === "lost" || deal.status === "closed"
+        (d) =>
+          d.status === "saved" ||
+          d.status === "lost" ||
+          d.status === "closed"
       );
+    case "all":
     default:
       return filtered;
   }
 }
 
+const STAGE_FLOW_DEF: Array<{ key: string; label: string; matches: string[] }> = [
+  { key: "discover", label: "Discover", matches: ["discover", "discovery", "prospect"] },
+  { key: "qualify", label: "Qualify", matches: ["qualify", "qualification"] },
+  { key: "proposal", label: "Proposal", matches: ["proposal"] },
+  { key: "negotiation", label: "Negotiate", matches: ["negotiation", "negotiate"] },
+  { key: "closed_won", label: "Won", matches: ["closed_won", "closed won", "won"] },
+  { key: "closed_lost", label: "Lost", matches: ["closed_lost", "closed lost", "lost"] },
+];
+
+function buildStageFlow(deals: RawDeal[]): StageFlowItem[] {
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, "_");
+  return STAGE_FLOW_DEF.map((def) => {
+    const bucket = deals.filter((d) => {
+      const s = norm(d.stage);
+      return def.matches.some((m) => s === norm(m));
+    });
+    return {
+      stage: def.key,
+      label: def.label,
+      count: bucket.length,
+      value: bucket.reduce((sum, d) => sum + d.value, 0),
+    };
+  });
+}
+
 export default async function DealsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; search?: string; team?: string; scope?: string }>;
+  searchParams: Promise<{
+    filter?: string;
+    search?: string;
+    team?: string;
+    scope?: string;
+  }>;
 }) {
   noStore();
   const params = await searchParams;
-  const filter = (params?.filter || "all") as FilterType;
-  const searchQuery = params?.search;
+  const filter = (params?.filter || "all") as DealsFilterType;
+  const searchQuery = params?.search ?? "";
   const teamId = params?.team ?? null;
-  const scope = (params?.scope || "my") as "my" | "all";
+  const scope = (params?.scope || "my") as DealsScopeType;
 
   let userId: string;
   try {
@@ -70,196 +117,237 @@ export default async function DealsPage({
     redirect("/sign-in?redirect=/deals");
   }
 
-  let showDemoBanner = false;
-  let deals: Awaited<ReturnType<typeof getAllDeals>> = [];
+  let dealsRaw: RawDeal[] = [];
   let dataError = false;
+  let integrationStatuses: Awaited<
+    ReturnType<typeof getAllIntegrationStatuses>
+  > | null = null;
+
   try {
-    deals = await getAllDeals(
+    dealsRaw = await getAllDeals(
       scope === "all"
         ? { includeTeamDeals: true }
         : teamId
           ? { teamId }
           : undefined
     );
-    showDemoBanner = deals.length > 0 && deals.every((deal) => deal.isDemo);
   } catch {
     dataError = true;
   }
 
+  try {
+    integrationStatuses = await getAllIntegrationStatuses();
+  } catch {
+    integrationStatuses = null;
+  }
+
   const scopeDeals =
     teamId && scope === "my"
-      ? deals.filter(
-        (d) => d.assignedToId === userId || d.userId === userId
-      )
-      : deals;
+      ? dealsRaw.filter(
+          (d) => d.assignedToId === userId || d.userId === userId
+        )
+      : dealsRaw;
 
-  const filteredDeals = filterDeals(scopeDeals, filter, searchQuery);
+  const filteredDeals = applyFilter(scopeDeals, filter, searchQuery);
 
-  const urgencyOrder = { high: 0, medium: 1, low: 2, none: 3 };
+  const urgencyOrder = { high: 0, medium: 1, low: 2, none: 3 } as const;
   const sortedDeals = [...filteredDeals].sort((a, b) => {
-    const aUrgency = a.recommendedAction?.urgency || "none";
-    const bUrgency = b.recommendedAction?.urgency || "none";
-    const urgencyDiff = urgencyOrder[aUrgency] - urgencyOrder[bUrgency];
-    if (urgencyDiff !== 0) return urgencyDiff;
+    const aU = (a.recommendedAction?.urgency ?? "none") as keyof typeof urgencyOrder;
+    const bU = (b.recommendedAction?.urgency ?? "none") as keyof typeof urgencyOrder;
+    const diff = urgencyOrder[aU] - urgencyOrder[bU];
+    if (diff !== 0) return diff;
     return b.riskScore - a.riskScore;
   });
 
-  const totalValue = scopeDeals.reduce((sum, deal) => sum + deal.value, 0);
-  const highRiskDeals = scopeDeals.filter(
-    (deal) => formatRiskLevel(deal.riskScore) === "High"
+  const totalValue = scopeDeals.reduce((sum, d) => sum + d.value, 0);
+  const activeDeals = scopeDeals.filter((d) => d.status === "active");
+  const activeValue = activeDeals.reduce((sum, d) => sum + d.value, 0);
+  const closedWon = scopeDeals.filter((d) => {
+    const s = d.stage.toLowerCase().replace(/\s+/g, "_");
+    return s === "closed_won" || s === "closed" || d.status === "closed";
+  });
+  const highRisk = scopeDeals.filter(
+    (d) => formatRiskLevel(d.riskScore) === "High"
   );
-  const activeDeals = scopeDeals.filter(
-    (deal) => deal.status === "active" || deal.status === "Active"
+  const highRiskValue = highRisk.reduce((sum, d) => sum + d.value, 0);
+
+  const totalDealsAcrossBook = dealsRaw.length;
+  const now = new Date();
+  const sevenDaysAgo = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+  const newThisWeek = scopeDeals.filter(
+    (d) => new Date(d.createdAt).getTime() >= sevenDaysAgo
+  ).length;
+
+  const coveragePercent =
+    totalDealsAcrossBook > 0
+      ? (closedWon.length / totalDealsAcrossBook) * 100
+      : 0;
+
+  const isDemoMode =
+    dealsRaw.length > 0 && dealsRaw.every((d) => d.isDemo);
+  const hasAnyDeals = dealsRaw.length > 0;
+
+  const deals = mapRawDealsToSentinel(dealsRaw);
+  const shellContext = buildSentinelShellContext({
+    deals,
+    integrationStatuses,
+    coveragePercent,
+    hasAnyDeals,
+    isDemoMode,
+    now,
+  });
+
+  const stageFlow = buildStageFlow(scopeDeals);
+  const activeStageFlow = stageFlow.filter(
+    (s) => s.stage !== "closed_won" && s.stage !== "closed_lost"
+  );
+  const totalActiveInFlow = activeStageFlow.reduce(
+    (sum, s) => sum + s.value,
+    0
   );
 
-  const CARD_CLASS = "rounded-xl p-5 sm:p-6 border border-white/8 bg-[#080808] transition-colors hover:border-white/10 card-elevated";
+  const pctAtRisk =
+    scopeDeals.length > 0
+      ? (highRisk.length / scopeDeals.length) * 100
+      : 0;
+
+  const kpiItems = [
+    {
+      index: "01",
+      label: "Pipeline Weighted",
+      value: formatShortMoney(totalValue),
+      support: `${scopeDeals.length} DEALS ON BOOK`,
+      trendTone: "neutral" as const,
+    },
+    {
+      index: "02",
+      label: "Active Volume",
+      value: formatShortMoney(activeValue),
+      support: `${activeDeals.length} IN MOTION`,
+      trendTone: "up" as const,
+    },
+    {
+      index: "03",
+      label: "At Risk",
+      value: formatShortMoney(highRiskValue),
+      support:
+        highRisk.length > 0
+          ? `${highRisk.length} FLAGGED · ${pctAtRisk.toFixed(0)}%`
+          : "NO FLAGS",
+      trendTone: highRisk.length > 0 ? ("down" as const) : ("up" as const),
+    },
+    {
+      index: "04",
+      label: "New · 7d",
+      value: String(newThisWeek),
+      support: `${closedWon.length} WON THIS BOOK`,
+      trendTone: newThisWeek > 0 ? ("up" as const) : ("neutral" as const),
+    },
+  ];
+
+  const dateLine = format(now, "EEEE - MMMM d, yyyy").toUpperCase();
+  const scopeLabel = scope === "all" ? "TEAM DESK" : "MY DESK";
+  const filterLabel =
+    filter === "all" ? "ALL DEALS" : filter.replace("-", " ").toUpperCase();
+
+  const masthHeadMeta = [
+    { label: "Edition", value: format(now, "HH:mm") },
+    { label: "Scope", value: scopeLabel },
+    { label: "Filter", value: filterLabel },
+    { label: "On Book", value: String(scopeDeals.length) },
+  ];
+
+  const italicTail = scope === "all" ? "desk" : "book";
 
   return (
-    <DashboardLayout>
-      <div className="relative min-h-full w-full">
-        <div className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-[1600px] mx-auto">
-          {dataError && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 shadow-lg shadow-amber-500/10">
-              <p className="text-sm font-medium text-amber-200">Data temporarily unavailable</p>
-              <p className="text-xs text-amber-200/70 mt-1">Check your connection and try again. Deals list is empty.</p>
-            </div>
-          )}
-          {showDemoBanner && <DemoBanner />}
-
-          <header className="animate-fade-in-up">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
-                <p className="text-[11px] sm:text-xs font-medium tracking-[0.24em] uppercase text-white/50 mb-3">Pipeline</p>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.03em] text-white leading-[1.12] [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">
-                  All
-                  <span className="text-[#0f766e]" style={{ textShadow: "0 0 32px rgba(15,118,110,0.35)" }}> deals</span>
-                </h1>
-                <p className="mt-4 text-base sm:text-lg text-white/60 max-w-xl leading-relaxed">
-                  Manage and track your deals pipeline.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <ExportButton
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white/60 hover:text-white transition-colors bg-white/4 border border-white/8 hover:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                  teamId={teamId}
-                  includeTeamDeals={scope === "all"}
-                />
-                <Link
-                  href="/deals/new"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                  New deal
-                </Link>
-              </div>
-            </div>
-          </header>
-
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.05s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">Key metrics</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7">
-              <div className={`${CARD_CLASS} min-w-0 flex flex-col space-y-3`}>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-white/5 border border-white/10 text-white/70">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-white/50 truncate">All deals</p>
-                    <p className="text-[11px] text-white/40 truncate">Total deals</p>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">{scopeDeals.length}</p>
-                <p className="text-xs text-white/40">Active pipeline</p>
-              </div>
-
-              <div className={`${CARD_CLASS} min-w-0 flex flex-col space-y-3`}>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-green-700/10 text-green-400 border border-green-700/20">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-white/50 truncate">Active</p>
-                    <p className="text-[11px] text-white/40 truncate">In progress</p>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">{activeDeals.length}</p>
-                <p className="text-xs text-green-400/80">Increasing</p>
-              </div>
-
-              <div className={`${CARD_CLASS} min-w-0 flex flex-col space-y-3`}>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 bg-red-700/10 text-red-400 border border-red-700/20">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-white/50 truncate">At risk</p>
-                    <p className="text-[11px] text-white/40 truncate">Need attention</p>
-                  </div>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">{highRiskDeals.length}</p>
-                <p className="text-xs text-white/40">Monitor closely</p>
-              </div>
-
-              <PipelineValueCard totalValue={totalValue} className="border-white/8! bg-[#080808]! hover:border-white/10! shadow-none! card-elevated" />
-            </div>
-          </section>
-
-          <section className="animate-fade-in-up" style={{ animationDelay: "0.1s", animationFillMode: "both" }}>
-            <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-white/45 mb-5">Deal pipeline</p>
-            <div className={CARD_CLASS}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-white/6 pb-5">
-                <h2 className="text-base font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Deals</h2>
-                <div className="flex flex-col sm:flex-row gap-3 flex-wrap max-md:gap-2">
-                  <Suspense fallback={<div className="h-8 w-24 rounded-lg relative overflow-hidden bg-white/[0.04] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/[0.07] before:to-transparent before:animate-[skeleton-shimmer_2s_ease-in-out_infinite] before:-translate-x-full" />}>
-                    <DealsScopeFilter currentScope={scope} />
-                  </Suspense>
-                  <Suspense fallback={<div className="h-8 w-48 rounded-lg relative overflow-hidden bg-white/[0.04] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/[0.07] before:to-transparent before:animate-[skeleton-shimmer_2s_ease-in-out_infinite] before:-translate-x-full" />}>
-                    <DealsFilter currentFilter={filter} />
-                  </Suspense>
-                </div>
-              </div>
-
-              {filteredDeals.length === 0 ? (
-                <div className="text-center py-12 sm:py-20">
-                  <p className="text-white/50 text-sm font-medium">No deals yet</p>
-                  <p className="text-white/40 text-xs mt-1.5 max-w-md mx-auto">Start tracking your pipeline by creating your first deal.</p>
-                  <Link
-                    href="/deals/new"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium text-white bg-[#0f766e] hover:bg-[#0d9488] border border-[#0f766e]/40 transition-colors mt-6"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Create deal
-                  </Link>
-                </div>
-                  ) : (
-                <DealsTableWithBulk
-                  deals={sortedDeals.map((d) => ({
-                id: d.id,
-                name: d.name,
-                value: d.value,
-                stage: d.stage,
-                riskScore: d.riskScore,
-                assignedTo: d.assignedTo ?? null,
-                recommendedAction: d.recommendedAction ?? null,
-                lastActivityAt: d.lastActivityAt,
-                isDemo: d.isDemo,
-              }))}
-                  />
-              )}
-            </div>
-          </section>
+    <SentinelShell
+      syncTime={shellContext.syncTime}
+      coveragePercent={shellContext.coveragePercent}
+      sourceLabels={shellContext.sourceLabels}
+      alertCount={shellContext.alertCount}
+      tickerItems={shellContext.tickerItems}
+      onboarding={shellContext.onboarding}
+    >
+      {dataError && (
+        <div
+          role="alert"
+          style={{
+            margin: "16px 56px 0",
+            padding: "12px 16px",
+            border: "1px solid var(--copper)",
+            borderLeft: "3px solid var(--copper)",
+            background: "rgba(217,153,90,0.06)",
+            color: "var(--cream-2)",
+            fontFamily: "var(--font-mono-jb)",
+            fontSize: 11,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
+          DATA TEMPORARILY UNAVAILABLE - DESK RUNNING ON CACHE
         </div>
-      </div>
-    </DashboardLayout>
+      )}
+
+      <DealsMasthead
+        kicker={`Pipeline · ${dateLine}`}
+        headline="Every deal on the"
+        italicWord={italicTail + "."}
+        deck="Read across the book with one eye on risk and the other on what's next. Sort with the filters below; the wire above will keep flagging movement as it happens."
+        meta={masthHeadMeta}
+      />
+
+      <SectionRule
+        number="01"
+        label="THE BOOK"
+        meta={`${scopeDeals.length} ON BOOK · ${activeDeals.length} ACTIVE · ${highRisk.length} AT RISK`}
+      />
+      <DealsKPIs items={kpiItems} />
+
+      <SectionRule
+        number="02"
+        label="STAGE FLOW"
+        meta={`${STAGE_FLOW_DEF.length} STAGES · ${formatShortMoney(totalActiveInFlow)} IN MOTION`}
+      />
+      <StageFlowBand
+        stages={stageFlow}
+        totalActiveValue={totalActiveInFlow}
+      />
+
+      <SectionRule
+        number="03"
+        label="THE LIST"
+        meta={`${sortedDeals.length} SHOWN · ${scopeDeals.length} IN SCOPE`}
+      />
+      <section
+        aria-label="Deals list"
+        style={{ padding: "28px 56px 40px" }}
+      >
+        <DealsToolbar
+          currentFilter={filter}
+          currentScope={scope}
+          currentSearch={searchQuery}
+          teamId={teamId}
+          totalShown={sortedDeals.length}
+          totalInScope={scopeDeals.length}
+        />
+
+        <DealsTable
+          deals={sortedDeals.map((d) => ({
+            id: d.id,
+            name: d.name,
+            value: d.value,
+            stage: d.stage,
+            status: d.status,
+            riskScore: d.riskScore,
+            assignedTo: d.assignedTo ?? null,
+            recommendedAction: d.recommendedAction ?? null,
+            lastActivityAt: d.lastActivityAt,
+            isDemo: d.isDemo,
+          }))}
+        />
+      </section>
+
+      <Colophon systemStatus={dataError ? "degraded" : "operational"} />
+    </SentinelShell>
   );
 }

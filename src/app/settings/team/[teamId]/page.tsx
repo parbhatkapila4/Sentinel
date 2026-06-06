@@ -1,10 +1,14 @@
-import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { unstable_noStore as noStore } from "next/cache";
+
 import { getTeamById, getTeamInvites } from "@/app/actions/teams";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { TeamDetailClient } from "./team-detail-client";
 import { TEAM_ROLES } from "@/lib/config";
+
+import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
+import { buildShellContextForPage } from "@/components/sentinel/shell/buildContextForPage";
+import { TeamDetailClient } from "./team-detail-client";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +24,7 @@ export default async function TeamDetailPage({
 }: {
   params: Promise<{ teamId: string }>;
 }) {
+  noStore();
   const { teamId } = await params;
   let team;
   let invites: Awaited<ReturnType<typeof getTeamInvites>> = [];
@@ -45,29 +50,134 @@ export default async function TeamDetailPage({
     }
   }
 
-  return (
-    <DashboardLayout>
-      <div className="p-6 min-h-full max-sm:p-4 max-sm:pb-6 overflow-x-hidden" style={{ background: "#0a0a0f" }}>
-        <Link
-          href="/settings/team"
-          className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-6 min-h-[44px] items-center"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to teams
-        </Link>
+  const shellContext = await buildShellContextForPage();
 
-        <div className="flex items-start justify-between mb-8 max-sm:mb-6">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-white mb-1 max-sm:text-xl truncate">{team.name}</h1>
-            <p className="text-sm text-white/40">
-              {ROLE_LABELS[team.myRole] ?? team.myRole} · {team.members.length} member
-              {team.members.length !== 1 ? "s" : ""}
-            </p>
+  return (
+    <SentinelShell
+      syncTime={shellContext.syncTime}
+      coveragePercent={shellContext.coveragePercent}
+      sourceLabels={shellContext.sourceLabels}
+      alertCount={shellContext.alertCount}
+      tickerItems={shellContext.tickerItems}
+      onboarding={shellContext.onboarding}
+    >
+      <section
+        style={{
+          padding: "48px 32px 40px",
+          borderBottom: "1px solid var(--rule)",
+          display: "grid",
+          gridTemplateColumns: "minmax(140px, 160px) minmax(0, 1fr) minmax(220px, 260px)",
+          gap: 48,
+        }}
+      >
+        <div
+          style={{
+            borderRight: "1px solid var(--rule)",
+            paddingRight: 24,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          <div style={{ fontFamily: "var(--font-mono-jb)", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--cream-3)" }}>
+            Section -
+          </div>
+          <div style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: 60, lineHeight: 0.85, color: "var(--cream)", letterSpacing: "-0.04em" }}>
+            § 05
+          </div>
+          <div style={{ fontFamily: "var(--font-mono-jb)", fontSize: 11, color: "var(--cream-2)", letterSpacing: "0.06em", lineHeight: 1.6, textTransform: "uppercase" }}>
+            <strong style={{ color: "var(--cream)", fontWeight: 500 }}>TEAM · DESK</strong>
+            <br />
+            {team.members.length} ON THE BOOK
+            <br />
+            {(ROLE_LABELS[team.myRole] ?? team.myRole).toUpperCase()} SEAT
           </div>
         </div>
 
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            gap: 10,
+            minWidth: 0,
+          }}
+        >
+          <Link
+            href="/settings/team"
+            className="sentinel-link-signal"
+            style={{
+              fontFamily: "var(--font-mono-jb)",
+              fontSize: 10,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              marginBottom: 4,
+            }}
+          >
+            ← Back to roster
+          </Link>
+          <h1
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 54,
+              fontWeight: 400,
+              lineHeight: 1.0,
+              letterSpacing: "-0.02em",
+              color: "var(--cream)",
+              margin: 0,
+              wordBreak: "break-word",
+            }}
+          >
+            <em style={{ fontStyle: "italic", color: "var(--signal)", fontFamily: "var(--font-serif)" }}>
+              {team.name}
+            </em>
+            .
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontStyle: "italic",
+              fontSize: 16,
+              lineHeight: 1.45,
+              color: "var(--cream-2)",
+              margin: 0,
+            }}
+          >
+            {ROLE_LABELS[team.myRole] ?? team.myRole} - {team.members.length}{" "}
+            {team.members.length === 1 ? "colleague" : "colleagues"} on the desk.
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <span style={{ fontFamily: "var(--font-mono-jb)", fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--cream-3)" }}>
+            SEAT
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-mono-jb)",
+              fontSize: 11,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              padding: "6px 12px",
+              color: "var(--cream)",
+              border: "1px solid var(--signal)",
+              background: "rgba(200, 71, 46, 0.06)",
+            }}
+          >
+            {ROLE_LABELS[team.myRole] ?? team.myRole}
+          </span>
+        </div>
+      </section>
+
+      <section style={{ padding: "48px 32px 80px", maxWidth: 1200, margin: "0 auto" }}>
         <TeamDetailClient
           teamId={team.id}
           teamName={team.name}
@@ -76,7 +186,7 @@ export default async function TeamDetailPage({
           invites={invites}
           currentUserId={currentUserId}
         />
-      </div>
-    </DashboardLayout>
+      </section>
+    </SentinelShell>
   );
 }

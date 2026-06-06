@@ -1,4 +1,3 @@
-
 export function sanitizeString(input: string): string {
   if (typeof input !== "string") {
     return String(input);

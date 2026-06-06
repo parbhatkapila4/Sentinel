@@ -1,103 +1,132 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardLoadingShell } from "@/components/dashboard-loading-shell";
-
-function AnalyticsCardSkeleton() {
-  return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#080808] p-5 sm:p-6">
-      <div className="flex items-center justify-between mb-3">
-        <Skeleton className="h-2.5 w-20 rounded" />
-        <Skeleton className="h-8 w-8 rounded-lg" />
-      </div>
-      <Skeleton className="h-8 w-24 rounded mb-1.5" />
-      <Skeleton className="h-2.5 w-28 rounded" />
-    </div>
-  );
-}
+import {
+  EditorialSkeletonShell,
+  MastheadSkeleton,
+  SectionRuleSkeleton,
+  SkeletonBox,
+  SkeletonRow,
+} from "@/components/sentinel/skeleton/EditorialSkeleton";
 
 export default function AnalyticsLoading() {
   return (
-    <DashboardLoadingShell>
-      <div
-        className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-10 sm:space-y-12 max-w-[1600px] mx-auto min-h-screen"
-        aria-live="polite"
-        aria-label="Loading analytics"
-      >
-        <header>
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div>
-              <Skeleton className="h-2.5 w-16 rounded mb-3" />
-              <Skeleton className="h-12 w-64 rounded-lg sm:w-80 mb-4" />
-              <Skeleton className="h-4 w-80 rounded" />
-            </div>
-            <div className="flex flex-col gap-3 items-end">
-              <Skeleton className="h-10 w-28 rounded-xl" />
-              <Skeleton className="h-10 w-36 rounded-xl" />
-            </div>
-          </div>
-        </header>
+    <EditorialSkeletonShell label="Loading analytics" padding="0">
+      <MastheadSkeleton />
 
-        <section>
-          <Skeleton className="h-2.5 w-20 rounded mb-5" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7">
-            {[...Array(4)].map((_, i) => (
-              <AnalyticsCardSkeleton key={i} />
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <Skeleton className="h-2.5 w-24 rounded mb-5" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-7">
-            <div className="rounded-xl border border-white/[0.06] bg-[#080808] p-5 sm:p-6">
-              <Skeleton className="h-5 w-36 rounded mb-6" />
-              <div className="flex justify-center mb-6">
-                <Skeleton className="h-52 w-52 rounded-full" />
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="rounded-xl border border-white/[0.06] p-3 text-center space-y-2">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <Skeleton className="w-2 h-2 rounded-full" />
-                      <Skeleton className="h-2 w-10 rounded" />
-                    </div>
-                    <Skeleton className="h-6 w-8 rounded mx-auto" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-white/[0.06] bg-[#080808] p-5 sm:p-6">
-              <Skeleton className="h-5 w-44 rounded mb-4" />
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <Skeleton className="w-2 h-2 rounded-full shrink-0" />
-                      <div className="space-y-1.5 flex-1">
-                        <Skeleton className="h-3.5 w-36 rounded" />
-                        <Skeleton className="h-2.5 w-28 rounded" />
-                      </div>
-                    </div>
-                    <Skeleton className="h-5 w-12 rounded-full ml-3" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <Skeleton className="h-2.5 w-28 rounded mb-5" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-7">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="rounded-xl border border-white/[0.06] bg-[#080808] p-5 sm:p-6">
-                <Skeleton className="h-5 w-32 rounded mb-4" />
-                <Skeleton className="h-40 w-full rounded-lg" />
-              </div>
-            ))}
-          </div>
-        </section>
+      <div style={{ padding: "40px 32px 32px" }}>
+        <SkeletonRow width={160} height={10} delay={0} />
+        <div style={{ height: 18 }} />
+        <SkeletonRow width={520} height={54} delay={60} />
+        <div style={{ height: 14 }} />
+        <SkeletonRow width={460} height={14} delay={120} />
       </div>
-    </DashboardLoadingShell>
+
+      <div style={{ padding: "0 32px" }}>
+        <SectionRuleSkeleton labelWidth={160} metaWidth={160} delayBase={160} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            borderBottom: "1px solid var(--rule-strong)",
+          }}
+        >
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                padding: "26px 26px 28px",
+                borderLeft: i === 0 ? "none" : "1px solid var(--rule)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              <SkeletonRow width={120} height={10} delay={200 + i * 40} />
+              <SkeletonRow width={180} height={42} delay={240 + i * 40} />
+              <SkeletonRow width={140} height={10} delay={280 + i * 40} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ padding: "0 32px", marginTop: 32 }}>
+        <SectionRuleSkeleton labelWidth={200} metaWidth={180} delayBase={320} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            borderBottom: "1px solid var(--rule)",
+          }}
+        >
+          <div style={{ padding: 32, borderRight: "1px solid var(--rule)" }}>
+            <SkeletonRow width={180} height={10} delay={360} />
+            <div style={{ height: 14 }} />
+            <div style={{ display: "flex", justifyContent: "center", padding: "24px 0" }}>
+              <SkeletonBox width={208} height={208} delay={400} style={{ borderRadius: "50%" }} />
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 12,
+                marginTop: 16,
+              }}
+            >
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonBox key={i} height={64} delay={440 + i * 30} />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 12 }}>
+            <SkeletonRow width={220} height={10} delay={380} />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "auto 1fr auto",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "12px 14px",
+                  border: "1px solid var(--rule)",
+                }}
+              >
+                <SkeletonRow width={8} height={8} delay={420 + i * 40} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <SkeletonRow width="70%" height={12} delay={440 + i * 40} />
+                  <SkeletonRow width="40%" height={10} delay={460 + i * 40} />
+                </div>
+                <SkeletonRow width={52} height={20} delay={480 + i * 40} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: "0 32px", marginTop: 32, paddingBottom: 64 }}>
+        <SectionRuleSkeleton labelWidth={180} metaWidth={200} delayBase={560} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          }}
+        >
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                padding: 32,
+                borderLeft: i === 0 ? "none" : "1px solid var(--rule)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <SkeletonRow width={160} height={10} delay={600 + i * 40} />
+              <SkeletonBox height={200} delay={640 + i * 40} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </EditorialSkeletonShell>
   );
 }

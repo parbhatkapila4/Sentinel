@@ -1,4 +1,6 @@
 import { prisma } from "./prisma";
+import { CANONICAL_PRICING } from "@/lib/pricing-catalog";
+import { REAL_DEAL_WHERE } from "./deal-filters";
 
 export type PlanType = "free" | "starter" | "pro" | "enterprise";
 
@@ -38,7 +40,7 @@ export const PLAN_DEFINITIONS: Record<PlanType, PlanDefinition> = {
     planType: "starter",
     planName: "Starter",
     limits: {
-      maxDeals: 100,
+      maxDeals: 5,
       maxTeamMembers: 3,
       maxApiCalls: 1000,
       maxWebhooks: 3,
@@ -55,7 +57,7 @@ export const PLAN_DEFINITIONS: Record<PlanType, PlanDefinition> = {
     planType: "pro",
     planName: "Professional",
     limits: {
-      maxDeals: 500,
+      maxDeals: 100,
       maxTeamMembers: 10,
       maxApiCalls: 50000,
       maxWebhooks: 10,
@@ -74,7 +76,7 @@ export const PLAN_DEFINITIONS: Record<PlanType, PlanDefinition> = {
     planType: "enterprise",
     planName: "Enterprise",
     limits: {
-      maxDeals: 999999,
+      maxDeals: 500,
       maxTeamMembers: 999999,
       maxApiCalls: 999999,
       maxWebhooks: 999999,
@@ -93,10 +95,10 @@ export const PLAN_DEFINITIONS: Record<PlanType, PlanDefinition> = {
 };
 
 export const PLAN_MONTHLY_PRICES: Record<PlanType, number | null> = {
-  free: null,
-  starter: null,
-  pro: 99,
-  enterprise: -1,
+  free: CANONICAL_PRICING.free.monthly,
+  starter: CANONICAL_PRICING.starter.monthly,
+  pro: CANONICAL_PRICING.pro.monthly,
+  enterprise: CANONICAL_PRICING.enterprise.monthly,
 };
 
 export function getPlanLimits(planType: PlanType): PlanLimits {
@@ -146,6 +148,36 @@ export async function getOrCreateUserPlan(userId: string) {
   return plan;
 }
 
+export async function setUserPlanByType(userId: string, planType: PlanType) {
+  const definition = getPlanDefinition(planType);
+  const updated = await prisma.userPlan.upsert({
+    where: { userId },
+    create: {
+      userId,
+      planType: definition.planType,
+      planName: definition.planName,
+      maxDeals: definition.limits.maxDeals,
+      maxTeamMembers: definition.limits.maxTeamMembers,
+      maxApiCalls: definition.limits.maxApiCalls,
+      maxWebhooks: definition.limits.maxWebhooks,
+      maxIntegrations: definition.limits.maxIntegrations,
+      features: definition.limits.features,
+    },
+    update: {
+      planType: definition.planType,
+      planName: definition.planName,
+      maxDeals: definition.limits.maxDeals,
+      maxTeamMembers: definition.limits.maxTeamMembers,
+      maxApiCalls: definition.limits.maxApiCalls,
+      maxWebhooks: definition.limits.maxWebhooks,
+      maxIntegrations: definition.limits.maxIntegrations,
+      features: definition.limits.features,
+    },
+  });
+
+  return updated;
+}
+
 
 function getCurrentPeriod(): { periodStart: Date; periodEnd: Date } {
   const now = new Date();
@@ -167,6 +199,11 @@ function getLimitField(metricType: MetricType): keyof PlanLimits {
 }
 
 
+const LIFETIME_PERIOD = {
+  periodStart: new Date(0),
+  periodEnd: new Date("9999-12-31T23:59:59Z"),
+} as const;
+
 export async function checkUsageLimit(
   userId: string,
   metricType: MetricType
@@ -176,13 +213,48 @@ export async function checkUsageLimit(
   const limit = plan[limitField] as number;
 
   if (metricType === "deals") {
-    const current = await prisma.deal.count({
-      where: { userId },
+    const tracking = await prisma.usageTracking.findUnique({
+      where: {
+        userId_metricType_periodStart: {
+          userId,
+          metricType: "deals",
+          periodStart: LIFETIME_PERIOD.periodStart,
+        },
+      },
+    });
+    if (tracking) {
+      return {
+        allowed: tracking.currentCount < limit,
+        limit,
+        current: tracking.currentCount,
+      };
+    }
+
+    const seed = await prisma.deal.count({
+      where: { userId, ...REAL_DEAL_WHERE },
+    });
+    await prisma.usageTracking.upsert({
+      where: {
+        userId_metricType_periodStart: {
+          userId,
+          metricType: "deals",
+          periodStart: LIFETIME_PERIOD.periodStart,
+        },
+      },
+      create: {
+        userId,
+        planId: plan.id,
+        metricType: "deals",
+        currentCount: seed,
+        periodStart: LIFETIME_PERIOD.periodStart,
+        periodEnd: LIFETIME_PERIOD.periodEnd,
+      },
+      update: {},
     });
     return {
-      allowed: current < limit,
+      allowed: seed < limit,
       limit,
-      current,
+      current: seed,
     };
   }
 
@@ -216,18 +288,60 @@ export async function checkUsageLimit(
   };
 }
 
+export async function getUsageBundle(userId: string): Promise<{
+  deals: UsageCheckResult;
+  teamMembers: UsageCheckResult;
+  apiCalls: UsageCheckResult;
+  webhooks: UsageCheckResult;
+  integrations: UsageCheckResult;
+}> {
+  const [deals, teamMembers, apiCalls, webhooks, integrations] =
+    await Promise.all([
+      checkUsageLimit(userId, "deals"),
+      checkUsageLimit(userId, "teamMembers"),
+      checkUsageLimit(userId, "apiCalls"),
+      checkUsageLimit(userId, "webhooks"),
+      checkUsageLimit(userId, "integrations"),
+    ]);
+  return { deals, teamMembers, apiCalls, webhooks, integrations };
+}
+
 
 export async function incrementUsage(
   userId: string,
   metricType: MetricType,
   amount: number = 1
 ): Promise<void> {
-
-  if (metricType === "deals" || metricType === "teamMembers") {
+  if (metricType === "teamMembers") {
     return;
   }
 
   const plan = await getOrCreateUserPlan(userId);
+
+  if (metricType === "deals") {
+    await prisma.usageTracking.upsert({
+      where: {
+        userId_metricType_periodStart: {
+          userId,
+          metricType: "deals",
+          periodStart: LIFETIME_PERIOD.periodStart,
+        },
+      },
+      create: {
+        userId,
+        planId: plan.id,
+        metricType: "deals",
+        currentCount: amount,
+        periodStart: LIFETIME_PERIOD.periodStart,
+        periodEnd: LIFETIME_PERIOD.periodEnd,
+      },
+      update: {
+        currentCount: { increment: amount },
+      },
+    });
+    return;
+  }
+
   const { periodStart, periodEnd } = getCurrentPeriod();
 
   await prisma.usageTracking.upsert({

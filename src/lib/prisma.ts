@@ -1,31 +1,37 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { trackDatabaseQuery } from "./monitoring";
 import { normalizeSupabasePoolerDatabaseUrl } from "./prisma-database-url";
+import { logError, logWarn, logInfo } from "./logger";
 
 if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL environment variable is not set!");
+  logError("DATABASE_URL environment variable is not set");
 }
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-let prismaInstance: PrismaClient;
-
 const resolvedDatabaseUrl =
   normalizeSupabasePoolerDatabaseUrl(process.env.DATABASE_URL) ??
   process.env.DATABASE_URL;
 
+const PRISMA_LOG = [
+  { emit: "event", level: "query" },
+  { emit: "stdout", level: "error" },
+  ...(process.env.NODE_ENV === "development"
+    ? [{ emit: "stdout", level: "warn" }]
+    : []),
+] as const;
+
+type PrismaWithEvents = PrismaClient<{
+  log: [{ emit: "event"; level: "query" }];
+}>;
+
+let prismaInstance: PrismaClient;
+
 try {
-  const clientOptions: ConstructorParameters<typeof PrismaClient>[0] = {
-    log:
-      process.env.NODE_ENV === "development"
-        ? [
-            { emit: "event", level: "query" },
-            { emit: "stdout", level: "error" },
-            { emit: "stdout", level: "warn" },
-          ]
-        : [{ emit: "stdout", level: "error" }],
+  const clientOptions: Prisma.PrismaClientOptions = {
+    log: PRISMA_LOG as unknown as Prisma.PrismaClientOptions["log"],
   };
 
   if (resolvedDatabaseUrl) {
@@ -41,34 +47,38 @@ try {
     typeof prismaInstance.$on === "function"
   ) {
     try {
+      const eventClient = prismaInstance as unknown as PrismaWithEvents;
 
-      // @ts-expect-error - query event type narrows to never with conditional log config
-      prismaInstance.$on("query", (e: { duration?: number; query?: string }) => {
-        if (e.duration && e.query) {
-          const duration = e.duration;
-          const query = e.query;
+      eventClient.$on("query", (e: Prisma.QueryEvent) => {
+        const duration = e.duration;
+        const query = e.query;
+        if (typeof duration !== "number" || typeof query !== "string") return;
 
-          trackDatabaseQuery(query.substring(0, 100), duration);
+        trackDatabaseQuery(query.substring(0, 100), duration);
 
-          if (process.env.NODE_ENV === "development" && duration > 100) {
-            const queryType = query.trim().substring(0, 6).toUpperCase();
-            const modelMatch = query.match(/FROM\s+"?(\w+)"?/i) || query.match(/INTO\s+"?(\w+)"?/i) || query.match(/UPDATE\s+"?(\w+)"?/i);
-            const model = modelMatch ? modelMatch[1] : "unknown";
+        if (process.env.NODE_ENV === "development" && duration > 100) {
+          const queryType = query.trim().substring(0, 6).toUpperCase();
+          const modelMatch =
+            query.match(/FROM\s+"?(\w+)"?/i) ||
+            query.match(/INTO\s+"?(\w+)"?/i) ||
+            query.match(/UPDATE\s+"?(\w+)"?/i);
+          const model = modelMatch ? modelMatch[1] : "unknown";
 
-            console.log(
-              `[Prisma] Slow query: ${queryType} on ${model} took ${duration}ms`
-            );
-          }
+          logInfo("Slow Prisma query", {
+            queryType,
+            model,
+            durationMs: duration,
+          });
         }
       });
     } catch (error) {
-      if (process.env.NODE_ENV !== "test") {
-        console.warn("[Prisma] Failed to set up query tracking:", error);
-      }
+      logWarn("Failed to set up Prisma query tracking", {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 } catch (error) {
-  console.error("Failed to create Prisma Client:", error);
+  logError("Failed to create Prisma Client", error);
   throw new Error(
     "Prisma Client initialization failed. Please run 'npm run db:generate' to regenerate the Prisma client."
   );

@@ -1,4 +1,3 @@
--- Run these commands in your database SQL editor to create the DealTimeline table
 DROP TABLE IF EXISTS "DealTimeline" CASCADE;
 CREATE TABLE "DealTimeline" (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -1,4 +1,3 @@
--- CreateTable
 CREATE TABLE "UserPlan" (
   "id" TEXT NOT NULL,
   "userId" TEXT NOT NULL,
@@ -14,7 +13,6 @@ CREATE TABLE "UserPlan" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "UserPlan_pkey" PRIMARY KEY ("id")
 );
--- CreateTable
 CREATE TABLE "UsageTracking" (
   "id" TEXT NOT NULL,
   "userId" TEXT NOT NULL,
@@ -28,31 +26,20 @@ CREATE TABLE "UsageTracking" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "UsageTracking_pkey" PRIMARY KEY ("id")
 );
--- CreateIndex
 CREATE UNIQUE INDEX "UserPlan_userId_key" ON "UserPlan"("userId");
--- CreateIndex
 CREATE INDEX "UserPlan_userId_idx" ON "UserPlan"("userId");
--- CreateIndex
 CREATE INDEX "UserPlan_planType_idx" ON "UserPlan"("planType");
--- CreateIndex
 CREATE INDEX "UsageTracking_userId_metricType_idx" ON "UsageTracking"("userId", "metricType");
--- CreateIndex
 CREATE INDEX "UsageTracking_userId_periodStart_idx" ON "UsageTracking"("userId", "periodStart");
--- CreateIndex
 CREATE INDEX "UsageTracking_periodEnd_idx" ON "UsageTracking"("periodEnd");
--- CreateIndex
 CREATE UNIQUE INDEX "UsageTracking_userId_metricType_periodStart_key" ON "UsageTracking"("userId", "metricType", "periodStart");
--- AddForeignKey
 ALTER TABLE "UserPlan"
 ADD CONSTRAINT "UserPlan_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
--- AddForeignKey
 ALTER TABLE "UsageTracking"
 ADD CONSTRAINT "UsageTracking_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
--- AddForeignKey
 ALTER TABLE "UsageTracking"
 ADD CONSTRAINT "UsageTracking_planId_fkey" FOREIGN KEY ("planId") REFERENCES "UserPlan"("id") ON DELETE
 SET NULL ON UPDATE CASCADE;
--- Set all existing users to free plan
 INSERT INTO "UserPlan" (
     "id",
     "userId",

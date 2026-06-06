@@ -4,9 +4,7 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  // Pooled URL (Supabase: port 6543 / *.pooler.supabase.com) for the app — see .env.example
   url       = env("DATABASE_URL")
-  // Direct Postgres (Supabase: port 5432) — required for `prisma migrate` / `db push`
   directUrl = env("DIRECT_URL")
 }
 
@@ -15,7 +13,8 @@ model User {
   name                      String
   surname                   String
   email                     String                     @unique
-  password                  String
+  password                  String?
+  hasCreatedAnyDeal         Boolean                    @default(false)
   company                   String?
   role                      String?
   imageUrl                  String?
@@ -30,10 +29,17 @@ model User {
   riskSettings              UserRiskSettings?
   webhooks                  Webhook[]
   slackIntegrations         SlackIntegration[]
+  slackEventsSubscriptions  SlackEventsSubscription[]
+  slackMessages             SlackMessage[]
   salesforceIntegration     SalesforceIntegration?
   hubspotIntegration        HubSpotIntegration?
   googleCalendarIntegration GoogleCalendarIntegration?
+  calendarIntegration       CalendarIntegration?
+  calendarEvents            CalendarEvent[]
+  gmailIntegration          GmailIntegration?
   meetings                  Meeting[]
+  emailMessages             EmailMessage[]
+  contacts                  Contact[]
   sentInvites               UserInvite[]               @relation("SentInvites")
   plan                      UserPlan?
   usageTracking             UsageTracking[]
@@ -48,21 +54,23 @@ model Deal {
   assignedToId     String?
   name             String
   stage            String
-  value            Int
+  value            BigInt
   location         String?
   isDemo           Boolean        @default(false)
   source           String?
+  channel          String?
   externalId       String?
   createdAt        DateTime       @default(now())
   riskEmailSentAt  DateTime?
   actions          Action[]
-  user          User           @relation("CreatedDeals", fields: [userId], references: [id])
-  team          Team?          @relation(fields: [teamId], references: [id])
-  assignedTo    User?          @relation("AssignedDeals", fields: [assignedToId], references: [id])
+  user          User           @relation("CreatedDeals", fields: [userId], references: [id], onDelete: Cascade)
+  team          Team?          @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  assignedTo    User?          @relation("AssignedDeals", fields: [assignedToId], references: [id], onDelete: SetNull)
   events        DealEvent[]
   timeline      DealTimeline[]
   notifications Notification[]
   meetings      Meeting[]
+  emailMessages EmailMessage[]
 
   @@index([userId, createdAt])
   @@index([userId, stage])
@@ -78,7 +86,7 @@ model DealEvent {
   type      String
   payload   Json
   createdAt DateTime @default(now())
-  deal      Deal     @relation(fields: [dealId], references: [id])
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
   @@index([dealId, createdAt])
 }
@@ -90,7 +98,7 @@ model Action {
   status    String
   reason    String
   createdAt DateTime @default(now())
-  deal      Deal     @relation(fields: [dealId], references: [id])
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
 }
 
 model DealTimeline {
@@ -99,7 +107,7 @@ model DealTimeline {
   eventType String    @map("event_type")
   metadata  Json?
   createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  deal      Deal      @relation(fields: [dealId], references: [id])
+  deal      Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
   @@index([dealId, createdAt])
   @@map("DealTimeline")
@@ -112,9 +120,9 @@ model Chat {
   folderId  String?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  user      User          @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages  ChatMessage[]
-  folder    ChatFolder?   @relation(fields: [folderId], references: [id])
+  folder    ChatFolder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([folderId])
@@ -137,7 +145,7 @@ model ChatFolder {
   name      String
   color     String?
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   chats     Chat[]
 
   @@index([userId])
@@ -221,6 +229,8 @@ model UserRiskSettings {
   userId                   String   @unique
   inactivityThresholdDays  Int      @default(7)
   enableCompetitiveSignals Boolean  @default(true)
+  enableStageStall         Boolean  @default(false)
+  enableChampionDormancy   Boolean  @default(false)
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
   user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -261,6 +271,44 @@ model WebhookDelivery {
   @@index([createdAt])
 }
 
+model SlackEventsSubscription {
+  id            String         @id @default(cuid())
+  userId        String
+  teamId        String         @unique
+  botToken      String
+  botUserId     String
+  selfEmail     String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slackMessages SlackMessage[]
+
+  @@unique([userId, teamId])
+}
+
+model SlackMessage {
+  id                  String                  @id @default(cuid())
+  userId              String
+  subscriptionId      String
+  slackEventId        String
+  teamId              String
+  channelId           String
+  channelType         String
+  messageTs           String
+  senderUserId        String
+  senderEmail         String
+  text                String?
+  matchedCrmContacts  String[]
+  rawEvent            Json
+  receivedAt          DateTime                @default(now())
+  user                User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription        SlackEventsSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, slackEventId])
+  @@index([userId, receivedAt])
+}
+
 model SlackIntegration {
   id          String   @id @default(cuid())
   userId      String
@@ -279,39 +327,54 @@ model SlackIntegration {
 }
 
 model SalesforceIntegration {
-  id             String    @id @default(cuid())
-  userId         String    @unique
-  apiKey         String
-  instanceUrl    String
-  isActive       Boolean   @default(true)
-  syncEnabled    Boolean   @default(true)
-  lastSyncAt     DateTime?
-  lastSyncStatus String?
-  syncErrors     String?
-  totalSynced    Int       @default(0)
-  rotatedAt      DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  consumerKey          String?
+  consumerSecret       String?
+  authMethod           String    @default("client_credentials")
+  accessToken          String?
+  accessTokenExpiresAt DateTime?
+  refreshToken         String?
+  scopes               String?
+  instanceUrl          String
+  isActive             Boolean   @default(true)
+  syncEnabled          Boolean   @default(true)
+  lastSyncAt           DateTime?
+  lastSyncStatus       String?
+  syncErrors           String?
+  totalSynced          Int       @default(0)
+  lastContactsSyncedAt DateTime?
+  totalContactsSynced  Int       @default(0)
+  rotatedAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model HubSpotIntegration {
-  id             String    @id @default(cuid())
-  userId         String    @unique
-  apiKey         String
-  portalId       String?
-  isActive       Boolean   @default(true)
-  syncEnabled    Boolean   @default(true)
-  lastSyncAt     DateTime?
-  lastSyncStatus String?
-  syncErrors     String?
-  totalSynced    Int       @default(0)
-  rotatedAt      DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  apiKey                String?
+  authMethod            String    @default("api_key")
+  accessToken           String?
+  refreshToken          String?
+  tokenExpiresAt        DateTime?
+  scopes                String?
+  portalId              String?
+  isActive              Boolean   @default(true)
+  syncEnabled           Boolean   @default(true)
+  lastSyncAt            DateTime?
+  lastSyncStatus        String?
+  syncErrors            String?
+  totalSynced           Int       @default(0)
+  lastContactsSyncedAt  DateTime?
+  totalContactsSynced   Int       @default(0)
+  rotatedAt             DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -326,6 +389,65 @@ model GoogleCalendarIntegration {
   syncEnabled    Boolean   @default(true)
   lastSyncAt     DateTime?
   lastSyncStatus String?
+  rotatedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CalendarIntegration {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  accessToken  String
+  refreshToken String
+  expiryDate   DateTime
+  email        String?
+  scope        String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CalendarEvent {
+  id               String   @id @default(cuid())
+  userId           String
+  googleEventId    String
+  summary          String?
+  description      String?
+  startTime        DateTime
+  endTime          DateTime
+  organizerEmail   String?
+  attendees        Json     @default("[]")
+  status           String?
+  isRecurring      Boolean  @default(false)
+  recurringEventId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, googleEventId])
+  @@index([userId, startTime])
+}
+
+model GmailIntegration {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  email          String?
+  accessToken    String
+  refreshToken   String
+  tokenType      String    @default("Bearer")
+  scope          String?
+  expiryDate     DateTime?
+  isActive       Boolean   @default(true)
+  syncEnabled    Boolean   @default(true)
+  lastSyncAt     DateTime?
+  lastSyncStatus String?
+  syncErrors     String?
+  totalSynced    Int       @default(0)
   rotatedAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -370,6 +492,52 @@ model Meeting {
   @@index([dealId])
   @@index([startTime])
   @@index([externalId])
+}
+
+model EmailMessage {
+  id             String    @id @default(cuid())
+  userId         String
+  dealId         String?
+  externalId     String
+  threadId       String?
+  subject        String
+  bodySnippet    String?
+  fromEmail      String?
+  toEmails       String[]
+  sentAt         DateTime
+  sentimentScore Float?
+  sentimentLabel String?
+  source         String    @default("gmail")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deal           Deal?     @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, externalId, source])
+  @@index([userId, sentAt])
+  @@index([dealId, sentAt])
+  @@index([threadId])
+}
+
+model Contact {
+  id           String   @id @default(cuid())
+  userId       String
+  email        String
+  firstName    String?
+  lastName     String?
+  fullName     String?
+  phone        String?
+  companyName  String?
+  source       String
+  externalId   String
+  lastSyncedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
+  @@unique([userId, source, externalId])
+  @@index([userId])
 }
 
 model UserInvite {

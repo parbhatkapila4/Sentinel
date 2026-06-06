@@ -1,63 +1,179 @@
-import { Skeleton } from "@/components/ui/skeleton";
-
 export default function InsightsLoading() {
   return (
     <div
-      className="flex h-screen w-full overflow-hidden bg-[#0b0b0b]"
-      aria-live="polite"
-      aria-label="Loading insights"
+      className="sentinel-shell"
+      style={{
+        minHeight: "100vh",
+        background: "var(--ink)",
+        color: "var(--cream)",
+      }}
     >
-      <div className="w-full max-w-4xl mx-auto flex flex-col p-4 lg:p-6">
+      <div className="sentinel-grain" aria-hidden />
+      <div className="sentinel-vignette" aria-hidden />
 
-        <div className="flex items-center gap-3 mb-6">
-          <Skeleton className="h-8 w-8 rounded-lg" />
-          <Skeleton className="h-6 w-32 rounded" />
-        </div>
+      <div
+        className="grid items-center"
+        style={{
+          gridTemplateColumns: "auto 1fr auto",
+          gap: 32,
+          padding: "14px 32px",
+          borderBottom: "1px solid var(--rule)",
+          fontFamily: "var(--font-mono-jb)",
+          fontSize: 10.5,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "var(--cream-3)",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontStyle: "italic",
+            fontSize: 20,
+            color: "var(--cream)",
+            letterSpacing: "-0.01em",
+            textTransform: "none",
+          }}
+        >
+          Sentinel<span style={{ color: "var(--signal)" }}>.</span>
+        </span>
+        <span className="hidden md:block text-center">OPENING THE DESK…</span>
+        <span aria-hidden style={{ width: 30, height: 30 }} />
+      </div>
 
-        <div className="flex-1 rounded-xl border border-white/[0.06] bg-[#080808] p-5 sm:p-6 flex flex-col">
-          <div className="flex-1 space-y-5 overflow-hidden">
-            <div className="flex gap-3">
-              <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-              <div className="flex-1 space-y-2 max-w-[80%]">
-                <Skeleton className="h-3.5 w-full rounded" />
-                <Skeleton className="h-3.5 w-5/6 rounded" />
-                <Skeleton className="h-3.5 w-3/4 rounded" />
-              </div>
-            </div>
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: "280px minmax(0,1fr) 320px",
+          minHeight: "calc(100vh - 48px)",
+        }}
+      >
+        <aside
+          style={{
+            borderRight: "1px solid var(--rule)",
+            padding: "28px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 18,
+          }}
+        >
+          <SkeletonLine width="40%" />
+          <SkeletonBlock height={54} />
+          <SkeletonBlock height={14} width="70%" />
+          <SkeletonBlock height={44} />
+          <SkeletonBlock height={44} />
+          <SkeletonBlock height={44} />
+        </aside>
 
-            <div className="flex gap-3 justify-end">
-              <div className="space-y-2 max-w-[70%]">
-                <Skeleton className="h-10 w-56 rounded-xl ml-auto" />
-              </div>
-              <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-            </div>
-
-            <div className="flex gap-3">
-              <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-              <div className="flex-1 space-y-2 max-w-[80%]">
-                <Skeleton className="h-3.5 w-full rounded" />
-                <Skeleton className="h-3.5 w-4/5 rounded" />
-                <Skeleton className="h-20 w-full rounded-lg mt-2" />
-                <Skeleton className="h-3.5 w-2/3 rounded" />
-              </div>
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <div className="space-y-2 max-w-[70%]">
-                <Skeleton className="h-10 w-40 rounded-xl ml-auto" />
-              </div>
-              <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-            </div>
+        <section
+          className="anim-rise"
+          style={{
+            padding: "80px 32px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 24,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "var(--font-mono-jb)",
+              fontSize: 10,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              color: "var(--copper)",
+            }}
+          >
+            The Intelligence Desk · Ready
           </div>
-
-          <div className="mt-4 pt-4 border-t border-white/[0.04]">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-11 flex-1 rounded-xl" />
-              <Skeleton className="h-11 w-11 rounded-xl shrink-0" />
-            </div>
+          <h1
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "clamp(48px, 7vw, 76px)",
+              fontWeight: 400,
+              lineHeight: 0.95,
+              letterSpacing: "-0.035em",
+              color: "var(--cream)",
+              textAlign: "center",
+            }}
+          >
+            Ask, and you
+            <br />
+            shall{" "}
+            <em
+              style={{
+                fontStyle: "italic",
+                color: "var(--signal)",
+                fontFamily: "var(--font-serif)",
+              }}
+            >
+              know.
+            </em>
+          </h1>
+          <div
+            style={{
+              fontFamily: "var(--font-mono-jb)",
+              fontSize: 11,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--cream-3)",
+            }}
+          >
+            Loading your book and threads…
           </div>
-        </div>
+        </section>
+
+        <aside
+          style={{
+            borderLeft: "1px solid var(--rule)",
+            background: "var(--ink-02)",
+            padding: "28px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 18,
+          }}
+        >
+          <SkeletonLine width="55%" />
+          <SkeletonBlock height={56} />
+          <SkeletonBlock height={16} width="80%" />
+          <SkeletonBlock height={16} width="70%" />
+          <SkeletonBlock height={16} width="60%" />
+        </aside>
       </div>
     </div>
+  );
+}
+
+function SkeletonLine({ width }: { width: string }) {
+  return (
+    <div
+      aria-hidden
+      style={{
+        height: 14,
+        width,
+        background: "var(--ink-03)",
+        border: "1px solid var(--rule)",
+      }}
+    />
+  );
+}
+
+function SkeletonBlock({
+  height,
+  width = "100%",
+}: {
+  height: number;
+  width?: string;
+}) {
+  return (
+    <div
+      aria-hidden
+      style={{
+        height,
+        width,
+        background: "var(--ink-02)",
+        border: "1px solid var(--rule)",
+      }}
+    />
   );
 }

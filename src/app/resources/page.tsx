@@ -1,602 +1,336 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { isAuthenticated } from "@/lib/auth";
 
-export default async function ResourcesPage() {
-  const user = await isAuthenticated();
+export const metadata: Metadata = {
+  title: "Guides · Sentinel",
+  description:
+    "A directory of everything you need to understand, adopt, and build on top of Sentinel.",
+};
+
+function BackLink() {
+  return (
+    <div className="border-b border-white/10 sticky top-0 z-50 bg-black/80 backdrop-blur">
+      <div className="px-6 lg:px-8 py-4 flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to home
+        </Link>
+        <Link
+          href="/docs"
+          className="text-sm text-white/60 hover:text-white transition-colors"
+        >
+          Full documentation →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+type ResourceEntry = {
+  href: string;
+  kicker: string;
+  title: string;
+  description: string;
+  meta: string;
+  external?: boolean;
+};
+
+type ResourceGroup = {
+  id: string;
+  label: string;
+  intro: string;
+  entries: ResourceEntry[];
+};
+
+const groups: ResourceGroup[] = [
+  {
+    id: "start-here",
+    label: "Start here",
+    intro:
+      "The fastest path from reading about Sentinel to running it against your own pipeline.",
+    entries: [
+      {
+        href: "/features",
+        kicker: "Overview",
+        title: "What Sentinel does",
+        description:
+          "Eight product pillars covering risk scoring, pipeline management, activity timelines, AI assistance, and the developer surface.",
+        meta: "6-7 min read",
+      },
+      {
+        href: "/docs",
+        kicker: "Docs",
+        title: "Documentation",
+        description:
+          "Setup, concepts, and reference material for the product. The long-form manual.",
+        meta: "Reference",
+      },
+      {
+        href: "/integrations",
+        kicker: "Connect",
+        title: "Integrations catalog",
+        description:
+          "Salesforce, HubSpot, Google Calendar, Slack, and signed outbound webhooks - with exact scopes and direction per integration.",
+        meta: "5 integrations",
+      },
+    ],
+  },
+  {
+    id: "build-on-it",
+    label: "Build on Sentinel",
+    intro:
+      "Everything you need to wire Sentinel into the rest of your stack, write automations, and audit what flows through.",
+    entries: [
+      {
+        href: "/api-docs",
+        kicker: "API",
+        title: "API reference",
+        description:
+          "Interactive OpenAPI / Swagger explorer. Endpoints for deals, teams, integrations, webhooks, and notifications.",
+        meta: "Interactive",
+      },
+      {
+        href: "/integrations#webhooks",
+        kicker: "Webhooks",
+        title: "Outbound webhooks",
+        description:
+          "HMAC-SHA256 signed deliveries, retries with backoff, and a 30-day inspection log of every attempt and response.",
+        meta: "HMAC-SHA256",
+      },
+      {
+        href: "/security",
+        kicker: "Trust",
+        title: "Security posture",
+        description:
+          "How we handle tokens, what we encrypt, and what we explicitly do not claim. Written without compliance theater.",
+        meta: "Plain English",
+      },
+    ],
+  },
+  {
+    id: "stay-current",
+    label: "Stay current",
+    intro:
+      "How Sentinel is evolving, where to track it, and how to reach a human when you have questions.",
+    entries: [
+      {
+        href: "/changelog",
+        kicker: "Ship log",
+        title: "Changelog",
+        description:
+          "Every shipped change, mapped to a real commit on main. No synthetic version numbers or marketing bundles.",
+        meta: "Updated continuously",
+      },
+      {
+        href: "/about",
+        kicker: "People",
+        title: "About Sentinel",
+        description:
+          "Why this exists, the problem it's built around, and a founder's note that gets replied to.",
+        meta: "Founder-written",
+      },
+      {
+        href: "/contact",
+        kicker: "Talk",
+        title: "Get in touch",
+        description:
+          "Product questions, bug reports, integration requests, or just to say hi. Every email lands in Parbhat's inbox.",
+        meta: "help@sentinels.in",
+      },
+    ],
+  },
+  {
+    id: "legal",
+    label: "Legal & account",
+    intro:
+      "The fine print, the pricing, and the switches that control your own data.",
+    entries: [
+      {
+        href: "/pricing",
+        kicker: "Plans",
+        title: "Pricing",
+        description:
+          "Starter, Professional, and Enterprise. Monthly or annual, tax included, cancel any time via PayPal.",
+        meta: "3 tiers",
+      },
+      {
+        href: "/privacy",
+        kicker: "Data",
+        title: "Privacy policy",
+        description:
+          "What we collect, which subprocessors touch it, how long it lives, and how to delete it within 24 hours.",
+        meta: "Updated Jan 2026",
+      },
+      {
+        href: "/terms",
+        kicker: "Agreement",
+        title: "Terms of service",
+        description:
+          "The agreement between you and Sentinel, written to be read by humans and scoped to how the product actually works.",
+        meta: "11 sections",
+      },
+    ],
+  },
+];
+
+function ResourceLink({ entry }: { entry: ResourceEntry }) {
+  const isExternal = entry.external || entry.href.startsWith("http");
+  const Comp = isExternal ? "a" : Link;
+  const externalProps = isExternal
+    ? { target: "_blank", rel: "noopener noreferrer" as const }
+    : {};
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="border-b border-white/10 sticky top-0 z-50 bg-black/95 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors -ml-76"
+    <Comp
+      href={entry.href}
+      {...externalProps}
+      className="group block border-t border-white/10 py-7 transition-colors hover:bg-white/2"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-[120px_1fr_auto] gap-3 md:gap-8 md:items-baseline">
+        <div className="font-mono text-xs uppercase tracking-[0.2em] text-white/40">
+          {entry.kicker}
+        </div>
+        <div className="max-w-2xl">
+          <h3 className="text-lg md:text-xl font-semibold text-white tracking-tight mb-1.5 group-hover:underline underline-offset-4 decoration-white/40">
+            {entry.title}
+          </h3>
+          <p className="text-white/65 leading-relaxed">{entry.description}</p>
+        </div>
+        <div className="flex items-center gap-3 text-xs font-mono text-white/40 md:justify-end">
+          <span>{entry.meta}</span>
+          <span
+            aria-hidden
+            className="inline-block transition-transform group-hover:translate-x-0.5 text-white/50"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Back
-          </Link>
+            →
+          </span>
         </div>
       </div>
+    </Comp>
+  );
+}
 
-      <section className="py-16 px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Resources
+export default async function ResourcesPage() {
+  const user = await isAuthenticated();
+  const totalEntries = groups.reduce((n, g) => n + g.entries.length, 0);
+
+  return (
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <BackLink />
+
+      <section className="px-6 lg:px-8 pt-20 pb-12">
+        <div className="max-w-[1700px] mx-auto">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-4">
+            Guides
+          </div>
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-5 max-w-3xl leading-[1.05]">
+            Everything Sentinel, in one directory.
           </h1>
-          <p className="text-lg text-white/60 leading-relaxed">
-            Everything you need to get the most out of Sentinel. From getting
-            started guides to advanced techniques, find all the resources you
-            need here.
+          <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
+            A curated index of the pages, references, and reading material
+            that actually exist in the product today. No lorem ipsum, no
+            placeholder "blog posts" - just routes that go somewhere useful.
           </p>
-        </div>
-      </section>
-
-      <section className="px-6 lg:px-8 pt-8 pb-16">
-        <div className="max-w-4xl mx-auto space-y-16">
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
-              Getting Started
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <Link
-                href="/docs"
-                className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                    <svg
-                      className="w-5 h-5 text-blue-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">
-                    Documentation
-                  </h3>
-                </div>
-                <p className="text-white/70 leading-relaxed">
-                  Complete guide to using Sentinel. Learn about features, risk
-                  analysis, and best practices.
-                </p>
-              </Link>
-
-              <Link
-                href="/features"
-                className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-red-600/20 flex items-center justify-center group-hover:bg-red-600/30 transition-colors">
-                    <svg
-                      className="w-5 h-5 text-red-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">
-                    Features Overview
-                  </h3>
-                </div>
-                <p className="text-white/70 leading-relaxed">
-                  Explore all the features that make Sentinel powerful. See how
-                  we help you prevent revenue loss.
-                </p>
-              </Link>
-            </div>
-          </div>
-
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
-              Learn & Master
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-emerald-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">
-                    Best Practices Guide
-                  </h3>
-                </div>
-                <p className="text-white/70 mb-4 leading-relaxed">
-                  Learn how successful revenue teams use Sentinel to maximize
-                  their results. Get tips and strategies from real-world usage.
-                </p>
-                <ul className="space-y-2 text-white/80 text-sm">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">•</span>
-                    <span>How to interpret risk scores effectively</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">•</span>
-                    <span>When and how to act on high-risk deals</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">•</span>
-                    <span>Optimizing your pipeline for better outcomes</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-amber-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">
-                    Understanding Risk Analysis
-                  </h3>
-                </div>
-                <p className="text-white/70 mb-4 leading-relaxed">
-                  Deep dive into how Sentinel calculates risk scores and what
-                  they mean for your deals. Master the science behind the
-                  platform.
-                </p>
-                <ul className="space-y-2 text-white/80 text-sm">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">•</span>
-                    <span>How risk scores are calculated</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">•</span>
-                    <span>Interpreting different risk levels</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">•</span>
-                    <span>Using recommendations effectively</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
-              Support & Help
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <Link
-                href="/contact"
-                className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                    <svg
-                      className="w-5 h-5 text-blue-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">
-                    Contact Support
-                  </h3>
-                </div>
-                <p className="text-white/70 leading-relaxed">
-                  Have questions? Need help? Reach out to our support team. We&apos;re
-                  here to help you succeed.
-                </p>
-              </Link>
-
-              <div className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-red-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">FAQ</h3>
-                </div>
-                <p className="text-white/70 mb-4 leading-relaxed">
-                  Find answers to common questions about Sentinel. Quick
-                  solutions to the most frequently asked questions.
-                </p>
-                <div className="space-y-2 text-white/80 text-sm">
-                  <div className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">Q:</span>
-                    <span>How accurate are the risk scores?</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">Q:</span>
-                    <span>Can I customize the pipeline stages?</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-1">Q:</span>
-                    <span>How do I export my data?</span>
-                  </div>
-                </div>
-                <Link
-                  href="/docs"
-                  className="text-blue-400 hover:text-blue-300 text-sm mt-4 inline-block"
-                >
-                  View all FAQs →
-                </Link>
-              </div>
-            </div>
-          </div>
-
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
-              Company
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <Link
-                href="/about"
-                className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center group-hover:bg-indigo-500/30 transition-colors">
-                    <svg
-                      className="w-5 h-5 text-indigo-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">
-                    About Sentinel
-                  </h3>
-                </div>
-                <p className="text-white/70 leading-relaxed">
-                  Learn about our mission, why we built Sentinel, and our
-                  commitment to helping revenue teams succeed.
-                </p>
-              </Link>
-
-              <Link
-                href="/pricing"
-                className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
-                    <svg
-                      className="w-5 h-5 text-green-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">Pricing</h3>
-                </div>
-                <p className="text-white/70 leading-relaxed">
-                  Simple, transparent pricing that scales with your needs. See
-                  our plans and choose what works for you.
-                </p>
-              </Link>
-            </div>
-          </div>
-
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
-              Legal & Privacy
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <Link
-                href="/privacy"
-                className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-500/20 flex items-center justify-center group-hover:bg-gray-500/30 transition-colors">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">
-                    Privacy Policy
-                  </h3>
-                </div>
-                <p className="text-white/70 leading-relaxed">
-                  Learn how we protect your data and respect your privacy. Our
-                  commitment to data security and transparency.
-                </p>
-              </Link>
-
-              <Link
-                href="/terms"
-                className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10 hover:border-blue-500/50 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center group-hover:bg-yellow-500/30 transition-colors">
-                    <svg
-                      className="w-5 h-5 text-yellow-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white">
-                    Terms of Service
-                  </h3>
-                </div>
-                <p className="text-white/70 leading-relaxed">
-                  Review our terms of service and understand your rights and
-                  responsibilities when using Sentinel.
-                </p>
-              </Link>
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
-              Quick Links
-            </h2>
-            <div className="bg-[#1a1a1a] rounded-xl p-6 border border-white/10">
-              <div className="grid md:grid-cols-2 gap-4">
-                <Link
-                  href="/docs"
-                  className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  Complete Documentation
-                </Link>
-                <Link
-                  href="/features"
-                  className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  All Features
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  View Pricing
-                </Link>
-                <Link
-                  href="/contact"
-                  className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  Get in Touch
-                </Link>
-                <Link
-                  href="/about"
-                  className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  About Us
-                </Link>
-                <Link
-                  href="/privacy"
-                  className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
+            <span>{totalEntries} entries</span>
+            <span className="text-white/20">·</span>
+            <span>{groups.length} sections</span>
+            <span className="text-white/20">·</span>
+            <span>All routes live</span>
           </div>
         </div>
       </section>
 
-      <section className="py-16 px-6 lg:px-8 border-t border-white/10">
-        <div className="max-w-4xl mx-auto text-center">
-          {user ? (
-            <>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Ready to get started?
-              </h2>
-              <p className="text-white/60 mb-8">
-                Start managing your deals and preventing silent decay today.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/dashboard"
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Go to Dashboard
-                </Link>
-                <Link
-                  href="/deals/new"
-                  className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
-                >
-                  Create Your First Deal
-                </Link>
+      <section className="px-6 lg:px-8 pb-20">
+        <div className="max-w-[1700px] mx-auto space-y-16">
+          {groups.map((group) => (
+            <div key={group.id} id={group.id} className="scroll-mt-24">
+              <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 md:gap-10 mb-2">
+                <h2 className="text-xs uppercase tracking-[0.2em] text-white/40 pt-1">
+                  {group.label}
+                </h2>
+                <p className="text-white/60 leading-relaxed max-w-xl">
+                  {group.intro}
+                </p>
               </div>
-            </>
-          ) : (
-            <>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Login Required
-              </h2>
-              <p className="text-white/60 mb-8">
-                Please log in first to access the dashboard and start managing
-                your deals.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/sign-in"
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/sign-up"
-                  className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
-                >
-                  Sign Up
-                </Link>
+              <div className="mt-6 border-b border-white/10">
+                {group.entries.map((entry) => (
+                  <ResourceLink key={entry.href + entry.title} entry={entry} />
+                ))}
               </div>
-            </>
-          )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-8 pb-24">
+        <div className="max-w-[1700px] mx-auto border-t border-white/10 pt-14">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:items-end">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-3">
+                Next
+              </div>
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-white mb-3 max-w-xl leading-tight">
+                {user
+                  ? "Already signed in. Head back to what you were doing."
+                  : "Want the shortest path? Start with the product."}
+              </h2>
+              <p className="text-white/60 leading-relaxed max-w-xl">
+                {user
+                  ? "Your dashboard shows today's risk distribution, deals that went quiet, and the next actions Sentinel suggests."
+                  : "Starter is free and runs the same risk engine on your live pipeline. No demo data, no waitlist."}
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
+              {user ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center justify-center gap-2 bg-white text-black px-5 py-2.5 rounded-md text-sm font-medium hover:bg-white/90 transition-colors"
+                  >
+                    Go to dashboard
+                  </Link>
+                  <Link
+                    href="/deals/new"
+                    className="inline-flex items-center justify-center gap-2 border border-white/15 text-white/80 px-5 py-2.5 rounded-md text-sm hover:border-white/30 hover:text-white transition-colors"
+                  >
+                    Create a deal
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-in"
+                    className="inline-flex items-center justify-center gap-2 bg-white text-black px-5 py-2.5 rounded-md text-sm font-medium hover:bg-white/90 transition-colors"
+                  >
+                    Start free
+                  </Link>
+                  <Link
+                    href="/features"
+                    className="inline-flex items-center justify-center gap-2 border border-white/15 text-white/80 px-5 py-2.5 rounded-md text-sm hover:border-white/30 hover:text-white transition-colors"
+                  >
+                    See what it does
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </section>
     </div>

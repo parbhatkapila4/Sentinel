@@ -125,6 +125,29 @@ describe("getPrimaryRiskReason", () => {
 });
 
 describe("calculateDealSignals", () => {
+  it("treats canonical closed stages as closed with zero risk", () => {
+    const deal = createMockDeal({
+      stage: STAGES.CLOSED_WON,
+      value: 8000,
+      status: "active",
+      createdAt: daysAgo(10),
+    });
+    const signals = calculateDealSignals(deal, []);
+    expect(signals.status).toBe("closed");
+    expect(signals.riskScore).toBe(0);
+  });
+
+  it("does not treat title-cased legacy stages as canonical closed stages", () => {
+    const deal = createMockDeal({
+      stage: "Closed Won",
+      value: 8000,
+      status: "active",
+      createdAt: daysAgo(10),
+    });
+    const signals = calculateDealSignals(deal, []);
+    expect(signals.status).not.toBe("closed");
+  });
+
   it("new deal with no timeline events has low risk score and status active", () => {
     const deal = createMockDeal({
       stage: STAGES.QUALIFY,

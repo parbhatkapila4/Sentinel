@@ -1,0 +1,2 @@
+ALTER TABLE "User"
+ADD COLUMN "hasCreatedAnyDeal" BOOLEAN NOT NULL DEFAULT false;

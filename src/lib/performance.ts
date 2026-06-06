@@ -1,4 +1,3 @@
-
 export async function measureAsync<T>(
   name: string,
   fn: () => Promise<T>

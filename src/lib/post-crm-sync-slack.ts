@@ -8,12 +8,7 @@ import { logWarn } from "./logger";
 
 function isClosedStage(stage: string): boolean {
   const s = stage.toLowerCase().replace(/\s+/g, "_");
-  return (
-    s.includes("closed_won") ||
-    s.includes("closed_lost") ||
-    stage === "Closed Won" ||
-    stage === "Closed Lost"
-  );
+  return s === "closed_won" || s === "closed_lost";
 }
 export async function notifySlackAfterCrmSync(
   userId: string,
@@ -50,7 +45,7 @@ export async function notifySlackAfterCrmSync(
       const signals = calculateDealSignals(
         {
           stage: d.stage,
-          value: d.value,
+          value: Number(d.value),
           status: "active",
           createdAt: d.createdAt,
         },

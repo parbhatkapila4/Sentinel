@@ -1,0 +1,2 @@
+ALTER TABLE "Deal"
+ADD COLUMN "channel" TEXT;

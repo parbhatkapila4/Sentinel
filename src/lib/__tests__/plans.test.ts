@@ -42,7 +42,7 @@ describe("Plans", () => {
 
     it("should return correct limits for pro plan", () => {
       const limits = getPlanLimits("pro");
-      expect(limits.maxDeals).toBe(500);
+      expect(limits.maxDeals).toBe(100);
       expect(limits.maxTeamMembers).toBe(10);
       expect(limits.maxApiCalls).toBe(50000);
     });
@@ -52,7 +52,7 @@ describe("Plans", () => {
     it("should create starter plan for new user", async () => {
       const plan = await getOrCreateUserPlan(testUserId);
       expect(plan.planType).toBe("starter");
-      expect(plan.maxDeals).toBe(100);
+      expect(plan.maxDeals).toBe(5);
     });
 
     it("should return existing plan if exists", async () => {
@@ -67,7 +67,7 @@ describe("Plans", () => {
       await getOrCreateUserPlan(testUserId);
       const check = await checkUsageLimit(testUserId, "deals");
       expect(check.allowed).toBe(true);
-      expect(check.limit).toBe(100);
+      expect(check.limit).toBe(5);
       expect(check.current).toBe(0);
     });
   });
