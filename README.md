@@ -50,30 +50,15 @@ It is also fail-closed. The permission check (`src/lib/crm-permission.ts`) retur
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    HS["HubSpot"] --> BOOK[("Contact book<br/>Postgres · unique(userId, email)")]
-    SF["Salesforce"] --> BOOK
-
-    GM["Gmail"] --> GATE{{"Permission filter<br/>hasCrmParticipant()"}}
-    CAL["Calendar"] --> GATE
-    SL["Slack"] --> GATE
-
-    BOOK -. lookup .-> GATE
-    GATE -->|"participant in CRM"| KEEP[("Persisted message<br/>Email · Calendar · Slack<br/>+ matched contacts")]
-    GATE -->|"no CRM match"| DROP["Dropped<br/>outcome metric only"]
-
-    classDef src fill:#1f2937,stroke:#374151,color:#e5e7eb;
-    class HS,SF,GM,CAL,SL src;
-    style BOOK fill:#0b2e2a,stroke:#2dd4bf,color:#d1fae5;
-    style GATE fill:#0b2e2a,stroke:#2dd4bf,color:#ccfbf1;
-    style KEEP fill:#0c2a1a,stroke:#34d399,color:#d1fae5;
-    style DROP fill:#2a1212,stroke:#ef4444,color:#fecaca;
-```
+<p align="center">
+  <img src="./architecture.svg" alt="Sentinel ingestion pipeline — Gmail, Calendar and Slack are gated by the hasCrmParticipant() permission filter against a Contact book synced read-only from HubSpot and Salesforce. A message is persisted only when a participant is in the CRM; otherwise it is dropped to an outcome metric." width="100%" />
+</p>
 
 > **Read-only in, gated, persisted or dropped.** CRM sync (HubSpot / Salesforce) populates the `Contact` book; every inbound Gmail / Calendar / Slack message is checked against it, and only messages with a CRM-matched participant are stored.
 
 CRM sync populates the `Contact` table — read-only; Sentinel never writes back. Each inbound message from Gmail, Calendar, or Slack has its participant emails checked against that table in a single batched query that rides the `@@unique([userId, email])` index. On a match, the message is persisted with the matched contact IDs attached and an outcome of `passed`; otherwise only a metric is incremented. The gate is the product, not a feature — it's enforced in every source's ingestion path.
+
+_End-to-end verification:_ [`docs/verify-crm-permission-filter.md`](./docs/verify-crm-permission-filter.md) is the manual runbook — sync a real inbox, then prove with SQL that no message lacking a CRM participant ever reaches the database.
 
 ---
 

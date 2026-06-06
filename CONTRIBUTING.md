@@ -34,7 +34,7 @@ The repo includes a **manual-only** workflow (trigger: `workflow_dispatch`) that
 
 - **This repo’s workflows** do not auto-run on `push` or `pull_request`; nothing in `.github/workflows/` should add a check to every commit by default.
 - A **red X on a PR** can still come from **repository settings**, not from these files:
-  - **Branch protection → Require status checks**: if a check name is required but no workflow produces it (or the workflow was skipped), GitHub can show failing / pending expectations. Fix: **Settings → Branches → edit the rule → Status checks** — either remove obsolete required checks or align the name with a workflow you actually run.
+  - **Branch protection → Require status checks**: if a check name is required but no workflow produces it (or the workflow was skipped), GitHub can show failing / pending expectations. Fix: **Settings → Branches → edit the rule → Status checks** - either remove obsolete required checks or align the name with a workflow you actually run.
   - **“No required checks”** means branch protection is not waiting on a specific job; optional Actions you run manually still appear under the Actions tab only when you trigger them.
 
 ## PR Guidelines

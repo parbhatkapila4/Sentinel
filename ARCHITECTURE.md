@@ -1,6 +1,6 @@
 # Sentinel Architecture
 
-High-level system overview for the Sentinel revenue intelligence platform.
+High-level system overview. For *why* each choice was made — alternatives considered, trade-offs accepted, where to find evidence — read **[DECISIONS.md](DECISIONS.md)** first.
 
 ## System Overview
 
@@ -65,7 +65,7 @@ High-level system overview for the Sentinel revenue intelligence platform.
 
 - **Usage**: Deal lists and risk summaries cached per user with short TTL (e.g. 60s) via `withCache()` in `src/lib/cache.ts`. Keys include `userId` (and `teamId` when relevant).
 - **Rate limiting**: Redis used for API rate limit state.
-- **Real-time**: When Redis is present, events are stored in a per-user bounded list with monotonic IDs (`src/lib/realtime.ts`); SSE consumers read by cursor (`consumeUserEventsSince`) without destructive pop semantics—see `src/app/api/events/route.ts`.
+- **Real-time**: When Redis is present, events are stored in a per-user bounded list with monotonic IDs (`src/lib/realtime.ts`); SSE consumers read by cursor (`consumeUserEventsSince`) without destructive pop semantics-see `src/app/api/events/route.ts`.
 
 ## Security
 
@@ -105,6 +105,7 @@ High-level system overview for the Sentinel revenue intelligence platform.
 
 ## Further Reading
 
+- **Engineering decisions**: [DECISIONS.md](DECISIONS.md) — what was chosen, what was rejected, why
 - **Setup & usage**: [README](README.md)
 - **Quick walkthrough**: [TRY_THIS.md](TRY_THIS.md)
 - **API reference**: In-app [API Reference](/api-docs) (OpenAPI/Swagger)

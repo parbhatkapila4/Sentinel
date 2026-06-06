@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="Sentinel architecture — Gmail, Calendar and Slack are checked by the hasCrmParticipant() permission filter against a Contact book synced read-only from HubSpot and Salesforce. A message is persisted only if a participant is in the CRM; otherwise it is dropped to an outcome metric.">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0C0A08"/>
+      <stop offset="1" stop-color="#1A150E"/>
+    </linearGradient>
+    <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E2A24E"/>
+      <stop offset="1" stop-color="#F2C886"/>
+    </linearGradient>
+    <linearGradient id="accV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2C886"/>
+      <stop offset="1" stop-color="#E2A24E"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1C1610"/>
+      <stop offset="1" stop-color="#140F09"/>
+    </linearGradient>
+    <linearGradient id="gate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#231A10"/>
+      <stop offset="1" stop-color="#17110A"/>
+    </linearGradient>
+    <linearGradient id="kept" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22190E"/>
+      <stop offset="1" stop-color="#17120A"/>
+    </linearGradient>
+    <linearGradient id="drop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#201310"/>
+      <stop offset="1" stop-color="#160E0B"/>
+    </linearGradient>
+    <linearGradient id="cyl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1E1710"/>
+      <stop offset="1" stop-color="#13100A"/>
+    </linearGradient>
+    <radialGradient id="depth" cx="0.78" cy="0.4" r="0.6">
+      <stop offset="0" stop-color="#E8A24E" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#E8A24E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="depth2" cx="0.08" cy="0.9" r="0.55">
+      <stop offset="0" stop-color="#7A5A2A" stop-opacity="0.09"/>
+      <stop offset="1" stop-color="#7A5A2A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="gateGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#E8A24E" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#E8A24E" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+    <filter id="shadow" x="-25%" y="-25%" width="150%" height="170%">
+      <feDropShadow dx="0" dy="3" stdDeviation="7" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <clipPath id="round"><rect width="1200" height="600" rx="22"/></clipPath>
+
+    <!-- flow paths -->
+    <path id="pg" d="M268 140 C 352 140 388 182 494 182"/>
+    <path id="pc" d="M268 216 C 352 216 392 218 494 218"/>
+    <path id="ps" d="M268 292 C 352 292 388 254 494 254"/>
+    <path id="pk" d="M690 196 C 762 192 826 184 892 184"/>
+    <path id="pd" d="M690 244 C 774 246 810 322 892 322"/>
+    <path id="pl" d="M350 452 C 410 452 440 318 470 268"/>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="1200" height="600" fill="url(#bg)"/>
+    <rect width="1200" height="600" fill="url(#depth)"/>
+    <rect width="1200" height="600" fill="url(#depth2)"/>
+    <rect x="0" y="0" width="1200" height="3" fill="url(#acc)" opacity="0.9"/>
+
+    <!-- master kicker -->
+    <text x="72" y="54" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="12" letter-spacing="3.5" fill="#E2A24E">INGESTION PIPELINE · CRM-GATED</text>
+    <text x="1128" y="54" text-anchor="end" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11.5" letter-spacing="1" fill="#6E665A">src/lib/crm-permission.ts</text>
+
+    <!-- ============ ZONE KICKERS ============ -->
+    <text x="72" y="96" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11" letter-spacing="2.5" fill="#8A8275">SOURCES</text>
+    <text x="592" y="120" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11" letter-spacing="2.5" fill="#E2A24E">PERMISSION FILTER</text>
+    <text x="892" y="116" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11" letter-spacing="2.5" fill="#8A8275">OUTCOME</text>
+    <text x="72" y="362" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11" letter-spacing="2.5" fill="#8A8275">CRM SYNC · READ-ONLY</text>
+
+    <!-- ============ EDGES (drawn first, under nodes) ============ -->
+    <use xlink:href="#pg" fill="none" stroke="#46403A" stroke-width="1.6"/>
+    <use xlink:href="#pc" fill="none" stroke="#46403A" stroke-width="1.6"/>
+    <use xlink:href="#ps" fill="none" stroke="#46403A" stroke-width="1.6"/>
+    <use xlink:href="#pl" fill="none" stroke="#4A4036" stroke-width="1.5" stroke-dasharray="2 5" stroke-linecap="round"/>
+    <use xlink:href="#pk" fill="none" stroke="#B98A4E" stroke-width="2" opacity="0.6"/>
+    <use xlink:href="#pd" fill="none" stroke="#7C4A44" stroke-width="1.8" opacity="0.6"/>
+
+    <!-- edge labels -->
+    <text x="402" y="376" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11" fill="#756C5F">lookup</text>
+    <text x="784" y="166" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11.5" fill="#D9A85C">participant in CRM</text>
+    <text x="792" y="300" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11.5" fill="#B57A72">no CRM match</text>
+
+    <!-- ============ SOURCE CARDS ============ -->
+    <g filter="url(#shadow)">
+      <rect x="72" y="112" width="196" height="56" rx="12" fill="url(#card)" stroke="#3A322A" stroke-width="1"/>
+      <rect x="72" y="188" width="196" height="56" rx="12" fill="url(#card)" stroke="#3A322A" stroke-width="1"/>
+      <rect x="72" y="264" width="196" height="56" rx="12" fill="url(#card)" stroke="#3A322A" stroke-width="1"/>
+    </g>
+    <!-- gmail icon + label -->
+    <g stroke="#B79A66" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round">
+      <rect x="92" y="131" width="22" height="16" rx="2.5"/>
+      <path d="M93 133 L103 141 L113 133"/>
+    </g>
+    <text x="128" y="145" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="600" fill="#ECE6DC">Gmail</text>
+    <!-- calendar icon + label -->
+    <g stroke="#B79A66" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="92" y="209" width="22" height="17" rx="2.5"/>
+      <path d="M92 214 H114"/>
+      <path d="M98 206 V211 M108 206 V211"/>
+    </g>
+    <text x="128" y="221" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="600" fill="#ECE6DC">Calendar</text>
+    <!-- slack icon + label -->
+    <g stroke="#B79A66" stroke-width="1.6" stroke-linecap="round" fill="none">
+      <path d="M99 285 L96 299 M110 285 L107 299 M93 289 H113 M91 295 H111"/>
+    </g>
+    <text x="128" y="297" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="600" fill="#ECE6DC">Slack</text>
+
+    <!-- ============ CRM SYNC CARDS ============ -->
+    <g filter="url(#shadow)">
+      <rect x="72" y="384" width="100" height="48" rx="10" fill="url(#card)" stroke="#3A322A" stroke-width="1"/>
+      <rect x="72" y="446" width="100" height="48" rx="10" fill="url(#card)" stroke="#3A322A" stroke-width="1"/>
+    </g>
+    <circle cx="90" cy="408" r="3" fill="#B79A66" opacity="0.85"/>
+    <text x="102" y="413" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#ECE6DC">HubSpot</text>
+    <circle cx="90" cy="470" r="3" fill="#B79A66" opacity="0.85"/>
+    <text x="102" y="475" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#ECE6DC">Salesforce</text>
+    <!-- sync arrows into the book -->
+    <path d="M172 408 H198" fill="none" stroke="#46403A" stroke-width="1.6"/>
+    <path d="M172 470 H198" fill="none" stroke="#46403A" stroke-width="1.6"/>
+    <path d="M193 404 l6 4 l-6 4 M193 466 l6 4 l-6 4" fill="none" stroke="#6E665A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- contact book (database cylinder) -->
+    <g filter="url(#shadow)">
+      <path d="M200 396 V498 A75 14 0 0 0 350 498 V396" fill="url(#cyl)" stroke="#5A4A2E" stroke-width="1.2"/>
+      <ellipse cx="275" cy="396" rx="75" ry="14" fill="#241B11" stroke="#6E5A34" stroke-width="1.2"/>
+      <ellipse cx="275" cy="396" rx="75" ry="14" fill="none" stroke="#3A2E1C" stroke-width="1" opacity="0.5"/>
+    </g>
+    <text x="275" y="432" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14.5" font-weight="650" fill="#F0E9DA">Contact book</text>
+    <text x="275" y="452" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11" fill="#A99A7E">Postgres</text>
+    <text x="275" y="471" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="10.5" fill="#7E7461">unique(userId, email)</text>
+
+    <!-- ============ THE GATE (centerpiece) ============ -->
+    <rect x="468" y="150" width="248" height="220" fill="url(#gateGlow)"/>
+    <!-- glowing pulsing gate bar -->
+    <rect x="478" y="150" width="8" height="136" rx="4" fill="#E8A24E" filter="url(#glow)" opacity="0.45">
+      <animate attributeName="opacity" values="0.28;0.62;0.28" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="478" y="150" width="8" height="136" rx="4" fill="url(#accV)"/>
+    <!-- gate card -->
+    <g filter="url(#shadow)">
+      <rect x="494" y="150" width="196" height="136" rx="18" fill="url(#gate)" stroke="url(#accV)" stroke-width="1.6"/>
+    </g>
+    <!-- shield-check logomark -->
+    <g transform="translate(578,158) scale(0.6)">
+      <path d="M20 1 L39 9 V22 C39 35 31 43 20 46 C9 43 1 35 1 22 V9 Z" fill="#E2A24E" fill-opacity="0.10" stroke="url(#accV)" stroke-width="2.2"/>
+      <path d="M11 22 l6 6 l12 -14" fill="none" stroke="#F2C886" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <text x="592" y="216" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="15" font-weight="600" fill="#F4F0E9">hasCrmParticipant()</text>
+    <line x1="540" y1="234" x2="644" y2="234" stroke="#4A3E28" stroke-width="1"/>
+    <text x="592" y="256" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="10.5" letter-spacing="0.5" fill="#C99A55">FAIL-CLOSED · PII-BLIND</text>
+    <text x="592" y="273" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="10" fill="#7E7461">batched · rides @@unique index</text>
+
+    <!-- ============ OUTCOME: PERSISTED (kept) ============ -->
+    <g filter="url(#shadow)">
+      <rect x="892" y="132" width="252" height="104" rx="14" fill="url(#kept)" stroke="#6E5526" stroke-width="1.2"/>
+    </g>
+    <rect x="892" y="132" width="4" height="104" rx="2" fill="url(#accV)"/>
+    <circle cx="916" cy="166" r="9" fill="none" stroke="#E2A24E" stroke-width="1.6"/>
+    <path d="M912 166 l3 3 l6 -7" fill="none" stroke="#F2C886" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="934" y="171" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#F4F0E9">Persisted message</text>
+    <text x="912" y="197" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11.5" fill="#A99A7E">Email · Calendar · Slack</text>
+    <text x="912" y="216" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11.5" fill="#A99A7E">+ matched contacts · <tspan fill="#D9A85C">passed</tspan></text>
+
+    <!-- ============ OUTCOME: DROPPED ============ -->
+    <g filter="url(#shadow)">
+      <rect x="892" y="288" width="252" height="80" rx="14" fill="url(#drop)" stroke="#5A3A36" stroke-width="1.2"/>
+    </g>
+    <rect x="892" y="288" width="4" height="80" rx="2" fill="#B5564C"/>
+    <g stroke="#C56B63" stroke-width="1.8" stroke-linecap="round">
+      <path d="M911 318 l10 10 M921 318 l-10 10"/>
+    </g>
+    <text x="934" y="319" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#EBD9D5">Dropped</text>
+    <text x="912" y="345" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11.5" fill="#9A8079">outcome metric only · no write</text>
+
+    <!-- ============ ANIMATED FLOW ============ -->
+    <circle r="3.2" fill="#C8A06A" opacity="0">
+      <animateMotion dur="2.4s" begin="0s" repeatCount="indefinite" calcMode="linear"><mpath xlink:href="#pg"/></animateMotion>
+      <animate attributeName="opacity" dur="2.4s" begin="0s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.12;0.78;1"/>
+    </circle>
+    <circle r="3.2" fill="#C8A06A" opacity="0">
+      <animateMotion dur="2.4s" begin="0.8s" repeatCount="indefinite" calcMode="linear"><mpath xlink:href="#pc"/></animateMotion>
+      <animate attributeName="opacity" dur="2.4s" begin="0.8s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.12;0.78;1"/>
+    </circle>
+    <circle r="3.2" fill="#C8A06A" opacity="0">
+      <animateMotion dur="2.4s" begin="1.6s" repeatCount="indefinite" calcMode="linear"><mpath xlink:href="#ps"/></animateMotion>
+      <animate attributeName="opacity" dur="2.4s" begin="1.6s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.12;0.78;1"/>
+    </circle>
+    <!-- lookup pulse -->
+    <circle r="2.6" fill="#9A864E" opacity="0">
+      <animateMotion dur="3s" begin="0.4s" repeatCount="indefinite" calcMode="linear"><mpath xlink:href="#pl"/></animateMotion>
+      <animate attributeName="opacity" dur="3s" begin="0.4s" repeatCount="indefinite" values="0;0.9;0.9;0" keyTimes="0;0.15;0.8;1"/>
+    </circle>
+    <!-- kept -->
+    <circle r="3.4" fill="#F2C886" opacity="0">
+      <animateMotion dur="1.5s" begin="0.5s" repeatCount="indefinite" calcMode="linear"><mpath xlink:href="#pk"/></animateMotion>
+      <animate attributeName="opacity" dur="1.5s" begin="0.5s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.15;0.8;1"/>
+    </circle>
+    <!-- dropped -->
+    <circle r="3" fill="#B07A72" opacity="0">
+      <animateMotion dur="1.6s" begin="1.9s" repeatCount="indefinite" calcMode="linear"><mpath xlink:href="#pd"/></animateMotion>
+      <animate attributeName="opacity" dur="1.6s" begin="1.9s" repeatCount="indefinite" values="0;1;0.5;0" keyTimes="0;0.2;0.7;1"/>
+    </circle>
+
+    <!-- ============ FOOTER LEGEND ============ -->
+    <line x1="72" y1="540" x2="1128" y2="540" stroke="#2A241C" stroke-width="1"/>
+    <text x="600" y="568" text-anchor="middle" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="11" letter-spacing="2" fill="#6E665A">READ-ONLY IN  ·  GATED ON CRM MEMBERSHIP  ·  PERSISTED OR DROPPED</text>
+  </g>
+
+  <rect x="0.5" y="0.5" width="1199" height="599" rx="22" fill="none" stroke="#FFFFFF" stroke-opacity="0.06"/>
+</svg>
