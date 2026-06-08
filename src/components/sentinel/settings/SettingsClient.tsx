@@ -726,6 +726,10 @@ export function SettingsClient() {
       window.location.href = "/api/oauth/calendar/start";
       return;
     }
+    if (kind === "hubspot") {
+      window.location.href = "/api/integrations/hubspot/oauth/start";
+      return;
+    }
     setConnectModal(kind);
   };
 
