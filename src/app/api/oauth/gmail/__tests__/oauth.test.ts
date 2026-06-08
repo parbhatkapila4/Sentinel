@@ -122,7 +122,7 @@ describe("GET /api/oauth/gmail/start", () => {
     const scope = url.searchParams.get("scope") ?? "";
     expect(scope).toContain("https://www.googleapis.com/auth/gmail.readonly");
     expect(scope).toContain("https://www.googleapis.com/auth/userinfo.email");
-    expect(scope).toContain("openid");  
+    expect(scope).toContain("openid");
     expect(scope).not.toContain("gmail.modify");
     expect(scope).not.toContain("gmail.send");
     expect(scope).not.toContain("https://mail.google.com");
@@ -156,7 +156,7 @@ describe("GET /api/oauth/gmail/callback", () => {
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("gmail_error")).toBe("missing_params");
     expect(res.headers.get("set-cookie")).toContain("gmail_oauth_state=");
     expect(res.headers.get("set-cookie")).toContain("Max-Age=0");
@@ -208,8 +208,9 @@ describe("GET /api/oauth/gmail/callback", () => {
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("gmail_connected")).toBe("1");
+    expect(location.searchParams.get("tab")).toBe("integrations");
 
     expect(mockedEncrypt).toHaveBeenCalledWith("PLAINTEXT_ACCESS");
     expect(mockedEncrypt).toHaveBeenCalledWith("PLAINTEXT_REFRESH");

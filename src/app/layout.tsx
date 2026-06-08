@@ -57,17 +57,10 @@ export default function RootLayout({
           <Toaster
             position="top-right"
             theme="dark"
-            richColors
-            duration={3000}
+            duration={4000}
             closeButton={false}
-            toastOptions={{
-              style: {
-                background: "#1a1a1a",
-                border: "1px solid #2a2a2a",
-                color: "#ffffff",
-              },
-              className: "dark-toast",
-            }}
+            gap={10}
+            offset={16}
           />
         </body>
       </html>

@@ -903,50 +903,75 @@ input::placeholder {
 }
 
 [data-sonner-toaster] {
-  --normal-bg: #1a1a1a;
-  --normal-border: #2a2a2a;
-  --normal-text: #ffffff;
-  --success-bg: #1a1a1a;
-  --success-border: #22c55e;
-  --success-text: #22c55e;
-  --error-bg: #1a1a1a;
-  --error-border: #ef4444;
-  --error-text: #ef4444;
-  z-index: 9999 !important;
+  --normal-bg: var(--ink-02);
+  --normal-border: var(--rule-strong);
+  --normal-text: var(--cream);
+  --success-bg: var(--ink-02);
+  --success-border: var(--ivy);
+  --success-text: var(--cream);
+  --error-bg: var(--ink-02);
+  --error-border: var(--wine);
+  --error-text: var(--cream);
+  z-index: 999999999 !important;
 }
 
 [data-sonner-toast] {
-  background: #1a1a1a !important;
-  border: 1px solid #2a2a2a !important;
-  color: #ffffff !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+  background: var(--ink-02) !important;
+  border: 1px solid var(--rule-strong) !important;
+  border-left: 2px solid var(--signal) !important;
+  border-radius: 0 !important;
+  color: var(--cream) !important;
+  padding: 15px 16px !important;
+  gap: 12px !important;
+  font-family: var(--font-geist-sans), "Segoe UI", system-ui, sans-serif !important;
+  box-shadow:
+    inset 0 1px 0 rgba(245, 237, 214, 0.05),
+    0 18px 44px -14px rgba(0, 0, 0, 0.72) !important;
 }
 
-[data-sonner-toast] * {
-  color: inherit !important;
+[data-sonner-toast] [data-title] {
+  color: var(--cream) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.4 !important;
 }
 
-[data-sonner-toast] h2,
-[data-sonner-toast] p,
-[data-sonner-toast] span {
-  color: #e5e5e5 !important;
+[data-sonner-toast] [data-description] {
+  color: var(--cream-2) !important;
+  font-size: 12.5px !important;
+  line-height: 1.5 !important;
+  letter-spacing: -0.005em !important;
+}
+
+[data-sonner-toast] [data-icon] {
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: 2px !important;
 }
 
 [data-sonner-toast][data-type="success"] {
-  border-color: #22c55e !important;
+  border-left-color: var(--ivy) !important;
 }
 
 [data-sonner-toast][data-type="success"] [data-icon] {
-  color: #22c55e !important;
+  color: var(--ivy) !important;
 }
 
 [data-sonner-toast][data-type="error"] {
-  border-color: #ef4444 !important;
+  border-left-color: var(--wine) !important;
 }
 
 [data-sonner-toast][data-type="error"] [data-icon] {
-  color: #ef4444 !important;
+  color: var(--wine) !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  border-left-color: var(--copper) !important;
+}
+
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: var(--copper) !important;
 }
 
 [class^="cl-"] a[href*="clerk.com"],
@@ -1800,13 +1825,6 @@ html {
   opacity: 1;
 }
 
-/* Browser autofill: keep fields on the editorial dark fill instead of the
-   user-agent's pale-blue/yellow wash. The inset box-shadow paints over the
-   autofill background; the long transition defers Chrome's repaint. `!important`
-   is required because EditorialInput sets `transition`/`background` as INLINE
-   styles, which otherwise out-rank a plain rule. Webkit and standard `:autofill`
-   are kept in SEPARATE rules so a browser that doesn't know one pseudo-class
-   can't invalidate the whole selector list. Scoped to every shell input. */
 .sentinel-shell input:-webkit-autofill,
 .sentinel-shell input:-webkit-autofill:hover,
 .sentinel-shell input:-webkit-autofill:focus,

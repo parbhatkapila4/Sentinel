@@ -81,14 +81,14 @@ function exchangeResult(overrides: Record<string, unknown> = {}) {
 }
 
 describe("GET /api/integrations/slack/oauth/callback", () => {
-  it("?error=access_denied redirects to /integrations?slack=denied with the user_denied metric", async () => {
+  it("?error=access_denied redirects to /settings?tab=integrations&slack=denied with the user_denied metric", async () => {
     const req = callbackRequest({ error: "access_denied" });
 
     const res = await GET(req);
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("slack")).toBe("denied");
     expect(mockedIncrement).toHaveBeenCalledWith(
       "slack.oauth.callback.user_denied",
@@ -251,7 +251,7 @@ describe("GET /api/integrations/slack/oauth/callback", () => {
     expect(setCookie).toContain("Path=/api/integrations/slack/oauth");
   });
 
-  it("happy path: redirects to /integrations?slack=connected", async () => {
+  it("happy path: redirects to /settings?tab=integrations&slack=connected", async () => {
     const cookie = signCookieValue({
       state: "REDIR_STATE",
       userId: "user-redir",
@@ -266,7 +266,8 @@ describe("GET /api/integrations/slack/oauth/callback", () => {
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("slack")).toBe("connected");
+    expect(location.searchParams.get("tab")).toBe("integrations");
   });
 });

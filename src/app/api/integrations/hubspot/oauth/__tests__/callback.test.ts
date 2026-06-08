@@ -69,14 +69,14 @@ function callbackRequest(
 }
 
 describe("GET /api/integrations/hubspot/oauth/callback", () => {
-  it("?error=access_denied redirects to /integrations?hubspot=denied with the user_denied metric", async () => {
+  it("?error=access_denied redirects to /settings?tab=integrations&hubspot=denied with the user_denied metric", async () => {
     const req = callbackRequest({ error: "access_denied" });
 
     const res = await GET(req);
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("hubspot")).toBe("denied");
     expect(mockedIncrement).toHaveBeenCalledWith(
       "hubspot.oauth.callback.user_denied",
@@ -228,8 +228,9 @@ describe("GET /api/integrations/hubspot/oauth/callback", () => {
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("hubspot")).toBe("connected");
+    expect(location.searchParams.get("tab")).toBe("integrations");
   });
 
   it("happy path: clears the state cookie on the response", async () => {
@@ -257,7 +258,7 @@ describe("GET /api/integrations/hubspot/oauth/callback", () => {
     expect(setCookie).toContain("Path=/api/integrations/hubspot/oauth");
   });
 
-  it("happy path: redirects to /integrations?hubspot=connected (not /settings/integrations)", async () => {
+  it("happy path: redirects to /settings?tab=integrations&hubspot=connected", async () => {
     const cookie = signCookieValue({
       state: "REDIR_STATE",
       userId: "user-redir",
@@ -278,7 +279,8 @@ describe("GET /api/integrations/hubspot/oauth/callback", () => {
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("hubspot")).toBe("connected");
+    expect(location.searchParams.get("tab")).toBe("integrations");
   });
 });

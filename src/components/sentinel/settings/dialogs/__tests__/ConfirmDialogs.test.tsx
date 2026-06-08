@@ -3,10 +3,83 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import {
   CancelSubscriptionDialog,
   DeleteAccountDialog,
+  DisconnectIntegrationDialog,
   RemovePaymentDialog,
 } from "../ConfirmDialogs";
 
 afterEach(() => cleanup());
+
+describe("DisconnectIntegrationDialog", () => {
+  it("renders the labelled title, consequence ledger, and both buttons", () => {
+    render(
+      <DisconnectIntegrationDialog
+        label="Gmail"
+        disconnecting={false}
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />
+    );
+    expect(screen.getByText("Disconnect Gmail?")).toBeInTheDocument();
+    expect(screen.getByText("Live sync stops immediately")).toBeInTheDocument();
+    expect(
+      screen.getByText("Everything synced so far is kept")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Reconnect anytime")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /keep connected/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^disconnect gmail$/i })
+    ).toBeInTheDocument();
+  });
+
+  it("calls onConfirm when the destructive button is pressed", () => {
+    const onConfirm = vi.fn();
+    render(
+      <DisconnectIntegrationDialog
+        label="Gmail"
+        disconnecting={false}
+        onClose={() => {}}
+        onConfirm={onConfirm}
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^disconnect gmail$/i }));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onClose when Keep connected is pressed", () => {
+    const onClose = vi.fn();
+    render(
+      <DisconnectIntegrationDialog
+        label="Gmail"
+        disconnecting={false}
+        onClose={onClose}
+        onConfirm={() => {}}
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /keep connected/i }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the in-flight label and disables both buttons while disconnecting", () => {
+    const onConfirm = vi.fn();
+    const onClose = vi.fn();
+    render(
+      <DisconnectIntegrationDialog
+        label="HubSpot"
+        disconnecting
+        onClose={onClose}
+        onConfirm={onConfirm}
+      />
+    );
+    const destructive = screen.getByRole("button", { name: /disconnecting/i });
+    const keep = screen.getByRole("button", { name: /keep connected/i });
+    expect(destructive).toBeDisabled();
+    expect(keep).toBeDisabled();
+    fireEvent.click(destructive);
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+});
 
 describe("CancelSubscriptionDialog", () => {
   it("renders the title and both action buttons", () => {

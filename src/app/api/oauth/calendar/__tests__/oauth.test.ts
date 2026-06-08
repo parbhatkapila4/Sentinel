@@ -149,7 +149,7 @@ describe("GET /api/oauth/calendar/callback", () => {
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("calendar_error")).toBe("missing_params");
     expect(location.searchParams.get("gmail_error")).toBeNull();
   });
@@ -197,8 +197,9 @@ describe("GET /api/oauth/calendar/callback", () => {
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
-    expect(location.pathname).toBe("/integrations");
+    expect(location.pathname).toBe("/settings");
     expect(location.searchParams.get("calendar_connected")).toBe("1");
+    expect(location.searchParams.get("tab")).toBe("integrations");
 
     expect(mockedEncrypt).toHaveBeenCalledWith("PLAINTEXT_ACCESS");
     expect(mockedEncrypt).toHaveBeenCalledWith("PLAINTEXT_REFRESH");

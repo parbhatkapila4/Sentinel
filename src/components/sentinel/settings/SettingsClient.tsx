@@ -90,6 +90,7 @@ import {
 import {
   CancelSubscriptionDialog,
   DeleteAccountDialog,
+  DisconnectIntegrationDialog,
   RemovePaymentDialog,
 } from "./dialogs/ConfirmDialogs";
 import { InviteMemberDialog } from "./dialogs/InviteMemberDialog";
@@ -111,6 +112,13 @@ import {
 } from "./dialogs/IntegrationDialogs";
 
 const PANEL_EXPAND_SCROLL_DELAY_MS = 60;
+
+const DISCONNECT_LABELS: Record<string, string> = {
+  salesforce: "Salesforce",
+  hubspot: "HubSpot",
+  googleCalendar: "Google Calendar",
+  gmail: "Gmail",
+};
 
 const NAV_SECTIONS: NavSection[] = [
   {
@@ -254,6 +262,9 @@ export function SettingsClient() {
   );
   const [connectModal, setConnectModal] = useState<ConnectModalKind>(null);
   const [manageModal, setManageModal] = useState<ManageModalKind>(null);
+  const [disconnectTarget, setDisconnectTarget] =
+    useState<ManageModalKind>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [connectingIntegration, setConnectingIntegration] = useState<
     string | null
   >(null);
@@ -589,14 +600,78 @@ export function SettingsClient() {
     setStageStall(initialStageStall);
   };
 
-  const refreshIntegrationStatuses = async () => {
+  const refreshIntegrationStatuses = useCallback(async () => {
     const [statuses, logs] = await Promise.all([
       getAllIntegrationStatuses(),
       getIntegrationLogs(undefined, 10),
     ]);
     setIntegrationStatuses(statuses);
     setIntegrationLogs(logs);
-  };
+  }, []);
+
+  const oauthResultHandled = useRef(false);
+  useEffect(() => {
+    if (oauthResultHandled.current) return;
+
+    const gmail = searchParams.get("gmail_connected");
+    const calendar = searchParams.get("calendar_connected");
+    const slack = searchParams.get("slack");
+    const hubspot = searchParams.get("hubspot");
+    const salesforce = searchParams.get("salesforce");
+    const gmailError = searchParams.get("gmail_error");
+    const calendarError = searchParams.get("calendar_error");
+    const wantsIntegrationsTab = searchParams.get("tab") === "integrations";
+
+    const connected =
+      gmail === "1"
+        ? "Gmail"
+        : calendar === "1"
+          ? "Google Calendar"
+          : slack === "connected"
+            ? "Slack"
+            : hubspot === "connected"
+              ? "HubSpot"
+              : salesforce === "connected"
+                ? "Salesforce"
+                : null;
+
+    const failed =
+      gmailError
+        ? "Gmail"
+        : calendarError
+          ? "Google Calendar"
+          : slack && slack !== "connected"
+            ? "Slack"
+            : hubspot && hubspot !== "connected"
+              ? "HubSpot"
+              : salesforce && salesforce !== "connected"
+                ? "Salesforce"
+                : null;
+
+    if (!connected && !failed && !wantsIntegrationsTab) return;
+    oauthResultHandled.current = true;
+
+    if (connected) {
+      toast.success(`${connected} connected.`);
+      void refreshIntegrationStatuses();
+    } else if (failed) {
+      toast.error(`Couldn't connect ${failed}. Please try again.`);
+    }
+
+    const anchorId =
+      searchParams.get("panel") === "slack"
+        ? "slack-integrations-panel"
+        : "settings-integrations";
+    window.setTimeout(() => {
+      document
+        .getElementById(anchorId)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, PANEL_EXPAND_SCROLL_DELAY_MS);
+
+    if (connected || failed) {
+      router.replace("/settings?tab=integrations", { scroll: false });
+    }
+  }, [searchParams, router, refreshIntegrationStatuses]);
 
   const handleConnectSalesforce = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -674,19 +749,21 @@ export function SettingsClient() {
     }
   };
 
-  const handleDisconnect = async (integration: string) => {
-    const labels: Record<string, string> = {
-      salesforce: "Salesforce",
-      hubspot: "HubSpot",
-      googleCalendar: "Google Calendar",
-      gmail: "Gmail",
-    };
-    if (
-      !confirm(
-        `Disconnect ${labels[integration]}? This won't delete any synced data.`
-      )
-    )
-      return;
+  const handleDisconnect = (integration: NonNullable<ManageModalKind>) => {
+    setDisconnectTarget(integration);
+    setManageModal(null);
+  };
+
+  const handleCancelDisconnect = () => {
+    if (disconnecting) return;
+    setManageModal(disconnectTarget);
+    setDisconnectTarget(null);
+  };
+
+  const handleConfirmDisconnect = async () => {
+    const integration = disconnectTarget;
+    if (!integration) return;
+    setDisconnecting(true);
     try {
       if (integration === "salesforce") await disconnectSalesforce();
       else if (integration === "hubspot") await disconnectHubSpot();
@@ -694,10 +771,13 @@ export function SettingsClient() {
         await disconnectGoogleCalendar();
       else if (integration === "gmail") await disconnectGmail();
       toast.success("Disconnected.");
+      setDisconnectTarget(null);
       setManageModal(null);
       await refreshIntegrationStatuses();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to disconnect");
+    } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -1171,6 +1251,15 @@ export function SettingsClient() {
           onSync={handleSync}
           onDisconnect={handleDisconnect}
           onClose={() => setManageModal(null)}
+        />
+      )}
+
+      {disconnectTarget && (
+        <DisconnectIntegrationDialog
+          label={DISCONNECT_LABELS[disconnectTarget] ?? disconnectTarget}
+          disconnecting={disconnecting}
+          onClose={handleCancelDisconnect}
+          onConfirm={handleConfirmDisconnect}
         />
       )}
 

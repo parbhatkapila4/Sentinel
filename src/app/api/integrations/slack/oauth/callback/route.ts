@@ -21,7 +21,8 @@ function buildIntegrationsUrl(
   params: Record<string, string>
 ): string {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
-  const url = new URL("/integrations", base);
+  const url = new URL("/settings", base);
+  url.searchParams.set("tab", "integrations");
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, v);
   }
