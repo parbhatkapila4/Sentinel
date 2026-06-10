@@ -730,6 +730,10 @@ export function SettingsClient() {
       window.location.href = "/api/integrations/hubspot/oauth/start";
       return;
     }
+    if (kind === "salesforce") {
+      window.location.href = "/api/integrations/salesforce/oauth/start";
+      return;
+    }
     setConnectModal(kind);
   };
 
