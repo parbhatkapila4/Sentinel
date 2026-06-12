@@ -131,7 +131,18 @@ describe("getAllDeals", () => {
     expect(prismaMock.deal.findMany).toHaveBeenCalledWith({
       where: { userId: TEST_USER_ID },
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        teamId: true,
+        assignedToId: true,
+        name: true,
+        stage: true,
+        value: true,
+        location: true,
+        channel: true,
+        isDemo: true,
+        createdAt: true,
         assignedTo: { select: { id: true, name: true, surname: true } },
       },
     });
@@ -150,7 +161,18 @@ describe("getAllDeals", () => {
     expect(prismaMock.deal.findMany).toHaveBeenCalledWith({
       where: { userId: TEST_USER_ID },
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        teamId: true,
+        assignedToId: true,
+        name: true,
+        stage: true,
+        value: true,
+        location: true,
+        channel: true,
+        isDemo: true,
+        createdAt: true,
         assignedTo: { select: { id: true, name: true, surname: true } },
       },
     });

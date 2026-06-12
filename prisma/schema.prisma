@@ -488,6 +488,7 @@ model Meeting {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   deal        Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
 
+  @@unique([userId, externalId])
   @@index([userId])
   @@index([dealId])
   @@index([startTime])

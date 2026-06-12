@@ -25,10 +25,14 @@ export async function notifySlackAfterCrmSync(
 
     const deals = await prisma.deal.findMany({
       where: { userId },
-      include: {
+      select: {
+        stage: true,
+        value: true,
+        createdAt: true,
         timeline: {
           orderBy: { createdAt: "desc" },
           take: 80,
+          select: { eventType: true, createdAt: true, metadata: true },
         },
       },
       take: 200,

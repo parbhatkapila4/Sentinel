@@ -15,7 +15,7 @@ interface MastheadProps {
 type SearchDeal = { id: string; name: string; stage: string; value: number };
 
 const SEARCH_LIMIT = 8;
-const DEBOUNCE_MS = 120;
+const DEBOUNCE_MS = 250;
 const CACHE_MAX = 48;
 
 export function Masthead({

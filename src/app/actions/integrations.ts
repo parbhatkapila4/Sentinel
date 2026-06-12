@@ -83,12 +83,39 @@ export async function getAllIntegrationStatuses(): Promise<AllIntegrationStatuse
   ] = await Promise.all([
     prisma.salesforceIntegration.findUnique({
       where: { userId },
+      select: {
+        isActive: true,
+        lastSyncAt: true,
+        lastSyncStatus: true,
+        totalSynced: true,
+        lastContactsSyncedAt: true,
+        totalContactsSynced: true,
+        syncEnabled: true,
+        instanceUrl: true,
+      },
     }),
     prisma.hubSpotIntegration.findUnique({
       where: { userId },
+      select: {
+        isActive: true,
+        lastSyncAt: true,
+        lastSyncStatus: true,
+        totalSynced: true,
+        lastContactsSyncedAt: true,
+        totalContactsSynced: true,
+        syncEnabled: true,
+        portalId: true,
+      },
     }),
     prisma.googleCalendarIntegration.findUnique({
       where: { userId },
+      select: {
+        isActive: true,
+        lastSyncAt: true,
+        lastSyncStatus: true,
+        syncEnabled: true,
+        calendarId: true,
+      },
     }),
     prisma.calendarIntegration.findUnique({
       where: { userId },
@@ -96,9 +123,17 @@ export async function getAllIntegrationStatuses(): Promise<AllIntegrationStatuse
     }),
     prisma.slackIntegration.findMany({
       where: { userId, isActive: true },
+      select: { channelName: true },
     }),
     prisma.gmailIntegration.findUnique({
       where: { userId },
+      select: {
+        isActive: true,
+        lastSyncAt: true,
+        lastSyncStatus: true,
+        totalSynced: true,
+        syncEnabled: true,
+      },
     }),
   ]);
 

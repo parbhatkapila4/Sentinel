@@ -127,7 +127,9 @@ export async function syncGmailForUser(userId: string): Promise<{
   const errors: string[] = [];
   try {
     const { accessToken } = await ensureFreshToken(integration);
-    const messages = await fetchRecentGmailMessages(accessToken, 25);
+    const messages = await fetchRecentGmailMessages(accessToken, {
+      since: integration.lastSyncAt,
+    });
 
     let persisted = 0;
     let skipped = 0;

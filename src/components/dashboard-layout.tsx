@@ -304,7 +304,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     };
 
     fetchAlerts();
-    const interval = setInterval(fetchAlerts, 30000);
+    // Alerts are not second-sensitive; poll every 5 minutes to limit Supabase egress.
+    const interval = setInterval(fetchAlerts, 300000);
     return () => clearInterval(interval);
   }, []);
 

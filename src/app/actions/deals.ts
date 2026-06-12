@@ -278,7 +278,18 @@ export async function getAllDeals(options?: GetDealsOptions) {
     const deals = await prisma.deal.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        teamId: true,
+        assignedToId: true,
+        name: true,
+        stage: true,
+        value: true,
+        location: true,
+        channel: true,
+        isDemo: true,
+        createdAt: true,
         assignedTo: { select: { id: true, name: true, surname: true } },
       },
     });
@@ -362,7 +373,16 @@ export async function getTeamDeals(teamId: string) {
     const deals = await prisma.deal.findMany({
       where: { teamId },
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        teamId: true,
+        assignedToId: true,
+        name: true,
+        stage: true,
+        value: true,
+        isDemo: true,
+        createdAt: true,
         assignedTo: {
           select: { id: true, name: true, surname: true, email: true },
         },

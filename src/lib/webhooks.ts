@@ -71,6 +71,7 @@ export async function dispatchWebhookEvent(
       ],
       events: { has: event },
     },
+    select: { id: true },
   });
 
   if (!webhooks || !Array.isArray(webhooks)) {

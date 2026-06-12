@@ -21,7 +21,9 @@ interface ApiPayload {
   unreadCount: number;
 }
 
-const POLL_MS = 30_000;
+// SSE (useRealtime) is the primary channel for live notifications; this slow interval is only a
+// fallback in case the realtime stream drops. Fresh data is also fetched when the dropdown opens.
+const FALLBACK_POLL_MS = 5 * 60_000;
 
 export function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
@@ -56,9 +58,13 @@ export function NotificationsDropdown() {
 
   useEffect(() => {
     fetchNotifications();
-    const t = setInterval(fetchNotifications, POLL_MS);
+    const t = setInterval(fetchNotifications, FALLBACK_POLL_MS);
     return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    if (open) fetchRef.current();
+  }, [open]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

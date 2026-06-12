@@ -9,6 +9,7 @@ const GMAIL_BASE = "https://gmail.googleapis.com/gmail/v1";
 
 type GmailListResponse = {
   messages?: Array<{ id: string; threadId: string }>;
+  nextPageToken?: string;
 };
 
 type GmailMessageResponse = {
@@ -44,25 +45,66 @@ function parseEmails(raw: string | null): string[] {
   return parseEmailAddressList(raw ?? undefined);
 }
 
+// First-ever sync (no checkpoint) preserves the original behavior: newest 25, single page.
+const FIRST_SYNC_MAX_RESULTS = 25;
+// Per-run safety cap for incremental syncs so a large backlog cannot run unbounded.
+const MAX_MESSAGES_PER_INCREMENTAL_SYNC = 500;
+
+/**
+ * Lists recent Gmail messages and returns their parsed metadata.
+ *
+ * When `since` is provided (the integration's last successful sync), only messages
+ * newer than that checkpoint are fetched via the Gmail `after:` search filter, paging
+ * through results up to `maxMessages` (default 500) so a busy mailbox is not capped at a
+ * single page. When `since` is null (first-ever sync) the original behavior is preserved:
+ * the newest `FIRST_SYNC_MAX_RESULTS` messages, single page, no filter.
+ */
 export async function fetchRecentGmailMessages(
   accessToken: string,
-  maxResults: number = 25
+  options: { since?: Date | null; maxMessages?: number } = {}
 ): Promise<GmailMessage[]> {
-  const list = await fetchWithTimeout(
-    `${GMAIL_BASE}/users/me/messages?maxResults=${maxResults}`,
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    },
-    {
-      timeoutMs: 25000,
-      timeoutMessage: "Gmail list request timed out",
+  const since = options.since ?? null;
+  const cap = since
+    ? options.maxMessages ?? MAX_MESSAGES_PER_INCREMENTAL_SYNC
+    : FIRST_SYNC_MAX_RESULTS;
+  const pageSize = since ? 100 : FIRST_SYNC_MAX_RESULTS;
+
+  const ids: Array<{ id: string; threadId: string }> = [];
+  let pageToken: string | undefined;
+  do {
+    const listUrl = new URL(`${GMAIL_BASE}/users/me/messages`);
+    listUrl.searchParams.set("maxResults", String(pageSize));
+    if (since) {
+      // Gmail search `after:` accepts epoch seconds; any boundary overlap is absorbed by the
+      // upsert on @@unique([userId, externalId, source]), so this never under-fetches.
+      listUrl.searchParams.set("q", `after:${Math.floor(since.getTime() / 1000)}`);
     }
-  );
-  if (!list.ok) {
-    throw new ExternalServiceError("gmail", `Failed listing messages (${list.status})`);
-  }
-  const listJson = (await list.json()) as GmailListResponse;
-  const ids = listJson.messages ?? [];
+    if (pageToken) {
+      listUrl.searchParams.set("pageToken", pageToken);
+    }
+
+    const list = await fetchWithTimeout(
+      listUrl.toString(),
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+      {
+        timeoutMs: 25000,
+        timeoutMessage: "Gmail list request timed out",
+      }
+    );
+    if (!list.ok) {
+      throw new ExternalServiceError("gmail", `Failed listing messages (${list.status})`);
+    }
+    const listJson = (await list.json()) as GmailListResponse;
+    for (const msg of listJson.messages ?? []) {
+      if (ids.length >= cap) break;
+      ids.push(msg);
+    }
+    pageToken = listJson.nextPageToken;
+    // First-ever sync keeps single-page behavior; only incremental syncs paginate.
+    if (!since) break;
+  } while (pageToken && ids.length < cap);
 
   const output: GmailMessage[] = [];
   for (const msg of ids) {
