@@ -6,7 +6,6 @@ import type {
   IntegrationLogEntry,
 } from "@/app/actions/integrations";
 import { formatRelativeTime } from "@/lib/utils";
-import { SlackIntegrationsPanel } from "@/components/slack-integrations-panel";
 import { EditorialButton, SectionHeader } from "../primitives";
 import type {
   ConnectModalKind,
@@ -20,9 +19,6 @@ interface IntegrationsSectionProps {
   logs: IntegrationLogEntry[];
   onConnect: (kind: NonNullable<ConnectModalKind>) => void;
   onManage: (kind: NonNullable<ManageModalKind>) => void;
-  slackPanelExpanded: boolean;
-  onSlackPanelExpandedChange: (next: boolean) => void;
-  onRevealSlack: () => void;
 }
 
 export function IntegrationsSection({
@@ -32,9 +28,6 @@ export function IntegrationsSection({
   logs,
   onConnect,
   onManage,
-  slackPanelExpanded,
-  onSlackPanelExpandedChange,
-  onRevealSlack,
 }: IntegrationsSectionProps) {
   return (
     <section
@@ -117,8 +110,8 @@ export function IntegrationsSection({
             name="Slack"
             sub="NOTIFICATIONS · CHANNELS & DMS"
             connected={statuses?.slack?.connected ?? false}
-            onConnect={onRevealSlack}
-            onManage={onRevealSlack}
+            onConnect={() => onConnect("slack")}
+            onManage={() => onConnect("slack")}
             icon={
               <path d="M14.5 10h2a2.5 2.5 0 010 5h-2zM9.5 14H7.5a2.5 2.5 0 010-5h2zM10 14.5v2a2.5 2.5 0 005 0v-2zM14 9.5v-2a2.5 2.5 0 00-5 0v2z" />
             }
@@ -143,58 +136,6 @@ export function IntegrationsSection({
           />
         </div>
       )}
-
-      <div
-        style={{
-          marginTop: 36,
-          paddingTop: 24,
-          borderTop: "1px solid var(--rule)",
-        }}
-        id="slack-integrations-panel"
-      >
-        <div
-          style={{
-            fontFamily: "var(--font-mono-jb)",
-            fontSize: 10,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "var(--cream-3)",
-            marginBottom: 8,
-          }}
-        >
-          § 04.01 - SLACK WEBHOOKS
-        </div>
-        <div
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontSize: 22,
-            fontStyle: "italic",
-            color: "var(--cream)",
-            letterSpacing: "-0.015em",
-            marginBottom: 4,
-          }}
-        >
-          In-channel, in real time.
-        </div>
-        <div
-          style={{
-            fontSize: 12.5,
-            color: "var(--cream-2)",
-            maxWidth: 560,
-            lineHeight: 1.5,
-            marginBottom: 20,
-          }}
-        >
-          Incoming webhooks for at-risk deals, wins, stage changes, and HubSpot
-          / Salesforce sync summaries.
-        </div>
-
-        <SlackIntegrationsPanel
-          alwaysExpanded
-          defaultExpanded={slackPanelExpanded}
-          onExpandedChange={onSlackPanelExpandedChange}
-        />
-      </div>
 
       <div
         style={{

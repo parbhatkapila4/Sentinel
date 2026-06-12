@@ -277,18 +277,6 @@ export function SettingsClient() {
     consumerSecret: "",
   });
   const [hubspotForm, setHubspotForm] = useState({ apiKey: "" });
-  const [slackPanelExpanded, setSlackPanelExpanded] = useState<boolean>(
-    () => searchParams.get("panel") === "slack"
-  );
-
-  const revealSlackPanel = useCallback(() => {
-    setSlackPanelExpanded(true);
-    setTimeout(() => {
-      document
-        .getElementById("slack-integrations-panel")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, PANEL_EXPAND_SCROLL_DELAY_MS);
-  }, []);
 
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -658,10 +646,7 @@ export function SettingsClient() {
       toast.error(`Couldn't connect ${failed}. Please try again.`);
     }
 
-    const anchorId =
-      searchParams.get("panel") === "slack"
-        ? "slack-integrations-panel"
-        : "settings-integrations";
+    const anchorId = "settings-integrations";
     window.setTimeout(() => {
       document
         .getElementById(anchorId)
@@ -732,6 +717,10 @@ export function SettingsClient() {
     }
     if (kind === "salesforce") {
       window.location.href = "/api/integrations/salesforce/oauth/start";
+      return;
+    }
+    if (kind === "slack") {
+      window.location.href = "/api/integrations/slack/oauth/start";
       return;
     }
     setConnectModal(kind);
@@ -1168,9 +1157,6 @@ export function SettingsClient() {
             logs={integrationLogs}
             onConnect={handleConnect}
             onManage={setManageModal}
-            slackPanelExpanded={slackPanelExpanded}
-            onSlackPanelExpandedChange={setSlackPanelExpanded}
-            onRevealSlack={revealSlackPanel}
           />
 
           <TeamSection

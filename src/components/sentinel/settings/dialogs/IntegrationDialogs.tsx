@@ -18,6 +18,7 @@ export type ConnectModalKind =
   | "hubspot"
   | "google_calendar"
   | "gmail"
+  | "slack"
   | null;
 
 export type ManageModalKind =
