@@ -47,15 +47,27 @@
 
 ```json
 {
-  "claim_id": "data_api_key_credentials",
-  "claim_text": "Integrations authenticate with API key credentials or webhook URLs.",
+  "claim_id": "data_oauth_credentials",
+  "claim_text": "Integrations authenticate via OAuth redirect with scoped tokens.",
   "status": "implemented",
   "evidence_paths": [
     "src/app/security/page.tsx",
     "src/app/integrations/page.tsx",
     "README.md"
   ],
-  "last_verified_at": "2026-04-23"
+  "last_verified_at": "2026-06-13"
+}
+```
+
+```json
+{
+  "claim_id": "data_legacy_api_key_auth_historical",
+  "claim_text": "Earlier releases authenticated integrations with API key credentials; these have since been migrated to OAuth.",
+  "status": "implemented",
+  "evidence_paths": [
+    "src/app/changelog/page.tsx"
+  ],
+  "last_verified_at": "2026-06-13"
 }
 ```
 

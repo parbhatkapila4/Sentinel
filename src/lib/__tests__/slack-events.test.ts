@@ -100,7 +100,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("handleSlackEvent — admission decisions", () => {
+describe("handleSlackEvent - admission decisions", () => {
   it("DM from a CRM contact passes the filter, persists, and emits the passed metric", async () => {
     prismaMock.slackEventsSubscription.findUnique.mockResolvedValue(SUB as never);
     prismaMock.slackMessage.findUnique.mockResolvedValue(null);
@@ -275,7 +275,7 @@ describe("handleSlackEvent — admission decisions", () => {
   });
 });
 
-describe("handleSlackEvent — idempotency", () => {
+describe("handleSlackEvent - idempotency", () => {
   it("an event_id already in the DB is dropped with duplicate_event", async () => {
     prismaMock.slackEventsSubscription.findUnique.mockResolvedValue(SUB as never);
     prismaMock.slackMessage.findUnique.mockResolvedValue({
@@ -324,7 +324,7 @@ describe("handleSlackEvent — idempotency", () => {
   });
 });
 
-describe("handleSlackEvent — mentions", () => {
+describe("handleSlackEvent - mentions", () => {
   it("app_mention with a CRM contact mentioned passes; matchedCrmContacts includes the mention", async () => {
     prismaMock.slackEventsSubscription.findUnique.mockResolvedValue(SUB as never);
     prismaMock.slackMessage.findUnique.mockResolvedValue(null);

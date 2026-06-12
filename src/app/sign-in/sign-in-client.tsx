@@ -896,7 +896,6 @@ export function SignInClient() {
       const result = await signIn.create({ identifier: email, password });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        // Hard navigation — same reasoning as the auto-redirect effect above.
         window.location.href = afterSignInUrl;
         return;
       }
@@ -955,7 +954,7 @@ export function SignInClient() {
 
           <p className="subtitle">
             Sentinel reads pipeline activity from your <b>CRM and calendar</b>{" "}
-            — then scores every deal 0–100 with cited reasons. Catch at-risk
+            - then scores every deal 0–100 with cited reasons. Catch at-risk
             deals before they go silent.
           </p>
 
@@ -1001,7 +1000,7 @@ export function SignInClient() {
           <div className="design-note">
             <div className="design-note-label">DESIGN NOTE</div>
             <p className="design-note-body">
-              Every risk score cites the activity behind it — temporal decay,
+              Every risk score cites the activity behind it - temporal decay,
               stage velocity, engagement drop. <em>Auditable by design</em>,
               not a black box you have to trust in a forecast meeting.
             </p>
@@ -1024,7 +1023,7 @@ export function SignInClient() {
                   <span></span>
                 </div>
                 <div className="card-title">
-                  <b>auth.sentinel.run</b> — sign in
+                  <b>auth.sentinel.run</b> - sign in
                 </div>
                 <span className="card-tag">SECURE</span>
               </div>

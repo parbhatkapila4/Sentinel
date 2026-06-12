@@ -7,6 +7,7 @@ import {
   decryptIntegrationSecret,
   encryptIntegrationSecret,
 } from "@/lib/integration-secrets";
+import { logIntegrationAction } from "./integrations";
 
 export async function createSlackIntegration(data: {
   webhookUrl: string;
@@ -111,6 +112,22 @@ export async function testSlackIntegration(id: string) {
   } catch (error) {
     return { success: false, error: String(error) };
   }
+}
+
+export async function disconnectSlack(): Promise<{ success: boolean }> {
+  const userId = await getAuthenticatedUserId();
+
+  await prisma.slackEventsSubscription.deleteMany({ where: { userId } });
+
+  await logIntegrationAction(
+    "slack",
+    "disconnect",
+    "success",
+    "Disconnected from Slack"
+  );
+
+  revalidatePath("/settings");
+  return { success: true };
 }
 
 export interface SlackStatus {

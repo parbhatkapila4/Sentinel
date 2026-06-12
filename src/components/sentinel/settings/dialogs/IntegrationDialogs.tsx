@@ -26,6 +26,7 @@ export type ManageModalKind =
   | "hubspot"
   | "googleCalendar"
   | "gmail"
+  | "slack"
   | null;
 
 export interface SalesforceConnectForm {
@@ -98,7 +99,7 @@ export function ConnectSalesforceDialog({
         </Field>
         <Field
           label="Consumer Secret (Client Secret)"
-          foot="Treated as a password — encrypted at rest and only used to mint short-lived access tokens."
+          foot="Treated as a password - encrypted at rest and only used to mint short-lived access tokens."
         >
           <EditorialInput
             type="password"
@@ -300,6 +301,7 @@ const MANAGE_TITLE: Record<NonNullable<ManageModalKind>, string> = {
   hubspot: "HubSpot.",
   googleCalendar: "Google Calendar.",
   gmail: "Gmail.",
+  slack: "Slack.",
 };
 
 const PROVIDERS_WITH_TOTAL_SYNCED = new Set<NonNullable<ManageModalKind>>([
@@ -342,6 +344,8 @@ function readProviderStatus(
       return statuses.googleCalendar;
     case "gmail":
       return statuses.gmail;
+    case "slack":
+      return null;
   }
 }
 
@@ -362,6 +366,88 @@ export function ManageIntegrationDialog({
   onDisconnect: (kind: NonNullable<ManageModalKind>) => void;
   onClose: () => void;
 }) {
+  if (kind === "slack") {
+    const slack = statuses?.slack ?? null;
+    const slackRows: Array<{ k: string; v: string }> = [
+      { k: "STATUS", v: slack?.connected ? "ACTIVE" : "INACTIVE" },
+    ];
+    if (slack?.teamId) slackRows.push({ k: "WORKSPACE", v: slack.teamId });
+    if (slack?.botUserId) slackRows.push({ k: "BOT USER", v: slack.botUserId });
+    if (slack?.selfEmail) slackRows.push({ k: "ACCOUNT", v: slack.selfEmail });
+    slackRows.push({
+      k: "CONNECTED",
+      v: formatRelativeTime(slack?.connectedAt ?? null) || "-",
+    });
+
+    return (
+      <EditorialModal
+        onClose={onClose}
+        title={MANAGE_TITLE[kind]}
+        subtitle={
+          <span
+            style={{
+              color: "var(--ivy)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span
+              className="sentinel-ivy-ping"
+              style={{
+                width: 6,
+                height: 6,
+                background: "var(--ivy)",
+                borderRadius: "50%",
+                display: "inline-block",
+              }}
+            />
+            Connected
+          </span>
+        }
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            marginBottom: 20,
+          }}
+        >
+          {slackRows.map((row) => (
+            <div
+              key={row.k}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                background: "var(--ink-03)",
+                border: "1px solid var(--rule)",
+                fontFamily: "var(--font-mono-jb)",
+                fontSize: 10.5,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+              }}
+            >
+              <span style={{ color: "var(--cream-3)" }}>{row.k}</span>
+              <span style={{ color: "var(--cream)" }}>{row.v}</span>
+            </div>
+          ))}
+        </div>
+
+        <ModalActions>
+          <EditorialButton
+            type="button"
+            variant="danger"
+            onClick={() => onDisconnect(kind)}
+          >
+            Disconnect
+          </EditorialButton>
+        </ModalActions>
+      </EditorialModal>
+    );
+  }
+
   const status = readProviderStatus(kind, statuses);
   const showTotalSynced = PROVIDERS_WITH_TOTAL_SYNCED.has(kind);
 

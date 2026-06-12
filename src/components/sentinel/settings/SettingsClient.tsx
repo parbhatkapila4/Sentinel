@@ -54,6 +54,7 @@ import {
   syncGmailSignals,
   updateGmailSettings,
 } from "@/app/actions/gmail";
+import { disconnectSlack } from "@/app/actions/slack";
 import {
   getPaymentMethods,
   addPaymentMethod,
@@ -118,6 +119,7 @@ const DISCONNECT_LABELS: Record<string, string> = {
   hubspot: "HubSpot",
   googleCalendar: "Google Calendar",
   gmail: "Gmail",
+  slack: "Slack",
 };
 
 const NAV_SECTIONS: NavSection[] = [
@@ -767,6 +769,7 @@ export function SettingsClient() {
       else if (integration === "googleCalendar")
         await disconnectGoogleCalendar();
       else if (integration === "gmail") await disconnectGmail();
+      else if (integration === "slack") await disconnectSlack();
       toast.success("Disconnected.");
       setDisconnectTarget(null);
       setManageModal(null);
@@ -1263,7 +1266,7 @@ export function SettingsClient() {
           title="Add payment method."
           subtitle={
             <>
-              Enter a card the way you&apos;d expect —{" "}
+              Enter a card the way you&apos;d expect -{" "}
               <SerifEm>your full number and CVC never leave this browser</SerifEm>.
             </>
           }

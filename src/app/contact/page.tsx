@@ -98,7 +98,7 @@ export default function ContactPage() {
 
     if (missing.length > 0) {
       setError(
-        `Please fill in: ${missing.join(", ")}. The form opens your mail app — empty fields would send an empty draft.`,
+        `Please fill in: ${missing.join(", ")}. The form opens your mail app - empty fields would send an empty draft.`,
       );
       return;
     }

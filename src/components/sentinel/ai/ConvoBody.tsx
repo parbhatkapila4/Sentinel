@@ -131,7 +131,7 @@ const MD_COMPONENTS = {
   }) => (
     <li style={MD_LI}>
       <span aria-hidden style={MD_LI_MARKER}>
-        {ordered ? `${(index ?? 0) + 1}.` : "—"}
+        {ordered ? `${(index ?? 0) + 1}.` : "-"}
       </span>
       {children}
     </li>

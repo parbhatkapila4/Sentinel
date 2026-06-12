@@ -33,7 +33,7 @@ export function SettingsHero({
     dealsUsed !== null && dealsLimit > 0
       ? Math.min(100, (dealsUsed / dealsLimit) * 100)
       : 0;
-  const usedDisplay = dealsUsed === null ? "—" : dealsUsed;
+  const usedDisplay = dealsUsed === null ? "-" : dealsUsed;
 
   return (
     <section

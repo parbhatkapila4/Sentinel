@@ -18,6 +18,26 @@ type Release = {
 
 const releases: Release[] = [
   {
+    date: "2026-06-13",
+    title: "Integrations move to OAuth connect",
+    lede:
+      "Every integration now connects through a hosted OAuth redirect — click connect, authorize, done. No more pasting keys or tokens.",
+    entries: [
+      {
+        tag: "Shipped",
+        text: "HubSpot, Salesforce, and Slack now connect via OAuth redirect, joining Gmail and Google Calendar. No credentials to paste.",
+      },
+      {
+        tag: "Shipped",
+        text: "Slack is now a scoped OAuth app: it reads message history from the channels its bot is added to and matches senders to CRM contacts, in addition to posting alerts.",
+      },
+      {
+        tag: "Security",
+        text: "Disconnect now hard-deletes the stored OAuth tokens immediately; for Slack it also clears the ingested message log.",
+      },
+    ],
+  },
+  {
     date: "2026-04-19",
     title: "Cron + integration secrets hardening",
     lede:

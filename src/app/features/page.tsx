@@ -95,17 +95,17 @@ const pillars: Pillar[] = [
     kicker: "05",
     title: "Integrations",
     lede:
-      "Read-only connections to the systems your revenue runs on. Scoped API keys inbound, HMAC-signed webhooks outbound.",
+      "Read-only connections to the systems your revenue runs on. Scoped OAuth tokens inbound, HMAC-signed webhooks outbound.",
     meta: [
       { label: "CRM", value: "Salesforce · HubSpot" },
       { label: "Calendar", value: "Google Calendar" },
       { label: "Notify", value: "Slack · Outbound webhooks" },
     ],
     points: [
-      "Salesforce: connected-app access token, inbound sync for Opportunities and Accounts, no write-back to the record.",
-      "HubSpot: private app access token, Deals / Contacts / Companies sync, Sentinel never writes to your portal.",
-      "Google Calendar: read-only API key, event-to-deal matching by domain and attendee.",
-      "Slack: incoming webhook with per-event filters for risk, stage change, new deal, and daily digest.",
+      "Salesforce: OAuth connect, inbound sync for Opportunities and Accounts, no write-back to the record.",
+      "HubSpot: OAuth connect, Deals / Contacts / Companies sync, Sentinel never writes to your portal.",
+      "Google Calendar: read-only OAuth, event-to-deal matching by domain and attendee.",
+      "Slack: OAuth app that reads channel messages for deal signal and posts per-event alerts (risk, stage change, new deal, daily digest).",
       "Outbound webhooks: HMAC-SHA256 signed, with retries, delivery logs, and a 30-day history you can inspect.",
     ],
     link: { href: "/integrations", label: "See integration details" },
@@ -151,7 +151,7 @@ const pillars: Pillar[] = [
       "A real API, documented against an OpenAPI spec, with an interactive explorer. Webhooks are signed, logged, and retried.",
     meta: [
       { label: "Docs", value: "OpenAPI / Swagger at /api-docs" },
-      { label: "Auth", value: "Per-user API keys" },
+      { label: "Auth", value: "Per-user OAuth" },
       {
         label: "Events",
         value:

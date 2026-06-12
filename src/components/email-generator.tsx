@@ -186,7 +186,7 @@ export function EmailGenerator({
         }, 1800);
       })
       .catch(() => {
-        toast.error("Could not copy — clipboard access blocked");
+        toast.error("Could not copy - clipboard access blocked");
       });
   }
 

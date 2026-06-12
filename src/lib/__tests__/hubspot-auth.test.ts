@@ -111,7 +111,7 @@ afterEach(() => {
   env.HUBSPOT_OAUTH_REDIRECT_URI = ORIG_REDIRECT_URI;
 });
 
-describe("getHubSpotAccessToken — entry point", () => {
+describe("getHubSpotAccessToken - entry point", () => {
   it("throws ExternalServiceError when no integration row exists for the user", async () => {
     prismaMock.hubSpotIntegration.findUnique.mockResolvedValue(null);
 

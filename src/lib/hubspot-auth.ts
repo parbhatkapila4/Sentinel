@@ -63,7 +63,7 @@ export async function getHubSpotAccessToken(userId: string): Promise<string> {
       if (!integration.apiKey) {
         throw new ExternalServiceError(
           "hubspot",
-          "api_key integration has null apiKey — data integrity violation"
+          "api_key integration has null apiKey - data integrity violation"
         );
       }
       void incrementMetric("hubspot.oauth.token_resolved.api_key", 1);
@@ -173,7 +173,7 @@ async function doRefresh(userId: string): Promise<string> {
     );
     throw new ExternalServiceError(
       "hubspot",
-      "Refresh token rejected — user must re-connect"
+      "Refresh token rejected - user must re-connect"
     );
   }
 

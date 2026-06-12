@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 360" width="1200" height="360" role="img" aria-label="Sentinel — CRM is the permission layer. A message is ingested only if a participant already exists in your CRM.">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 360" width="1200" height="360" role="img" aria-label="Sentinel - CRM is the permission layer. A message is ingested only if a participant already exists in your CRM.">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0C0A08"/>

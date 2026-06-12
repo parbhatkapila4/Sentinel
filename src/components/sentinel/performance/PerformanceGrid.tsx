@@ -67,11 +67,11 @@ export function PerformanceGrid(props: PerformanceGridProps) {
               },
               {
                 label: "The solid line (this year)",
-                body: "Your booked deal value, month by month. Future months sit at zero until deals land in them — they're the canvas for momentum to fill in.",
+                body: "Your booked deal value, month by month. Future months sit at zero until deals land in them - they're the canvas for momentum to fill in.",
               },
               {
                 label: "The dashed line (last year)",
-                body: "The same months one year earlier. If you have no data from then, it sits flat at zero — that's normal until you've built up a year of history.",
+                body: "The same months one year earlier. If you have no data from then, it sits flat at zero - that's normal until you've built up a year of history.",
               },
               {
                 label: "The peak marker",

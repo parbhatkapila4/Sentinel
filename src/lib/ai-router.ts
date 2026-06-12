@@ -191,7 +191,7 @@ export type AIMode = "RESEARCH" | "DRAFT" | "FAST";
 
 const ACCURACY_RULES = `
 
-ACCURACY RULES — NON-NEGOTIABLE. THESE OVERRIDE EVERY OTHER INSTRUCTION:
+ACCURACY RULES - NON-NEGOTIABLE. THESE OVERRIDE EVERY OTHER INSTRUCTION:
 1. Every fact you state (deal names, values, stages, dates, counts, percentages, risk scores, locations, activity, owners) must come from the DEAL & PIPELINE CONTEXT in this conversation. Never invent. Never estimate. Never approximate ("about", "roughly", "around") unless the user explicitly asks for a rough figure.
 2. Quote numbers exactly as they appear in the context. Do not round. Do not extrapolate.
 3. If something the user asks about is NOT in the context, say so plainly: "I don't have that in the data I can see" or "That isn't in your pipeline context." Then either ask the user to clarify or stop. Do not guess.
@@ -209,19 +209,19 @@ const MODE_OVERRIDES: Record<AIMode, {
     maxTokensMultiplier: 1.4,
     temperatureDelta: -0.1,
     promptSuffix:
-      "\n\nMODE — RESEARCH. The user wants a thoughtful read, not a one-liner. When the question merits it, show your reasoning, cite specific deal data, and surface what's surprising or non-obvious. Avoid filler phrases ('great question', 'let me help'). Lead with the answer, support it with evidence FROM THE PROVIDED CONTEXT — never from memory or speculation.",
+      "\n\nMODE - RESEARCH. The user wants a thoughtful read, not a one-liner. When the question merits it, show your reasoning, cite specific deal data, and surface what's surprising or non-obvious. Avoid filler phrases ('great question', 'let me help'). Lead with the answer, support it with evidence FROM THE PROVIDED CONTEXT - never from memory or speculation.",
   },
   DRAFT: {
     maxTokensMultiplier: 1.2,
     temperatureDelta: 0.1,
     promptSuffix:
-      "\n\nMODE — DRAFT. The user wants a polished deliverable: an email, a follow-up note, a brief, a script, talking points. Lead with the deliverable itself. Skip preamble. If the user hasn't said what to draft, ask one focused question and stop. For any deal-specific detail you cannot confirm from the context, use a bracketed placeholder like [Customer name] — never invent.",
+      "\n\nMODE - DRAFT. The user wants a polished deliverable: an email, a follow-up note, a brief, a script, talking points. Lead with the deliverable itself. Skip preamble. If the user hasn't said what to draft, ask one focused question and stop. For any deal-specific detail you cannot confirm from the context, use a bracketed placeholder like [Customer name] - never invent.",
   },
   FAST: {
     maxTokensMultiplier: 0.45,
     temperatureDelta: -0.2,
     promptSuffix:
-      "\n\nMODE — FAST. Be terse. Aim for one or two sentences. Drop the preamble. Drop the wrap-up. If the question genuinely needs more, give the minimum extra that earns its keep. Brevity never excuses making things up — if the data isn't there, the right answer is 'I don't have that.'",
+      "\n\nMODE - FAST. Be terse. Aim for one or two sentences. Drop the preamble. Drop the wrap-up. If the question genuinely needs more, give the minimum extra that earns its keep. Brevity never excuses making things up - if the data isn't there, the right answer is 'I don't have that.'",
   },
 };
 

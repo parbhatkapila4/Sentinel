@@ -87,7 +87,7 @@ const MD_COMPONENTS = {
   li: ({ children }: { children?: React.ReactNode }) => (
     <li style={MD_LIST_ITEM}>
       <span aria-hidden style={MD_LIST_MARKER}>
-        —
+        -
       </span>
       {children}
     </li>

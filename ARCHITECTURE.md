@@ -1,6 +1,6 @@
 # Sentinel Architecture
 
-High-level system overview. For *why* each choice was made — alternatives considered, trade-offs accepted, where to find evidence — read **[DECISIONS.md](DECISIONS.md)** first.
+High-level system overview. For *why* each choice was made - alternatives considered, trade-offs accepted, where to find evidence - read **[DECISIONS.md](DECISIONS.md)** first.
 
 ## System Overview
 
@@ -105,7 +105,7 @@ High-level system overview. For *why* each choice was made — alternatives cons
 
 ## Further Reading
 
-- **Engineering decisions**: [DECISIONS.md](DECISIONS.md) — what was chosen, what was rejected, why
+- **Engineering decisions**: [DECISIONS.md](DECISIONS.md) - what was chosen, what was rejected, why
 - **Setup & usage**: [README](README.md)
 - **Quick walkthrough**: [TRY_THIS.md](TRY_THIS.md)
 - **API reference**: In-app [API Reference](/api-docs) (OpenAPI/Swagger)

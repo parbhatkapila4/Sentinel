@@ -61,10 +61,10 @@ const auth: StackEntry[] = [
 ];
 
 const integrations: StackEntry[] = [
-  { name: "Salesforce", detail: "Read-only connected-app access token for Opportunity sync. Nothing is written back to Salesforce." },
-  { name: "HubSpot", detail: "Portal-scoped private-app access token for Deals, Contacts, and Companies. Read-only." },
-  { name: "Google Calendar", detail: "Read-only API key for event-to-deal attribution." },
-  { name: "Slack", detail: "Incoming webhook integration for alerts and digests." },
+  { name: "Salesforce", detail: "Read-only OAuth connect for Opportunity sync. Nothing is written back to Salesforce." },
+  { name: "HubSpot", detail: "Portal-scoped OAuth connect for Deals, Contacts, and Companies. Read-only." },
+  { name: "Google Calendar", detail: "Read-only OAuth for event-to-deal attribution." },
+  { name: "Slack", detail: "OAuth app that ingests channel messages and posts alerts and digests." },
 ];
 
 const observability: StackEntry[] = [

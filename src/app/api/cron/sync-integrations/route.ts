@@ -37,14 +37,6 @@ interface SyncResults {
 }
 
 const INTEGRATION_SYNC_CONCURRENCY = 4;
-
-// Per-user wrapper: deal sync drives the cron's aggregate response, but
-// contact sync runs unconditionally afterward so its failure cannot
-// silently swallow deal-side success and a deal-side throw does not
-// skip the contact pull. Each sub-call already catches and reports its
-// own errors via the logger — the outer try/catches here are defensive
-// against unexpected throws (e.g. database connection failure during
-// the integration row lookup), not a primary error path.
 async function runSalesforceSyncForUser(userId: string) {
   let dealsResult: Awaited<ReturnType<typeof syncSalesforceDealsForUser>>;
   try {

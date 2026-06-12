@@ -145,7 +145,7 @@ async function getClientCredentialsAccessToken(
   if (!integration.consumerKey || !integration.consumerSecret) {
     throw new ExternalServiceError(
       "salesforce",
-      "client_credentials integration missing consumerKey/consumerSecret — data integrity violation"
+      "client_credentials integration missing consumerKey/consumerSecret - data integrity violation"
     );
   }
 
@@ -177,7 +177,7 @@ async function getValidSalesforceOAuthToken(
   if (!integration.refreshToken) {
     throw new ExternalServiceError(
       "salesforce",
-      "OAuth integration missing refresh token — re-connect required"
+      "OAuth integration missing refresh token - re-connect required"
     );
   }
 
@@ -278,7 +278,7 @@ async function doSalesforceRefresh(userId: string): Promise<string> {
         );
         throw new ExternalServiceError(
           "salesforce",
-          "Refresh token rejected — user must re-connect"
+          "Refresh token rejected - user must re-connect"
         );
       }
 

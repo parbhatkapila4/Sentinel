@@ -111,7 +111,7 @@ export function IntegrationsSection({
             sub="NOTIFICATIONS · CHANNELS & DMS"
             connected={statuses?.slack?.connected ?? false}
             onConnect={() => onConnect("slack")}
-            onManage={() => onConnect("slack")}
+            onManage={() => onManage("slack")}
             icon={
               <path d="M14.5 10h2a2.5 2.5 0 010 5h-2zM9.5 14H7.5a2.5 2.5 0 010-5h2zM10 14.5v2a2.5 2.5 0 005 0v-2zM14 9.5v-2a2.5 2.5 0 00-5 0v2z" />
             }

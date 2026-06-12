@@ -255,7 +255,7 @@ export default function ApiDocsPage() {
               color: #4ade80 !important;
             }
 
-            /* Authorize modal — Swagger ships a white-themed dialog by
+            /* Authorize modal - Swagger ships a white-themed dialog by
                default; override every surface so it matches the dark UI. */
             .swagger-ui .dialog-ux {
               z-index: 9999 !important;

@@ -41,6 +41,10 @@ export interface GoogleCalendarIntegrationStatus {
 
 export interface SlackIntegrationStatus {
   connected: boolean;
+  teamId: string | null;
+  botUserId: string | null;
+  selfEmail: string | null;
+  connectedAt: Date | null;
 }
 
 export interface GmailIntegrationStatus {
@@ -121,7 +125,13 @@ export async function getAllIntegrationStatuses(): Promise<AllIntegrationStatuse
     }),
     prisma.slackEventsSubscription.findMany({
       where: { userId, isActive: true },
-      select: { id: true },
+      select: {
+        teamId: true,
+        botUserId: true,
+        selfEmail: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
     }),
     prisma.gmailIntegration.findUnique({
       where: { userId },
@@ -206,8 +216,13 @@ export async function getAllIntegrationStatuses(): Promise<AllIntegrationStatuse
         calendarId: null,
       };
 
+  const slackPrimary = slackSubscriptions[0] ?? null;
   const slackStatus: SlackIntegrationStatus = {
     connected: slackSubscriptions.length > 0,
+    teamId: slackPrimary?.teamId ?? null,
+    botUserId: slackPrimary?.botUserId ?? null,
+    selfEmail: slackPrimary?.selfEmail ?? null,
+    connectedAt: slackPrimary?.createdAt ?? null,
   };
 
   const gmailStatus: GmailIntegrationStatus = gmail?.isActive

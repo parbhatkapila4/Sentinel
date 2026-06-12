@@ -113,7 +113,7 @@ beforeEach(() => {
   );
 });
 
-describe("syncSalesforceContactsForUser — contact resolution", () => {
+describe("syncSalesforceContactsForUser - contact resolution", () => {
   it("new contact (no email row, no provider-key row) → CREATE", async () => {
     mockedFetchContacts.mockResolvedValue([
       makeContact({ Id: "sf-1", Email: "alice@new.com" }),
@@ -318,7 +318,7 @@ describe("syncSalesforceContactsForUser — contact resolution", () => {
   });
 });
 
-describe("syncSalesforceContactsForUser — top-level behaviour", () => {
+describe("syncSalesforceContactsForUser - top-level behaviour", () => {
   it("returns early with a single error when no active integration exists", async () => {
     prismaMock.salesforceIntegration.findUnique.mockResolvedValue(null);
 
@@ -366,7 +366,7 @@ describe("syncSalesforceContactsForUser — top-level behaviour", () => {
     expect(prismaMock.salesforceIntegration.update).not.toHaveBeenCalled();
   });
 
-  it("totalContactsSynced is lifetime-cumulative — adds to the prior value, not replaces it", async () => {
+  it("totalContactsSynced is lifetime-cumulative - adds to the prior value, not replaces it", async () => {
     const integrationWithPriorTotal = {
       ...TEST_INTEGRATION,
       totalContactsSynced: 47,
@@ -395,7 +395,7 @@ describe("syncSalesforceContactsForUser — top-level behaviour", () => {
   });
 });
 
-describe("syncSalesforceContactsForUser — Salesforce-specific shape", () => {
+describe("syncSalesforceContactsForUser - Salesforce-specific shape", () => {
   it("composes fullName from FirstName+LastName, falling back to Salesforce's computed Name field", async () => {
     mockedFetchContacts.mockResolvedValue([
       makeContact({

@@ -78,7 +78,7 @@ describe("GET /api/integrations/slack/oauth/start", () => {
     expect(await res.json()).toEqual({ error: "unauthorized" });
   });
 
-  it("only exports GET — POST and other methods fall through to Next.js's automatic 405", () => {
+  it("only exports GET - POST and other methods fall through to Next.js's automatic 405", () => {
     expect(typeof (startRoute as { GET?: unknown }).GET).toBe("function");
     expect("POST" in startRoute).toBe(false);
     expect("PUT" in startRoute).toBe(false);
@@ -130,7 +130,7 @@ describe("GET /api/integrations/slack/oauth/start", () => {
     expect(payload?.userId).toBe("user-1");
   });
 
-  it("does NOT include a user_scope param — bot token only, no xoxp- user token", async () => {
+  it("does NOT include a user_scope param - bot token only, no xoxp- user token", async () => {
     mockedAuth.mockResolvedValue("user-1");
 
     const res = await GET();

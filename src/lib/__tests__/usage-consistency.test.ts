@@ -54,7 +54,7 @@ describe("usage-counter centralization", () => {
 
     expect(
       /deals\.filter\(\s*\(\s*d\s*\)\s*=>\s*!d\.isDemo\s*\)/.test(src),
-      "SettingsClient must not filter deals locally — call getCurrentUsage()",
+      "SettingsClient must not filter deals locally - call getCurrentUsage()",
     ).toBe(false);
   });
 
@@ -65,7 +65,7 @@ describe("usage-counter centralization", () => {
       src.includes("prisma.teamMember.count") ||
       src.includes("prisma.deal.count") ||
       src.includes("prisma.webhook.count"),
-      "plan-enforcement.ts must not run its own counters — call checkUsageLimit()",
+      "plan-enforcement.ts must not run its own counters - call checkUsageLimit()",
     ).toBe(false);
   });
 

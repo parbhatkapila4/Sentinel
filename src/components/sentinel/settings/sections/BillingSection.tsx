@@ -190,7 +190,7 @@ export function BillingSection({
         >
           <PlanMeter
             label="DEALS"
-            value={dealsCount ?? "—"}
+            value={dealsCount ?? "-"}
             total={dealLimit}
             tone="signal"
           />

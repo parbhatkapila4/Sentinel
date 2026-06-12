@@ -128,7 +128,7 @@ beforeEach(() => {
   prismaMock.hubSpotIntegration.update.mockResolvedValue({} as never);
 });
 
-describe("syncHubSpotContactsForUser — contact resolution", () => {
+describe("syncHubSpotContactsForUser - contact resolution", () => {
   it("new contact (no email row, no provider-key row) → CREATE", async () => {
     mockedFetchContacts.mockResolvedValue([
       hsContact({ id: "hs-1", email: "alice@new.com" }),

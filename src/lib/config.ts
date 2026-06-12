@@ -83,9 +83,9 @@ export const DEAL_CHANNEL_LABELS: Record<DealChannel, string> = {
 };
 
 export const DEAL_CHANNEL_DESCRIPTIONS: Record<DealChannel, string> = {
-  direct: "Inbound interest the prospect initiated — website, demo request.",
+  direct: "Inbound interest the prospect initiated - website, demo request.",
   organic: "Found you through content, search, or community without paid push.",
-  outbound: "Your team reached out first — cold email, calls, prospecting.",
+  outbound: "Your team reached out first - cold email, calls, prospecting.",
   referrals: "Introduced by a customer, advisor, investor, or peer.",
   partners: "Came in through a channel partner, reseller, or alliance.",
 };
@@ -253,7 +253,7 @@ export const RISK_REASONS = {
   HIGH_VALUE: "High value deal requires attention",
   COMPETITIVE_PRESSURE: "Competitive signals detected",
   STAGE_STALL: "Stalled in stage longer than typical",
-  CHAMPION_DORMANT: "Champion gone quiet — no inbound in 14+ days",
+  CHAMPION_DORMANT: "Champion gone quiet - no inbound in 14+ days",
 } as const;
 
 export const TEAM_ROLES = {

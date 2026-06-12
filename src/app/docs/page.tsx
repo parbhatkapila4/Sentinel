@@ -107,7 +107,7 @@ export default function DocsPage() {
               Every deal carries a risk score from 0 to 1. The score is
               recomputed on read from three signals: time-in-stage, recent
               activity, and engagement decay. Nothing is stored as a black-box
-              prediction — open any deal and the reasoning is cited inline.
+              prediction - open any deal and the reasoning is cited inline.
             </p>
             <p>
               Risk lives separately from stage. A deal in <code>negotiation</code>{" "}
@@ -136,7 +136,7 @@ export default function DocsPage() {
             </p>
             <Bullets
               items={[
-                "Triage at-risk deals first — they're sorted to the top of the desk.",
+                "Triage at-risk deals first - they're sorted to the top of the desk.",
                 "Add a timeline event after every call, email, or proposal.",
                 "Use ⌘+K to jump anywhere; full shortcut list at /shortcuts.",
                 "Ask the AI workspace at /insights for cross-deal patterns.",
@@ -157,22 +157,22 @@ export default function DocsPage() {
             <p>
               Events are the input the risk engine reads from. Anything missing
               from a deal&apos;s timeline is missing from its score, so log
-              promptly — memory degrades fast.
+              promptly - memory degrades fast.
             </p>
             <Bullets
               items={[
-                "Meeting scheduled / completed — strong forward signal.",
-                "Email sent / received — recurring engagement signal.",
-                "Proposal sent — milestone marker before negotiation.",
-                "Note / call summary — narrative the AI can reason over.",
-                "Stage changed — recorded automatically with timestamp.",
+                "Meeting scheduled / completed - strong forward signal.",
+                "Email sent / received - recurring engagement signal.",
+                "Proposal sent - milestone marker before negotiation.",
+                "Note / call summary - narrative the AI can reason over.",
+                "Stage changed - recorded automatically with timestamp.",
               ]}
             />
           </DocSection>
 
           <DocSection id="integrations" title="Integrations">
             <p>
-              Sentinel is read-only against every integrated system — it never
+              Sentinel is read-only against every integrated system - it never
               writes back into your CRM or calendar. Connect from{" "}
               <Link
                 href="/settings?tab=integrations"
@@ -188,7 +188,7 @@ export default function DocsPage() {
           <DocSection id="faq" title="FAQ">
             <Faq
               q="Where is my data stored?"
-              a="Postgres database under your account. Integration credentials are encrypted at rest with AES-256-GCM. Deletion runs immediately when requested — no retention period."
+              a="Postgres database under your account. Integration credentials are encrypted at rest with AES-256-GCM. Deletion runs immediately when requested - no retention period."
             />
             <Faq
               q="Does Sentinel train on my data?"
@@ -196,7 +196,7 @@ export default function DocsPage() {
             />
             <Faq
               q="Is there a phone number for support?"
-              a="No. Sentinel is run by one person, so synchronous channels would be closed more often than open. Email and GitHub issues are the support paths — both get answered."
+              a="No. Sentinel is run by one person, so synchronous channels would be closed more often than open. Email and GitHub issues are the support paths - both get answered."
             />
             <Faq
               q="What's the SLA?"
@@ -327,17 +327,17 @@ function IntegrationGrid() {
   const items = [
     {
       name: "HubSpot",
-      mode: "Private app token",
+      mode: "OAuth",
       note: "Sync deals, contacts, and stage history.",
     },
     {
       name: "Salesforce",
-      mode: "API key + instance URL",
+      mode: "OAuth",
       note: "Opportunities and account context.",
     },
     {
       name: "Google Calendar",
-      mode: "API key (public calendar)",
+      mode: "OAuth (read-only)",
       note: "Auto-link meetings to deals by attendee or title.",
     },
     {
@@ -347,8 +347,8 @@ function IntegrationGrid() {
     },
     {
       name: "Slack",
-      mode: "Incoming webhook",
-      note: "Outbound notifications only — at-risk, won, stage changes.",
+      mode: "OAuth",
+      note: "Reads channel messages for deal signal and posts at-risk, won, and stage-change alerts.",
     },
   ];
   return (

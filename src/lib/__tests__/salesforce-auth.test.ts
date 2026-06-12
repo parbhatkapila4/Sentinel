@@ -120,7 +120,7 @@ afterEach(() => {
   env.SALESFORCE_OAUTH_REDIRECT_URI = ORIG_REDIRECT_URI;
 });
 
-describe("getSalesforceAccessToken — client_credentials branch", () => {
+describe("getSalesforceAccessToken - client_credentials branch", () => {
   it("valid cached token → returns decrypted token, no fetch, single client_credentials metric", async () => {
     const token = await getSalesforceAccessToken(ccIntegration() as never);
 
@@ -180,7 +180,7 @@ describe("getSalesforceAccessToken — client_credentials branch", () => {
   });
 });
 
-describe("getSalesforceAccessToken — oauth branch", () => {
+describe("getSalesforceAccessToken - oauth branch", () => {
   it("valid cached oauth token → returns cached, no fetch, oauth_cached metric", async () => {
     const token = await getSalesforceAccessToken(
       oauthIntegration() as never
@@ -243,7 +243,7 @@ describe("getSalesforceAccessToken — oauth branch", () => {
 });
 
 describe("refreshSalesforceOAuthToken", () => {
-  it("success: persists accessToken + expiry + heals isActive/syncErrors in ONE atomic update — does NOT write refreshToken", async () => {
+  it("success: persists accessToken + expiry + heals isActive/syncErrors in ONE atomic update - does NOT write refreshToken", async () => {
     prismaMock.salesforceIntegration.findUnique.mockResolvedValue(
       oauthIntegration({
         isActive: true,

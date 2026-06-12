@@ -122,7 +122,7 @@ export async function createDeal(formData: FormData) {
       if (duplicate) {
         throw new ValidationError(
           `A deal named "${duplicate.name}" already exists. Please choose a different name.`,
-          { name: "Already in use — choose a different name" }
+          { name: "Already in use - choose a different name" }
         );
       }
 

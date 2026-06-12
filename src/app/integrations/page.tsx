@@ -13,7 +13,7 @@ type Integration = {
   category: "CRM" | "Calendar" | "Notifications" | "Developer";
   summary: string;
   auth: string;
-  direction: "Inbound" | "Outbound";
+  direction: "Inbound" | "Outbound" | "Inbound · Outbound";
   scopes: string[];
   does: string[];
   doesNot: string[];
@@ -27,7 +27,7 @@ const integrations: Integration[] = [
     category: "CRM",
     summary:
       "Read-only sync for Accounts, Opportunities, and stage history. Sentinel pulls pipeline state into its own workspace; it does not push anything back into Salesforce.",
-    auth: "API key / connected-app access token",
+    auth: "OAuth · read-only",
     direction: "Inbound",
     scopes: ["opportunities:read", "accounts:read", "contacts:read"],
     does: [
@@ -48,8 +48,8 @@ const integrations: Integration[] = [
     name: "HubSpot",
     category: "CRM",
     summary:
-      "Connect your HubSpot portal with a private app access token to sync Deals, Contacts, and Companies. Read-only: changes in HubSpot flow into Sentinel, not the other way around.",
-    auth: "Private app access token",
+      "Connect your HubSpot portal in two clicks via OAuth to sync Deals, Contacts, and Companies. Read-only: changes in HubSpot flow into Sentinel, not the other way around.",
+    auth: "OAuth · read-only",
     direction: "Inbound",
     scopes: [
       "crm.objects.deals.read",
@@ -76,7 +76,7 @@ const integrations: Integration[] = [
     category: "Calendar",
     summary:
       "Turn meetings into deal signals. Sentinel matches calendar events to open Opportunities and flags deals where the customer has gone quiet.",
-    auth: "API key · read-only",
+    auth: "OAuth · read-only",
     direction: "Inbound",
     scopes: ["calendar.events.readonly", "calendar.readonly"],
     does: [
@@ -96,19 +96,28 @@ const integrations: Integration[] = [
     name: "Slack",
     category: "Notifications",
     summary:
-      "Route Sentinel alerts into the channels your team already lives in. Deal-at-risk, stage changes, and daily summaries arrive where work happens.",
-    auth: "Incoming Webhook URL",
-    direction: "Outbound",
-    scopes: ["incoming-webhook"],
+      "Connect your Slack workspace via OAuth. Sentinel reads message history from the channels and DMs its bot is added to — matching senders to CRM contacts — and posts deal-at-risk, stage-change, and daily-summary alerts back to your team.",
+    auth: "OAuth · Slack app",
+    direction: "Inbound · Outbound",
+    scopes: [
+      "app_mentions:read",
+      "channels:history",
+      "chat:write",
+      "groups:history",
+      "im:history",
+      "users:read",
+      "users:read.email",
+    ],
     does: [
-      "Post alerts to any channel the webhook is authorized for",
-      "Filter notifications by event type (risk, stage change, new deal, daily digest)",
+      "Read message history from channels and DMs the Sentinel bot is added to",
+      "Match message senders to CRM contacts by email",
+      "Post alerts to channels the bot is in, filtered by event type (risk, stage change, new deal, daily digest)",
       "Include deal owner, value, and a deep link back to Sentinel",
     ],
     doesNot: [
-      "Read your Slack messages or channel history",
-      "List users, DMs, or workspace metadata",
-      "Install as a full Slack app; runs as a standard Incoming Webhook",
+      "Read channels or DMs the Sentinel bot has not been added to",
+      "Edit, delete, or react to messages — it only posts Sentinel alerts",
+      "Access files or attachments, or change your workspace settings",
     ],
     status: "Available",
   },
@@ -293,9 +302,9 @@ export default function IntegrationsPage() {
           <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
             <span>{integrations.length} integrations</span>
             <span className="text-white/20">·</span>
-            <span>Scoped API keys inbound, HMAC-signed webhooks outbound</span>
+            <span>Scoped OAuth tokens inbound, HMAC-signed webhooks outbound</span>
             <span className="text-white/20">·</span>
-            <span>Disconnect deletes credentials within 24h</span>
+            <span>Disconnect deletes OAuth tokens immediately</span>
           </div>
         </div>
       </section>

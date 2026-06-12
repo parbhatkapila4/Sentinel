@@ -196,7 +196,7 @@ export default async function AboutPage() {
                   exists&rdquo; and &ldquo;someone notices in time&rdquo;.
                 </p>
                 <p>
-                  Bugs, feature requests, or anything that broke for you —{" "}
+                  Bugs, feature requests, or anything that broke for you -{" "}
                   <a
                     href="mailto:help@sentinels.in"
                     className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors"

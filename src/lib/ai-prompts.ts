@@ -103,18 +103,18 @@ ${deal.eventsSummary}
 Write a founder-grade executive brief on this deal: substantive,
 considered, the way a CEO would read it on a Monday morning before
 deciding where to spend the week's attention. The deal name and value
-are already shown above the brief — do NOT repeat them as a title.
+are already shown above the brief - do NOT repeat them as a title.
 
 Structure: four sections, each prefixed by an ALL CAPS label on its
 own line, followed by a blank line, followed by 3-5 sentences of
-real prose. Aim for roughly 220-300 words total — long enough that the
+real prose. Aim for roughly 220-300 words total - long enough that the
 reader closes the brief understanding the SHAPE of the deal, not just
 its label. Short enough to read in under a minute.
 
 STATUS
 Where the deal sits today and what the numbers actually mean. Stage,
 status, risk rating, value relative to the pipeline. Don't just
-restate the data above — interpret it. Why is the risk grade what it
+restate the data above - interpret it. Why is the risk grade what it
 is? What does this stage imply about urgency and what's expected of
 the team next?
 
@@ -136,9 +136,9 @@ NEXT
 Two or three concrete plays the team should run this week. Each must
 earn its place: tie it back to a specific risk or momentum signal
 above so the reader sees the through-line. Avoid generic CRM advice
-("follow up regularly", "stay engaged") — be specific to this deal.
+("follow up regularly", "stay engaged") - be specific to this deal.
 
-Hard constraints — the brief is rendered with editorial typography
+Hard constraints - the brief is rendered with editorial typography
 and any markdown character will be visible as a glyph on the page:
 - No # or ## hashes. No **bold** or __bold__. No * or _ italics.
 - No bullet points of any kind (no -, *, •, or numbered lists).

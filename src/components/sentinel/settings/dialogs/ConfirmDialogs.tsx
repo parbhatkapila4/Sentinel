@@ -128,7 +128,7 @@ export function DisconnectIntegrationDialog({
     {
       marker: "var(--cream-3)",
       title: "Reconnect anytime",
-      detail: `You'll re-authorize ${label} to resume syncing — it only takes a moment.`,
+      detail: `You'll re-authorize ${label} to resume syncing - it only takes a moment.`,
     },
   ];
 

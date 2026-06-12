@@ -75,7 +75,7 @@ describe("GET /api/integrations/hubspot/oauth/start", () => {
     expect(await res.json()).toEqual({ error: "unauthorized" });
   });
 
-  it("only exports GET — POST and other methods fall through to Next.js's automatic 405", () => {
+  it("only exports GET - POST and other methods fall through to Next.js's automatic 405", () => {
     expect(typeof (startRoute as { GET?: unknown }).GET).toBe("function");
     expect("POST" in startRoute).toBe(false);
     expect("PUT" in startRoute).toBe(false);

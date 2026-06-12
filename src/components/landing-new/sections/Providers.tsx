@@ -18,7 +18,7 @@ export function Providers() {
       iconClass: "hubspot",
       logo: "/HUbspot-B.png",
       alt: "HubSpot logo",
-      desc: "Read deals, contacts, stages, and activity history with private-app token auth and read-only pipeline sync.",
+      desc: "Read deals, contacts, stages, and activity history with OAuth connect and read-only pipeline sync.",
       connected: true,
     },
     {

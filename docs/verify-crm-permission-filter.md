@@ -1,4 +1,4 @@
-# Verify — Gmail CRM permission filter (manual E2E smoke test)
+# Verify - Gmail CRM permission filter (manual E2E smoke test)
 
 The unit tests in `src/lib/__tests__/email-participants.test.ts` and
 `src/lib/__tests__/crm-permission.test.ts` cover the parser and the
@@ -19,7 +19,7 @@ Sentinel and a known CRM contact set.
 
 ---
 
-## Step 1 — Confirm your CRM contact set
+## Step 1 - Confirm your CRM contact set
 
 Run against the app's Postgres (Supabase pooled URL):
 
@@ -30,10 +30,10 @@ WHERE "userId" = '<your-user-id>'
 ORDER BY "lastSyncedAt" DESC;
 ```
 
-Write down a handful of these — you'll cross-check them against the
+Write down a handful of these - you'll cross-check them against the
 emails that survive filtering.
 
-## Step 2 — Trigger a manual Gmail sync
+## Step 2 - Trigger a manual Gmail sync
 
 In Sentinel: **Settings → Integrations → Gmail → Sync now**. Watch the
 toast / response payload. It should look like:
@@ -48,13 +48,13 @@ toast / response payload. It should look like:
 }
 ```
 
-`skipped` should typically be greater than zero — most consumer Gmail
+`skipped` should typically be greater than zero - most consumer Gmail
 inboxes carry mailing-list noise, newsletter delivery, and personal
 mail that does NOT involve a CRM contact. If `skipped === 0` and
 `synced === scanned`, double-check that your Contact table is not
 accidentally storing every email you've ever received.
 
-## Step 3 — Count what landed in `EmailMessage`
+## Step 3 - Count what landed in `EmailMessage`
 
 ```sql
 SELECT COUNT(*)
@@ -66,7 +66,7 @@ WHERE "userId" = '<your-user-id>'
 
 This should equal the `synced` value from step 2.
 
-## Step 4 — Verify every retained email has a CRM participant
+## Step 4 - Verify every retained email has a CRM participant
 
 For each row above, the `from` or one of the `toEmails` must match a
 row in `Contact` for the same user. The query that proves it:
@@ -92,7 +92,7 @@ WHERE LOWER(TRIM("fromEmail")) NOT IN (SELECT email FROM crm)
 ```
 
 **Expected result: zero rows.** Any row this query returns is a leak
-— a message persisted whose From and every To address are outside the
+- a message persisted whose From and every To address are outside the
 CRM contact book. If that happens, STOP and investigate:
 - Is the message Cc'd to a CRM contact (Cc is excluded from
   `toEmails` storage but IS checked by the filter)? That's fine.
@@ -101,7 +101,7 @@ CRM contact book. If that happens, STOP and investigate:
   filter pass. Capture the failing row's Gmail `externalId` and
   inspect the raw headers via the Gmail API directly.
 
-## Step 5 — Verify a known-good interaction surfaces
+## Step 5 - Verify a known-good interaction surfaces
 
 Send yourself a test message FROM one of the CRM contact addresses
 (easiest: forward an existing message from `alice@crm.com` to your
@@ -119,7 +119,7 @@ LIMIT 5;
 
 The test message should be in the results.
 
-## Step 6 — Verify metrics fire
+## Step 6 - Verify metrics fire
 
 If you have a metrics dashboard wired (Redis), confirm the following
 counters incremented during your sync:
@@ -144,7 +144,7 @@ mail; treat as a P2 page.
   `slack-signature` / `slack-events` test suites); this runbook is
   Gmail-specific.
 - **Backfill of pre-filter Gmail rows** from before the filter
-  shipped — that's the dedicated backfill script and intentionally
+  shipped - that's the dedicated backfill script and intentionally
   not covered here.
-- **Domain-level matching** (`anyone@acme.com`) — future feature, not
+- **Domain-level matching** (`anyone@acme.com`) - future feature, not
   in scope.

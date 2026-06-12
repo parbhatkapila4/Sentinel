@@ -49,7 +49,7 @@ const principles: Principle[] = [
   {
     title: "Least-privilege integrations",
     body:
-      "Integrations connect with scoped credentials you paste during setup: an API key or private access token for HubSpot, Salesforce, and Google Calendar, and an incoming webhook URL for Slack. Each credential is used only for the specific read paths the product exercises - if a feature doesn't need a permission, we don't ask for it.",
+      "Integrations connect through OAuth: you authorize Sentinel from a provider redirect and it receives scoped tokens - there are no keys to paste. HubSpot, Salesforce, Gmail, and Google Calendar are read-only; Slack runs as a scoped app that reads the channels its bot is added to and posts alerts. Each token is used only for the specific paths the product exercises - if a feature doesn't need a permission, we don't ask for it.",
   },
   {
     title: "Read-only by default",

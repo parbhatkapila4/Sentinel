@@ -77,7 +77,7 @@ export function MetricExplainer({
       {open && (
         <div
           role="dialog"
-          aria-label={`${title} — how this is calculated`}
+          aria-label={`${title} - how this is calculated`}
           style={{
             position: "absolute",
             top: "calc(100% + 10px)",

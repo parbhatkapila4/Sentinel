@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Developer docs · Sentinel",
   description:
-    "Authentication, deal API, webhook events, and signed payloads — everything you need to build on top of Sentinel.",
+    "Authentication, deal API, webhook events, and signed payloads - everything you need to build on top of Sentinel.",
 };
 
 function BackLink() {
@@ -78,7 +78,7 @@ const guides: GuideSection[] = [
     kicker: "01",
     title: "Authentication",
     lede:
-      "Every request needs a Bearer token in the Authorization header. Tokens are workspace-scoped — they read and write only the workspace they were issued for.",
+      "Every request needs a Bearer token in the Authorization header. Tokens are workspace-scoped - they read and write only the workspace they were issued for.",
     meta: [
       { label: "Header", value: "Authorization: Bearer <token>" },
       { label: "Scope", value: "Workspace" },
@@ -288,7 +288,7 @@ export default function DeveloperDocsPage() {
           <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
             A typed REST surface, signed webhooks, and an interactive OpenAPI
             explorer. The API reads and writes the same workspace your team
-            uses — risk scores included on every read.
+            uses - risk scores included on every read.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
             <span>Bearer token auth</span>

@@ -57,7 +57,7 @@ try {
     columns
   );
 
-  console.log(`=== ${tableName} — ${columns.length} column(s) ===`);
+  console.log(`=== ${tableName} - ${columns.length} column(s) ===`);
   console.log(JSON.stringify(rows, null, 2));
 
   if (Array.isArray(rows) && rows.length < columns.length) {
