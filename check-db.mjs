@@ -16,6 +16,7 @@ try {
   const salesforceCount = await prisma.salesforceIntegration.count();
   const gmailCount = await prisma.gmailIntegration.count();
   const calendarCount = await prisma.googleCalendarIntegration.count();
+  const slackCount = await prisma.slackEventsSubscription.count();
 
   console.log("=== ROW COUNTS ===");
   console.log("Users:", userCount);
@@ -23,6 +24,7 @@ try {
   console.log("Salesforce:", salesforceCount);
   console.log("Gmail:", gmailCount);
   console.log("Google Calendar:", calendarCount);
+  console.log("Slack:", slackCount);
 
   if (salesforceCount > 0) {
     const rows = await prisma.salesforceIntegration.findMany({
@@ -43,6 +45,26 @@ try {
     console.log(JSON.stringify(rows, null, 2));
   } else {
     console.log("\nNo Salesforce integrations found.");
+  }
+
+  if (slackCount > 0) {
+    const rows = await prisma.slackEventsSubscription.findMany({
+      select: {
+        id: true,
+        userId: true,
+        teamId: true,
+        botUserId: true,
+        selfEmail: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    console.log("\n=== SLACK ROWS ===");
+    console.log(JSON.stringify(rows, null, 2));
+  } else {
+    console.log("\nNo Slack integrations found.");
   }
 } catch (err) {
   console.error("ERROR:", err.message);

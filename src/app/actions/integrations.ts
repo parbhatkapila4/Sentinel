@@ -41,8 +41,6 @@ export interface GoogleCalendarIntegrationStatus {
 
 export interface SlackIntegrationStatus {
   connected: boolean;
-  channelCount: number;
-  channels: string[];
 }
 
 export interface GmailIntegrationStatus {
@@ -78,7 +76,7 @@ export async function getAllIntegrationStatuses(): Promise<AllIntegrationStatuse
     hubspot,
     googleCalendar,
     calendarIntegration,
-    slackIntegrations,
+    slackSubscriptions,
     gmail,
   ] = await Promise.all([
     prisma.salesforceIntegration.findUnique({
@@ -121,9 +119,9 @@ export async function getAllIntegrationStatuses(): Promise<AllIntegrationStatuse
       where: { userId },
       select: { id: true },
     }),
-    prisma.slackIntegration.findMany({
+    prisma.slackEventsSubscription.findMany({
       where: { userId, isActive: true },
-      select: { channelName: true },
+      select: { id: true },
     }),
     prisma.gmailIntegration.findUnique({
       where: { userId },
@@ -208,19 +206,9 @@ export async function getAllIntegrationStatuses(): Promise<AllIntegrationStatuse
         calendarId: null,
       };
 
-  const slackStatus: SlackIntegrationStatus = slackIntegrations.length > 0
-    ? {
-      connected: true,
-      channelCount: slackIntegrations.length,
-      channels: slackIntegrations
-        .map((s: { channelName?: string | null }) => s.channelName || "Unknown")
-        .filter(Boolean) as string[],
-    }
-    : {
-      connected: false,
-      channelCount: 0,
-      channels: [],
-    };
+  const slackStatus: SlackIntegrationStatus = {
+    connected: slackSubscriptions.length > 0,
+  };
 
   const gmailStatus: GmailIntegrationStatus = gmail?.isActive
     ? {

@@ -365,8 +365,6 @@ function buildSources(
     const slack = s.slack as
       | {
         connected?: boolean;
-        channelCount?: number;
-        channels?: string[];
         workspaces?: unknown[];
       }
       | unknown[]
@@ -375,15 +373,10 @@ function buildSources(
       ? slack.length > 0
       : Boolean(slack?.connected) ||
       (Array.isArray(slack?.workspaces) && slack!.workspaces!.length > 0);
-    const slackChannelCount = Array.isArray(slack)
-      ? slack.length
-      : slack?.channelCount ?? (slack?.channels?.length ?? 0);
     list.push({
       name: "Slack",
       kind: "SLACK",
-      metaLine: slackConnected
-        ? `${slackChannelCount} ${slackChannelCount === 1 ? "CHANNEL" : "CHANNELS"} · LIVE`
-        : "NOT CONNECTED",
+      metaLine: slackConnected ? "CONNECTED · LIVE" : "NOT CONNECTED",
       connected: slackConnected,
     });
   } else {
