@@ -8,6 +8,7 @@ import {
   GoogleOAuthHttpError,
   parseStateCookie,
 } from "@/lib/google-oauth";
+import { logIntegrationAction } from "@/app/actions/integrations";
 
 const OAUTH_COOKIE_NAME = "calendar_oauth_state";
 const OAUTH_COOKIE_PATH = "/api/oauth/calendar";
@@ -160,6 +161,12 @@ export async function GET(request: NextRequest) {
     }
 
     logInfo("calendar_oauth_connected", { userId });
+    await logIntegrationAction(
+      "google_calendar",
+      "connect",
+      "success",
+      "Connected to Google Calendar"
+    );
     return redirectSuccess(request);
   } catch (error) {
     logError("calendar_oauth_error", error, {

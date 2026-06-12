@@ -7,6 +7,7 @@ import { encryptIntegrationSecret } from "@/lib/integration-secrets";
 import { incrementMetric } from "@/lib/metrics";
 import { logError } from "@/lib/logger";
 import { verifyCookieValue } from "@/lib/signed-cookies";
+import { logIntegrationAction } from "@/app/actions/integrations";
 
 const COOKIE_NAME = "salesforce_oauth_state";
 const COOKIE_PATH = "/api/integrations/salesforce/oauth";
@@ -128,6 +129,13 @@ export async function GET(request: NextRequest) {
         syncErrors: null,
       },
     });
+
+    await logIntegrationAction(
+      "salesforce",
+      "connect",
+      "success",
+      "Connected to Salesforce"
+    );
 
     void incrementMetric("salesforce.oauth.callback.success", 1);
     return clearStateCookie(

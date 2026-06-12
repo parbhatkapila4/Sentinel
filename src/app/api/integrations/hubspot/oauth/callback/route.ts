@@ -7,6 +7,7 @@ import { encryptIntegrationSecret } from "@/lib/integration-secrets";
 import { incrementMetric } from "@/lib/metrics";
 import { logError } from "@/lib/logger";
 import { verifyCookieValue } from "@/lib/signed-cookies";
+import { logIntegrationAction } from "@/app/actions/integrations";
 
 const COOKIE_NAME = "hubspot_oauth_state";
 const COOKIE_PATH = "/api/integrations/hubspot/oauth";
@@ -123,6 +124,13 @@ export async function GET(request: NextRequest) {
         syncErrors: null,
       },
     });
+
+    await logIntegrationAction(
+      "hubspot",
+      "connect",
+      "success",
+      "Connected to HubSpot"
+    );
 
     void incrementMetric("hubspot.oauth.callback.success", 1);
     return clearStateCookie(

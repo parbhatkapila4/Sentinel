@@ -8,6 +8,7 @@ import {
   GoogleOAuthHttpError,
   parseStateCookie,
 } from "@/lib/google-oauth";
+import { logIntegrationAction } from "@/app/actions/integrations";
 
 const OAUTH_COOKIE_NAME = "gmail_oauth_state";
 const OAUTH_COOKIE_PATH = "/api/oauth/gmail";
@@ -165,6 +166,12 @@ export async function GET(request: NextRequest) {
     }
 
     logInfo("gmail_oauth_connected", { userId });
+    await logIntegrationAction(
+      "gmail",
+      "connect",
+      "success",
+      "Connected to Gmail"
+    );
     return redirectSuccess(request);
   } catch (error) {
     logError("gmail_oauth_error", error, {
