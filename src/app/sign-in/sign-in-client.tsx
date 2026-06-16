@@ -862,8 +862,6 @@ export function SignInClient() {
 
   useEffect(() => {
     if (isSignedIn) {
-      // Hard-navigate so we don't get stuck waiting on a soft router
-      // transition while Turbopack compiles the destination route in dev.
       window.location.href = afterSignInUrl;
     }
   }, [isSignedIn, afterSignInUrl]);

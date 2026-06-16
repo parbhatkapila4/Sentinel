@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   getYoutubeEmbedUrl,
   shouldUseVideoElement,
@@ -31,13 +32,13 @@ export function WalkthroughVideoModal({ url, open, onClose }: Props) {
     };
   }, [open, onKeyDown]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   const trimmed = url.trim();
   const youtubeEmbed = getYoutubeEmbedUrl(trimmed);
   const useVideo = shouldUseVideoElement(trimmed);
 
-  return (
+  return createPortal(
     <div
       className="walkthrough-modal-root"
       role="dialog"
@@ -62,7 +63,11 @@ export function WalkthroughVideoModal({ url, open, onClose }: Props) {
             ×
           </button>
         </div>
-        <div className="walkthrough-modal-frame">
+        <div
+          className={`walkthrough-modal-frame ${
+            youtubeEmbed ? "is-embed" : "is-video"
+          }`}
+        >
           {youtubeEmbed ? (
             <iframe
               src={`${youtubeEmbed}?rel=0`}
@@ -84,6 +89,7 @@ export function WalkthroughVideoModal({ url, open, onClose }: Props) {
           ) : null}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

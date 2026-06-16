@@ -17,12 +17,15 @@ function walkthroughOpensInModal(url: string): boolean {
   return false;
 }
 
+const DEFAULT_WALKTHROUGH_VIDEO_URL = "/Loom-Sentinel.mp4";
+
 export function HeroAuthCTAs() {
   const { user, isLoaded } = useUser();
   const [walkthroughOpen, setWalkthroughOpen] = useState(false);
 
   const walkthroughUrl =
-    process.env.NEXT_PUBLIC_WALKTHROUGH_VIDEO_URL?.trim() ?? "";
+    process.env.NEXT_PUBLIC_WALKTHROUGH_VIDEO_URL?.trim() ||
+    DEFAULT_WALKTHROUGH_VIDEO_URL;
 
   if (!isLoaded) {
     return (
@@ -55,7 +58,7 @@ export function HeroAuthCTAs() {
           className="btn-outline"
           onClick={() => setWalkthroughOpen(true)}
         >
-          ▶ See how it works <span className="muted-meta">2 min</span>
+          ▶ See how it works
         </button>
         <WalkthroughVideoModal
           url={walkthroughUrl}
