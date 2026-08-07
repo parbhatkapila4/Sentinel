@@ -4,11 +4,11 @@ import { motion, useReducedMotion } from "motion/react";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT_ONCE } from "../motion";
 
 const ROWS: Array<[string, string, string, "dim" | "icon"]> = [
-  ["Risk Detection", "Days / Weeks", "Real-time", "dim"],
-  ["Data Sources", "CRM only", "CRM + calendar + email + calls", "dim"],
+  ["Risk detection", "Manual review", "Scored on every read", "dim"],
+  ["Data sources", "CRM only", "CRM + calendar + email + Slack", "dim"],
   ["Score attribution", "Opaque", "Inputs cited per score", "dim"],
-  ["Forecast Accuracy", "Rep optimism", "Signal-based truth", "dim"],
-  ["Setup Time", "2-4 weeks", "< 4 minutes", "dim"],
+  ["Forecast basis", "Rep-reported commit", "Signal-weighted", "dim"],
+  ["Setup", "Procurement cycle", "OAuth redirect, no keys to paste", "dim"],
   ["One-click action drafts", "✕", "✓", "icon"],
 ];
 

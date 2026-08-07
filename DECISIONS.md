@@ -9,7 +9,7 @@ This document records the non-obvious architectural choices in Sentinel - what w
 | Realtime delivery | SSE + Redis cursor | At-least-once + serverless poll cadence | `src/lib/realtime.ts` · `src/app/api/events/route.ts` |
 | AI failure isolation | Per-model circuit breakers, model fallback | Lower throughput vs persistent retries | `src/lib/ai-router.ts` · `src/lib/circuit-breaker.ts` |
 | Integration secrets at rest | AES-256-GCM envelope, plaintext-fallback decrypt | Migration window for legacy rows | `src/lib/integration-secrets.ts` |
-| Auth boundary | Default-deny middleware, explicit public list | Every new route must be whitelisted | `src/middleware.ts` |
+| Auth boundary | Default-deny middleware, explicit public list | Every new route must be whitelisted | `src/proxy.ts` |
 | Risk score lifecycle | Recompute on read, never persist | CPU per-request; cheap to evolve the model | `src/lib/dealRisk.ts` · `src/lib/deal-risk-enrichment.ts` |
 | Redis dependency | Optional with graceful degrade | Reduced rate-limiting + realtime when absent | `src/lib/redis.ts` and call sites |
 | Mutations vs external contracts | Server Actions vs API routes | One indirection per call | `src/app/actions/*` · `src/app/api/*` |
@@ -48,7 +48,7 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 ## 3. Integration secrets: AES-256-GCM envelope with plaintext-fallback decrypt
 
-**What.** Salesforce keys, HubSpot tokens, Google Calendar API keys, Slack webhooks, Gmail/Gong refresh tokens are encrypted in Postgres. `INTEGRATION_ENCRYPTION_KEY` (base64-encoded 32 bytes) keys an AES-256-GCM cipher. Write paths always encrypt; read paths attempt decrypt and fall back to plaintext for legacy rows that pre-date encryption.
+**What.** Salesforce, HubSpot, Google Calendar, Slack and Gmail credentials are encrypted in Postgres. `INTEGRATION_ENCRYPTION_KEY` (base64-encoded 32 bytes) keys an AES-256-GCM cipher. Write paths always encrypt; read paths attempt decrypt and fall back to plaintext for legacy rows that pre-date encryption.
 
 **Why GCM specifically.** Authenticated encryption - same primitive AWS KMS, GCP, and most password managers use. The 12-byte nonce + 16-byte auth tag let us detect tampering and ciphertext substitution. A non-AEAD cipher (AES-CBC) would have required a separate HMAC step we'd have to remember on every read.
 
@@ -62,13 +62,13 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 ## 4. Auth boundary: default-deny middleware, explicit public list
 
-**What.** `src/middleware.ts` runs Clerk on every request *except* a small list of explicitly enumerated public routes (sign-in, marketing pages, OAuth callbacks, cron, webhooks). Everything else 302s to sign-in if no Clerk session is present.
+**What.** `src/proxy.ts` (Next 16's middleware entrypoint) runs Clerk on every request *except* a small list of explicitly enumerated public routes (sign-in, marketing pages, OAuth callbacks, cron, webhooks). Everything else 302s to sign-in if no Clerk session is present.
 
 **Why default-deny rather than per-route guards.** Per-route guards forget. The next contributor adds `/admin/secret-thing` as a Server Component, doesn't know to add an auth check, and ships a leak. A default-deny middleware makes leaks visible at PR review time - anyone adding a public route has to edit one specific list, and reviewers know to question that diff.
 
 **Why no Referer / RSC / prefetch trust.** Earlier prototypes had heuristics like "trust prefetch requests because they come from the app." Those were spoofable - a pre-warmed `<link rel="prefetch">` from a malicious page would bypass auth. The current matcher checks none of those headers. The only trust signal is a valid Clerk session.
 
-**Trade-off accepted.** Public marketing pages must be enumerated. The matcher is a regex list at the top of `middleware.ts`; new public routes are a one-line edit, but it's still an explicit ceremony.
+**Trade-off accepted.** Public marketing pages must be enumerated. The matcher is a regex list at the top of `src/proxy.ts`; new public routes are a one-line edit, but it's still an explicit ceremony.
 
 **Verify.** `src/__tests__/middleware-auth.test.ts` proves protected routes 302 even with spoofed Referer/RSC/prefetch headers.
 
@@ -80,9 +80,9 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 **Why recompute on read.** The risk model evolves. If we'd persisted last week's scores, every model change would need a backfill job and we'd be fighting drift between "old score in DB" and "new model output." Recomputing on read makes the model a pure function of raw data. Tomorrow's tuning is a code deploy, not a data migration.
 
-**Why this is cheap enough.** A single Postgres round-trip pulls deal + timeline events; the risk math is a synchronous pass over a small array. For pipelines under ~10k active deals (the operator-tier target), the cost is invisible. At higher scale we'd add a precompute layer with TTL caching keyed on `dealId + last_activity_at` - but only when measured to matter.
+**Why this is cheap enough.** A single Postgres round-trip pulls deal + timeline events; the risk math is a synchronous pass over a small array. The largest plan caps a workspace at 500 active deals (`maxDeals` in `src/lib/plans.ts`), so the per-read cost stays invisible at every tier we actually sell. At higher scale we'd add a precompute layer with TTL caching keyed on `dealId + last_activity_at` - but only when measured to matter.
 
-**Trade-off accepted.** Heavy reporting (cross-tenant analytics, year-over-year comparisons) would not run at this latency profile. Those queries get their own pre-aggregated views in the analytics path, not the live risk endpoint.
+**Trade-off accepted.** Heavy reporting (portfolio-wide rollups, year-over-year comparisons) would not run at this latency profile. Those queries get their own pre-aggregated views in the analytics path, not the live risk endpoint.
 
 **Verify.** `src/lib/__tests__/dealRisk.test.ts` exercises the math; `assertRiskFieldIntegrity` (in `src/lib/deal-risk-enrichment.ts`) is a dev-only tripwire that warns if persisted risk fields ever leak into the schema.
 
@@ -90,15 +90,15 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 ## 6. Redis is optional
 
-**What.** Cache (`src/lib/cache.ts`), rate limits (`src/lib/api-rate-limit.ts`), realtime publish (`src/lib/realtime.ts`), email queue (`src/lib/notifications.ts`), and business metrics (`src/lib/business-metrics.ts`) all check `redis === null` and degrade rather than throw.
+**What.** Cache (`src/lib/cache.ts`), rate limits (`src/lib/rate-limit.ts`), realtime publish (`src/lib/realtime.ts`), email queue (`src/lib/notifications.ts`), and business metrics (`src/lib/business-metrics.ts`) all check for a null Redis client and degrade rather than throw. (`src/lib/api-rate-limit.ts` is the HTTP tier wrapper above `rate-limit.ts`; the null check lives in the latter.)
 
 **Why optional.** A solo developer cloning the repo for evaluation should not have to provision Upstash to see the app run. The default path gives them a working app on a single Postgres URL plus Clerk keys. Redis becomes a measurable improvement (rate limits, faster realtime) - not a blocker.
 
-**Why the degraded paths are explicit, not implicit.** Each call site has a `if (!redis) return null;` (or equivalent) early return with a comment explaining what's lost. The senior anti-pattern would be silent retry-loops or fallback timers that pretend Redis is there. Explicit nulls keep the degradation legible.
+**Why the degraded paths are explicit, not implicit.** Each call site guards with an early return - `if (!redis || process.env.NODE_ENV === "test")` in `cache.ts`, `if (data.sendEmail && redis)` in `notifications.ts`, `if (!this.redis)` in `rate-limit.ts`. The senior anti-pattern would be silent retry-loops or fallback timers that pretend Redis is there. Explicit nulls keep the degradation legible.
 
 **Trade-off accepted.** A naive operator might run production without Redis and assume rate limits are working. Sentry alerts and the README are both explicit - but it's worth knowing that "the app runs without Redis" is a soft promise, not a security one.
 
-**Verify.** Each file has a `// Redis optional -` comment block at the top of the affected functions; the test suite runs against a null Redis client to ensure the degraded path doesn't regress.
+**Verify.** `src/lib/__tests__/rate-limit-null.test.ts` runs the limiter against a null Redis client and asserts it fails open rather than throwing. The other four degraded paths are guarded in code but have no equivalent null-Redis test yet - that gap is real and worth closing.
 
 ---
 
@@ -114,7 +114,7 @@ Mixing them means either:
 
 The split lets each path optimize for its job: Actions are zero-ceremony; API routes get the OpenAPI spec, rate limits, and explicit shape contracts.
 
-**Trade-off accepted.** A deal create from the UI runs through `actions/deals.ts`; the public `POST /api/deals` runs through `api/deals/route.ts`. They share underlying logic but have separate entry points. Some duplication of input parsing and authorization wrapping is the cost.
+**Trade-off accepted.** A deal create from the UI runs through `actions/deals.ts`; the public `POST /api/deals/bulk` runs through `api/deals/bulk/route.ts`. They share underlying logic but have separate entry points. Some duplication of input parsing and authorization wrapping is the cost. (There is deliberately no public single-deal `POST /api/deals` yet - the documented surface is `bulk`, `search` and `export`; see `docs/API.md`.)
 
 **Verify.** Read any `src/app/actions/*.ts` next to its sibling in `src/app/api/*` - both call into shared `src/lib/` utilities; the difference is the auth/request shape.
 
@@ -136,11 +136,11 @@ The split lets each path optimize for its job: Actions are zero-ceremony; API ro
 
 ## 9. Marketing-claim discipline: a registry + drift tests
 
-**What.** `PRODUCT_CLAIMS.md` is a JSON-fronted registry of every public-facing claim - "we read calls, emails, and Slack threads," "Starter is $0/month," "SOC 2 Type II is on the roadmap, not certified today." Each claim has a `status` (`implemented`, `planned`, `explicitly_not_supported`) and `evidence_paths`. `src/__tests__/claim-drift.test.ts` reads marketing pages and fails the build if a banned phrase appears (`"SOC 2 certified"` while the registry says `planned`) or if any UI page contradicts the registry.
+**What.** `PRODUCT_CLAIMS.md` is a JSON-fronted registry of every public-facing claim - "Sentinel is read-only for Salesforce, HubSpot, and Google Calendar," "Free plan is $0/month and covers 25 active deals," "SOC 2 Type II is on the roadmap, not certified today." Each claim has a `status` (`implemented`, `planned`, `explicitly_not_supported`) and `evidence_paths`. `src/__tests__/claim-drift.test.ts` reads marketing pages and fails the build if a banned phrase appears (`"SOC 2 certified"` while the registry says `planned`) or if any UI page contradicts the registry.
 
 **Why this exists.** Marketing copy and product code drift in opposite directions. Sales pages get optimistic faster than features ship; engineering changes ship faster than copy gets updated. A registry forces both sides to negotiate: changing the claim is a deliberate edit, not a side effect.
 
-**Why this isn't over-engineering.** It's 80 lines of test code and one markdown file. The cost of one customer noticing a "SOC 2 certified" claim in the footer when we're not certified is much higher than the cost of running the drift test.
+**Why this isn't over-engineering.** It's one markdown file plus a single test file, and it monitors every marketing surface including `src/components/landing-new/**`. The cost of one customer noticing a "SOC 2 certified" claim in the footer when we're not certified is much higher than the cost of running the drift test.
 
 **Trade-off accepted.** New marketing copy needs a registry update. Reviewers must remember to add evidence paths. Both are acceptable taxes; the alternative is shipping false claims and dealing with them later.
 

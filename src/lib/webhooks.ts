@@ -1,19 +1,12 @@
 import crypto from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
-import { redis } from "./redis";
-
-const WEBHOOK_QUEUE = "webhook_queue";
-
 export type WebhookEventType =
   | "deal.created"
-  | "deal.updated"
   | "deal.stage_changed"
   | "deal.at_risk"
   | "deal.closed_won"
-  | "deal.closed_lost"
-  | "team.member_added"
-  | "team.member_removed";
+  | "deal.closed_lost";
 
 export interface WebhookPayload {
   id: string;
@@ -28,33 +21,6 @@ export function generateSignature(payload: string, secret: string): string {
 
 export function generateWebhookSecret(): string {
   return crypto.randomBytes(32).toString("hex");
-}
-
-export async function queueWebhookDelivery(
-  webhookId: string,
-  event: WebhookEventType,
-  data: Record<string, unknown>
-): Promise<void> {
-  const payload: WebhookPayload = {
-    id: crypto.randomUUID(),
-    event,
-    timestamp: new Date().toISOString(),
-    data,
-  };
-
-  if (!redis) {
-    console.warn("[webhooks] Redis not configured; skipping queue.");
-    return;
-  }
-
-  try {
-    await redis.lpush(
-      WEBHOOK_QUEUE,
-      JSON.stringify({ webhookId, payload })
-    );
-  } catch (e) {
-    console.error("[webhooks] Failed to queue delivery:", e);
-  }
 }
 
 export async function dispatchWebhookEvent(

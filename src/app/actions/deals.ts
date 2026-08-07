@@ -675,6 +675,19 @@ export async function updateDealStage(dealId: string, newStage: string) {
             })
           );
         }
+        if (canonicalNewStage === "closed_lost") {
+          logInfo("Deal closed lost", {
+            userId,
+            dealId: deal.id,
+            dealName: deal.name,
+            value: toDealValueNumber(deal.value),
+          });
+          await dispatchWebhookEvent(userId, deal.teamId, "deal.closed_lost", {
+            id: deal.id,
+            name: deal.name,
+            value: toDealValueNumber(deal.value),
+          });
+        }
         await runDealStageRiskSideEffects({
           dealId,
           userId,

@@ -204,7 +204,7 @@ export default function DocsPage() {
             />
             <Faq
               q="How do I delete my account?"
-              a="/settings → Danger zone → Delete account. Removes everything, revokes integration tokens, runs immediately."
+              a="/settings → Danger zone → Delete account. Removes everything, deletes stored integration tokens, runs immediately."
             />
           </DocSection>
 

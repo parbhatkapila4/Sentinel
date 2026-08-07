@@ -110,7 +110,7 @@ const groups: ResourceGroup[] = [
         kicker: "Webhooks",
         title: "Outbound webhooks",
         description:
-          "HMAC-SHA256 signed deliveries, retries with backoff, and a 30-day inspection log of every attempt and response.",
+          "HMAC-SHA256 signed deliveries and a 30-day inspection log of every attempt and response.",
         meta: "HMAC-SHA256",
       },
       {
@@ -166,7 +166,7 @@ const groups: ResourceGroup[] = [
         kicker: "Plans",
         title: "Pricing",
         description:
-          "Starter, Professional, and Enterprise. Monthly or annual, tax included, cancel any time via PayPal.",
+          "Free, Professional, and Enterprise. Monthly or annual, tax included, cancel any time via PayPal.",
         meta: "3 tiers",
       },
       {
@@ -294,7 +294,7 @@ export default async function ResourcesPage() {
               <p className="text-white/60 leading-relaxed max-w-xl">
                 {user
                   ? "Your dashboard shows today's risk distribution, deals that went quiet, and the next actions Sentinel suggests."
-                  : "Starter is free and runs the same risk engine on your live pipeline. No demo data, no waitlist."}
+                  : "The Free plan runs the same risk engine on your live pipeline. No demo data, no waitlist."}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 md:justify-end">

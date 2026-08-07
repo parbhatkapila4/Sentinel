@@ -15,6 +15,8 @@ import { generateSlug, getUserTeamRole } from "@/lib/team-utils";
 import { enforceTeamMemberLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
 import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
+import { sendEmail, teamInviteEmailHtml } from "@/lib/email";
+import { logWarn } from "@/lib/logger";
 
 const ROLE_ORDER: Record<string, number> = {
   [TEAM_ROLES.OWNER]: 0,
@@ -116,7 +118,11 @@ export async function getTeamById(teamId: string) {
     where: { id: teamId },
     include: {
       members: {
-        include: { user: { select: { id: true, name: true, surname: true, email: true } } },
+        include: {
+          user: {
+            select: { id: true, name: true, surname: true, email: true },
+          },
+        },
       },
     },
   });
@@ -124,7 +130,7 @@ export async function getTeamById(teamId: string) {
   if (!team) throw new NotFoundError("Team");
 
   const members = [...team.members].sort(
-    (a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99)
+    (a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99),
   );
 
   return {
@@ -191,7 +197,9 @@ export async function getTeamMembers(teamId: string) {
     },
   });
 
-  members.sort((a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99));
+  members.sort(
+    (a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99),
+  );
 
   return members.map((m) => ({
     id: m.id,
@@ -205,7 +213,7 @@ export async function getTeamMembers(teamId: string) {
 export async function inviteTeamMember(
   teamId: string,
   email: string,
-  role: string
+  role: string,
 ) {
   const userId = await getAuthenticatedUserId();
   const myRole = await getUserTeamRole(userId, teamId);
@@ -251,6 +259,35 @@ export async function inviteTeamMember(
     },
   });
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const inviteUrl = `${appUrl}/settings/team/invite/${invite.token}`;
+  let emailSent = false;
+  try {
+    const inviter = await getAuthenticatedUser();
+    const inviterName =
+      [inviter?.name, inviter?.surname].filter(Boolean).join(" ") ||
+      inviter?.email ||
+      "A teammate";
+    const html = teamInviteEmailHtml(
+      inviterName,
+      inviter?.email ?? "",
+      inviteUrl,
+      validRole,
+    );
+    await sendEmail(
+      normalizedEmail,
+      `You're invited to join ${team.name} on Sentinel`,
+      html,
+    );
+    emailSent = true;
+  } catch (error) {
+    logWarn("Team invite email not sent; invite link must be shared manually", {
+      teamId,
+      inviteId: invite.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   revalidatePath(`/teams/${teamId}`);
   revalidatePath(`/settings/team/${teamId}`);
 
@@ -262,6 +299,8 @@ export async function inviteTeamMember(
     token: invite.token,
     expiresAt: invite.expiresAt,
     createdAt: invite.createdAt,
+    inviteUrl,
+    emailSent,
   };
 }
 
@@ -281,7 +320,9 @@ export async function acceptInvite(token: string) {
 
   const userEmail = (user.email ?? "").trim().toLowerCase();
   if (userEmail !== invite.email) {
-    throw new ForbiddenError("This invite was sent to a different email address");
+    throw new ForbiddenError(
+      "This invite was sent to a different email address",
+    );
   }
 
   await enforceTeamMemberLimit(user.id, invite.teamId);
@@ -307,7 +348,7 @@ export async function acceptInvite(token: string) {
     {
       memberId: user.id,
       role: invite.role,
-    }
+    },
   );
 
   revalidatePath("/teams");
@@ -352,7 +393,7 @@ export async function removeTeamMember(teamId: string, memberId: string) {
     {
       removedMemberId: target.userId,
       removedMemberRole: target.role,
-    }
+    },
   );
 
   revalidatePath(`/teams/${teamId}`);
@@ -363,7 +404,7 @@ export async function removeTeamMember(teamId: string, memberId: string) {
 export async function updateMemberRole(
   teamId: string,
   memberId: string,
-  newRole: string
+  newRole: string,
 ) {
   const userId = await getAuthenticatedUserId();
   const myRole = await getUserTeamRole(userId, teamId);
@@ -399,12 +440,61 @@ export async function updateMemberRole(
       memberId: target.userId,
       oldRole: target.role,
       newRole: validRole,
-    }
+    },
   );
 
   revalidatePath(`/teams/${teamId}`);
   revalidatePath(`/settings/team/${teamId}`);
   revalidatePath("/teams");
+}
+export async function transferTeamOwnership(
+  teamId: string,
+  newOwnerUserId: string,
+) {
+  const userId = await getAuthenticatedUserId();
+  const role = await getUserTeamRole(userId, teamId);
+  requireOwner(role);
+
+  if (newOwnerUserId === userId) {
+    throw new ValidationError("You already own this team");
+  }
+
+  const target = await prisma.teamMember.findUnique({
+    where: { userId_teamId: { userId: newOwnerUserId, teamId } },
+  });
+  if (!target) {
+    throw new NotFoundError("Team member");
+  }
+
+  const current = await prisma.teamMember.findUnique({
+    where: { userId_teamId: { userId, teamId } },
+  });
+  if (!current) {
+    throw new NotFoundError("Team membership");
+  }
+  await prisma.$transaction([
+    prisma.teamMember.update({
+      where: { id: target.id },
+      data: { role: TEAM_ROLES.OWNER },
+    }),
+    prisma.teamMember.update({
+      where: { id: current.id },
+      data: { role: TEAM_ROLES.ADMIN },
+    }),
+  ]);
+
+  await logAuditEvent(
+    userId,
+    AUDIT_ACTIONS.TEAM_OWNERSHIP_TRANSFERRED,
+    "team",
+    teamId,
+    { previousOwnerId: userId, newOwnerId: newOwnerUserId },
+  );
+
+  revalidatePath(`/teams/${teamId}`);
+  revalidatePath(`/settings/team/${teamId}`);
+  revalidatePath("/teams");
+  revalidatePath("/settings/team");
 }
 
 export async function leaveTeam(teamId: string) {
@@ -413,7 +503,9 @@ export async function leaveTeam(teamId: string) {
   requireMember(role);
 
   if (role === TEAM_ROLES.OWNER) {
-    throw new ForbiddenError("Owner must transfer ownership or delete the team");
+    throw new ForbiddenError(
+      "Transfer ownership to another member first, or delete the team.",
+    );
   }
 
   const membership = await prisma.teamMember.findUnique({

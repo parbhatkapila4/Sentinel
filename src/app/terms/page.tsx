@@ -61,7 +61,7 @@ const sections: Section[] = [
           By accessing or using Sentinel (the "Service"), you agree to
           these Terms of Service ("Terms"). If you don't agree, don't use
           the Service. These Terms apply to every user of every plan,
-          including the free Starter plan.
+          including the Free plan.
         </p>
         <p className="pt-3">
           If you're using Sentinel on behalf of a company or team, you
@@ -225,7 +225,7 @@ const sections: Section[] = [
         <p>
           We work hard to keep Sentinel reliable, but the Service is
           provided on an "as-is, as-available" basis. We don't currently
-          offer a contractual uptime SLA on the Starter or Professional
+          offer a contractual uptime SLA on the Free or Professional
           plans. Enterprise customers can request SLA terms as part of
           their agreement.
         </p>
@@ -252,7 +252,7 @@ const sections: Section[] = [
           >
             help@sentinels.in
           </a>
-          . Deletion revokes integration tokens within 24 hours and
+          . Deletion removes stored integration tokens immediately and
           removes workspace data within 30 days.
         </p>
         <p className="pt-3">

@@ -18,7 +18,7 @@ export function CustomerImpact() {
           <div className="impact-head-l">
             <div className="section-folio">08 · CUSTOMER IMPACT</div>
             <div className="impact-kicker">CUSTOMER IMPACT</div>
-            <h2 className="impact-title">Built for revenue teams<br />moving <em>fast at scale</em></h2>
+            <h2 className="impact-title">Built for revenue teams<br />who want <em>the real read</em></h2>
           </div>
         </div>
         <div className="impact-grid">
@@ -36,8 +36,8 @@ export function CustomerImpact() {
               variants={staggerContainer}
             >
               <motion.div className="impact-stat" variants={staggerItem}>
-                <div className="impact-stat-num">0–100</div>
-                <div className="impact-stat-label">Risk Index</div>
+                <div className="impact-stat-num">0–1</div>
+                <div className="impact-stat-label">Risk Score</div>
               </motion.div>
               <motion.div className="impact-stat" variants={staggerItem}>
                 <div className="impact-stat-num">AES-256</div>

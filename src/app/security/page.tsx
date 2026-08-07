@@ -64,12 +64,12 @@ const principles: Principle[] = [
   {
     title: "Signed, auditable webhooks",
     body:
-      "Outbound webhooks are signed with HMAC-SHA256 using a per-webhook secret. Every delivery attempt is logged with its response status, retried with backoff on failure, and visible in the dashboard for 30 days.",
+      "Outbound webhooks are signed with HMAC-SHA256 using a per-webhook secret. Every delivery attempt is logged with its response status and visible in the dashboard for 30 days. Delivery is a single synchronous attempt today - a durable retry queue is not built yet.",
   },
   {
     title: "Deletion means deletion",
     body:
-      "Disconnecting an integration revokes and deletes its tokens from our database within 24 hours. Account deletion removes user-scoped records and triggers token revocation on connected providers where the API supports it.",
+      "Disconnecting an integration hard-deletes its stored tokens from our database immediately - there is no retention window. Sentinel does not currently call the provider's own revocation endpoint, so you should also remove the app from the provider's connected-apps screen if you want the grant torn down on their side.",
   },
 ];
 
@@ -84,7 +84,7 @@ const platform: Practice[] = [
   {
     label: "Database",
     detail:
-      "Managed Postgres with daily backups and point-in-time recovery enabled.",
+      "Managed Postgres on Supabase, with backup and recovery handled at the platform layer.",
   },
   {
     label: "Authentication",
@@ -99,12 +99,12 @@ const platform: Practice[] = [
   {
     label: "Rate limiting",
     detail:
-      "Upstash-backed token bucket limiting on mutating routes to protect against abuse and runaway integrations.",
+      "Upstash-backed sliding-window limiting on API routes. It fails open: if Redis is unavailable the request is allowed rather than dropped.",
   },
   {
     label: "Secret handling",
     detail:
-      "Environment secrets are stored in the hosting platform's encrypted vault and rotated on a documented cadence.",
+      "Environment secrets are stored in the hosting platform's encrypted vault. Integration tokens use a versioned AES-256-GCM envelope so the key can be rotated later; automated rotation is not built yet.",
   },
 ];
 

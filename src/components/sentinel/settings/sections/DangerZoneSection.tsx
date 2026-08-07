@@ -1,10 +1,50 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { EditorialButton, SerifEm } from "../primitives";
 
+type ExportFormat = "csv" | "json";
+
 export function DangerZoneSection({ onRequestDelete }: { onRequestDelete: () => void }) {
+  const router = useRouter();
+  const [exporting, setExporting] = useState<ExportFormat | null>(null);
+
+  async function handleExport(format: ExportFormat) {
+    setExporting(format);
+    try {
+      const response = await fetch(`/api/deals/export?format=${format}`);
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Export failed");
+      }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get("Content-Disposition");
+      const match = disposition?.match(/filename="?([^";\n]+)"?/);
+      const filename =
+        match?.[1] ??
+        `deals-export-${new Date().toISOString().split("T")[0]}.${format}`;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success(`Exported ${filename}`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to export deals"
+      );
+    } finally {
+      setExporting(null);
+    }
+  }
+
   return (
     <section
       id="settings-danger"
@@ -42,34 +82,33 @@ export function DangerZoneSection({ onRequestDelete }: { onRequestDelete: () => 
       </div>
 
       <DangerRow
-        title="Export all data"
-        subtitle="Download everything - deals, calls, emails, signals, insights - as a zipped archive. Takes a few minutes."
+        title="Export your deals"
+        subtitle="Downloads your deals - name, stage, value, owner, risk score and activity dates. Timeline events, emails and Slack messages are not included in this export."
       >
-        <EditorialButton
-          type="button"
-          onClick={() =>
-            toast.message(
-              "Export request queued - we'll email you when the archive is ready."
-            )
-          }
-        >
-          Request export
-        </EditorialButton>
+        <div style={{ display: "flex", gap: 8 }}>
+          <EditorialButton
+            type="button"
+            disabled={exporting !== null}
+            onClick={() => handleExport("csv")}
+          >
+            {exporting === "csv" ? "Exporting…" : "CSV"}
+          </EditorialButton>
+          <EditorialButton
+            type="button"
+            disabled={exporting !== null}
+            onClick={() => handleExport("json")}
+          >
+            {exporting === "json" ? "Exporting…" : "JSON"}
+          </EditorialButton>
+        </div>
       </DangerRow>
 
       <DangerRow
-        title="Transfer ownership"
-        subtitle="Hand the account to another admin. You'll become a Manager until they confirm."
+        title="Transfer team ownership"
+        subtitle="Owners can hand a team to another member from that team's detail page - open the member's role menu and choose Make owner. You become an admin; they become the owner."
       >
-        <EditorialButton
-          type="button"
-          onClick={() =>
-            toast.message(
-              "Ownership transfer is handled in the team detail view."
-            )
-          }
-        >
-          Transfer
+        <EditorialButton type="button" onClick={() => router.push("/settings/team")}>
+          Open teams
         </EditorialButton>
       </DangerRow>
 

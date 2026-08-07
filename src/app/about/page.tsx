@@ -45,23 +45,19 @@ function BackLink() {
 const principles = [
   {
     label: "Act early, not after",
-    body:
-      "Most CRMs are rear-view mirrors. They tell you what happened, not what's about to. Sentinel reads the same signals your team is already generating and surfaces the risk while you can still do something about it.",
+    body: "Most CRMs are rear-view mirrors. They tell you what happened, not what's about to. Sentinel reads the same signals your team is already generating and surfaces the risk while you can still do something about it.",
   },
   {
     label: "Explainable by default",
-    body:
-      "Every risk score carries plain-English reasons. No opaque AI black box. If Sentinel flags a deal, it tells you exactly which signals triggered the flag, and you can override it.",
+    body: "Every risk score carries plain-English reasons. No opaque AI black box. If Sentinel flags a deal, it tells you exactly which signals triggered the flag, and you can override it.",
   },
   {
     label: "Read-mostly by design",
-    body:
-      "We don't want to own your CRM. Sentinel reads pipeline state, keeps the risk context it generates inside the Sentinel workspace, and never writes back to your CRM, sends mail from your domain, or changes your pipeline structure.",
+    body: "We don't want to own your CRM. Sentinel reads pipeline state, keeps the risk context it generates inside the Sentinel workspace, and never writes back to your CRM, sends mail from your domain, or changes your pipeline structure.",
   },
   {
     label: "Paid, not venture-priced",
-    body:
-      "Sentinel charges because it should. No investors to grow out of, no quarterly board targets chasing your usage up. The price reflects the cost to run the software well.",
+    body: "Sentinel charges because it should. No investors to grow out of, no quarterly board targets chasing your usage up. The price reflects the cost to run the software well.",
   },
 ];
 
@@ -82,9 +78,9 @@ export default async function AboutPage() {
             already sending.
           </h1>
           <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
-            Sentinel is a small, independent product built for revenue teams
-            who are tired of learning about lost deals in the postmortem. It
-            lives next to your CRM, not on top of it.
+            Sentinel is a small, independent product built for revenue teams who
+            are tired of learning about lost deals in the postmortem. It lives
+            next to your CRM, not on top of it.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
             <span>Independent, bootstrapped</span>
@@ -105,17 +101,17 @@ export default async function AboutPage() {
             <div className="text-white/75 leading-relaxed space-y-4 max-w-2xl">
               <p>
                 Sentinel is a revenue-ops layer that sits between your CRM and
-                your team. It ingests the activity you&apos;re already tracking -
-                emails, meetings, stage transitions - and turns it into two
-                things revenue leaders actually need: a composite risk score
-                per deal, and a short list of what to do about the ones that
-                are slipping.
+                your team. It ingests the activity you&apos;re already tracking
+                - emails, meetings, stage transitions - and turns it into two
+                things revenue leaders actually need: a composite risk score per
+                deal, and a short list of what to do about the ones that are
+                slipping.
               </p>
               <p>
                 It connects to Salesforce, HubSpot, Google Calendar, and Slack
-                out of the box as a read-only layer - nothing is written back
-                to your CRM or calendar. The AI that powers it runs scoped to
-                your workspace, not trained across customers.
+                out of the box as a read-only layer - nothing is written back to
+                your CRM or calendar. The AI that powers it runs scoped to your
+                workspace, not trained across customers.
               </p>
             </div>
           </div>
@@ -130,22 +126,21 @@ export default async function AboutPage() {
             </h2>
             <div className="text-white/75 leading-relaxed space-y-4 max-w-2xl">
               <p>
-                Revenue teams lose deals every day - not because the product
-                is wrong or the price is too high, but because the warning
-                signs were visible three weeks earlier and nobody was looking
-                at them.
+                Revenue teams lose deals every day - not because the product is
+                wrong or the price is too high, but because the warning signs
+                were visible three weeks earlier and nobody was looking at them.
               </p>
               <p>
-                This is silent decay. A champion goes quiet. A stakeholder
-                stops replying. A deal that was in Proposal two months ago
-                still is. Traditional CRMs are reactive; they tell you what
-                happened yesterday, last week, last month. By the time the
-                stall is visible in a dashboard, the relationship has
-                typically already cooled and a competitor has stepped in.
+                This is silent decay. A champion goes quiet. A stakeholder stops
+                replying. A deal that was in Proposal two months ago still is.
+                Traditional CRMs are reactive; they tell you what happened
+                yesterday, last week, last month. By the time the stall is
+                visible in a dashboard, the relationship has typically already
+                cooled and a competitor has stepped in.
               </p>
               <p>
-                Sentinel exists to close that gap. Same signals, same data,
-                but surfaced while you can still act on them.
+                Sentinel exists to close that gap. Same signals, same data, but
+                surfaced while you can still act on them.
               </p>
             </div>
           </div>
@@ -189,11 +184,11 @@ export default async function AboutPage() {
                   signals were all in the CRM. Nobody was reading them.
                 </p>
                 <p>
-                  So the bet is small and specific: pull the activity that&apos;s
-                  already there, score it, surface what&apos;s going quiet. No
-                  new data to enter, no separate workflow, no AI that pretends
-                  to forecast quarters. Just the gap between &ldquo;the data
-                  exists&rdquo; and &ldquo;someone notices in time&rdquo;.
+                  So the bet is small and specific: pull the activity
+                  that&apos;s already there, score it, surface what&apos;s going
+                  quiet. No new data to enter, no separate workflow, no AI that
+                  pretends to forecast quarters. Just the gap between &ldquo;the
+                  data exists&rdquo; and &ldquo;someone notices in time&rdquo;.
                 </p>
                 <p>
                   Bugs, feature requests, or anything that broke for you -{" "}
@@ -239,7 +234,7 @@ export default async function AboutPage() {
               <p className="text-white/60 leading-relaxed max-w-xl">
                 {user
                   ? "Your dashboard shows current risk distribution, deals that went quiet, and the next actions Sentinel suggests."
-                  : "Starter is free. It runs the same risk engine on your live data, so evaluation isn't a demo - it's the product."}
+                  : "The Free plan runs the same risk engine on your live data, so evaluation isn't a demo - it's the product."}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
@@ -281,4 +276,3 @@ export default async function AboutPage() {
     </div>
   );
 }
-  

@@ -11,6 +11,7 @@ export const AUDIT_ACTIONS = {
   TEAM_MEMBER_ROLE_UPDATED: "team.member_role_updated",
   TEAM_CREATED: "team.created",
   TEAM_DELETED: "team.deleted",
+  TEAM_OWNERSHIP_TRANSFERRED: "team.ownership_transferred",
 
   INTEGRATION_CONNECTED: "integration.connected",
   INTEGRATION_DISCONNECTED: "integration.disconnected",

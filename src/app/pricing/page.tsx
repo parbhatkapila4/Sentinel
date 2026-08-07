@@ -39,7 +39,7 @@ const principles = [
   {
     label: "Free stays free",
     body:
-      "Starter is free and usable, not a crippled demo. 5 active deals, real risk scoring, one integration, one webhook - enough to run a small book or evaluate the product against live data.",
+      "The Free plan is usable, not a crippled demo. 25 active deals, real risk scoring, one integration, one webhook - enough to run a small book or evaluate the product against live data.",
   },
   {
     label: "One price, tax included",
@@ -49,7 +49,7 @@ const principles = [
   {
     label: "No lock-in",
     body:
-      "Cancel whenever. Your deals, timeline, and notes are yours and exportable to CSV or JSON at any time. Deleting the account revokes integration tokens within 24 hours.",
+      "Cancel whenever. Your deals, timeline, and notes are yours and exportable to CSV or JSON at any time. Deleting the account deletes your stored integration tokens immediately.",
   },
   {
     label: "Paid via PayPal",
@@ -65,7 +65,7 @@ const faqs = [
   },
   {
     q: "Can I try Professional before subscribing?",
-    a: "The Starter plan already runs the same risk engine against your real pipeline. If you need Professional features for evaluation, email us and we'll enable them on your workspace while you decide.",
+    a: "The Free plan already runs the same risk engine against your real pipeline. If you need Professional features for evaluation, email us and we'll enable them on your workspace while you decide.",
   },
   {
     q: "How does Enterprise actually work?",
@@ -95,7 +95,7 @@ export default function PricingPage() {
               free, upgrade when the book grows, cancel whenever you like.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
-              <span>Starter · Professional · Enterprise</span>
+              <span>Free · Professional · Enterprise</span>
               <span className="text-white/20">·</span>
               <span>Monthly billing</span>
               <span className="text-white/20">·</span>

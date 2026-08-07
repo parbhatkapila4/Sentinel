@@ -196,6 +196,100 @@
 }
 ```
 
+## Measurement
+
+```json
+{
+  "claim_id": "perf_latency_numbers_not_supported",
+  "claim_text": "Published latency numbers (e.g. sub-second scan, 0.6s diagnosis)",
+  "status": "explicitly_not_supported",
+  "evidence_paths": [
+    "src/lib/performance.ts",
+    "src/__tests__/claim-drift.test.ts"
+  ],
+  "notes": "measureAsync/measureSync exist but have zero call sites, so nothing is timed. A latency claim requires a wired-up measurement first.",
+  "last_verified_at": "2026-08-02"
+}
+```
+
+```json
+{
+  "claim_id": "eval_accuracy_numbers_not_supported",
+  "claim_text": "backtest",
+  "status": "explicitly_not_supported",
+  "evidence_paths": [
+    "src/lib/predictions.ts",
+    "src/__tests__/claim-drift.test.ts"
+  ],
+  "notes": "predictions.ts is heuristic. No eval set, no held-out scoring, no calibration run exists.",
+  "last_verified_at": "2026-08-02"
+}
+```
+
+## Tenancy
+
+```json
+{
+  "claim_id": "tenancy_workspace_isolation_not_supported",
+  "claim_text": "cross-tenant",
+  "status": "explicitly_not_supported",
+  "evidence_paths": [
+    "prisma/schema.prisma",
+    "README.md",
+    "src/__tests__/claim-drift.test.ts"
+  ],
+  "notes": "No Workspace model. Isolation is per-userId row scoping. README lists multi-workspace tenancy under 'not built yet'.",
+  "last_verified_at": "2026-08-02"
+}
+```
+
+## Webhook delivery
+
+```json
+{
+  "claim_id": "webhook_delivery_retry_not_supported",
+  "claim_text": "Outbound webhook delivery retries with backoff",
+  "status": "explicitly_not_supported",
+  "evidence_paths": [
+    "src/lib/webhooks.ts",
+    "README.md",
+    "src/__tests__/claim-drift.test.ts"
+  ],
+  "notes": "deliverWebhook makes a single fetch. Provider-call retry (src/lib/retry.ts) IS real and may be described as such.",
+  "last_verified_at": "2026-08-02"
+}
+```
+
+```json
+{
+  "claim_id": "webhook_signature_header",
+  "claim_text": "Outbound webhooks are signed with the X-Webhook-Signature header.",
+  "status": "implemented",
+  "evidence_paths": [
+    "src/lib/webhooks.ts",
+    "src/app/integrations/page.tsx"
+  ],
+  "last_verified_at": "2026-08-02"
+}
+```
+
+## Token lifecycle
+
+```json
+{
+  "claim_id": "token_provider_revocation_not_supported",
+  "claim_text": "revokes tokens on connected providers",
+  "status": "explicitly_not_supported",
+  "evidence_paths": [
+    "src/app/actions/hubspot.ts",
+    "src/app/actions/gmail.ts",
+    "src/app/security/page.tsx"
+  ],
+  "notes": "disconnect* deletes the stored row immediately but never calls a provider revoke endpoint.",
+  "last_verified_at": "2026-08-02"
+}
+```
+
 ## AI behavior
 
 ```json
@@ -229,15 +323,17 @@
 
 ```json
 {
-  "claim_id": "pricing_starter_monthly",
-  "claim_text": "Starter plan is $0/month.",
+  "claim_id": "pricing_free_monthly",
+  "claim_text": "Free plan is $0/month and covers 25 active deals.",
   "status": "implemented",
   "evidence_paths": [
     "src/lib/pricing-catalog.ts",
+    "src/lib/plans.ts",
     "src/components/pricing-cards.tsx",
     "src/app/pricing/page.tsx"
   ],
-  "last_verified_at": "2026-04-23"
+  "notes": "The former $0 'starter' tier was collapsed into 'free'. Both were $0 and differed only in limits, so the pricing page advertised one allowance while new accounts received another. Legacy starter rows normalise to free via normalizeLegacyPlanType.",
+  "last_verified_at": "2026-08-04"
 }
 ```
 

@@ -53,7 +53,7 @@ const surfaces = [
     href: "#webhooks",
     label: "Webhooks",
     description:
-      "Real-time, HMAC-signed event deliveries with retries and a 30-day inspection log.",
+      "HMAC-signed event deliveries with a 30-day inspection log.",
     meta: "HMAC-SHA256",
   },
 ] as const;
@@ -138,14 +138,13 @@ const guides: GuideSection[] = [
     meta: [
       { label: "Signature", value: "X-Webhook-Signature" },
       { label: "Algorithm", value: "HMAC-SHA256" },
-      { label: "Retry", value: "Exponential backoff" },
+      { label: "Retry", value: "None - single attempt" },
     ],
     blocks: [
       {
         kind: "events",
         rows: [
           { event: "deal.created", description: "New deal added to pipeline." },
-          { event: "deal.updated", description: "Deal fields changed." },
           {
             event: "deal.stage_changed",
             description: "Deal moved to a different stage.",
@@ -156,14 +155,6 @@ const guides: GuideSection[] = [
           },
           { event: "deal.closed_won", description: "Deal successfully closed." },
           { event: "deal.closed_lost", description: "Deal lost." },
-          {
-            event: "team.member_added",
-            description: "Member added to a team.",
-          },
-          {
-            event: "team.member_removed",
-            description: "Member removed from a team.",
-          },
         ],
       },
     ],

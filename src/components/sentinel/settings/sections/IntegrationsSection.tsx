@@ -43,7 +43,7 @@ export function IntegrationsSection({
             lives.
           </>
         }
-        deck="Connect your CRM, calls, email, and chat so Sentinel can read the signal underneath your pipeline."
+        deck="Connect your CRM, email, calendar, and Slack so Sentinel can read the signal underneath your pipeline."
         rightLabel="CONNECTED"
         rightValue={`${connectedCount} OF 6`}
       />

@@ -14,11 +14,6 @@ export const CANONICAL_PRICING: Record<PlanType, PlanPrice> = {
     annualMonthlyEquivalent: 0,
     annualOriginalMonthly: 0,
   },
-  starter: {
-    monthly: 0,
-    annualMonthlyEquivalent: 0,
-    annualOriginalMonthly: 0,
-  },
   pro: {
     monthly: 31,
     annualMonthlyEquivalent: 20,
@@ -32,7 +27,7 @@ export const CANONICAL_PRICING: Record<PlanType, PlanPrice> = {
 };
 
 export const CANONICAL_CHECKOUT_LINKS: Record<
-  Exclude<PlanType, "free" | "starter">,
+  Exclude<PlanType, "free">,
   Record<BillingCycle, string>
 > = {
   pro: {
@@ -46,7 +41,7 @@ export const CANONICAL_CHECKOUT_LINKS: Record<
 };
 
 export function formatPriceDisplayForPlan(planType: PlanType): string {
-  if (planType === "free" || planType === "starter") return "Free";
+  if (planType === "free") return "Free";
   if (planType === "enterprise") return "Contact us";
   return `$${CANONICAL_PRICING[planType].monthly}`;
 }

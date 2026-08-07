@@ -963,7 +963,7 @@ export function SignInClient() {
             <div className="benefit-row">
               <div className="benefit-icon">✓</div>
               <div className="benefit-text">
-                Up to <b>25 active deals</b> monitored in real-time
+                Up to <b>25 active deals</b> scored on every read
               </div>
             </div>
             <div className="benefit-row">

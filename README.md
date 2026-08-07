@@ -44,7 +44,7 @@ So the rule is simple and absolute: **a message is ingested only if at least one
 
 This beats the alternatives on every axis that matters. Manual allowlists drift and demand maintenance nobody does. Domain allowlists (`@acme.com`) over-admit - they pull in a prospect's entire company, including people you've never dealt with. Shared-secret or header gates authenticate the *sender*, not the *relationship* - they prove a message really came from Acme, not that Acme is someone you're allowed to track. CRM membership is the only gate that's self-maintaining and actually models the business relationship.
 
-It is also fail-closed. The permission check (`src/lib/crm-permission.ts`) returns "not in book" on any database error rather than admitting data it couldn't verify - a backend hiccup can never silently widen the ingestion boundary. And it is PII-blind: the filter logs outcome counts and a fixed enum of reason tokens (`passed`, `dropped_no_crm_match`, `dropped_self_user`, `fail_closed`), never an email address or message body.
+It is also fail-closed. The permission check (`src/lib/crm-permission.ts`) returns "not in book" on any database error rather than admitting data it couldn't verify - a backend hiccup can never silently widen the ingestion boundary. And it is PII-blind: it emits counter increments plus a short reason string (`no_crm_contact_match`, `no_external_participants`, `fail_closed_error`), never an email address or message body. Each ingestion path records its own outcome on top of that - the Slack handler in `src/lib/slack-events.ts` tags events `passed`, `dropped_self_user`, `dropped_no_crm_match` or `duplicate_event`.
 
 ---
 
@@ -82,7 +82,7 @@ The thesis is one function. Making it hold up in production is the work.
 
 **CRM membership as the gate.** *Why:* self-maintaining, and it models the real relationship (above). *Tradeoff accepted:* a prospect not yet added to the CRM is invisible - coverage is only as good as the book. A boundary that under-admits beats one that over-admits.
 
-**HMAC-signed, stateless OAuth state.** *Why:* the HubSpot and Salesforce flows carry CSRF state in an HMAC-signed cookie (`src/lib/signed-cookies.ts`) verified with `timingSafeEqual`, so there's no server-side session store to run and a forged cookie can't swap the userId mid-flow. *Tradeoff accepted:* shared-secret management, and the Gmail/Calendar flows still use plain JSON state cookies - signing them is a known, deliberate follow-up.
+**HMAC-signed, stateless OAuth state.** *Why:* the HubSpot, Salesforce and Slack flows carry CSRF state in an HMAC-signed cookie (`src/lib/signed-cookies.ts`) verified with `timingSafeEqual`, so there's no server-side session store to run and a forged cookie can't swap the userId mid-flow. *Tradeoff accepted:* shared-secret management, and the Gmail/Calendar flows still use plain JSON state cookies - signing them is a known, deliberate follow-up.
 
 **Risk recomputed on read.** *Why:* deal risk is derived from timeline events on each read, with auditable reason strings, so there's no stale precomputed score to invalidate. *Tradeoff accepted:* cost grows with pipeline size; very large pipelines would need precomputation or caching.
 
@@ -116,7 +116,7 @@ Next.js 16 · React 19 · TypeScript · Prisma · PostgreSQL / Supabase (pooled 
 
 Scope discipline, stated plainly:
 
-- **Multi-workspace tenancy.** Single-installer model today - one operator, their CRM, their sources. Team tenancy is an isolation problem worth doing once, against a real multi-seat customer.
+- **Workspace-level tenancy.** To be precise about what *is* here: teams are built - `Team` / `TeamMember` / `TeamInvite`, owner/admin/member/viewer roles, expiring token invites, `teamId` on shared records, and per-plan seat limits enforced server-side (`src/app/actions/teams.ts`, `src/lib/plan-enforcement.ts`). What doesn't exist is a tenant entity *above* the user: every row is ultimately scoped by `userId`, and integrations are connected per-user rather than owned by an org. A real workspace boundary - one organisation, many members, org-owned CRM connections - is the isolation problem worth doing once, against a real multi-seat customer.
 - **Public app distribution.** The OAuth apps run in development/test distribution mode and Google OAuth verification is deferred - gating work I'd rather do against real customer traffic than speculatively.
 - **Per-integration key derivation and rotation.** One KEK encrypts all secrets today; the versioned envelope leaves room for per-integration derived keys and an automated rotation routine when the threat model warrants it.
 - **Async webhook-delivery retry queue.** Delivery is synchronous with structured logging - sufficient at current volume; a durable retry queue is the next step when volume justifies it.
@@ -151,7 +151,7 @@ Pricing is included below to keep the landing-page pricing and README in sync (e
 
 Source of truth: `src/lib/pricing-catalog.ts`.
 
-- `Starter`: **$0/month**
+- `Free`: **$0/month**
 - `Professional`: **$31/month** (or **$20/month** annual billing)
 - `Enterprise`: **$85/month** (or **$56/month** annual billing)
 

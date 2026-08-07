@@ -138,7 +138,7 @@ function parseExpectedValues(
     .filter((v): v is number => v !== null);
 }
 
-function getPlanAmountMap(): Record<Exclude<PlanType, "free" | "starter">, number[]> {
+function getPlanAmountMap(): Record<Exclude<PlanType, "free">, number[]> {
   const defaults = {
     pro: [
       CANONICAL_PRICING.pro.monthly ?? 31,
@@ -162,7 +162,7 @@ function getPlanAmountMap(): Record<Exclude<PlanType, "free" | "starter">, numbe
 export function resolvePlanFromCapturedPayment(params: {
   amountValue?: string;
   currencyCode?: string;
-}): Exclude<PlanType, "free" | "starter"> | null {
+}): Exclude<PlanType, "free"> | null {
   const amount = normalizeMoney(params.amountValue);
   const currency = (params.currencyCode || "").toUpperCase();
   if (amount === null || currency !== "USD") return null;

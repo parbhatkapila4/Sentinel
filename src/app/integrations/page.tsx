@@ -96,7 +96,7 @@ const integrations: Integration[] = [
     name: "Slack",
     category: "Notifications",
     summary:
-      "Connect your Slack workspace via OAuth. Sentinel reads message history from the channels and DMs its bot is added to — matching senders to CRM contacts — and posts deal-at-risk, stage-change, and daily-summary alerts back to your team.",
+      "Connect your Slack workspace via OAuth. Sentinel reads message history from the channels and DMs its bot is added to — matching senders to CRM contacts — and posts deal-at-risk, stage-change, and CRM sync summary alerts back to your team.",
     auth: "OAuth · Slack app",
     direction: "Inbound · Outbound",
     scopes: [
@@ -111,7 +111,7 @@ const integrations: Integration[] = [
     does: [
       "Read message history from channels and DMs the Sentinel bot is added to",
       "Match message senders to CRM contacts by email",
-      "Post alerts to channels the bot is in, filtered by event type (risk, stage change, new deal, daily digest)",
+      "Post alerts to channels the bot is in, filtered by event type (deal at risk, deal closed won, deal stage changed, CRM sync summary)",
       "Include deal owner, value, and a deep link back to Sentinel",
     ],
     doesNot: [
@@ -126,18 +126,19 @@ const integrations: Integration[] = [
     name: "Outbound Webhooks",
     category: "Developer",
     summary:
-      "Stream Sentinel events to any HTTPS endpoint. Signed with HMAC-SHA256, delivered with retries, and fully introspectable from Settings.",
+      "Stream Sentinel events to any HTTPS endpoint. Signed with HMAC-SHA256 and fully introspectable from Settings.",
     auth: "HMAC-SHA256 signed payloads",
     direction: "Outbound",
-    scopes: ["deal.created", "deal.updated", "deal.stage_changed", "deal.at_risk"],
+    scopes: ["deal.created", "deal.stage_changed", "deal.at_risk", "deal.closed_won"],
     does: [
       "Deliver JSON payloads to your endpoint on subscribed events",
-      "Sign every request with a per-webhook secret in X-Sentinel-Signature",
-      "Retry failed deliveries with exponential backoff and log the full history",
+      "Sign every request with a per-webhook secret in X-Webhook-Signature",
+      "Log every delivery attempt with its response code and body",
       "Expose delivery logs, payloads, and response codes in the dashboard",
     ],
     doesNot: [
       "Send unsigned payloads or deliver over plain HTTP",
+      "Retry a failed delivery - each event is a single attempt today",
       "Store your endpoint's responses beyond the last 30 days",
     ],
     status: "Available",

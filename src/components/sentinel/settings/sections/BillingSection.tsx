@@ -59,8 +59,8 @@ export function BillingSection({
             </i>
           </>
         }
-        deck="Your current plan, usage meters, and payment methods. Invoices are emailed on the 1st of each month."
-        rightLabel="NEXT INVOICE"
+        deck="Your current plan, usage meters, and payment methods. Billing runs through PayPal - receipts come from PayPal, not from Sentinel."
+        rightLabel="PLAN PRICE"
         rightValue={isPaidPlan ? planPriceDisplay : "-"}
       />
 

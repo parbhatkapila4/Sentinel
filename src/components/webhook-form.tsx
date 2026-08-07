@@ -10,10 +10,8 @@ import {
   Field,
   Toggle,
 } from "@/components/sentinel/settings/primitives";
-
 const WEBHOOK_EVENTS = [
   { value: "deal.created", label: "Deal · created" },
-  { value: "deal.updated", label: "Deal · updated" },
   { value: "deal.stage_changed", label: "Deal · stage changed" },
   { value: "deal.at_risk", label: "Deal · at risk" },
   { value: "deal.closed_won", label: "Deal · closed (won)" },

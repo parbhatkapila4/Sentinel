@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   removeTeamMember,
   updateMemberRole,
+  transferTeamOwnership,
   leaveTeam,
   deleteTeam,
   inviteTeamMember,
@@ -154,12 +155,14 @@ function MemberRow({
   currentUserId,
   onRoleChange,
   onRemove,
+  onTransferOwnership,
 }: {
   member: Member;
   myRole: string;
   currentUserId: string;
   onRoleChange: (memberId: string, role: string) => Promise<void>;
   onRemove: (memberId: string) => Promise<void>;
+  onTransferOwnership: (userId: string, name: string) => Promise<void>;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -323,6 +326,34 @@ function MemberRow({
                       {ROLE_LABELS[r]}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      setBusy(true);
+                      try {
+                        await onTransferOwnership(member.userId, displayName);
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "10px 14px",
+                      fontFamily: "var(--font-mono-jb)",
+                      fontSize: 11,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: "var(--wine)",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Make owner
+                  </button>
                 </div>
               </>
             )}
@@ -384,6 +415,10 @@ export function TeamDetailClient({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<string>(TEAM_ROLES.MEMBER);
   const [inviting, setInviting] = useState(false);
+  const [pendingInviteLink, setPendingInviteLink] = useState<{
+    email: string;
+    url: string;
+  } | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -416,6 +451,22 @@ export function TeamDetailClient({
     }
   }
 
+  async function handleTransferOwnership(newOwnerUserId: string, name: string) {
+    const ok = window.confirm(
+      `Make ${name} the owner of this team?\n\nYou will become an admin. Only they will be able to transfer ownership or delete the team after this.`
+    );
+    if (!ok) return;
+    try {
+      await transferTeamOwnership(teamId, newOwnerUserId);
+      toast.success(`${name} is now the owner`);
+      router.refresh();
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Failed to transfer ownership"
+      );
+    }
+  }
+
   async function handleRemove(memberId: string) {
     try {
       await removeTeamMember(teamId, memberId);
@@ -435,15 +486,33 @@ export function TeamDetailClient({
     }
     setInviting(true);
     try {
-      await inviteTeamMember(teamId, trimmed, inviteRole);
-      toast.success(`Invite sent to ${trimmed}`);
+      const invite = await inviteTeamMember(teamId, trimmed, inviteRole);
+      if (invite.emailSent) {
+        setPendingInviteLink(null);
+        toast.success(`Invitation email sent to ${trimmed}`);
+      } else {
+        setPendingInviteLink({ email: trimmed, url: invite.inviteUrl });
+        toast.message(
+          `Invite created for ${trimmed} - copy the link below to share it`
+        );
+      }
+
       setInviteEmail("");
       setInviteRole(TEAM_ROLES.MEMBER);
       router.refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to send invite");
+      toast.error(e instanceof Error ? e.message : "Failed to create invite");
     } finally {
       setInviting(false);
+    }
+  }
+
+  async function copyInviteLink(url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Invite link copied");
+    } catch {
+      toast.error("Couldn't copy - select the link and copy it manually");
     }
   }
 
@@ -503,6 +572,7 @@ export function TeamDetailClient({
               currentUserId={currentUserId ?? ""}
               onRoleChange={handleRoleChange}
               onRemove={handleRemove}
+              onTransferOwnership={handleTransferOwnership}
             />
           ))}
         </div>
@@ -564,6 +634,78 @@ export function TeamDetailClient({
               {inviting ? "Sending…" : "Send invite"}
             </EditorialButton>
           </form>
+
+          {pendingInviteLink && (
+            <div
+              style={{
+                marginTop: 16,
+                padding: 14,
+                border: "1px solid var(--rule-strong)",
+                background: "var(--ink-02)",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--font-mono-jb)",
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "var(--copper)",
+                  marginBottom: 8,
+                }}
+              >
+                Email not configured - share this link
+              </div>
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--cream-2)",
+                  lineHeight: 1.5,
+                  marginBottom: 10,
+                }}
+              >
+                The invite for <strong>{pendingInviteLink.email}</strong> was
+                created, but no invitation email could be sent. Send them this
+                link yourself - it expires in 7 days.
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <code
+                  style={{
+                    flex: "1 1 260px",
+                    minWidth: 0,
+                    overflowWrap: "anywhere",
+                    fontFamily: "var(--font-mono-jb)",
+                    fontSize: 11.5,
+                    color: "var(--cream)",
+                    background: "var(--ink)",
+                    border: "1px solid var(--rule)",
+                    padding: "8px 10px",
+                  }}
+                >
+                  {pendingInviteLink.url}
+                </code>
+                <EditorialButton
+                  type="button"
+                  onClick={() => copyInviteLink(pendingInviteLink.url)}
+                >
+                  Copy link
+                </EditorialButton>
+                <EditorialButton
+                  type="button"
+                  onClick={() => setPendingInviteLink(null)}
+                >
+                  Dismiss
+                </EditorialButton>
+              </div>
+            </div>
+          )}
 
           {invites.length > 0 && (
             <div style={{ marginTop: 32 }}>

@@ -1,11 +1,11 @@
 export function LiveDealStream() {
   const deals = [
-    { name: "Acme Corp", amount: "$247K", score: "82 HIGH", cls: "high" },
-    { name: "Northwind", amount: "$165K", score: "71 MED", cls: "med" },
-    { name: "Meridian Group", amount: "$320K", score: "77 HIGH", cls: "high" },
-    { name: "BluePeak", amount: "$94K", score: "52 LOW", cls: "low" },
-    { name: "Orchid Labs", amount: "$129K", score: "66 MED", cls: "med" },
-    { name: "Vertex Health", amount: "$212K", score: "74 HIGH", cls: "high" },
+    { name: "Acme Corp", amount: "$247K", score: "0.82 HIGH", cls: "high" },
+    { name: "Northwind", amount: "$165K", score: "0.55 MED", cls: "med" },
+    { name: "Meridian Group", amount: "$320K", score: "0.77 HIGH", cls: "high" },
+    { name: "BluePeak", amount: "$94K", score: "0.22 LOW", cls: "low" },
+    { name: "Orchid Labs", amount: "$129K", score: "0.48 MED", cls: "med" },
+    { name: "Vertex Health", amount: "$212K", score: "0.74 HIGH", cls: "high" },
   ];
 
   return (

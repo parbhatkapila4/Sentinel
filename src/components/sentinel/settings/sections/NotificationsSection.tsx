@@ -2,7 +2,6 @@
 
 import {
   FormActions,
-  Pill,
   SectionHeader,
   SerifEm,
   SettingRow,
@@ -12,7 +11,6 @@ import {
 export interface NotificationSettings {
   emailAlerts: boolean;
   riskAlerts: boolean;
-  weeklyDigest: boolean;
   dealUpdates: boolean;
 }
 
@@ -48,50 +46,35 @@ export function NotificationsSection({
             </i>
           </>
         }
-        deck="Email, in-app, and Slack alerts. You'll always get risk flags - everything else is optional."
-        rightLabel="4 CHANNELS"
-        rightValue={`${activeChannels} ACTIVE`}
+        deck="Choose which email alerts Sentinel sends you. Every one of these is a preference you can switch on or off at any time."
+        rightLabel="3 ALERT TYPES"
+        rightValue={`${activeChannels} ON`}
       />
 
       <SettingRow
-        title={
-          <>
-            Email alerts <Pill>ALWAYS ON</Pill>
-          </>
-        }
+        title="Action overdue"
         subtitle={
           <>
-            Critical alerts - at-risk deals, lost competitive signals, and sync
-            errors. <SerifEm>Can&apos;t be turned off.</SerifEm>
+            Email me when a recommended action passes its due date and the deal
+            still needs a follow-up.
           </>
         }
       >
         <Toggle
           checked={value.emailAlerts}
           onChange={(v) => onChange({ ...value, emailAlerts: v })}
-          ariaLabel="Email alerts"
+          ariaLabel="Action overdue alerts"
         />
       </SettingRow>
 
       <SettingRow
         title="Risk alerts"
-        subtitle="Get notified when a deal moves from healthy to at-risk, or when a competitor is mentioned in a call transcript."
+        subtitle="Get notified when a deal moves from healthy to at-risk, or when a competitor keyword appears in an email thread, Slack message, or timeline note."
       >
         <Toggle
           checked={value.riskAlerts}
           onChange={(v) => onChange({ ...value, riskAlerts: v })}
           ariaLabel="Risk alerts"
-        />
-      </SettingRow>
-
-      <SettingRow
-        title="Weekly digest"
-        subtitle="A Monday morning brief - pipeline velocity, top movers, anomalies - delivered before your 9am."
-      >
-        <Toggle
-          checked={value.weeklyDigest}
-          onChange={(v) => onChange({ ...value, weeklyDigest: v })}
-          ariaLabel="Weekly digest"
         />
       </SettingRow>
 

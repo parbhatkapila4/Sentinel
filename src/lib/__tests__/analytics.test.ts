@@ -75,7 +75,7 @@ describe("calculateRevenueGrowth", () => {
 
   it("deals in current and last month", () => {
     const now = new Date();
-    const lastMonth = subDays(now, 35);
+    const lastMonth = subDays(new Date(now.getFullYear(), now.getMonth(), 1), 5);
     const deals = [
       createDeal({ value: 3000, createdAt: now }),
       createDeal({ value: 1000, createdAt: lastMonth }),

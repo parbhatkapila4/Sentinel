@@ -2,7 +2,15 @@ import { prisma } from "./prisma";
 import { CANONICAL_PRICING } from "@/lib/pricing-catalog";
 import { REAL_DEAL_WHERE } from "./deal-filters";
 
-export type PlanType = "free" | "starter" | "pro" | "enterprise";
+export type PlanType = "free" | "pro" | "enterprise";
+
+const LEGACY_PLAN_TYPES: Record<string, PlanType> = {
+  starter: "free",
+};
+
+export function normalizeLegacyPlanType(planType: string): PlanType {
+  return LEGACY_PLAN_TYPES[planType] ?? (planType as PlanType);
+}
 
 export interface PlanLimits {
   maxDeals: number;
@@ -33,23 +41,6 @@ export const PLAN_DEFINITIONS: Record<PlanType, PlanDefinition> = {
         "basic_risk_detection",
         "email_notifications",
         "7_day_history",
-      ],
-    },
-  },
-  starter: {
-    planType: "starter",
-    planName: "Starter",
-    limits: {
-      maxDeals: 5,
-      maxTeamMembers: 3,
-      maxApiCalls: 1000,
-      maxWebhooks: 3,
-      maxIntegrations: 2,
-      features: [
-        "basic_risk_detection",
-        "email_notifications",
-        "30_day_history",
-        "team_collaboration",
       ],
     },
   },
@@ -96,13 +87,12 @@ export const PLAN_DEFINITIONS: Record<PlanType, PlanDefinition> = {
 
 export const PLAN_MONTHLY_PRICES: Record<PlanType, number | null> = {
   free: CANONICAL_PRICING.free.monthly,
-  starter: CANONICAL_PRICING.starter.monthly,
   pro: CANONICAL_PRICING.pro.monthly,
   enterprise: CANONICAL_PRICING.enterprise.monthly,
 };
 
-export function getPlanLimits(planType: PlanType): PlanLimits {
-  const plan = PLAN_DEFINITIONS[planType];
+export function getPlanLimits(planType: PlanType | string): PlanLimits {
+  const plan = PLAN_DEFINITIONS[normalizeLegacyPlanType(planType)];
   if (!plan) {
 
     return PLAN_DEFINITIONS.free.limits;
@@ -110,8 +100,11 @@ export function getPlanLimits(planType: PlanType): PlanLimits {
   return plan.limits;
 }
 
-export function getPlanDefinition(planType: PlanType): PlanDefinition {
-  return PLAN_DEFINITIONS[planType] || PLAN_DEFINITIONS.free;
+export function getPlanDefinition(planType: PlanType | string): PlanDefinition {
+  return (
+    PLAN_DEFINITIONS[normalizeLegacyPlanType(planType)] ||
+    PLAN_DEFINITIONS.free
+  );
 }
 
 export type MetricType = "deals" | "teamMembers" | "apiCalls" | "webhooks" | "integrations";
@@ -128,19 +121,41 @@ export async function getOrCreateUserPlan(userId: string) {
     where: { userId },
   });
 
+  const freePlan = PLAN_DEFINITIONS.free;
+
   if (!plan) {
-    const starterPlan = PLAN_DEFINITIONS.starter;
     plan = await prisma.userPlan.create({
       data: {
         userId,
-        planType: starterPlan.planType,
-        planName: starterPlan.planName,
-        maxDeals: starterPlan.limits.maxDeals,
-        maxTeamMembers: starterPlan.limits.maxTeamMembers,
-        maxApiCalls: starterPlan.limits.maxApiCalls,
-        maxWebhooks: starterPlan.limits.maxWebhooks,
-        maxIntegrations: starterPlan.limits.maxIntegrations,
-        features: starterPlan.limits.features,
+        planType: freePlan.planType,
+        planName: freePlan.planName,
+        maxDeals: freePlan.limits.maxDeals,
+        maxTeamMembers: freePlan.limits.maxTeamMembers,
+        maxApiCalls: freePlan.limits.maxApiCalls,
+        maxWebhooks: freePlan.limits.maxWebhooks,
+        maxIntegrations: freePlan.limits.maxIntegrations,
+        features: freePlan.limits.features,
+      },
+    });
+    return plan;
+  }
+  if (plan.planType in LEGACY_PLAN_TYPES) {
+    plan = await prisma.userPlan.update({
+      where: { userId },
+      data: {
+        planType: freePlan.planType,
+        planName: freePlan.planName,
+        maxDeals: Math.max(plan.maxDeals, freePlan.limits.maxDeals),
+        maxTeamMembers: Math.max(
+          plan.maxTeamMembers,
+          freePlan.limits.maxTeamMembers,
+        ),
+        maxApiCalls: Math.max(plan.maxApiCalls, freePlan.limits.maxApiCalls),
+        maxWebhooks: Math.max(plan.maxWebhooks, freePlan.limits.maxWebhooks),
+        maxIntegrations: Math.max(
+          plan.maxIntegrations,
+          freePlan.limits.maxIntegrations,
+        ),
       },
     });
   }

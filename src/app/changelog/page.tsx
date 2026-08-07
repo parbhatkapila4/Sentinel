@@ -171,7 +171,7 @@ const releases: Release[] = [
       },
       {
         tag: "Shipped",
-        text: "Slack incoming webhook integration with per-event filters (risk, stage change, new deal, digest).",
+        text: "Slack incoming webhook integration with per-event filters (deal at risk, deal closed won, stage changed, CRM sync summary).",
       },
       {
         tag: "Shipped",
@@ -179,7 +179,7 @@ const releases: Release[] = [
       },
       {
         tag: "Shipped",
-        text: "Outbound webhooks with HMAC-SHA256 signing, delivery logs, retries with backoff, and a full management UI.",
+        text: "Outbound webhooks with HMAC-SHA256 signing, delivery logs, and a full management UI.",
       },
       {
         tag: "Infra",

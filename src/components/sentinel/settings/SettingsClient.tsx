@@ -238,7 +238,6 @@ export function SettingsClient() {
   const [notifications, setNotifications] = useState({
     emailAlerts: true,
     riskAlerts: true,
-    weeklyDigest: false,
     dealUpdates: true,
   });
   const [initialNotifications, setInitialNotifications] = useState(notifications);
@@ -359,7 +358,6 @@ export function SettingsClient() {
         const nextNotif = {
           emailAlerts: n.emailOnActionOverdue,
           riskAlerts: n.emailOnDealAtRisk,
-          weeklyDigest: n.emailDigestFrequency === "weekly",
           dealUpdates: n.emailOnStageChange,
         };
         setNotifications(nextNotif);
@@ -446,7 +444,7 @@ export function SettingsClient() {
   const isPaidPlan = userPlan?.isPaidPlan ?? false;
   const apiCallsDisplay = userPlan?.apiCallsDisplay ?? "100";
   const planTag = (userPlan?.planType ?? "free").toUpperCase();
-  const planName = userPlan?.planName ?? "Starter";
+  const planName = userPlan?.planName ?? "Free";
 
   const profileDirty = useMemo(() => {
     return (
@@ -462,7 +460,6 @@ export function SettingsClient() {
     return (
       notifications.emailAlerts !== initialNotifications.emailAlerts ||
       notifications.riskAlerts !== initialNotifications.riskAlerts ||
-      notifications.weeklyDigest !== initialNotifications.weeklyDigest ||
       notifications.dealUpdates !== initialNotifications.dealUpdates
     );
   }, [notifications, initialNotifications]);
@@ -537,7 +534,6 @@ export function SettingsClient() {
       await updateMyNotificationSettings({
         emailOnActionOverdue: notifications.emailAlerts,
         emailOnDealAtRisk: notifications.riskAlerts,
-        emailDigestFrequency: notifications.weeklyDigest ? "weekly" : "never",
         emailOnStageChange: notifications.dealUpdates,
       });
       toast.success("Notification preferences saved.");
@@ -1029,7 +1025,6 @@ export function SettingsClient() {
     return [
       notifications.emailAlerts,
       notifications.riskAlerts,
-      notifications.weeklyDigest,
       notifications.dealUpdates,
     ].filter(Boolean).length;
   }, [notifications]);

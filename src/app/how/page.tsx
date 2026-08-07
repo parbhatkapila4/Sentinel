@@ -169,7 +169,7 @@ const sections: Section[] = [
       },
       {
         heading: "Webhooks",
-        body: "Add outbound endpoints to send deal and risk events to other tools. Signed with HMAC-SHA256 and retried on failure.",
+        body: "Add outbound endpoints to send deal and risk events to other tools. Signed with HMAC-SHA256, with every attempt logged. Each event is delivered once - there is no retry on failure yet.",
       },
       {
         heading: "Integrations",
@@ -399,7 +399,7 @@ export default function HowPage() {
                 The fastest way to see it is to connect your own data.
               </h2>
               <p className="text-white/60 leading-relaxed max-w-xl">
-                Starter is free. Connect a CRM, import 25 deals, and see real
+                The Free plan covers 25 deals. Connect a CRM, import them, and see real
                 risk scoring against your actual pipeline in under five minutes.
               </p>
             </div>

@@ -22,17 +22,17 @@ const pillars: Pillar[] = [
     kicker: "01",
     title: "Risk scoring",
     lede:
-      "A composite 0-1 score on every open deal, recomputed as new activity arrives. Not a single heuristic. Each score comes with plain-English reasons.",
+      "A composite 0-1 score on every open deal, recomputed from timeline events each time the deal is read. Each score comes with plain-English reasons.",
     meta: [
       { label: "Score", value: "0.00 - 1.00 composite" },
       { label: "Bands", value: "Low · Medium · High" },
       { label: "Inputs", value: "Activity · Velocity · Engagement · Value" },
     ],
     points: [
-      "Temporal decay: weighted risk from time-since-last-activity, with configurable thresholds per stage.",
-      "Stage velocity: time-in-stage compared against the pipeline's own historical norms, with bottleneck detection.",
-      "Engagement scoring: emails, meetings, and calls tracked together with drop-off alerts when touchpoints go quiet.",
-      "Competitive signals: high-value and negotiation-stage deals are weighted to surface first.",
+      "Inactivity weighting: risk rises with time since the last logged activity, against a configurable threshold (1-30 days).",
+      "Stage stall: time-in-stage compared against your pipeline's own average for that stage. Opt-in signal, off by default.",
+      "Engagement scoring: emails sent, emails received, and meetings held lower the score when they are recent.",
+      "Competitive signals: competitor keywords matched in email, note and Slack text raise the score and are cited as a reason.",
       "Risk reasons: every score carries a short explanation of why it moved, so the team isn't arguing with a black box.",
     ],
   },
@@ -105,8 +105,8 @@ const pillars: Pillar[] = [
       "Salesforce: OAuth connect, inbound sync for Opportunities and Accounts, no write-back to the record.",
       "HubSpot: OAuth connect, Deals / Contacts / Companies sync, Sentinel never writes to your portal.",
       "Google Calendar: read-only OAuth, event-to-deal matching by domain and attendee.",
-      "Slack: OAuth app that reads channel messages for deal signal and posts per-event alerts (risk, stage change, new deal, daily digest).",
-      "Outbound webhooks: HMAC-SHA256 signed, with retries, delivery logs, and a 30-day history you can inspect.",
+      "Slack: OAuth app that reads channel messages for deal signal and posts per-event alerts (deal at risk, deal closed won, stage changed, CRM sync summary).",
+      "Outbound webhooks: HMAC-SHA256 signed, with delivery logs and a 30-day history you can inspect. One delivery attempt per event - no retry queue yet.",
     ],
     link: { href: "/integrations", label: "See integration details" },
   },
@@ -134,13 +134,13 @@ const pillars: Pillar[] = [
       "Alerts tuned to the work, not to the engagement metric. Every notification carries enough context to act without opening three tabs.",
     meta: [
       { label: "Channels", value: "In-app · Email · Slack" },
-      { label: "Triggers", value: "Risk · Stage change · Action overdue · Digest" },
+      { label: "Triggers", value: "Risk · Stage change · Action overdue" },
       { label: "Controls", value: "Per-user preferences" },
     ],
     points: [
       "In-app notification center with read/unread state and history.",
       "Email alerts for deal-at-risk, action-overdue, and stage transitions, each deep-linked back to the deal.",
-      "Weekly digest with pipeline summary, risk distribution, and top movements.",
+      "A CRM sync summary posted to Slack after a sync completes, with counts per source.",
       "Notification preferences are per-user and respected across every channel.",
     ],
   },
@@ -148,20 +148,20 @@ const pillars: Pillar[] = [
     kicker: "08",
     title: "Developer surface",
     lede:
-      "A real API, documented against an OpenAPI spec, with an interactive explorer. Webhooks are signed, logged, and retried.",
+      "A small HTTP surface - AI chat and notifications - documented against an OpenAPI spec with an interactive explorer. Deals and webhooks are not exposed over REST; they run as server actions inside the app. Outbound webhooks are signed and logged.",
     meta: [
       { label: "Docs", value: "OpenAPI / Swagger at /api-docs" },
       { label: "Auth", value: "Per-user OAuth" },
       {
         label: "Events",
         value:
-          "deal.created · deal.updated · deal.stage_changed · deal.at_risk · deal.closed_won · deal.closed_lost",
+          "deal.created · deal.stage_changed · deal.at_risk · deal.closed_won · deal.closed_lost",
       },
     ],
     points: [
       "Deal search, export, and programmatic management endpoints with full filter parity with the UI.",
       "Webhook subscriptions with HMAC-SHA256 signatures in X-Sentinel-Signature.",
-      "Delivery retries with exponential backoff; every attempt logged with response code and body preview.",
+      "Every delivery attempt logged with response code and body preview. Single attempt per event today - no delivery retry queue yet.",
       "Team events (team.member_added, team.member_removed) for downstream access-control automations.",
     ],
     link: { href: "/api-docs", label: "Open API reference" },

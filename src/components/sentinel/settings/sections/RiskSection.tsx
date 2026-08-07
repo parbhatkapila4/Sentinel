@@ -125,7 +125,7 @@ export function RiskSection({
 
       <SettingRow
         title="Competitive signals detection"
-        subtitle="Automatically flag deals when a competitor is mentioned in call transcripts, email threads, or deal timeline notes."
+        subtitle="Flag deals when a competitor keyword appears in email threads, Slack messages, or deal timeline notes."
       >
         <Toggle
           checked={value.enableCompetitiveSignals}

@@ -126,8 +126,8 @@ const sections: Section[] = [
               className="mt-[10px] h-[5px] w-[5px] flex-none rounded-full bg-white/60"
             />
             <span>
-              To send transactional email you've opted into (risk alerts,
-              stage-change notifications, weekly digests) and account email
+              To send transactional email you&apos;ve opted into (risk alerts,
+              action-overdue and stage-change notifications) and account email
               you cannot opt out of (billing, security).
             </span>
           </li>

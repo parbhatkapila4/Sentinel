@@ -7,9 +7,9 @@ import {
 
 export function PricingCards() {
 
-  const starterFeatures = [
-    "Track up to 5 active deals",
-    "Real-time risk detection",
+  const freeFeatures = [
+    "Track up to 25 active deals",
+    "Risk scoring on every deal view",
     "Activity tracking (emails & meetings)",
     "Basic deal timeline & history",
     "Email notifications for at-risk deals",
@@ -22,8 +22,8 @@ export function PricingCards() {
 
   const proFeatures = [
     { text: "Track up to 100 active deals", included: true },
-    { text: "Real-time risk detection & scoring", included: true },
-    { text: "AI-powered action recommendations", included: true },
+    { text: "Risk scoring with configurable thresholds", included: true },
+    { text: "AI assistant over your pipeline context", included: true },
     { text: "Advanced activity tracking & analytics", included: true },
     { text: "Team collaboration & sharing (up to 10 members)", included: true },
     { text: "Unlimited activity history", included: true },
@@ -38,14 +38,11 @@ export function PricingCards() {
     "Unlimited team members",
     "Unlimited API calls",
     "Unlimited webhooks",
-    "Unlimited integrations",
-    "Custom risk detection models",
-    "Advanced AI copilots & automation",
-    "Custom integrations & API access",
-    "Dedicated account manager",
-    "Custom reporting & dashboards",
-    "SLA guarantees & priority support",
-    "On-premise deployment options",
+    "All available integrations",
+    "Risk scoring with configurable thresholds",
+    "AI assistant over your pipeline context",
+    "Reporting with CSV and JSON export",
+    "Email support from the founder",
   ];
 
   return (
@@ -66,17 +63,17 @@ export function PricingCards() {
           }}
         >
           <h3 className="text-white font-medium text-2xl mb-3 italic">
-            Starter
+            Free
           </h3>
 
           <p className="text-white/50 text-sm mb-5 leading-relaxed">
-            Perfect for individual sales reps getting started with deal tracking
-            and risk detection. Never lose a deal to silent decay.
+            For individual sales reps getting started with deal tracking and
+            risk detection. Runs the same risk engine as the paid tiers.
           </p>
 
           <div className="flex items-baseline gap-1">
             <span className="text-white font-bold text-4xl">
-              {getDisplayedPrice("starter", false)}
+              {getDisplayedPrice("free", false)}
             </span>
             <span className="text-white/40 text-sm">/month</span>
           </div>
@@ -90,7 +87,7 @@ export function PricingCards() {
           </div>
 
           <ul className="space-y-3 mb-6 flex-1">
-            {starterFeatures.map((feature, idx) => (
+            {freeFeatures.map((feature, idx) => (
               <li key={idx} className="flex items-start gap-3">
                 <svg
                   className="w-5 h-5 text-white/30 shrink-0 mt-0.5"
@@ -250,8 +247,8 @@ export function PricingCards() {
           <h3 className="text-white font-medium text-2xl mb-3">Enterprise</h3>
 
           <p className="text-white/50 text-sm mb-5 leading-relaxed">
-            Complete solution for large revenue teams with unlimited scale,
-            custom integrations, and dedicated support.
+            For larger revenue teams: the highest deal ceiling, unlimited seats,
+            and every integration Sentinel supports.
           </p>
 
           <div className="flex items-baseline gap-2">

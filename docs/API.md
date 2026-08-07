@@ -32,7 +32,6 @@ Short index of the main API areas. For the full OpenAPI/Swagger spec, see the in
 | GET / POST  | `/api/integrations/google-calendar/events` | Google Calendar events.                                     |
 | POST        | `/api/cron/sync-integrations`              | Cron: sync integrations (requires `CRON_SECRET`).           |
 | POST        | `/api/cron/process-emails`                 | Cron: process email queue.                                  |
-| POST        | `/api/cron/process-webhooks`               | Cron: process webhooks.                                     |
 | DELETE      | `/api/user/delete`                         | Delete current user (or account).                           |
 
 **Full spec**: [API Reference](https://www.sentinels.in/api-docs) - OpenAPI/Swagger with request/response schemas.
