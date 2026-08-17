@@ -33,13 +33,17 @@ node gen.js arch     # -> ../../architecture.svg
 
 ## Design system (keep it consistent)
 
-Drafting-sheet aesthetic: flat near-black ground (`#0C0B09`→`#0A0907`), hairline frame at
-8% warm white with amber corner ticks, 24px dot grid at 5%, title-block footer strip.
-One amber accent family (`#E2A24E` / `#D9A85C` / `#EFC489`) reserved for the gate and what
-passes it; desaturated brick `#C4695A` only for the dropped ✕. No glows, no gradients on
-strokes, no shields. Wall = `#625948` @ 2px with an aperture bracketed by amber jambs;
-dropped flows terminate ON the wall. Keep all annotation type ≥11px (SVG is shown at 74%
-on GitHub) and keep right-side annotations on the shared right datum (x=1148 header).
+Minimal monochrome. `header.svg` is LIGHT: white card (`#FFFFFF`→`#FAFAF9`), near-black
+`#0A0A0A` type and gate mark, grays `#7C7C7A`/`#8A8A88`, light-gray `#D0D0CE` blocked
+flows, 1px border at `rgba(0,0,0,0.08)`. `architecture.svg` is DARK: flat true-neutral
+black ground (`#0D0D0D`→`#090909`), 1px border at `rgba(255,255,255,0.08)`. NO textures — no
+dot grids, no frames, no corner ticks, no title blocks, no warm/amber tones (a previous
+drafting-sheet version with those was rejected as looking cheap). Type carries the design:
+big Space Grotesk wordmark in `#F5F5F3`, grays `#8A8A88` / `#71716F` / `#5E5E5C` for tiers,
+JetBrains Mono for technical labels. White (`#F5F5F3`) is the only accent — it marks the
+gate and the admitted/persisted path; the single exception is the dropped ✕ in `#C25E52`.
+Flows: pre-gate `#3E3E3C` @ 1.5px, admitted post-gate `#E8E8E6`; dropped flows terminate ON
+the wall. Keep annotation type ≥11px (the SVG is shown at 74% width on GitHub).
 
 Note: the banners embed product claims as outlined text (e.g. `INGEST READ-ONLY`,
 `FAIL-CLOSED · PII-BLIND`, the stack list). The claim-drift tests cannot grep images —

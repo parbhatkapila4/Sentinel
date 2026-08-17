@@ -1,4 +1,4 @@
-// README banner generator: converts every text run to SVG vector outlines and
+﻿// README banner generator: converts every text run to SVG vector outlines and
 // assembles the final SVG from a template, so the banners render identically on
 // every platform (no system-font fallback). See tools/banner/README.md.
 //
@@ -28,6 +28,7 @@ if (!target) {
 const FONTS = {
   sg700: opentype.loadSync(path.join(DIR, "node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff")),
   sg500: opentype.loadSync(path.join(DIR, "node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-500-normal.woff")),
+  sg400: opentype.loadSync(path.join(DIR, "node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff")),
   jbm400: opentype.loadSync(path.join(DIR, "fonts/JetBrainsMono-Regular.ttf")),
   jbm500: opentype.loadSync(path.join(DIR, "fonts/JetBrainsMono-Medium.ttf")),
 };

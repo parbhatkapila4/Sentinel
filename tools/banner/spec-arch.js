@@ -1,9 +1,6 @@
 module.exports = [
   // header row
-  { id: "akickerA", text: "INGESTION PIPELINE", font: "jbm500", size: 11.5, tracking: 3, anchor: "start" },
-  { id: "akickerDot", text: "·", font: "jbm500", size: 11.5, anchor: "start" },
-  { id: "akickerB", text: "CRM-GATED", font: "jbm500", size: 11.5, tracking: 3, anchor: "start" },
-  { id: "afig", text: "FIG. 02 · DATA FLOW", font: "jbm400", size: 11.5, tracking: 1.5, anchor: "end" },
+  { id: "akicker", text: "INGESTION PIPELINE · CRM-GATED", font: "jbm500", size: 11.5, tracking: 3, anchor: "start" },
 
   // zone labels
   { id: "azSources", text: "SOURCES", font: "jbm500", size: 11, tracking: 2, anchor: "start" },
@@ -39,11 +36,6 @@ module.exports = [
   { id: "aBook3", text: "unique(userId, email)", font: "jbm400", size: 10.5, anchor: "middle" },
   { id: "aLookup", text: "lookup", font: "jbm400", size: 11, anchor: "start" },
 
-  // title block
-  { id: "atbL1", text: "RULE", font: "jbm500", size: 11, tracking: 1.5, anchor: "start" },
-  { id: "atbV1", text: "ingest only if a participant exists in the CRM", font: "jbm400", size: 11.5, anchor: "start" },
-  { id: "atbL2", text: "REF", font: "jbm500", size: 11, tracking: 1.5, anchor: "start" },
-  { id: "atbV2", text: "src/lib/crm-permission.ts", font: "jbm400", size: 11.5, anchor: "start" },
-  { id: "atbL3", text: "VERIFY", font: "jbm500", size: 11, tracking: 1.5, anchor: "start" },
-  { id: "atbV3", text: "docs/verify-crm-permission-filter.md", font: "jbm400", size: 11.5, anchor: "start" },
+  // refs
+  { id: "aRefs", text: "src/lib/crm-permission.ts · docs/verify-crm-permission-filter.md", font: "jbm400", size: 11.5, anchor: "start" },
 ];
