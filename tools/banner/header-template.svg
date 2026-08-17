@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="Sentinel - CRM is the permission layer. A message is ingested only if a participant already exists in your CRM.">
+  <title>Sentinel - CRM is the permission layer</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0C0B09"/>
+      <stop offset="1" stop-color="#0A0907"/>
+    </linearGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#F2EEE6" opacity="0.05"/>
+    </pattern>
+    <clipPath id="round"><rect width="1200" height="320" rx="20"/></clipPath>
+    <path id="mGmail" d="M712 100 C 800 100 862 126 950 130 C 1004 130 1030 137 1072 141"/>
+    <path id="mCal" d="M712 144 C 800 144 870 147 950 149 C 1004 149 1030 145 1072 143"/>
+    <path id="mSlack" d="M712 188 C 800 188 866 185 946 182"/>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="1200" height="320" fill="url(#bg)"/>
+
+    <!-- drafting frame -->
+    <rect x="32" y="32" width="1136" height="256" fill="none" stroke="#F2EEE6" stroke-opacity="0.08"/>
+    <rect x="33" y="33" width="1134" height="212" fill="url(#dots)"/>
+    <g stroke="#B9853F" stroke-width="1.4" fill="none" opacity="0.9">
+      <path d="M32 44 V32 H44"/>
+      <path d="M1156 32 H1168 V44"/>
+      <path d="M1168 276 V288 H1156"/>
+      <path d="M44 288 H32 V276"/>
+    </g>
+
+    <!-- ===== left column ===== -->
+    <path transform="translate(80 80)" fill="#948B7D" d="@@kickerA@@"/>
+    <path transform="translate(@@x:kickerA:80:12@@ 80)" fill="#6B6357" d="@@kickerDot@@"/>
+    <path transform="translate(@@x:kickerA:80:26@@ 80)" fill="#D9A85C" d="@@kickerB@@"/>
+
+    <path transform="translate(76 166)" fill="#F4F0E8" d="@@wordmark@@"/>
+    <path transform="translate(80 203)" fill="#CFC5B6" d="@@tagline@@"/>
+    <path transform="translate(@@x:tagline:80:0.5@@ 203)" fill="#E8A855" d="@@taglineDot@@"/>
+    <path transform="translate(80 228)" fill="#B0A899" d="@@support@@"/>
+
+    <!-- ===== schematic ===== -->
+    <path transform="translate(1148 58)" fill="#7A7163" d="@@fig@@"/>
+
+    <!-- source labels + nodes -->
+    <path transform="translate(698 104)" fill="#9C9385" d="@@srcGmail@@"/>
+    <path transform="translate(698 148)" fill="#9C9385" d="@@srcCal@@"/>
+    <path transform="translate(698 192)" fill="#9C9385" d="@@srcSlack@@"/>
+    <circle cx="712" cy="100" r="2.6" fill="none" stroke="#7A7163" stroke-width="1.3"/>
+    <circle cx="712" cy="144" r="2.6" fill="none" stroke="#7A7163" stroke-width="1.3"/>
+    <circle cx="712" cy="188" r="2.6" fill="none" stroke="#7A7163" stroke-width="1.3"/>
+
+    <!-- flows: pre-gate -->
+    <g fill="none" stroke="#524C40" stroke-width="1.5">
+      <path d="M712 100 C 800 100 862 126 950 130"/>
+      <path d="M712 144 C 800 144 870 147 950 149"/>
+      <path d="M712 188 C 800 188 866 185 948 182"/>
+    </g>
+    <!-- flows: post-gate (admitted, turn amber at the wall plane) -->
+    <g fill="none" stroke="#C08A45" stroke-width="1.6" opacity="0.9">
+      <path d="M950 130 C 1004 130 1030 137 1072 141"/>
+      <path d="M950 149 C 1004 149 1030 145 1072 143"/>
+    </g>
+
+    <!-- the wall with a true aperture -->
+    <g stroke="#625948" stroke-width="2">
+      <path d="M950 68 V122"/>
+      <path d="M950 158 V236"/>
+    </g>
+    <g stroke="#625948" stroke-width="1.4">
+      <path d="M946 68 H954"/>
+      <path d="M946 236 H954"/>
+    </g>
+    <g stroke="#E2A24E" stroke-width="2">
+      <path d="M943 122 H957"/>
+      <path d="M943 158 H957"/>
+    </g>
+
+    <!-- callout (right-aligned to shared datum x=1148) -->
+    <path d="M956 120 L988 80 L999 80" fill="none" stroke="#5E5749" stroke-width="1"/>
+    <path transform="translate(1148 84)" fill="#D9A85C" d="@@callout1@@"/>
+    <path transform="translate(1148 100)" fill="#857C6E" d="@@callout2@@"/>
+
+    <!-- persisted -->
+    <circle cx="1076" cy="142" r="6" fill="none" stroke="#B9853F" stroke-width="1.2" opacity="0.8"/>
+    <circle cx="1076" cy="142" r="3.2" fill="#EFC489"/>
+    <path transform="translate(1076 168)" fill="#E8C285" d="@@persisted@@"/>
+    <path transform="translate(1076 184)" fill="#857C6E" d="@@persistedSub@@"/>
+
+    <!-- dropped: pinned on the wall -->
+    <path d="M945 177 L955 187 M955 177 L945 187" stroke="#C4695A" stroke-width="2" stroke-linecap="round"/>
+    <path transform="translate(924 209)" fill="#A39684" d="@@dropped@@"/>
+    <path transform="translate(924 225)" fill="#857C6E" d="@@droppedSub@@"/>
+
+    <!-- ===== title block ===== -->
+    <path d="M32 246 H1168" stroke="#F2EEE6" stroke-opacity="0.08"/>
+    <g stroke="#F2EEE6" stroke-opacity="0.08">
+      <path d="M572 246 V288"/>
+      <path d="M830 246 V288"/>
+      <path d="M1002 246 V288"/>
+    </g>
+    <path transform="translate(80 272)" fill="#7A7163" d="@@tbL1@@"/>
+    <path transform="translate(@@x:tbL1:80:14@@ 272)" fill="#9C9385" d="@@tbV1@@"/>
+    <path transform="translate(596 272)" fill="#7A7163" d="@@tbL2@@"/>
+    <path transform="translate(@@x:tbL2:596:14@@ 272)" fill="#9C9385" d="@@tbV2@@"/>
+    <path transform="translate(854 272)" fill="#7A7163" d="@@tbL3@@"/>
+    <path transform="translate(@@x:tbL3:854:14@@ 272)" fill="#9C9385" d="@@tbV3@@"/>
+    <path transform="translate(1026 272)" fill="#7A7163" d="@@tbL4@@"/>
+    <path transform="translate(@@x:tbL4:1026:14@@ 272)" fill="#9C9385" d="@@tbV4@@"/>
+
+    <!-- ===== animation (restrained) ===== -->
+    <circle r="2.4" fill="#E9C489" opacity="0">
+      <animateMotion dur="6s" begin="0s" repeatCount="indefinite"><mpath xlink:href="#mGmail"/></animateMotion>
+      <animate attributeName="opacity" dur="6s" begin="0s" repeatCount="indefinite" values="0;0.75;0.75;0" keyTimes="0;0.06;0.9;1"/>
+    </circle>
+    <circle r="2.4" fill="#E9C489" opacity="0">
+      <animateMotion dur="6s" begin="3s" repeatCount="indefinite"><mpath xlink:href="#mCal"/></animateMotion>
+      <animate attributeName="opacity" dur="6s" begin="3s" repeatCount="indefinite" values="0;0.75;0.75;0" keyTimes="0;0.06;0.9;1"/>
+    </circle>
+    <circle r="2.2" fill="#B99B6F" opacity="0">
+      <animateMotion dur="5s" begin="1.6s" repeatCount="indefinite"><mpath xlink:href="#mSlack"/></animateMotion>
+      <animate attributeName="opacity" dur="5s" begin="1.6s" repeatCount="indefinite" values="0;0.7;0.7;0" keyTimes="0;0.08;0.9;1"/>
+    </circle>
+  </g>
+
+  <rect x="0.5" y="0.5" width="1199" height="319" rx="20" fill="none" stroke="#FFFFFF" stroke-opacity="0.09"/>
+</svg>
