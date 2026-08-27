@@ -28,7 +28,7 @@ function BackLink() {
           href="/features"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          See features →
+          See features
         </Link>
       </div>
     </div>

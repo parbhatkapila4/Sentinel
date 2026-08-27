@@ -593,7 +593,7 @@ export default async function TopDealsPage() {
                     color: "var(--signal)",
                   }}
                 >
-                  Open the book →
+                  Open the book
                 </Link>
               </Panel>
             </div>

@@ -97,7 +97,7 @@ describe("GET /api/integrations/slack/oauth/callback", () => {
     expect(res.headers.get("set-cookie")).toMatch(/Max-Age=0/i);
   });
 
-  it("missing state cookie → 400 invalid_state (no exchange, no DB write)", async () => {
+  it("missing state cookie -> 400 invalid_state (no exchange, no DB write)", async () => {
     const req = callbackRequest({ code: "auth-code", state: "abc" });
 
     const res = await GET(req);
@@ -112,7 +112,7 @@ describe("GET /api/integrations/slack/oauth/callback", () => {
     expect(prismaMock.slackEventsSubscription.upsert).not.toHaveBeenCalled();
   });
 
-  it("cookie present but signature invalid → 400 invalid_state (signature checked BEFORE state-equality)", async () => {
+  it("cookie present but signature invalid -> 400 invalid_state (signature checked BEFORE state-equality)", async () => {
     const goodPayload = Buffer.from(
       JSON.stringify({ state: "abc", userId: "user-1" }),
       "utf8"
@@ -136,7 +136,7 @@ describe("GET /api/integrations/slack/oauth/callback", () => {
     expect(prismaMock.slackEventsSubscription.upsert).not.toHaveBeenCalled();
   });
 
-  it("cookie state ≠ query state → 400 state_mismatch (cookie signature valid)", async () => {
+  it("cookie state ≠ query state -> 400 state_mismatch (cookie signature valid)", async () => {
     const cookie = signCookieValue({
       state: "STATE_IN_COOKIE",
       userId: "user-1",
@@ -158,7 +158,7 @@ describe("GET /api/integrations/slack/oauth/callback", () => {
     expect(prismaMock.slackEventsSubscription.upsert).not.toHaveBeenCalled();
   });
 
-  it("cookie userId ≠ current Clerk userId → 403 user_mismatch (defends mid-flow session swap)", async () => {
+  it("cookie userId ≠ current Clerk userId -> 403 user_mismatch (defends mid-flow session swap)", async () => {
     const cookie = signCookieValue({
       state: "MATCH_STATE",
       userId: "user-original",

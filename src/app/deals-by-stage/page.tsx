@@ -516,7 +516,7 @@ function BoardEmptyState() {
           border: "1px solid var(--signal)",
         }}
       >
-        → Create the first deal
+        Create the first deal
       </Link>
     </section>
   );
@@ -574,7 +574,7 @@ function ConversionList({ rows }: { rows: ConversionRow[] }) {
                   textTransform: "uppercase",
                 }}
               >
-                {r.label} → {r.next}
+                {r.label} to {r.next}
               </span>
               <span
                 className="tabular"

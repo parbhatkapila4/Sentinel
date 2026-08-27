@@ -37,7 +37,7 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
 3. **Postgres**: Use [Vercel Postgres](https://vercel.com/storage/postgres) or attach an external PostgreSQL database and set `DATABASE_URL` (and `DIRECT_URL` when using Prisma migrations - same as `DATABASE_URL` for Vercel Postgres unless your provider documents otherwise).
 4. **Migrations**: Run `npx prisma migrate deploy` as part of the build (e.g. in a custom build script) or in a one-off step after first deploy. The default `npm run build` runs `prisma generate`; add a postinstall or build step for `prisma migrate deploy` if you deploy migrations from Vercel.
 5. **Crons**: Cron jobs are not defined in `vercel.json` by default. **Vercel plan limits** ([usage & pricing](https://vercel.com/docs/cron-jobs/usage-and-pricing)): On **Hobby**, each cron’s schedule must run **at most once per day** (hourly precision, ±59 min); expressions like hourly will **fail deployment**. **Pro** allows per-minute schedules. To enable Vercel Cron:
-   - **Hobby**: Add at least one **daily** cron, e.g. `"schedule": "0 0 * * *"` (midnight UTC) for `/api/cron/sync-integrations` (repo example in `vercel.crons.example.json` → `vercel.json`).
+   - **Hobby**: Add at least one **daily** cron, e.g. `"schedule": "0 0 * * *"` (midnight UTC) for `/api/cron/sync-integrations` (repo example in `vercel.crons.example.json` -> `vercel.json`).
    - **Pro**: Add crons with finer schedules (e.g. every 6 h for sync, every 15 min for process-emails).
    - **Hobby + higher frequency**: Vercel cannot run a given route more than daily on Hobby-use an **external scheduler** (e.g. [cron-job.org](https://cron-job.org), GitHub Actions) and call the endpoints with `Authorization: Bearer <CRON_SECRET>`. See [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs). Set `CRON_SECRET` in the Vercel dashboard for auth. Full playbook: [Vercel Hobby cron playbook](#vercel-hobby-cron-playbook).
 6. **Deploy** - Vercel will run `npm run build` and serve the app.
@@ -46,7 +46,7 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
 
 Two-tier strategy for **Hobby** (Vercel cron schedules capped at **once per day** per job) vs higher frequency via an **external scheduler**. All cron HTTP calls must send **`Authorization: Bearer <CRON_SECRET>`** (`src/lib/cron-auth.ts`); no query-string secrets.
 
-1. **Once/day on Vercel Cron (low-priority work)** - e.g. one daily `GET` to `/api/cron/sync-integrations` on Hobby (`vercel.crons.example.json` → `vercel.json`); add more **daily** crons only if you need separate routes/times.
+1. **Once/day on Vercel Cron (low-priority work)** - e.g. one daily `GET` to `/api/cron/sync-integrations` on Hobby (`vercel.crons.example.json` -> `vercel.json`); add more **daily** crons only if you need separate routes/times.
 2. **Higher frequency** - external scheduler (e.g. cron-job.org) calling the same routes with **`Authorization: Bearer <CRON_SECRET>`** (same enforcement as `src/lib/cron-auth.ts`; no query-param secrets). Assume **retries and overlaps**-handlers should stay idempotent (upsert by external IDs).
 
 Example external scheduler call:
@@ -72,15 +72,15 @@ curl -X GET "https://your-domain.com/api/cron/process-emails" \
 | `NEXT_PUBLIC_APP_URL`               | App base URL                                                                                                                                   | Optional                                                   | `http://localhost:3000`                                                          |
 | `NEXT_PUBLIC_SENTRY_DSN`            | Sentry DSN                                                                                                                                     | Optional                                                   | -                                                                                |
 | `SENTRY_*`                          | Sentry config (sample rate, etc.)                                                                                                              | Optional                                                   | See [.env.example](.env.example)                                                 |
-| `CRON_SECRET`                       | Bearer secret for `/api/cron/*`                                                                                                                | Required to **invoke** cron routes                         | Missing/blank → 503; wrong token → 401 (see `src/lib/cron-auth.ts`)              |
+| `CRON_SECRET`                       | Bearer secret for `/api/cron/*`                                                                                                                | Required to **invoke** cron routes                         | Missing/blank -> 503; wrong token -> 401 (see `src/lib/cron-auth.ts`)              |
 | `INTEGRATION_ENCRYPTION_KEY`        | Base64-encoded 32-byte key (`openssl rand -base64 32`)                                                                                         | Required to **encrypt** new integration secrets on connect | See `src/lib/integration-secrets.ts`; decrypt accepts legacy plaintext DB values |
 | `NEXT_PUBLIC_ANALYTICS_ENABLED`     | Set to `false` to disable client-side analytics                                                                                                | Optional                                                   | Omit or `true` to enable                                                         |
 | `ANALYTICS_API_KEY`                 | API key for GET `/api/metrics/summary` (internal)                                                                                              | Optional                                                   | Used by metrics summary endpoint                                                 |
 
 ### Supabase
 
-- **`DATABASE_URL`**: Dashboard → **Project Settings → Database → Connection string** → **Transaction** / pooler (`:6543`). The app adds `pgbouncer=true` and a `connection_limit` if they are missing on pooler hosts.
-- **`DIRECT_URL`**: Same page → **Direct connection** (`:5432`). Used only by `prisma migrate` / `db push`, not by the running Next.js app.
+- **`DATABASE_URL`**: Dashboard -> **Project Settings -> Database -> Connection string** -> **Transaction** / pooler (`:6543`). The app adds `pgbouncer=true` and a `connection_limit` if they are missing on pooler hosts.
+- **`DIRECT_URL`**: Same page -> **Direct connection** (`:5432`). Used only by `prisma migrate` / `db push`, not by the running Next.js app.
 - **Local Postgres / Docker**: Set `DIRECT_URL` to the **same** value as `DATABASE_URL`.
 
 ## Docker

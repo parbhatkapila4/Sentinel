@@ -16,7 +16,7 @@ Use that base URL wherever you see `BASE_URL` below.
 
 ---
 
-## Step 1: No auth → must get 401
+## Step 1: No auth -> must get 401
 
 Call the endpoint **without** any `Authorization` header.
 
@@ -38,7 +38,7 @@ If you get a redirect to sign-in or something else, the route or middleware conf
 
 ---
 
-## Step 2: Wrong secret → must get 401
+## Step 2: Wrong secret -> must get 401
 
 Call with a wrong Bearer token.
 
@@ -58,7 +58,7 @@ curl -i -H "Authorization: Bearer wrong-secret-123" "BASE_URL/api/internal/metri
 
 ---
 
-## Step 3: Correct secret → must get 200 + JSON
+## Step 3: Correct secret -> must get 200 + JSON
 
 Use your real `CRON_SECRET` from `.env` or Vercel.
 
@@ -87,13 +87,13 @@ curl -i -H "Authorization: Bearer YOUR_CRON_SECRET" "BASE_URL/api/internal/metri
 
 ---
 
-## Step 4: CRON_SECRET unset → must get 503
+## Step 4: CRON_SECRET unset -> must get 503
 
 Only do this if you can temporarily change env (e.g. local or a preview deployment).
 
 1. **Temporarily** remove or empty `CRON_SECRET`:
    - **Local:** Comment out or delete `CRON_SECRET` in `.env`, then restart: `npm run dev`.
-   - **Vercel:** In Project → Settings → Environment Variables, remove `CRON_SECRET` (or set to empty) and redeploy if needed.
+   - **Vercel:** In Project -> Settings -> Environment Variables, remove `CRON_SECRET` (or set to empty) and redeploy if needed.
 2. Call the endpoint **with** a token (it should still be disabled):
 
 **PowerShell:**

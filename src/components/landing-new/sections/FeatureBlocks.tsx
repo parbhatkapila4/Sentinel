@@ -66,7 +66,7 @@ export function FeatureBlocks() {
               secondaryHref="/docs"
               secondaryLabel={
                 <>
-                  Read docs <span>→</span>
+                  Read docs
                 </>
               }
             />
@@ -116,7 +116,7 @@ export function FeatureBlocks() {
               secondaryHref="/security"
               secondaryLabel={
                 <>
-                  Security docs <span>→</span>
+                  Security docs
                 </>
               }
             />
@@ -155,13 +155,13 @@ export function FeatureBlocks() {
             <div className="feature-folio">03 · AUDITABLE SCORING</div>
             <div className="feature-eyebrow">Auditable scoring</div>
             <h2 className="feature-h">Every score shows <em>its reasons</em></h2>
-            <p className="feature-body">Risk is recomputed from timeline events each time you open a deal, so there is no stale precomputed score to invalidate. <b>No black box — every score cites the events behind it.</b></p>
+            <p className="feature-body">Risk is recomputed from timeline events each time you open a deal, so there is no stale precomputed score to invalidate. <b>No black box: every score cites the events behind it.</b></p>
             <div className="feature-meta"><div className="feature-meta-item"><span className="check">✓</span>Recomputed on read</div><div className="feature-meta-item"><span className="check">✓</span>Cited reasons</div><div className="feature-meta-item"><span className="check">✓</span>Configurable thresholds</div></div>
             <FeatureBlockCTA
               secondaryHref="/docs/developers"
               secondaryLabel={
                 <>
-                  Architecture <span>→</span>
+                  Architecture
                 </>
               }
             />

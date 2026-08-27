@@ -371,7 +371,7 @@ export function DealsTableWithBulk({ deals }: DealsTableWithBulkProps) {
                         href={`/deals/${deal.id}`}
                         className="text-sm text-teal-400 hover:text-teal-300 transition-colors font-medium shrink-0"
                       >
-                        View →
+                        View
                       </Link>
                       {!deal.isDemo && (
                         <span className="shrink-0">

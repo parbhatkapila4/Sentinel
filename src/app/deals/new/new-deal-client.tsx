@@ -313,7 +313,7 @@ export function NewDealClient() {
               marginBottom: 4,
             }}
           >
-            ← Back to the desk
+            Back to the desk
           </Link>
           <h1
             style={{

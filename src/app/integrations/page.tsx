@@ -96,7 +96,7 @@ const integrations: Integration[] = [
     name: "Slack",
     category: "Notifications",
     summary:
-      "Connect your Slack workspace via OAuth. Sentinel reads message history from the channels and DMs its bot is added to — matching senders to CRM contacts — and posts deal-at-risk, stage-change, and CRM sync summary alerts back to your team.",
+      "Connect your Slack workspace via OAuth. Sentinel reads message history from the channels and DMs its bot is added to, matching senders to CRM contacts, and posts deal-at-risk, stage-change, and CRM sync summary alerts back to your team.",
     auth: "OAuth · Slack app",
     direction: "Inbound · Outbound",
     scopes: [
@@ -116,7 +116,7 @@ const integrations: Integration[] = [
     ],
     doesNot: [
       "Read channels or DMs the Sentinel bot has not been added to",
-      "Edit, delete, or react to messages — it only posts Sentinel alerts",
+      "Edit, delete, or react to messages. It only posts Sentinel alerts",
       "Access files or attachments, or change your workspace settings",
     ],
     status: "Available",
@@ -172,7 +172,7 @@ function BackLink() {
           href="/settings"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Manage integrations →
+          Manage integrations
         </Link>
       </div>
     </div>

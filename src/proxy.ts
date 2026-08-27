@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import type { NextFetchEvent } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -64,7 +64,7 @@ export function isExplicitlyPublicRoute(req: NextRequest): boolean {
   return isPublicRoute(req);
 }
 
-export default clerkMiddleware(async (auth, req) => {
+const withClerk = clerkMiddleware(async (auth, req) => {
   const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
 
   if (["POST", "PUT", "PATCH"].includes(req.method)) {
@@ -104,6 +104,15 @@ export default clerkMiddleware(async (auth, req) => {
 
   return nextWithRequestId(req, requestId);
 });
+export function asNonNavigationRequest(req: NextRequest): NextRequest {
+  const headers = new Headers(req.headers);
+  headers.set("sec-fetch-dest", "empty");
+  return new NextRequest(req, { headers });
+}
+
+export default function proxy(req: NextRequest, event: NextFetchEvent) {
+  return withClerk(req.method === "HEAD" ? asNonNavigationRequest(req) : req, event);
+}
 
 export const config = {
   matcher: [

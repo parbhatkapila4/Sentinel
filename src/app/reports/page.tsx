@@ -169,10 +169,10 @@ export default async function ReportsPage() {
   ).length;
 
   const funnelSteps = [
-    { from: "lead", to: "qualified", label: "Lead → Qualified" },
-    { from: "qualified", to: "proposal", label: "Qualified → Proposal" },
-    { from: "proposal", to: "negotiation", label: "Proposal → Negotiation" },
-    { from: "negotiation", to: "closed_won", label: "Negotiation → Won" },
+    { from: "lead", to: "qualified", label: "Lead to Qualified" },
+    { from: "qualified", to: "proposal", label: "Qualified to Proposal" },
+    { from: "proposal", to: "negotiation", label: "Proposal to Negotiation" },
+    { from: "negotiation", to: "closed_won", label: "Negotiation to Won" },
   ].map(({ from, to, label }) => {
     const fromCount = dealsRaw.filter(
       (d) =>
@@ -709,7 +709,7 @@ function ReportsEmptyState() {
           border: "1px solid var(--cream)",
         }}
       >
-        → Create the first deal
+        Create the first deal
       </Link>
     </section>
   );

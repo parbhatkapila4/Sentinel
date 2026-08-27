@@ -29,7 +29,7 @@ export function DashboardGettingStarted({
             Getting started
           </p>
           <h2 className="text-lg sm:text-xl font-semibold text-white">
-            Connect your CRM → sync → ask AI
+            Connect your CRM, sync, ask AI
           </h2>
           <p className="text-sm text-white/55 mt-2 max-w-xl">
             {demoMode
@@ -55,7 +55,7 @@ export function DashboardGettingStarted({
           <span className="text-xs font-medium text-white/40">Step 1</span>
           <p className="text-sm font-medium text-white mt-1">Connect CRM</p>
           <p className="text-xs text-white/45 mt-1">
-            HubSpot or Salesforce under Settings → Integrations
+            HubSpot or Salesforce under Settings &gt; Integrations
           </p>
           {step1 ? (
             <span className="text-xs text-emerald-400 mt-2 inline-block">Done</span>
@@ -64,7 +64,7 @@ export function DashboardGettingStarted({
               href="/settings?tab=integrations"
               className="text-xs text-[#0f766e] mt-2 inline-block hover:underline"
             >
-              Connect →
+              Connect
             </Link>
           )}
         </li>
@@ -87,7 +87,7 @@ export function DashboardGettingStarted({
               href="/settings?tab=integrations"
               className="text-xs text-[#0f766e] mt-2 inline-block hover:underline"
             >
-              Sync →
+              Sync
             </Link>
           )}
         </li>
@@ -101,7 +101,7 @@ export function DashboardGettingStarted({
             href="/insights"
             className="text-xs text-[#0f766e] mt-2 inline-block hover:underline"
           >
-            Open AI →
+            Open AI
           </Link>
         </li>
       </ol>

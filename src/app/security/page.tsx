@@ -36,7 +36,7 @@ function BackLink() {
           href="/privacy"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Privacy policy →
+          Privacy policy
         </Link>
       </div>
     </div>

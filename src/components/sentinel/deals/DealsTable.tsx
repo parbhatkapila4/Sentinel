@@ -532,7 +532,7 @@ export function DealsTable({ deals }: DealsTableProps) {
                           color: "var(--signal)",
                         }}
                       >
-                        View →
+                        View
                       </Link>
                       {!deal.isDemo && (
                         <DeleteDealButton
@@ -686,7 +686,7 @@ function DealsEmptyState() {
             border: "1px solid var(--signal)",
           }}
         >
-          → Create a deal
+          Create a deal
         </Link>
         <Link
           href="/settings?tab=integrations"

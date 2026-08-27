@@ -56,7 +56,7 @@ export function stageChangeEmailHtml(
                 If you did not make this change, we recommend logging into Sentinel to verify the update and adjust if needed.
               </p>
               <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #64748b;">
-                You are receiving this email because you have stage-change notifications enabled for your account. To change your notification preferences, open Sentinel and go to Settings → Notifications.
+                You are receiving this email because you have stage-change notifications enabled for your account. To change your notification preferences, open Sentinel and go to Settings > Notifications.
               </p>
             </td>
           </tr>

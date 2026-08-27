@@ -48,7 +48,7 @@ export function OnboardingBar({
     : "FINISH SETUP TO ACTIVATE LIVE SIGNALS";
 
   const ctaHref = "/settings?tab=integrations";
-  const ctaLabel = !crmConnected ? "→ Connect CRM" : "→ Finish setup";
+  const ctaLabel = !crmConnected ? "Connect CRM" : "Finish setup";
 
   return (
     <div

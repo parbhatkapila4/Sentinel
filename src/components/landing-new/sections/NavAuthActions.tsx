@@ -35,7 +35,7 @@ export function NavAuthActions() {
     return (
       <div className="nav-actions" aria-busy="true">
         <span className="btn-fill landing-nav-auth-skeleton" aria-hidden>
-          Log in <span className="arr">→</span>
+          Log in
         </span>
       </div>
     );
@@ -45,7 +45,7 @@ export function NavAuthActions() {
     return (
       <div className="nav-actions">
         <Link className="btn-fill" href="/sign-in">
-          Log in <span className="arr">→</span>
+          Log in
         </Link>
       </div>
     );
@@ -73,7 +73,7 @@ export function NavAuthActions() {
   return (
     <div className="nav-actions landing-nav-auth-signed" ref={wrapRef}>
       <Link className="btn-fill" href="/dashboard">
-        Dashboard <span className="arr">→</span>
+        Dashboard
       </Link>
       <button
         type="button"

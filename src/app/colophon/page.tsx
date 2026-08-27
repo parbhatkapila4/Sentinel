@@ -34,7 +34,7 @@ function BackLink() {
           href="/changelog"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Changelog →
+          Changelog
         </Link>
       </div>
     </div>
@@ -325,7 +325,7 @@ export default function ColophonPage() {
             href="/contact"
             className="inline-flex items-center gap-2 border border-white/15 text-white px-4 py-2 rounded-md text-sm hover:border-white/30 transition-colors w-fit"
           >
-            Report a discrepancy →
+            Report a discrepancy
           </Link>
         </div>
       </section>

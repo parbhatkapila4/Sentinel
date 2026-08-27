@@ -34,7 +34,7 @@ function BackLink() {
           href="/contact"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Contact →
+          Contact
         </Link>
       </div>
     </div>
@@ -182,14 +182,14 @@ function ChannelCard({ channel }: { channel: Channel }) {
           {...linkProps}
           className="inline-flex w-fit items-center gap-2 mt-1 text-sm text-white/85 border-b border-white/30 hover:border-white pb-[2px] transition-colors"
         >
-          {channel.label} →
+          {channel.label}
         </a>
       ) : (
         <Link
           href={channel.href}
           className="inline-flex w-fit items-center gap-2 mt-1 text-sm text-white/85 border-b border-white/30 hover:border-white pb-[2px] transition-colors"
         >
-          {channel.label} →
+          {channel.label}
         </Link>
       )}
     </div>
@@ -271,7 +271,7 @@ export default function SupportPage() {
                 href={r.href}
                 className="text-white font-medium hover:underline underline-offset-4"
               >
-                {r.label} →
+                {r.label}
               </Link>
               <p className="text-white/65 leading-relaxed text-[15px]">
                 {r.detail}
@@ -306,7 +306,7 @@ export default function SupportPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 border border-white/15 text-white px-4 py-2 rounded-md text-sm hover:border-white/30 transition-colors"
           >
-            GitHub repository →
+            GitHub repository
           </a>
           <a
             href="https://github.com/parbhatkapila4/Sentinel/issues"
@@ -314,7 +314,7 @@ export default function SupportPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 border border-white/15 text-white px-4 py-2 rounded-md text-sm hover:border-white/30 transition-colors"
           >
-            Open issues →
+            Open issues
           </a>
           <a
             href="https://github.com/parbhatkapila4/Sentinel/commits/main"
@@ -322,7 +322,7 @@ export default function SupportPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 border border-white/15 text-white px-4 py-2 rounded-md text-sm hover:border-white/30 transition-colors"
           >
-            Commit history →
+            Commit history
           </a>
         </div>
       </Section>

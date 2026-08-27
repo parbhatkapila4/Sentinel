@@ -114,7 +114,7 @@ export default async function TeamDetailPage({
               marginBottom: 4,
             }}
           >
-            ← Back to roster
+            Back to roster
           </Link>
           <h1
             style={{

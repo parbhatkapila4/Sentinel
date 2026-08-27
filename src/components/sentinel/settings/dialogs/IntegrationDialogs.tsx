@@ -160,7 +160,7 @@ export function ConnectHubSpotDialog({
               rel="noopener noreferrer"
               style={{ color: "var(--signal)" }}
             >
-              Create a private app in HubSpot →
+              Create a private app in HubSpot
             </a>
           }
         >
@@ -216,7 +216,7 @@ export function ConnectGoogleCalendarDialog({
           label="API key"
           foot={
             <>
-              Create in Google Cloud Console → APIs &amp; Services →
+              Create in Google Cloud Console &gt; APIs &amp; Services &gt;
               Credentials. Enable <SerifEm>Google Calendar API</SerifEm>.
             </>
           }
@@ -288,7 +288,7 @@ export function ConnectGmailDialog({
             Cancel
           </EditorialButton>
           <EditorialButton type="button" variant="primary" onClick={onContinue}>
-            Continue with Google →
+            Continue with Google
           </EditorialButton>
         </ModalActions>
       </div>

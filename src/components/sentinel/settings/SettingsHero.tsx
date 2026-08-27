@@ -303,7 +303,7 @@ export function SettingsHero({
               textDecoration: "none",
             }}
           >
-            Upgrade to Pro <span aria-hidden>→</span>
+            Upgrade to Pro
           </Link>
         ) : (
           <button
@@ -326,7 +326,7 @@ export function SettingsHero({
               textAlign: "left",
             }}
           >
-            Upgrade to Pro <span aria-hidden>→</span>
+            Upgrade to Pro
           </button>
         )}
       </aside>

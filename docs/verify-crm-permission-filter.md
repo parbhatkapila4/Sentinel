@@ -35,7 +35,7 @@ emails that survive filtering.
 
 ## Step 2 - Trigger a manual Gmail sync
 
-In Sentinel: **Settings → Integrations → Gmail → Sync now**. Watch the
+In Sentinel: **Settings -> Integrations -> Gmail -> Sync now**. Watch the
 toast / response payload. It should look like:
 
 ```json
@@ -124,11 +124,11 @@ The test message should be in the results.
 If you have a metrics dashboard wired (Redis), confirm the following
 counters incremented during your sync:
 
-- `crm_permission.email_filter.passed` → bumped by `synced`
-- `crm_permission.email_filter.dropped` → bumped by `skipped`
-- `crm_permission.check.total` → bumped by total participants
+- `crm_permission.email_filter.passed` -> bumped by `synced`
+- `crm_permission.email_filter.dropped` -> bumped by `skipped`
+- `crm_permission.check.total` -> bumped by total participants
   examined across messages
-- `crm_permission.check.in_book` / `…out_of_book` → split of the above
+- `crm_permission.check.in_book` / `…out_of_book` -> split of the above
 
 The metrics are observability for filter health: a sudden spike in
 `crm_permission.email_filter.fail_closed` means the filter is

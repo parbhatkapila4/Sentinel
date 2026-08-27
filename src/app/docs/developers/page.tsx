@@ -34,7 +34,7 @@ function BackLink() {
           href="/api-docs"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          API reference →
+          API reference
         </Link>
       </div>
     </div>

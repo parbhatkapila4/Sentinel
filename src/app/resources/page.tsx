@@ -35,7 +35,7 @@ function BackLink() {
           href="/docs"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Full documentation →
+          Full documentation
         </Link>
       </div>
     </div>

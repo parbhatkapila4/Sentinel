@@ -142,7 +142,7 @@ const sections: Section[] = [
       },
       {
         heading: "Preferences",
-        body: "Settings → Notifications lets you turn channels on and off and tune what you want to be notified about. Sensible defaults out of the box.",
+        body: "Settings > Notifications lets you turn channels on and off and tune what you want to be notified about. Sensible defaults out of the box.",
       },
     ],
   },
@@ -198,9 +198,9 @@ const sections: Section[] = [
 ];
 
 const quickRef: { goal: string; path: string }[] = [
-  { goal: "Pipeline at a glance", path: "Dashboard → Overview" },
-  { goal: "Analyze by date range", path: "Dashboard → Analytics" },
-  { goal: "Focus on biggest deals", path: "Dashboard → Top Deals" },
+  { goal: "Pipeline at a glance", path: "Dashboard > Overview" },
+  { goal: "Analyze by date range", path: "Dashboard > Analytics" },
+  { goal: "Focus on biggest deals", path: "Dashboard > Top Deals" },
   { goal: "List, filter, search deals", path: "Forecast" },
   { goal: "Add a deal", path: "Create deal" },
   { goal: "Open one deal", path: "Click deal in table" },
@@ -239,7 +239,7 @@ function BackLink() {
           href="/features"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          See all features →
+          See all features
         </Link>
       </div>
     </div>

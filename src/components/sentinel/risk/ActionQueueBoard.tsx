@@ -280,7 +280,7 @@ function ActionDealCard({
             whiteSpace: "nowrap",
           }}
         >
-          → {deal.recommendedAction}
+          Next: {deal.recommendedAction}
         </div>
       )}
       {typeof deal.overdueDays === "number" && deal.overdueDays > 0 && (

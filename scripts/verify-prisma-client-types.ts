@@ -67,7 +67,7 @@ async function main(): Promise<void> {
   try {
     const row = await delegate.findFirst({ select });
     console.log(
-      `${modelName}.findFirst({ select: ${fields.join(", ")} }) →`
+      `${modelName}.findFirst({ select: ${fields.join(", ")} }) ->`
     );
     console.log(JSON.stringify(row, null, 2));
   } catch (error) {

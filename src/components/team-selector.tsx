@@ -109,7 +109,7 @@ export function TeamSelector({ teams }: { teams: Team[] }) {
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-white/50 hover:text-white hover:bg-white/5 border-t border-white/5 mt-1 pt-2"
           >
-            Manage teams →
+            Manage teams
           </Link>
         </div>
       )}

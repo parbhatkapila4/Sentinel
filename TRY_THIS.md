@@ -3,7 +3,7 @@
 1. **Sign up** at your app URL and open **Dashboard** - you’ll see demo pipeline data (or your own if you already have deals).
 
 2. **Connect CRM**  
-   Go to **Settings** → **Integrations** (or use **Getting started** on the dashboard).  
+   Go to **Settings** -> **Integrations** (or use **Getting started** on the dashboard).  
    Connect **HubSpot** (private app token) or **Salesforce** (instance URL + access token), then click **Sync**.
 
 3. **Slack (optional)**  
@@ -11,10 +11,10 @@
    Enable **CRM sync summary** to get a Slack message after each HubSpot/Salesforce sync (deals updated + high-risk count).
 
 4. **AI**  
-   Open **AI** in the sidebar → ask e.g. _“Which deals need attention?”_ or _“Why is my pipeline at risk?”_
+   Open **AI** in the sidebar -> ask e.g. _“Which deals need attention?”_ or _“Why is my pipeline at risk?”_
 
 5. **Webhooks & team**  
-   **Settings → Webhooks** for outbound events; **Settings → Team** for invites.
+   **Settings -> Webhooks** for outbound events; **Settings -> Team** for invites.
 
 **Deep links**
 

@@ -492,7 +492,7 @@ function LeaderboardEmpty() {
           border: "1px solid var(--signal)",
         }}
       >
-        → Create the first deal
+        Create the first deal
       </Link>
     </div>
   );

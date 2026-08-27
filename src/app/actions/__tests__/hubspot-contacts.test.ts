@@ -129,7 +129,7 @@ beforeEach(() => {
 });
 
 describe("syncHubSpotContactsForUser - contact resolution", () => {
-  it("new contact (no email row, no provider-key row) → CREATE", async () => {
+  it("new contact (no email row, no provider-key row) -> CREATE", async () => {
     mockedFetchContacts.mockResolvedValue([
       hsContact({ id: "hs-1", email: "alice@new.com" }),
     ]);
@@ -153,7 +153,7 @@ describe("syncHubSpotContactsForUser - contact resolution", () => {
     });
   });
 
-  it("email row exists, no provider-key row → UPDATE by email-row id (most-recent-wins takeover)", async () => {
+  it("email row exists, no provider-key row -> UPDATE by email-row id (most-recent-wins takeover)", async () => {
     mockedFetchContacts.mockResolvedValue([
       hsContact({ id: "hs-2", email: "bob@takeover.com" }),
     ]);
@@ -184,7 +184,7 @@ describe("syncHubSpotContactsForUser - contact resolution", () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
-  it("email row AND a DIFFERENT provider-key row → transaction deletes stale, updates email row", async () => {
+  it("email row AND a DIFFERENT provider-key row -> transaction deletes stale, updates email row", async () => {
     mockedFetchContacts.mockResolvedValue([
       hsContact({ id: "hs-3", email: "carol-new@acme.com" }),
     ]);
@@ -223,7 +223,7 @@ describe("syncHubSpotContactsForUser - contact resolution", () => {
     expect(prismaMock.contact.create).not.toHaveBeenCalled();
   });
 
-  it("no email row but provider-key row exists (email changed in HubSpot) → UPDATE provider-key row in place", async () => {
+  it("no email row but provider-key row exists (email changed in HubSpot) -> UPDATE provider-key row in place", async () => {
     mockedFetchContacts.mockResolvedValue([
       hsContact({ id: "hs-4", email: "dave-new@acme.com" }),
     ]);
@@ -270,7 +270,7 @@ describe("syncHubSpotContactsForUser - contact resolution", () => {
     expect(prismaMock.contact.update).not.toHaveBeenCalled();
   });
 
-  it("REGRESSION: incoming email already exists under a DIFFERENT externalId → resolves via email branch, NO throw, NO insert", async () => {
+  it("REGRESSION: incoming email already exists under a DIFFERENT externalId -> resolves via email branch, NO throw, NO insert", async () => {
     mockedFetchContacts.mockResolvedValue([
       hsContact({ id: "hs-NEW-external-id", email: "bh@hubspot.com" }),
     ]);
@@ -302,7 +302,7 @@ describe("syncHubSpotContactsForUser - contact resolution", () => {
     expect(prismaMock.contact.create).not.toHaveBeenCalled();
   });
 
-  it("unexpected DB error during write → errors++, logWarn called, sync continues to next contact", async () => {
+  it("unexpected DB error during write -> errors++, logWarn called, sync continues to next contact", async () => {
     mockedFetchContacts.mockResolvedValue([
       hsContact({ id: "hs-bad", email: "bad@example.com" }),
       hsContact({ id: "hs-good", email: "good@example.com" }),

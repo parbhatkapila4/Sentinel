@@ -10,7 +10,7 @@ export function LiveDealStream() {
 
   return (
     <div className="deal-stream-wrap">
-      <div className="deal-stream-label">EXAMPLE DEALS →</div>
+      <div className="deal-stream-label">EXAMPLE DEALS</div>
       <div className="deal-stream-body">
         <div className="deal-stream">
           {deals.concat(deals).map((deal, idx) => (

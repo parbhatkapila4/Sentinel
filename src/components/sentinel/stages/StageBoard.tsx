@@ -178,7 +178,7 @@ function StageColumn({
                 textTransform: "uppercase",
               }}
             >
-              → {column.conversionPct.toFixed(0)}%
+              {column.conversionPct.toFixed(0)}% conv
             </span>
           )}
         </div>
@@ -490,7 +490,7 @@ function BoardDealCard({ deal }: { deal: StageBoardDeal }) {
             whiteSpace: "nowrap",
           }}
         >
-          → {deal.recommendedAction}
+          Next: {deal.recommendedAction}
         </div>
       )}
     </Link>

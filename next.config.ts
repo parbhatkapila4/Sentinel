@@ -7,20 +7,22 @@ const getCSP = () => {
     ? "'unsafe-eval' 'unsafe-inline' "
     : "'unsafe-inline' ";
 
+  const clerkOrigins =
+    "https://*.clerk.accounts.dev https://clerk.sentinels.in https://accounts.sentinels.in https://*.clerk.com";
   const directives = [
     "default-src 'self'",
-    `script-src 'self' ${scriptUnsafeDirectives}blob: https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://browser.sentry-cdn.com`,
+    `script-src 'self' ${scriptUnsafeDirectives}blob: https://challenges.cloudflare.com ${clerkOrigins} https://*.sentry.io https://browser.sentry-cdn.com`,
     "script-src-attr 'none'",
     "worker-src 'self' blob:",
 
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob: https://img.clerk.com",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://*.salesforce.com https://*.hubspot.com https://*.googleapis.com https://*.google.com wss://*.clerk.accounts.dev",
-    "frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.com https://accounts.google.com",
+    `connect-src 'self' https://challenges.cloudflare.com ${clerkOrigins} https://*.sentry.io https://*.salesforce.com https://*.hubspot.com https://*.googleapis.com https://*.google.com wss://*.clerk.accounts.dev`,
+    `frame-src 'self' https://challenges.cloudflare.com ${clerkOrigins} https://accounts.google.com`,
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self' https://*.clerk.accounts.dev https://*.clerk.com",
+    `form-action 'self' ${clerkOrigins}`,
     "frame-ancestors 'self'",
     ...(isDev ? [] : ["upgrade-insecure-requests", "block-all-mixed-content"]),
   ];
@@ -50,12 +52,12 @@ const securityHeaders = [
 if (!process.env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY) {
   console.warn(
     "\n[next.config] NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is not set.\n" +
-      "  → Without it, Server Action IDs rotate on every build AND every Fast Refresh.\n" +
-      "  → That surfaces as the 'Send failed: An unexpected response was received from the server'\n" +
+      "  Without it, Server Action IDs rotate on every build AND every Fast Refresh.\n" +
+      "  That surfaces as the 'Send failed: An unexpected response was received from the server'\n" +
       "    error in dev whenever you edit a file, and breaks live sessions on every prod deploy.\n" +
       "  Generate a stable key once with:\n" +
       "    node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"\n" +
-      "  Paste into .env.local (for dev) and Vercel project env (for prod). See .env.example.\n"
+      "  Paste into .env.local (for dev) and Vercel project env (for prod). See .env.example.\n",
   );
 }
 
@@ -69,7 +71,6 @@ const nextConfig: NextConfig = {
     },
   },
 
-
   turbopack: {
     resolveAlias: {
       "node:inspector": "./src/lib/stub-inspector.js",
@@ -81,7 +82,10 @@ const nextConfig: NextConfig = {
       config.resolve = config.resolve ?? {};
       config.resolve.alias = {
         ...config.resolve.alias,
-        "node:inspector": path.resolve(process.cwd(), "src/lib/stub-inspector.js"),
+        "node:inspector": path.resolve(
+          process.cwd(),
+          "src/lib/stub-inspector.js",
+        ),
       };
     }
     return config;

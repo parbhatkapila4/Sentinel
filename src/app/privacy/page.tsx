@@ -36,7 +36,7 @@ function BackLink() {
           href="/security"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Security page →
+          Security page
         </Link>
       </div>
     </div>

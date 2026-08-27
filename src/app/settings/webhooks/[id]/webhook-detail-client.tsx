@@ -157,7 +157,7 @@ export function WebhookDetailClient() {
               marginBottom: 4,
             }}
           >
-            ← Back to wires
+            Back to wires
           </Link>
           <h1
             style={{

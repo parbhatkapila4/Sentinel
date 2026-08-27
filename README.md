@@ -157,7 +157,7 @@ Source of truth: `src/lib/pricing-catalog.ts`.
 
 PayPal checkout links:
 
-- `pro.monthly` → https://www.paypal.com/ncp/payment/VMD5RE6KLUJUE
-- `pro.annual` → https://www.paypal.com/ncp/payment/ZVFF5ALD7ZYMJ
-- `enterprise.monthly` → https://www.paypal.com/ncp/payment/X6JYZYK6WBRBA
-- `enterprise.annual` → https://www.paypal.com/ncp/payment/RD8DBKTWRS8EY
+- `pro.monthly` -> https://www.paypal.com/ncp/payment/VMD5RE6KLUJUE
+- `pro.annual` -> https://www.paypal.com/ncp/payment/ZVFF5ALD7ZYMJ
+- `enterprise.monthly` -> https://www.paypal.com/ncp/payment/X6JYZYK6WBRBA
+- `enterprise.annual` -> https://www.paypal.com/ncp/payment/RD8DBKTWRS8EY

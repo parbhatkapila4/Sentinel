@@ -139,7 +139,7 @@ export function TabbedFeatures() {
           </div>
           <div className="features-head-r">
             <p>Give reps scoring and cited reasons, not another raw CRM export.</p>
-            <Link href="/contact">Contact us →</Link>
+            <Link href="/contact">Contact us</Link>
           </div>
         </div>
         <div className="features-grid">

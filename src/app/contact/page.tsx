@@ -30,7 +30,7 @@ function BackLink() {
           href="mailto:help@sentinels.in"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          help@sentinels.in →
+          help@sentinels.in
         </a>
       </div>
     </div>

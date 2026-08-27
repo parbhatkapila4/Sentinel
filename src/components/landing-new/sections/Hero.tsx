@@ -97,7 +97,7 @@ export function Hero() {
                   </div>
                   <div className="hp-deal-r">
                     <div className="hp-deal-amt">$247K</div>
-                    <div className="hp-deal-delta">SCORE ↑ FROM 0.34 → 0.82</div>
+                    <div className="hp-deal-delta">SCORE ↑ FROM 0.34 TO 0.82</div>
                   </div>
                 </div>
                 <div className="hp-signals">

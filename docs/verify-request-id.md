@@ -30,10 +30,10 @@ In the dev server terminal you should see lines like:
   Context: { "path": "/api/insights/chat", "durationMs": 1234 }
 ```
 
-- **Same request** → the two lines must have the **same** `[req:...]` value.
+- **Same request** -> the two lines must have the **same** `[req:...]` value.
 - That value is the request ID for that single HTTP request.
 
-## 4. Second request → different ID
+## 4. Second request -> different ID
 
 Send another chat message (or trigger the API again). In the logs you should see a **different** `[req:...]` for the new request. So:
 

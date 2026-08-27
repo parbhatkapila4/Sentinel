@@ -487,7 +487,7 @@ export default async function RiskOverviewPage() {
           title="The four signals Sentinel"
           italicWord="watches."
           accent="signal"
-          meta="SCORED 0 → 1"
+          meta="SCORED 0 TO 1"
         >
           <RiskRules
             rules={riskRules}
@@ -914,7 +914,7 @@ function CriticalDealsBlock({ deals, rawDeals }: CriticalDealsBlockProps) {
                         textTransform: "uppercase",
                       }}
                     >
-                      → {deal.recommendedAction.label}
+                      Next: {deal.recommendedAction.label}
                     </div>
                   )}
                 </div>

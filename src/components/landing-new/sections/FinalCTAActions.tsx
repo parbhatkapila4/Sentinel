@@ -10,7 +10,7 @@ export function FinalCTAActions() {
     return (
       <div className="final-cta-row" aria-busy="true">
         <span className="final-btn landing-cta-skeleton" aria-hidden>
-          Start free →
+          Start free
         </span>
       </div>
     );
@@ -32,7 +32,7 @@ export function FinalCTAActions() {
   return (
     <div className="final-cta-row">
       <Link className="final-btn" href="/sign-in">
-        Start free →
+        Start free
       </Link>
       <Link className="final-btn-out" href="/docs">
         Read docs

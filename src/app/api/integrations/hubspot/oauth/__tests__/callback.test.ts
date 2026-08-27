@@ -85,7 +85,7 @@ describe("GET /api/integrations/hubspot/oauth/callback", () => {
     expect(res.headers.get("set-cookie")).toMatch(/Max-Age=0/i);
   });
 
-  it("missing state cookie → 400 with invalid_state metric", async () => {
+  it("missing state cookie -> 400 with invalid_state metric", async () => {
     const req = callbackRequest({ code: "auth-code", state: "abc" });
 
     const res = await GET(req);
@@ -98,7 +98,7 @@ describe("GET /api/integrations/hubspot/oauth/callback", () => {
     );
   });
 
-  it("cookie present but signature invalid → 400 invalid_state", async () => {
+  it("cookie present but signature invalid -> 400 invalid_state", async () => {
     const goodPayload = Buffer.from(
       JSON.stringify({ state: "abc", userId: "user-1" }),
       "utf8"
@@ -118,7 +118,7 @@ describe("GET /api/integrations/hubspot/oauth/callback", () => {
     expect(mockedExchange).not.toHaveBeenCalled();
   });
 
-  it("cookie state ≠ query state → 400 state_mismatch (cookie signature valid)", async () => {
+  it("cookie state ≠ query state -> 400 state_mismatch (cookie signature valid)", async () => {
     const cookie = signCookieValue({
       state: "STATE_IN_COOKIE",
       userId: "user-1",
@@ -139,7 +139,7 @@ describe("GET /api/integrations/hubspot/oauth/callback", () => {
     expect(prismaMock.hubSpotIntegration.upsert).not.toHaveBeenCalled();
   });
 
-  it("cookie userId ≠ current Clerk userId → 403 user_mismatch (defends mid-flow session swap)", async () => {
+  it("cookie userId ≠ current Clerk userId -> 403 user_mismatch (defends mid-flow session swap)", async () => {
     const cookie = signCookieValue({
       state: "MATCH_STATE",
       userId: "user-original",

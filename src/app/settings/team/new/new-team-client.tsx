@@ -90,7 +90,7 @@ export function NewTeamClient() {
               marginBottom: 4,
             }}
           >
-            ← Back to roster
+            Back to roster
           </Link>
           <h1
             style={{

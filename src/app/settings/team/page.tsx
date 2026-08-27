@@ -368,7 +368,7 @@ export default async function TeamSettingsPage() {
                       color: "var(--signal)",
                     }}
                   >
-                    Open desk →
+                    Open desk
                   </div>
                 </Link>
               );

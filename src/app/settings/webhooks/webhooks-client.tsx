@@ -132,7 +132,7 @@ export function WebhooksClient() {
               marginBottom: 4,
             }}
           >
-            ← Back to settings
+            Back to settings
           </Link>
           <h1
             style={{

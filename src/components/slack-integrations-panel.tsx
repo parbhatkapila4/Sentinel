@@ -209,7 +209,6 @@ export function SlackIntegrationsPanel({
           }}
         >
           Expand
-          <span aria-hidden>→</span>
         </span>
       </button>
     );

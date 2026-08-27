@@ -35,7 +35,7 @@ function BackLink() {
           href="/contact"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Get in touch →
+          Get in touch
         </Link>
       </div>
     </div>

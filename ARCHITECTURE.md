@@ -7,7 +7,7 @@ High-level system overview. For *why* each choice was made - alternatives consid
 ```
 ┌─────────────┐     ┌─────────────┐     ┌──────────────────────────────────┐
 │   Frontend  │────▶│  Next.js    │───▶│  Services & Data                 │
-│  (React 19) │     │  App Router │     │  Prisma → PostgreSQL             │
+│  (React 19) │     │  App Router │     │  Prisma -> PostgreSQL            │
 │             │     │  API Routes │     │  Clerk (auth)                    │
 │             │     │  Actions    │     │  Redis (cache, rate limit)       │
 └─────────────┘     └─────────────┘     │  OpenRouter (AI)                 │
@@ -69,7 +69,7 @@ High-level system overview. For *why* each choice was made - alternatives consid
 
 ## Security
 
-- **Authentication boundary**: `src/middleware.ts` allows only explicitly public routes; protected paths do not trust spoofable headers (referer, RSC, prefetch hints).
+- **Authentication boundary**: `src/proxy.ts` (Next 16 middleware entrypoint) allows only explicitly public routes; protected paths do not trust spoofable headers (referer, RSC, prefetch hints). HEAD requests bypass Clerk's browser handshake (they are never navigations) so uptime probes are answered inline.
 - **Cron auth (fail-closed)**: `src/lib/cron-auth.ts` enforces `Authorization: Bearer <CRON_SECRET>`; missing secret or invalid token returns an error.
 - **Secrets at rest**: Integration credentials are encrypted/decrypted via `src/lib/integration-secrets.ts` (AES-256-GCM envelope format with compatibility for legacy plaintext rows).
 - **Headers and CSP**: CSP and security headers are set in `next.config.ts`; risky directives are constrained to development where possible.
@@ -89,6 +89,7 @@ High-level system overview. For *why* each choice was made - alternatives consid
 - **Local quality gate**: `npm run verify` runs `typecheck`, `lint`, and `test:run`.
 - **Critical-path tests**:
   - `src/__tests__/middleware-auth.test.ts`
+  - `src/__tests__/middleware-head-probe.test.ts`
   - `src/lib/__tests__/cron-auth.test.ts`
   - `src/lib/__tests__/integration-secrets.test.ts`
   - `src/lib/__tests__/ai-router-openrouter.test.ts`

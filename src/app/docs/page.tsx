@@ -80,7 +80,7 @@ export default function DocsPage() {
           <QuickLink
             href="#stages"
             title="Pipeline stages"
-            sub="Discovery → Closed-won/lost"
+            sub="Discovery to Closed-won/lost"
           />
           <QuickLink
             href="#events"
@@ -178,7 +178,7 @@ export default function DocsPage() {
                 href="/settings?tab=integrations"
                 className="text-white underline"
               >
-                /settings → Integrations
+                /settings &gt; Integrations
               </Link>
               .
             </p>
@@ -204,7 +204,7 @@ export default function DocsPage() {
             />
             <Faq
               q="How do I delete my account?"
-              a="/settings → Danger zone → Delete account. Removes everything, deletes stored integration tokens, runs immediately."
+              a="/settings > Danger zone > Delete account. Removes everything, deletes stored integration tokens, runs immediately."
             />
           </DocSection>
 
@@ -223,7 +223,7 @@ export default function DocsPage() {
                 href="/api-docs"
                 className="px-4 py-2 bg-white text-black rounded-md text-sm font-medium hover:bg-white/90 transition-colors"
               >
-                API reference →
+                API reference
               </Link>
               <Link
                 href="/contact"

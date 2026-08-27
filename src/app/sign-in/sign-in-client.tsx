@@ -484,7 +484,7 @@ const SIGN_IN_CSS = `
 
         .oauth-row {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 1fr;
           gap: 8px;
         }
         .oauth-btn {
@@ -840,9 +840,6 @@ const SIGN_IN_CSS = `
           .field-row {
             grid-template-columns: 1fr;
           }
-          .oauth-row {
-            grid-template-columns: 1fr;
-          }
         }
 `;
 
@@ -853,7 +850,7 @@ export function SignInClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "apple" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<"google" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const redirectFromUrl = searchParams.get("redirect");
@@ -866,13 +863,13 @@ export function SignInClient() {
     }
   }, [isSignedIn, afterSignInUrl]);
 
-  const handleOAuth = async (provider: "google" | "apple") => {
+  const handleGoogleSignIn = async () => {
     if (!isLoaded || !signIn || oauthLoading) return;
     setError(null);
-    setOauthLoading(provider);
+    setOauthLoading("google");
     try {
       await signIn.authenticateWithRedirect({
-        strategy: provider === "google" ? "oauth_google" : "oauth_apple",
+        strategy: "oauth_google",
         redirectUrl: "/sso-callback",
         redirectUrlComplete: afterSignInUrl,
       });
@@ -914,7 +911,7 @@ export function SignInClient() {
       <div className="topbar">
         <div className="topbar-inner">
           <Link className="back-link" href="/">
-            ← Back to home
+            Back to home
           </Link>
           <div className="brand">
             <div className="brand-mark">
@@ -1041,7 +1038,7 @@ export function SignInClient() {
                   <button
                     className="oauth-btn"
                     type="button"
-                    onClick={() => handleOAuth("google")}
+                    onClick={handleGoogleSignIn}
                     disabled={oauthLoading !== null || submitting}
                   >
                     <span className="icon">
@@ -1069,26 +1066,7 @@ export function SignInClient() {
                         />
                       </svg>
                     </span>
-                    <span>{oauthLoading === "google" ? "Connecting…" : "Google"}</span>
-                  </button>
-                  <button
-                    className="oauth-btn"
-                    type="button"
-                    onClick={() => handleOAuth("apple")}
-                    disabled={oauthLoading !== null || submitting}
-                  >
-                    <span className="icon">
-                      <svg
-                        width="12"
-                        height="14"
-                        viewBox="0 0 14 16"
-                        fill="white"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M11.62 8.5c0-2.04 1.66-3.04 1.74-3.08-.95-1.4-2.43-1.59-2.95-1.61-1.26-.13-2.45.74-3.09.74-.65 0-1.62-.72-2.67-.7-1.37.02-2.65.81-3.36 2.04-1.43 2.5-.37 6.18 1.03 8.21.69.99 1.5 2.1 2.55 2.06 1.03-.04 1.42-.66 2.66-.66s1.59.66 2.68.64c1.11-.02 1.81-1 2.49-2 .79-1.15 1.11-2.27 1.13-2.33-.02-.01-2.18-.83-2.21-3.31zM9.6 2.51C10.16 1.83 10.55.88 10.44 0c-.81.03-1.79.54-2.38 1.21-.52.6-.99 1.56-.86 2.43.91.07 1.83-.46 2.4-1.13z" />
-                      </svg>
-                    </span>
-                    <span>{oauthLoading === "apple" ? "Connecting…" : "Apple"}</span>
+                    <span>{oauthLoading === "google" ? "Connecting…" : "Continue with Google"}</span>
                   </button>
                 </div>
 
@@ -1148,7 +1126,7 @@ export function SignInClient() {
                     type="submit"
                     disabled={submitting || oauthLoading !== null}
                   >
-                    {submitting ? "Signing in…" : "Sign in"} <span className="arr">→</span>
+                    {submitting ? "Signing in…" : "Sign in"}
                   </button>
                 </form>
               </div>

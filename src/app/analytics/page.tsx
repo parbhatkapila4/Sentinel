@@ -658,7 +658,7 @@ export default async function AnalyticsPage({
                 color: "var(--signal)",
               }}
             >
-              Open the book →
+              Open the book
             </Link>
           </Panel>
         </div>

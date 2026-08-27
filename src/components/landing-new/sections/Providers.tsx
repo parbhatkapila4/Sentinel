@@ -84,7 +84,7 @@ export function Providers() {
             whileHover={reduceMotion ? undefined : cardHover}
           >
             <div className="provider-img"><span className="provider-status">CONNECTED</span><div className="provider-icon hubspot"><img className="provider-logo" src="/HUbspot-B.png" alt="HubSpot logo" /></div></div>
-            <div className="provider-info"><div className="provider-name">HubSpot <span className="arrow">→</span></div><div className="provider-desc">Read deals, contacts, stages, and activity history. OAuth connect flow and read-only pipeline sync.</div></div>
+            <div className="provider-info"><div className="provider-name">HubSpot</div><div className="provider-desc">Read deals, contacts, stages, and activity history. OAuth connect flow and read-only pipeline sync.</div></div>
             <div className="provider-foot"><span>OAUTH · 2-CLICK</span><span className="provider-foot-ok">READ-ONLY</span></div>
           </motion.article>
           {providers.slice(1).map((provider) => (
@@ -104,7 +104,7 @@ export function Providers() {
               </div>
               <div className="provider-info">
                 <div className="provider-name">
-                  {provider.name} <span className="arrow">→</span>
+                  {provider.name}
                 </div>
                 <div className="provider-desc">{provider.desc}</div>
               </div>

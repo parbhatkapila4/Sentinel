@@ -114,7 +114,7 @@ beforeEach(() => {
 });
 
 describe("syncSalesforceContactsForUser - contact resolution", () => {
-  it("new contact (no email row, no provider-key row) → CREATE", async () => {
+  it("new contact (no email row, no provider-key row) -> CREATE", async () => {
     mockedFetchContacts.mockResolvedValue([
       makeContact({ Id: "sf-1", Email: "alice@new.com" }),
     ]);
@@ -138,7 +138,7 @@ describe("syncSalesforceContactsForUser - contact resolution", () => {
     });
   });
 
-  it("email row exists, no provider-key row → UPDATE by email-row id (most-recent-wins takeover)", async () => {
+  it("email row exists, no provider-key row -> UPDATE by email-row id (most-recent-wins takeover)", async () => {
     mockedFetchContacts.mockResolvedValue([
       makeContact({ Id: "sf-2", Email: "bob@takeover.com" }),
     ]);
@@ -169,7 +169,7 @@ describe("syncSalesforceContactsForUser - contact resolution", () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
-  it("email row AND a DIFFERENT provider-key row → transaction deletes stale, updates email row", async () => {
+  it("email row AND a DIFFERENT provider-key row -> transaction deletes stale, updates email row", async () => {
     mockedFetchContacts.mockResolvedValue([
       makeContact({ Id: "sf-3", Email: "carol-new@acme.com" }),
     ]);
@@ -208,7 +208,7 @@ describe("syncSalesforceContactsForUser - contact resolution", () => {
     expect(prismaMock.contact.create).not.toHaveBeenCalled();
   });
 
-  it("no email row but provider-key row exists (email changed in Salesforce) → UPDATE provider-key row in place", async () => {
+  it("no email row but provider-key row exists (email changed in Salesforce) -> UPDATE provider-key row in place", async () => {
     mockedFetchContacts.mockResolvedValue([
       makeContact({ Id: "sf-4", Email: "dave-new@acme.com" }),
     ]);
@@ -257,7 +257,7 @@ describe("syncSalesforceContactsForUser - contact resolution", () => {
     expect(prismaMock.contact.create).toHaveBeenCalledTimes(1);
   });
 
-  it("REGRESSION: incoming email already exists under a DIFFERENT externalId → resolves via email branch, NO throw, NO insert", async () => {
+  it("REGRESSION: incoming email already exists under a DIFFERENT externalId -> resolves via email branch, NO throw, NO insert", async () => {
     mockedFetchContacts.mockResolvedValue([
       makeContact({ Id: "sf-NEW-external-id", Email: "bh@example.com" }),
     ]);
@@ -289,7 +289,7 @@ describe("syncSalesforceContactsForUser - contact resolution", () => {
     expect(prismaMock.contact.create).not.toHaveBeenCalled();
   });
 
-  it("unexpected DB error during write → errors.push, logWarn called, sync continues to next contact", async () => {
+  it("unexpected DB error during write -> errors.push, logWarn called, sync continues to next contact", async () => {
     mockedFetchContacts.mockResolvedValue([
       makeContact({ Id: "sf-bad", Email: "bad@example.com" }),
       makeContact({ Id: "sf-good", Email: "good@example.com" }),

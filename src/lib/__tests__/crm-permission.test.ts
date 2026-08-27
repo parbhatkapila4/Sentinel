@@ -228,7 +228,7 @@ describe("batchCheckCrmBook", () => {
 describe("hasCrmParticipant", () => {
   const USER_EMAIL = "me@self.com";
 
-  it("single non-self participant in the CRM book → passed: true with the matched contact id", async () => {
+  it("single non-self participant in the CRM book -> passed: true with the matched contact id", async () => {
     prismaMock.contact.findMany.mockResolvedValue([
       { email: "alice@crm.com", id: "c-alice", source: "hubspot" },
     ] as never);
@@ -240,7 +240,7 @@ describe("hasCrmParticipant", () => {
     expectMetric("crm_permission.email_filter.passed");
   });
 
-  it("single non-self participant NOT in the CRM book → passed: false, reason no_crm_contact_match", async () => {
+  it("single non-self participant NOT in the CRM book -> passed: false, reason no_crm_contact_match", async () => {
     prismaMock.contact.findMany.mockResolvedValue([] as never);
 
     const result = await hasCrmParticipant(USER_A, USER_EMAIL, ["stranger@elsewhere.com"]);
@@ -251,7 +251,7 @@ describe("hasCrmParticipant", () => {
     expectMetric("crm_permission.email_filter.dropped");
   });
 
-  it("only the user themselves on the message → no_external_participants, no batch lookup", async () => {
+  it("only the user themselves on the message -> no_external_participants, no batch lookup", async () => {
     const result = await hasCrmParticipant(USER_A, USER_EMAIL, [USER_EMAIL]);
 
     expect(result.passed).toBe(false);
@@ -297,7 +297,7 @@ describe("hasCrmParticipant", () => {
     expect(result.matchedContactIds).toEqual(["c-alice"]);
   });
 
-  it("multi-participant with NO CRM matches → passed: false", async () => {
+  it("multi-participant with NO CRM matches -> passed: false", async () => {
     prismaMock.contact.findMany.mockResolvedValue([] as never);
 
     const result = await hasCrmParticipant(USER_A, USER_EMAIL, [
@@ -311,7 +311,7 @@ describe("hasCrmParticipant", () => {
     expect(result.matchedContactIds).toEqual([]);
   });
 
-  it("invalid userEmail (null after normalize) → fails closed without touching the DB", async () => {
+  it("invalid userEmail (null after normalize) -> fails closed without touching the DB", async () => {
     const result = await hasCrmParticipant(USER_A, "   ", [
       "alice@crm.com",
     ]);
@@ -322,7 +322,7 @@ describe("hasCrmParticipant", () => {
     expectMetric("crm_permission.email_filter.fail_closed");
   });
 
-  it("DB error during batch lookup → fail-closed signal fires, NO PII in log calls", async () => {
+  it("DB error during batch lookup -> fail-closed signal fires, NO PII in log calls", async () => {
     prismaMock.contact.findMany.mockRejectedValue(
       new Error("DB timeout while checking permission")
     );
@@ -342,7 +342,7 @@ describe("hasCrmParticipant", () => {
     }
   });
 
-  it("empty participantEmails array → no_external_participants without a DB call", async () => {
+  it("empty participantEmails array -> no_external_participants without a DB call", async () => {
     const result = await hasCrmParticipant(USER_A, USER_EMAIL, []);
 
     expect(result.passed).toBe(false);

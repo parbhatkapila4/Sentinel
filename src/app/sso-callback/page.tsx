@@ -62,7 +62,7 @@ export default function SSOCallbackPage() {
               transition: "border-color 0.15s, background 0.15s",
             }}
           >
-            Continue manually →
+            Continue manually
           </a>
         ) : null}
       </div>

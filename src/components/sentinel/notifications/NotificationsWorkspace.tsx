@@ -285,7 +285,7 @@ export function NotificationsWorkspace({
               opacity: loadingMore ? 0.6 : 1,
             }}
           >
-            {loadingMore ? "Loading…" : "Load more →"}
+            {loadingMore ? "Loading…" : "Load more"}
           </button>
         </div>
       )}
@@ -621,7 +621,7 @@ function ControlsBar({
           transition: "color 120ms ease, border-color 120ms ease, background 120ms ease",
         }}
       >
-        Mark all read →
+        Mark all read
       </button>
     </div>
   );

@@ -31,7 +31,7 @@ export function HeroAuthCTAs() {
     return (
       <div className="hero-cta-row" aria-busy="true">
         <span className="btn-fill landing-cta-skeleton" aria-hidden>
-          Start free <span className="arr">→</span>
+          Start free
         </span>
       </div>
     );
@@ -41,10 +41,10 @@ export function HeroAuthCTAs() {
     return (
       <div className="hero-cta-row">
         <Link className="btn-outline" href="/docs">
-          Read docs <span className="arr">→</span>
+          Read docs
         </Link>
         <Link className="btn-outline" href="/security">
-          Security <span className="arr">→</span>
+          Security
         </Link>
       </div>
     );
@@ -83,7 +83,7 @@ export function HeroAuthCTAs() {
   return (
     <div className="hero-cta-row">
       <Link className="btn-fill" href="/sign-in">
-        Start free <span className="arr">→</span>
+        Start free
       </Link>
       {secondaryWalkthrough}
     </div>

@@ -21,7 +21,7 @@ const releases: Release[] = [
     date: "2026-06-13",
     title: "Integrations move to OAuth connect",
     lede:
-      "Every integration now connects through a hosted OAuth redirect — click connect, authorize, done. No more pasting keys or tokens.",
+      "Every integration now connects through a hosted OAuth redirect: click connect, authorize, done. No more pasting keys or tokens.",
     entries: [
       {
         tag: "Shipped",
@@ -301,7 +301,7 @@ function BackLink() {
           rel="noopener noreferrer"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Full commit history →
+          Full commit history
         </a>
       </div>
     </div>

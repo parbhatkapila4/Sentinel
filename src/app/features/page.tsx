@@ -44,7 +44,7 @@ const pillars: Pillar[] = [
     meta: [
       {
         label: "Stages",
-        value: "Discovery → Qualification → Proposal → Negotiation → Closed",
+        value: "Discovery, Qualification, Proposal, Negotiation, Closed",
       },
       { label: "Bulk ops", value: "Move · Archive · Reassign · Export" },
       { label: "Views", value: "My deals · Team deals" },
@@ -195,7 +195,7 @@ function BackLink() {
           href="/pricing"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          See pricing →
+          See pricing
         </Link>
       </div>
     </div>
@@ -289,7 +289,6 @@ export default function FeaturesPage() {
                         className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white"
                       >
                         {pillar.link.label}
-                        <span aria-hidden>→</span>
                       </Link>
                     </div>
                   )}

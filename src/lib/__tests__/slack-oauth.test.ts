@@ -76,7 +76,7 @@ afterEach(() => {
 });
 
 describe("exchangeSlackCodeForTokens", () => {
-  it("happy path: ok:true → returns botToken/botUserId/teamId/teamName/scopes and resolves selfEmail via users.info", async () => {
+  it("happy path: ok:true -> returns botToken/botUserId/teamId/teamName/scopes and resolves selfEmail via users.info", async () => {
     mockedFetch
       // 1st call: oauth.v2.access
       .mockResolvedValueOnce(mockResponse(oauthAccessBody()))
@@ -132,7 +132,7 @@ describe("exchangeSlackCodeForTokens", () => {
     expect(Object.values(result)).not.toContain("xoxp-WRONG-USER-TOKEN");
   });
 
-  it("ok:false body (HTTP 200) → throws ExternalServiceError carrying the slack error code", async () => {
+  it("ok:false body (HTTP 200) -> throws ExternalServiceError carrying the slack error code", async () => {
     mockedFetch.mockResolvedValueOnce(
       mockResponse({ ok: false, error: "invalid_code" }, { ok: true, status: 200 })
     );
@@ -149,7 +149,7 @@ describe("exchangeSlackCodeForTokens", () => {
     expect(mockedFetch).toHaveBeenCalledTimes(1);
   });
 
-  it("HTTP non-200 → throws ExternalServiceError (transport failure)", async () => {
+  it("HTTP non-200 -> throws ExternalServiceError (transport failure)", async () => {
     mockedFetch.mockResolvedValueOnce(
       mockResponse({}, { ok: false, status: 502 })
     );
@@ -166,7 +166,7 @@ describe("exchangeSlackCodeForTokens", () => {
     expect(mockedFetch).toHaveBeenCalledTimes(1);
   });
 
-  it("users.info fails (HTTP error) → selfEmail null, the rest of the result still returned (best-effort)", async () => {
+  it("users.info fails (HTTP error) -> selfEmail null, the rest of the result still returned (best-effort)", async () => {
     mockedFetch
       .mockResolvedValueOnce(mockResponse(oauthAccessBody()))
       .mockResolvedValueOnce(mockResponse({}, { ok: false, status: 500 }));
@@ -179,7 +179,7 @@ describe("exchangeSlackCodeForTokens", () => {
     expect(result.teamId).toBe("T0TEAM");
   });
 
-  it("users.info returns no email (profile present, email absent) → selfEmail null", async () => {
+  it("users.info returns no email (profile present, email absent) -> selfEmail null", async () => {
     mockedFetch
       .mockResolvedValueOnce(mockResponse(oauthAccessBody()))
       .mockResolvedValueOnce(mockResponse(usersInfoBody(undefined)));
@@ -190,7 +190,7 @@ describe("exchangeSlackCodeForTokens", () => {
     expect(result.botToken).toBe("xoxb-BOT-TOKEN");
   });
 
-  it("users.info returns ok:false → selfEmail null (best-effort, still returns)", async () => {
+  it("users.info returns ok:false -> selfEmail null (best-effort, still returns)", async () => {
     mockedFetch
       .mockResolvedValueOnce(mockResponse(oauthAccessBody()))
       .mockResolvedValueOnce(
@@ -203,7 +203,7 @@ describe("exchangeSlackCodeForTokens", () => {
     expect(result.botToken).toBe("xoxb-BOT-TOKEN");
   });
 
-  it("missing env var → throws a clear error before any network call", async () => {
+  it("missing env var -> throws a clear error before any network call", async () => {
     delete env.SLACK_CLIENT_SECRET;
 
     let caught: unknown;

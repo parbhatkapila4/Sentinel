@@ -41,7 +41,7 @@ function BackLink() {
           href="/docs/developers"
           className="text-sm text-white/60 hover:text-white transition-colors"
         >
-          Developer docs →
+          Developer docs
         </Link>
       </div>
     </div>

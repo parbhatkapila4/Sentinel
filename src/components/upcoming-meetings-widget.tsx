@@ -113,7 +113,7 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
               href="/settings"
               className="text-sm font-medium text-[#0ea5e9]/90 hover:text-[#38bdf8] transition-colors"
             >
-              Connect Calendar →
+              Connect Calendar
             </Link>
           </div>
         </div>
@@ -172,7 +172,7 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white [font-family:var(--font-syne),var(--font-geist-sans),sans-serif]">Upcoming Meetings</h3>
         <Link href="/settings" className="text-sm text-white/40 hover:text-white transition-colors">
-          Settings →
+          Settings
         </Link>
       </div>
 
@@ -231,7 +231,7 @@ export function UpcomingMeetingsWidget({ limit = 5 }: { limit?: number }) {
                         href={`/deals/${meeting.dealId}`}
                         className="text-xs text-blue-400 hover:underline mt-1 inline-block"
                       >
-                        View Deal →
+                        View Deal
                       </Link>
                     )}
                   </div>

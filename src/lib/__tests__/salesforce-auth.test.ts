@@ -121,7 +121,7 @@ afterEach(() => {
 });
 
 describe("getSalesforceAccessToken - client_credentials branch", () => {
-  it("valid cached token → returns decrypted token, no fetch, single client_credentials metric", async () => {
+  it("valid cached token -> returns decrypted token, no fetch, single client_credentials metric", async () => {
     const token = await getSalesforceAccessToken(ccIntegration() as never);
 
     expect(token).toBe("cached-access-token");
@@ -149,7 +149,7 @@ describe("getSalesforceAccessToken - client_credentials branch", () => {
     expect(mockedFetch).not.toHaveBeenCalled();
   });
 
-  it("expired cached token → mints a new client_credentials token and persists encrypted (legacy path preserved)", async () => {
+  it("expired cached token -> mints a new client_credentials token and persists encrypted (legacy path preserved)", async () => {
     const integration = ccIntegration({
       accessToken: "ENC:stale",
       accessTokenExpiresAt: new Date(Date.now() - 1000),
@@ -181,7 +181,7 @@ describe("getSalesforceAccessToken - client_credentials branch", () => {
 });
 
 describe("getSalesforceAccessToken - oauth branch", () => {
-  it("valid cached oauth token → returns cached, no fetch, oauth_cached metric", async () => {
+  it("valid cached oauth token -> returns cached, no fetch, oauth_cached metric", async () => {
     const token = await getSalesforceAccessToken(
       oauthIntegration() as never
     );
@@ -195,7 +195,7 @@ describe("getSalesforceAccessToken - oauth branch", () => {
     );
   });
 
-  it("expired oauth token → triggers refresh and returns the refreshed token", async () => {
+  it("expired oauth token -> triggers refresh and returns the refreshed token", async () => {
     const integration = oauthIntegration({
       accessTokenExpiresAt: new Date(Date.now() + 30_000),
     });
@@ -221,7 +221,7 @@ describe("getSalesforceAccessToken - oauth branch", () => {
     );
   });
 
-  it("oauth row with null refreshToken → throws 're-connect required' without any fetch", async () => {
+  it("oauth row with null refreshToken -> throws 're-connect required' without any fetch", async () => {
     const integration = oauthIntegration({ refreshToken: null });
 
     await expect(
@@ -230,7 +230,7 @@ describe("getSalesforceAccessToken - oauth branch", () => {
     expect(mockedFetch).not.toHaveBeenCalled();
   });
 
-  it("unknown authMethod → throws ExternalServiceError", async () => {
+  it("unknown authMethod -> throws ExternalServiceError", async () => {
     const integration = ccIntegration({ authMethod: "service_account" });
 
     await expect(
@@ -284,7 +284,7 @@ describe("refreshSalesforceOAuthToken", () => {
     expect(expiry.getTime()).toBeLessThanOrEqual(after + expectedLifetime + 5000);
   });
 
-  it("success WITH instance_url in response that differs → also updates instanceUrl (Salesforce-specific)", async () => {
+  it("success WITH instance_url in response that differs -> also updates instanceUrl (Salesforce-specific)", async () => {
     prismaMock.salesforceIntegration.findUnique.mockResolvedValue(
       oauthIntegration() as never
     );
@@ -303,7 +303,7 @@ describe("refreshSalesforceOAuthToken", () => {
     expect(data.instanceUrl).toBe("https://na123.my.salesforce.com");
   });
 
-  it("success withOUT instance_url → leaves instanceUrl untouched", async () => {
+  it("success withOUT instance_url -> leaves instanceUrl untouched", async () => {
     prismaMock.salesforceIntegration.findUnique.mockResolvedValue(
       oauthIntegration() as never
     );
@@ -319,7 +319,7 @@ describe("refreshSalesforceOAuthToken", () => {
     expect(data).not.toHaveProperty("instanceUrl");
   });
 
-  it("success WITH instance_url that matches existing (after normalization) → skips the instanceUrl update", async () => {
+  it("success WITH instance_url that matches existing (after normalization) -> skips the instanceUrl update", async () => {
     prismaMock.salesforceIntegration.findUnique.mockResolvedValue(
       oauthIntegration({ instanceUrl: INSTANCE_URL }) as never
     );

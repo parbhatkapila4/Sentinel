@@ -64,7 +64,7 @@ export function ComparisonTable() {
             <p>We can tailor workflows, integrations, and limits to fit your team&apos;s needs.</p>
           </div>
           <a className="btn-outline" href="mailto:parbhat@parbhat.work">
-            Talk to the founder →
+            Talk to the founder
           </a>
         </div>
       </div>

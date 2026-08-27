@@ -22,7 +22,7 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 **What.** `/api/events` streams Server-Sent Events. Publishers append to a bounded per-user Redis list with monotonic IDs (`src/lib/realtime.ts`). Consumers send `Last-Event-ID` on reconnect and read forward via a cursor (`consumeUserEventsSince`) - never destructive pop.
 
-**Why not WebSockets.** WS demands a long-lived bidirectional runtime. Vercel's serverless model and our auth model (Clerk session cookies on standard HTTP) work cleanly with SSE; WS would force a separate runtime, an auth bridge, and reconnection plumbing we don't need. We push only server → client; chat is request/response.
+**Why not WebSockets.** WS demands a long-lived bidirectional runtime. Vercel's serverless model and our auth model (Clerk session cookies on standard HTTP) work cleanly with SSE; WS would force a separate runtime, an auth bridge, and reconnection plumbing we don't need. We push only server -> client; chat is request/response.
 
 **Why a cursor, not destructive consume.** The original design popped events on read. A reconnecting client could lose any frame published mid-disconnect. Switching to monotonic IDs + cursor reads gives at-least-once semantics - clients dedupe by ID. The cost is a slightly larger Redis footprint (events live until trimmed) and the responsibility on the consumer to handle duplicates.
 
@@ -34,7 +34,7 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 ## 2. AI router: per-model circuit isolation, not per-provider
 
-**What.** `src/lib/ai-router.ts` maps query intent → primary model → fallback list. Each model has its own named circuit (`circuit-breaker.ts`). When OpenRouter starts returning 5xx for one model, that breaker opens; routing falls through to the next candidate. `src/lib/retry.ts` short-circuits on open breakers so we don't waste retries.
+**What.** `src/lib/ai-router.ts` maps query intent -> primary model -> fallback list. Each model has its own named circuit (`circuit-breaker.ts`). When OpenRouter starts returning 5xx for one model, that breaker opens; routing falls through to the next candidate. `src/lib/retry.ts` short-circuits on open breakers so we don't waste retries.
 
 **Why per-model rather than per-provider.** OpenRouter is the provider. Inside it, individual models fail independently - Anthropic Claude can be flaky while OpenAI GPT-4o is fine. A per-provider breaker would punish every model when one is bad. Per-model isolation keeps healthy models serving traffic during partial outages.
 
@@ -62,7 +62,7 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 ## 4. Auth boundary: default-deny middleware, explicit public list
 
-**What.** `src/proxy.ts` (Next 16's middleware entrypoint) runs Clerk on every request *except* a small list of explicitly enumerated public routes (sign-in, marketing pages, OAuth callbacks, cron, webhooks). Everything else 302s to sign-in if no Clerk session is present.
+**What.** `src/proxy.ts` (Next 16's middleware entrypoint) runs Clerk on every request *except* a small list of explicitly enumerated public routes (sign-in, marketing pages, OAuth callbacks, cron, webhooks). Everything else 307s to sign-in if no Clerk session is present. One carve-out sits *in front of* Clerk: HEAD requests are presented to it as non-navigation fetches (`asNonNavigationRequest`, `sec-fetch-dest: empty`) because a HEAD can never be a browser navigation, yet Clerk would otherwise 307 a cookie-less `Accept: text/html` HEAD (uptime monitors, link checkers) into its browser handshake - an endpoint that only allows GET, so every probe came back 405. Clerk still runs for HEAD (`auth()` keeps working downstream); it just answers inline instead of redirecting.
 
 **Why default-deny rather than per-route guards.** Per-route guards forget. The next contributor adds `/admin/secret-thing` as a Server Component, doesn't know to add an auth check, and ships a leak. A default-deny middleware makes leaks visible at PR review time - anyone adding a public route has to edit one specific list, and reviewers know to question that diff.
 
@@ -70,7 +70,7 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 **Trade-off accepted.** Public marketing pages must be enumerated. The matcher is a regex list at the top of `src/proxy.ts`; new public routes are a one-line edit, but it's still an explicit ceremony.
 
-**Verify.** `src/__tests__/middleware-auth.test.ts` proves protected routes 302 even with spoofed Referer/RSC/prefetch headers.
+**Verify.** `src/__tests__/middleware-auth.test.ts` proves the public list is the only trust signal (spoofed Referer/RSC/prefetch headers don't make a route public). `src/__tests__/middleware-head-probe.test.ts` runs the real `clerkMiddleware` against a fake dev-instance key: a cookie-less GET is handshake-redirected (control), HEAD never is, and HEAD on a protected route 307s to the local sign-in page.
 
 ---
 
@@ -122,7 +122,7 @@ The split lets each path optimize for its job: Actions are zero-ceremony; API ro
 
 ## 8. Cron: fail-closed Bearer auth, no query-string secrets
 
-**What.** `src/lib/cron-auth.ts` rejects any request without `Authorization: Bearer <CRON_SECRET>`. Missing secret in env → 503. Wrong token → 401. No header, no `?secret=…` fallback, no IP allowlist.
+**What.** `src/lib/cron-auth.ts` rejects any request without `Authorization: Bearer <CRON_SECRET>`. Missing secret in env -> 503. Wrong token -> 401. No header, no `?secret=…` fallback, no IP allowlist.
 
 **Why no query-string secrets.** Query strings end up in browser history, server access logs, CDN logs, and Sentry breadcrumbs. A secret in the URL is effectively public the moment a misconfigured proxy logs it. Header-only auth is the same security model every cloud cron service uses (Vercel Cron, Cloud Scheduler, GitHub Actions schedule).
 

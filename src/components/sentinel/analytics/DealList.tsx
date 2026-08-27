@@ -237,7 +237,7 @@ export function DealList({
             color: "var(--signal)",
           }}
         >
-          {footer.label} →
+          {footer.label}
         </Link>
       )}
     </article>
