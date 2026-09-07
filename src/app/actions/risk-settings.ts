@@ -7,8 +7,7 @@ import { ValidationError } from "@/lib/errors";
 import { withDbRetry } from "@/lib/db-connection-helper";
 import { logError, logInfo } from "@/lib/logger";
 import { withErrorContext } from "@/lib/error-context";
-
-const DEFAULT_INACTIVITY_THRESHOLD = 7;
+import { DEFAULT_INACTIVITY_THRESHOLD } from "@/lib/risk-settings";
 
 export async function getMyRiskSettings() {
   try {
@@ -130,20 +129,4 @@ export async function updateMyRiskSettings(settings: {
       }
     }
   );
-}
-
-export async function getUserInactivityThreshold(userId: string): Promise<number> {
-  const row = await prisma.userRiskSettings.findUnique({
-    where: { userId },
-    select: { inactivityThresholdDays: true },
-  });
-  return row?.inactivityThresholdDays ?? DEFAULT_INACTIVITY_THRESHOLD;
-}
-
-export async function isCompetitiveSignalsEnabled(userId: string): Promise<boolean> {
-  const row = await prisma.userRiskSettings.findUnique({
-    where: { userId },
-    select: { enableCompetitiveSignals: true },
-  });
-  return row?.enableCompetitiveSignals ?? true;
 }

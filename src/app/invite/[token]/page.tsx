@@ -142,7 +142,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
         `;
       }
 
-      await acceptUserInvite(token, clerkUser.id);
+      await acceptUserInvite(token);
       redirect("/dashboard");
     } catch (error) {
       console.error("Error accepting invite:", error);

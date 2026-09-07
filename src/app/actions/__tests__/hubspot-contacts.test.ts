@@ -39,7 +39,7 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-import { syncHubSpotContactsForUser } from "@/app/actions/hubspot";
+import { syncHubSpotContactsForUser } from "@/lib/sync/hubspot-sync";
 import { fetchHubSpotContacts } from "@/lib/hubspot";
 import { logWarn } from "@/lib/logger";
 

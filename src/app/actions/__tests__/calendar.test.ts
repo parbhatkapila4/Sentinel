@@ -21,7 +21,7 @@ vi.mock("@/lib/logger", () => ({
   logDebug: vi.fn(),
 }));
 
-import { syncCalendarForUser } from "@/app/actions/calendar";
+import { syncCalendarForUser } from "@/lib/sync/calendar-sync";
 import { incrementMetric } from "@/lib/metrics";
 
 const mockedIncrement = vi.mocked(incrementMetric);

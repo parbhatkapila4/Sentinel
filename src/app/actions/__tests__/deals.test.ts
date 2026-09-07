@@ -207,14 +207,15 @@ describe("getDealById", () => {
       createMockTimelineRecord({ dealId: deal.id }),
     ];
     const events = [createMockDealEventRecord({ dealId: deal.id })];
-    prismaMock.deal.findUnique.mockResolvedValue(dealWithIncludes as never);
+    prismaMock.teamMember.findMany.mockResolvedValue([] as never);
+    prismaMock.deal.findFirst.mockResolvedValue(dealWithIncludes as never);
     prismaMock.dealTimeline.findMany.mockResolvedValue(timeline as never);
     prismaMock.dealEvent.findMany.mockResolvedValue(events as never);
 
     const result = await getDealById(deal.id);
 
-    expect(prismaMock.deal.findUnique).toHaveBeenCalledWith({
-      where: { id: deal.id },
+    expect(prismaMock.deal.findFirst).toHaveBeenCalledWith({
+      where: { id: deal.id, userId: TEST_USER_ID },
       include: {
         team: true,
         assignedTo: { select: { id: true, name: true, surname: true, email: true } },
@@ -234,11 +235,12 @@ describe("getDealById", () => {
   });
 
   it("throws error when deal not found", async () => {
-    prismaMock.deal.findUnique.mockResolvedValue(null);
+    prismaMock.teamMember.findMany.mockResolvedValue([] as never);
+    prismaMock.deal.findFirst.mockResolvedValue(null);
 
     await expect(getDealById("nonexistent")).rejects.toThrow("Deal not found");
-    expect(prismaMock.deal.findUnique).toHaveBeenCalledWith({
-      where: { id: "nonexistent" },
+    expect(prismaMock.deal.findFirst).toHaveBeenCalledWith({
+      where: { id: "nonexistent", userId: TEST_USER_ID },
       include: {
         team: true,
         assignedTo: { select: { id: true, name: true, surname: true, email: true } },
@@ -246,28 +248,36 @@ describe("getDealById", () => {
     });
   });
 
-  it("only returns deal if it belongs to authenticated user", async () => {
-    const otherUserDeal = createMockDealRecord({
-      id: "some-deal-id",
-      userId: "other-user-id",
-      teamId: null,
-    });
-    prismaMock.deal.findUnique.mockResolvedValue({
-      ...otherUserDeal,
-      team: null,
-      assignedTo: null,
-    } as never);
+  it("scopes the query to the caller so a foreign deal is indistinguishable from a missing one", async () => {
+    prismaMock.teamMember.findMany.mockResolvedValue([] as never);
+    prismaMock.deal.findFirst.mockResolvedValue(null);
 
-    await expect(getDealById("some-deal-id")).rejects.toThrow(
-      "You do not have access to this deal"
-    );
-    expect(prismaMock.deal.findUnique).toHaveBeenCalledWith({
-      where: { id: "some-deal-id" },
+    await expect(getDealById("some-deal-id")).rejects.toThrow("Deal not found");
+    expect(prismaMock.deal.findFirst).toHaveBeenCalledWith({
+      where: { id: "some-deal-id", userId: TEST_USER_ID },
       include: {
         team: true,
         assignedTo: { select: { id: true, name: true, surname: true, email: true } },
       },
     });
+    expect(prismaMock.deal.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("widens the scope to the caller's teams inside the WHERE clause", async () => {
+    prismaMock.teamMember.findMany.mockResolvedValue([
+      { teamId: "team-a", role: "viewer" },
+    ] as never);
+    prismaMock.deal.findFirst.mockResolvedValue(null);
+
+    await expect(getDealById("team-deal")).rejects.toThrow("Deal not found");
+    expect(prismaMock.deal.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: "team-deal",
+          OR: [{ userId: TEST_USER_ID }, { teamId: { in: ["team-a"] } }],
+        },
+      })
+    );
   });
 });
 
@@ -399,7 +409,8 @@ describe("updateDealStage", () => {
       id: "deal-to-update",
       stage: STAGES.QUALIFY,
     });
-    prismaMock.deal.findUnique.mockResolvedValue(existing as never);
+    prismaMock.teamMember.findMany.mockResolvedValue([] as never);
+    prismaMock.deal.findFirst.mockResolvedValue(existing as never);
     prismaMock.deal.update.mockResolvedValue({
       ...existing,
       stage: STAGES.NEGOTIATION,
@@ -407,8 +418,8 @@ describe("updateDealStage", () => {
 
     await updateDealStage("deal-to-update", STAGES.NEGOTIATION);
 
-    expect(prismaMock.deal.findUnique).toHaveBeenCalledWith({
-      where: { id: "deal-to-update" },
+    expect(prismaMock.deal.findFirst).toHaveBeenCalledWith({
+      where: { id: "deal-to-update", userId: TEST_USER_ID },
     });
     expect(prismaMock.deal.update).toHaveBeenCalledWith({
       where: { id: "deal-to-update" },
@@ -422,7 +433,8 @@ describe("updateDealStage", () => {
   });
 
   it("throws error when deal not found", async () => {
-    prismaMock.deal.findUnique.mockResolvedValue(null);
+    prismaMock.teamMember.findMany.mockResolvedValue([] as never);
+    prismaMock.deal.findFirst.mockResolvedValue(null);
 
     await expect(
       updateDealStage("nonexistent", STAGES.NEGOTIATION)
@@ -431,11 +443,28 @@ describe("updateDealStage", () => {
     expect(appendDealTimeline).not.toHaveBeenCalled();
   });
 
+  it("a viewer on the deal's team can read it but gets Forbidden on edit, not NotFound", async () => {
+    const teamDeal = createMockDealRecord({
+      id: "team-deal",
+      userId: "other-user-id",
+      teamId: "team-a",
+    });
+    prismaMock.teamMember.findMany.mockResolvedValue([
+      { teamId: "team-a", role: "viewer" },
+    ] as never);
+    prismaMock.deal.findFirst.mockResolvedValue(teamDeal as never);
+
+    await expect(
+      updateDealStage("team-deal", STAGES.NEGOTIATION)
+    ).rejects.toThrow("You cannot edit this deal");
+    expect(prismaMock.deal.update).not.toHaveBeenCalled();
+  });
+
   it("rejects non-canonical stage values before hitting the database", async () => {
     await expect(
       updateDealStage("any-id", "made-up-stage")
     ).rejects.toThrow("Invalid stage value");
-    expect(prismaMock.deal.findUnique).not.toHaveBeenCalled();
+    expect(prismaMock.deal.findFirst).not.toHaveBeenCalled();
     expect(prismaMock.deal.update).not.toHaveBeenCalled();
   });
 });

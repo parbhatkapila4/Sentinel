@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { bulkUpdateDeals, bulkDeleteDeals } from "@/app/actions/bulk-operations";
+import { bulkUpdateDeals, bulkDeleteDeals } from "@/lib/bulk-operations";
 import { successResponse, handleApiError } from "@/lib/api-response";
 import { withRateLimit } from "@/lib/api-rate-limit";
 import { ValidationError } from "@/lib/errors";

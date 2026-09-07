@@ -3,21 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import {
-  validateGoogleCalendarCredentials,
-  fetchCalendarEvents,
-  mapCalendarEventToMeeting,
-  findPotentialDealMatch,
-} from "@/lib/google-calendar";
+import { validateGoogleCalendarCredentials } from "@/lib/google-calendar";
 import { logIntegrationAction } from "./integrations";
 import { runIntegrationConnect } from "@/lib/integration-flow";
-import { notifySlackAfterCrmSync } from "@/lib/post-crm-sync-slack";
-import {
-  decryptIntegrationSecret,
-  encryptIntegrationSecret,
-} from "@/lib/integration-secrets";
-import { incrementMetric } from "@/lib/metrics";
-import { logInfo, logWarn } from "@/lib/logger";
+import { encryptIntegrationSecret } from "@/lib/integration-secrets";
+import { syncLegacyGoogleCalendarForUser } from "@/lib/sync/google-calendar-sync";
+import { SYNC_IN_PROGRESS_MESSAGE } from "@/lib/sync/lock";
 
 export interface GoogleCalendarStatus {
   connected: boolean;
@@ -45,79 +36,6 @@ export interface MeetingDetails {
   endTime: Date;
   attendees?: string[];
   location?: string;
-}
-
-function inferDomainFromAttendees(attendees: string[]): string | null {
-  for (const attendee of attendees) {
-    const domain = attendee.split("@")[1]?.trim().toLowerCase();
-    if (domain) return domain;
-  }
-  return null;
-}
-
-function inferDealNameFromMeeting(meeting: {
-  title: string;
-  description: string | null;
-  attendees: string[];
-}): string {
-  const normalizedTitle = meeting.title.trim();
-  if (normalizedTitle && normalizedTitle.toLowerCase() !== "untitled meeting") {
-    return normalizedTitle.slice(0, 120);
-  }
-
-  const domain = inferDomainFromAttendees(meeting.attendees);
-  if (domain) {
-    return `Deal - ${domain}`;
-  }
-
-  return "Deal from Google Calendar";
-}
-
-async function linkOrCreateDealForMeeting(
-  userId: string,
-  meetingId: string,
-  meetingData: {
-    title: string;
-    description: string | null;
-    attendees: string[];
-    externalId: string;
-  },
-  deals: Array<{
-    id: string;
-    name: string;
-    location?: string | null;
-  }>
-): Promise<boolean> {
-  const potentialDealId = findPotentialDealMatch(meetingData, deals);
-  if (potentialDealId) {
-    await prisma.meeting.update({
-      where: { id: meetingId },
-      data: { dealId: potentialDealId },
-    });
-    return true;
-  }
-
-  const locationDomain = inferDomainFromAttendees(meetingData.attendees);
-  const createdDeal = await prisma.deal.create({
-    data: {
-      userId,
-      name: inferDealNameFromMeeting(meetingData),
-      stage: "discover",
-      value: BigInt(0),
-      location: locationDomain,
-      source: "google_calendar",
-      externalId: `gcal:${meetingData.externalId}`,
-    },
-    select: { id: true, name: true, location: true },
-  });
-
-  await prisma.meeting.update({
-    where: { id: meetingId },
-    data: { dealId: createdDeal.id },
-  });
-
-  deals.push(createdDeal);
-  return true;
 }
 
 export async function connectGoogleCalendar(
@@ -183,132 +101,40 @@ export async function syncCalendarEvents(): Promise<SyncResult> {
     throw new Error("Google Calendar is not connected");
   }
 
-  try {
-    const now = new Date();
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const result = await syncLegacyGoogleCalendarForUser(userId, {
+    requireSyncEnabled: false,
+  });
 
-    const events = await fetchCalendarEvents(
-      decryptIntegrationSecret(integration.apiKey),
-      integration.calendarId,
-      now,
-      thirtyDaysFromNow
-    );
-
-    const deals = await prisma.deal.findMany({
-      where: { userId },
-      select: { id: true, name: true, location: true },
-    });
-
-    let created = 0;
-    let updated = 0;
-    let linked = 0;
-    const errors: string[] = [];
-
-    for (const event of events) {
-      try {
-        const meetingData = mapCalendarEventToMeeting(event, userId);
-
-        const existingMeeting = await prisma.meeting.findFirst({
-          where: {
-            userId,
-            externalId: meetingData.externalId,
-            source: "google_calendar",
-          },
-        });
-
-        let meetingId: string;
-
-        if (existingMeeting) {
-          await prisma.meeting.update({
-            where: { id: existingMeeting.id },
-            data: {
-              title: meetingData.title,
-              description: meetingData.description,
-              startTime: meetingData.startTime,
-              endTime: meetingData.endTime,
-              attendees: meetingData.attendees,
-              location: meetingData.location,
-              meetingLink: meetingData.meetingLink,
-            },
-          });
-          meetingId = existingMeeting.id;
-          updated++;
-        } else {
-          const newMeeting = await prisma.meeting.create({
-            data: meetingData,
-          });
-          meetingId = newMeeting.id;
-          created++;
-        }
-
-        if (!existingMeeting?.dealId) {
-          const didLink = await linkOrCreateDealForMeeting(
-            userId,
-            meetingId,
-            meetingData,
-            deals
-          );
-          if (didLink) linked++;
-        }
-      } catch (error) {
-        errors.push(`Failed to sync event ${event.id}: ${String(error)}`);
-      }
-    }
-
-    const totalSynced = created + updated;
-
-    await prisma.googleCalendarIntegration.update({
-      where: { userId },
-      data: {
-        lastSyncAt: new Date(),
-        lastSyncStatus: "success",
-      },
-    });
-
-    await logIntegrationAction(
-      "google_calendar",
-      "sync",
-      "success",
-      `Synced ${totalSynced} meetings (${created} created, ${updated} updated, ${linked} linked to deals)`,
-      { created, updated, linked, total: events.length }
-    );
-
-    revalidatePath("/settings");
-    revalidatePath("/deals");
-    revalidatePath("/dashboard");
-
-    void notifySlackAfterCrmSync(userId, {
-      provider: "google_calendar",
-      created,
-      updated,
-    });
-
-    return {
-      success: true,
-      synced: totalSynced,
-      created,
-      updated,
-      linked,
-      errors: errors.length > 0 ? errors : undefined,
-    };
-  } catch (error) {
-    await prisma.googleCalendarIntegration.update({
-      where: { userId },
-      data: {
-        lastSyncAt: new Date(),
-        lastSyncStatus: "failed",
-      },
-    });
-
-    await logIntegrationAction(
-      "google_calendar",
-      "sync",
-      "failed",
-      String(error)
-    );
-
-    throw error;
+  if (result.lockSkipped) {
+    throw new Error(SYNC_IN_PROGRESS_MESSAGE);
   }
+
+  if (!result.success) {
+    const message = result.errors?.[0] ?? "Google Calendar sync failed";
+    await logIntegrationAction("google_calendar", "sync", "failed", message);
+    throw new Error(message);
+  }
+
+  const skipped = result.skipped ?? 0;
+  await logIntegrationAction(
+    "google_calendar",
+    "sync",
+    "success",
+    `Synced ${result.synced} meetings (${result.created} created, ${result.updated} updated, ${result.linked} linked to deals, ${skipped} dropped by CRM filter)`,
+    {
+      created: result.created,
+      updated: result.updated,
+      linked: result.linked,
+      skipped,
+      total: result.scanned ?? 0,
+    }
+  );
+
+  revalidatePath("/settings");
+  revalidatePath("/deals");
+  revalidatePath("/dashboard");
+
+  return result;
 }
 
 export async function getUpcomingMeetings(dealId?: string): Promise<Array<{
@@ -476,178 +302,4 @@ export async function updateGoogleCalendarSettings(settings: {
 
   revalidatePath("/settings");
   return { success: true };
-}
-
-export async function syncCalendarEventsForUser(userId: string): Promise<SyncResult> {
-  const startedAt = Date.now();
-  const integration = await prisma.googleCalendarIntegration.findUnique({
-    where: { userId },
-  });
-
-  if (!integration || !integration.isActive || !integration.syncEnabled) {
-    return { success: false, synced: 0, created: 0, updated: 0, linked: 0 };
-  }
-
-  try {
-    const now = new Date();
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    const events = await fetchCalendarEvents(
-      decryptIntegrationSecret(integration.apiKey),
-      integration.calendarId,
-      now,
-      thirtyDaysFromNow
-    );
-
-    const externalIds = events.map((event) => event.id);
-    type ExistingMeeting = { id: string; externalId: string | null; dealId: string | null };
-    const existingMeetings: ExistingMeeting[] = externalIds.length
-      ? await prisma.meeting.findMany({
-        where: {
-          userId,
-          source: "google_calendar",
-          externalId: { in: externalIds },
-        },
-        select: { id: true, externalId: true, dealId: true },
-      })
-      : [];
-    const existingMeetingByExternalId = new Map<string, ExistingMeeting>(
-      existingMeetings
-        .filter((m): m is ExistingMeeting & { externalId: string } => m.externalId !== null)
-        .map((meeting) => [meeting.externalId, meeting])
-    );
-
-    const deals = await prisma.deal.findMany({
-      where: { userId },
-      select: { id: true, name: true, location: true },
-    });
-
-    let created = 0;
-    let updated = 0;
-    let linked = 0;
-    const errors: string[] = [];
-
-    for (const event of events) {
-      try {
-        const meetingData = mapCalendarEventToMeeting(event, userId);
-        const existingMeeting = existingMeetingByExternalId.get(meetingData.externalId);
-
-        let meetingId: string;
-
-        if (existingMeeting) {
-          await prisma.meeting.update({
-            where: { id: existingMeeting.id },
-            data: {
-              title: meetingData.title,
-              description: meetingData.description,
-              startTime: meetingData.startTime,
-              endTime: meetingData.endTime,
-              attendees: meetingData.attendees,
-              location: meetingData.location,
-              meetingLink: meetingData.meetingLink,
-            },
-          });
-          meetingId = existingMeeting.id;
-          updated++;
-        } else {
-          const newMeeting = await prisma.meeting.create({
-            data: meetingData,
-            select: { id: true, externalId: true, dealId: true },
-          }) as { id: string; externalId: string; dealId: string | null };
-          meetingId = newMeeting.id;
-          existingMeetingByExternalId.set(newMeeting.externalId, newMeeting);
-          created++;
-        }
-
-        if (!existingMeeting?.dealId) {
-          const didLink = await linkOrCreateDealForMeeting(
-            userId,
-            meetingId,
-            meetingData,
-            deals
-          );
-          if (didLink) linked++;
-        }
-      } catch (error) {
-        errors.push(
-          `Failed to sync calendar event ${event.id}: ${error instanceof Error ? error.message : String(error)}`
-        );
-      }
-    }
-
-    await prisma.googleCalendarIntegration.update({
-      where: { userId },
-      data: {
-        lastSyncAt: new Date(),
-        lastSyncStatus: "success",
-      },
-    });
-    if (errors.length > 0) {
-      await logIntegrationAction(
-        "google_calendar",
-        "sync",
-        "partial",
-        errors.slice(0, 10).join("; "),
-      );
-    }
-
-    const durationMs = Date.now() - startedAt;
-    void incrementMetric("sync.google_calendar.duration_ms", durationMs);
-    void incrementMetric("sync.google_calendar.success", 1);
-    if (errors.length > 0) {
-      void incrementMetric("sync.google_calendar.item_errors", errors.length);
-    }
-    logInfo("Google Calendar user sync completed", {
-      userId,
-      scanned: events.length,
-      created,
-      updated,
-      linked,
-      failed: errors.length,
-      failureReasons: errors.slice(0, 3),
-      durationMs,
-    });
-    void notifySlackAfterCrmSync(userId, {
-      provider: "google_calendar",
-      created,
-      updated,
-    });
-
-    return {
-      success: true,
-      synced: created + updated,
-      created,
-      updated,
-      linked,
-      scanned: events.length,
-      failed: errors.length,
-      errors: errors.length > 0 ? errors : undefined,
-    };
-  } catch (error) {
-    await prisma.googleCalendarIntegration.update({
-      where: { userId },
-      data: {
-        lastSyncAt: new Date(),
-        lastSyncStatus: "failed",
-      },
-    });
-
-    const durationMs = Date.now() - startedAt;
-    void incrementMetric("sync.google_calendar.errors", 1);
-    logWarn("Google Calendar user sync failed", {
-      userId,
-      durationMs,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      success: false,
-      synced: 0,
-      created: 0,
-      updated: 0,
-      linked: 0,
-      scanned: 0,
-      failed: 1,
-      errors: [String(error)],
-    };
-  }
 }

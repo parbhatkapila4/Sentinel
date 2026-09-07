@@ -189,9 +189,10 @@ export async function inviteUserByEmail(
 }
 
 export async function acceptUserInvite(
-  token: string,
-  userId: string
+  token: string
 ): Promise<{ success: true }> {
+  const userId = await getAuthenticatedUserId();
+
   const invites = await prisma.$queryRaw<Array<{
     id: string;
     email: string;

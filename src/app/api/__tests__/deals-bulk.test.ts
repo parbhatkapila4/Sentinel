@@ -11,7 +11,7 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/lib/api-rate-limit", () => ({
   withRateLimit: (fn: (req: NextRequest) => Promise<Response>) => fn,
 }));
-vi.mock("@/app/actions/bulk-operations", () => ({
+vi.mock("@/lib/bulk-operations", () => ({
   bulkUpdateDeals: (userId: string, dealIds: string[], updates: unknown) =>
     mockBulkUpdateDeals(userId, dealIds, updates),
   bulkDeleteDeals: (userId: string, dealIds: string[]) =>

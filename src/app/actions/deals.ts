@@ -7,7 +7,6 @@ import { withErrorContext } from "@/lib/error-context";
 import {
   STAGE_PRIORITY_FOR_RISK,
   STAGES,
-  TEAM_ROLES,
   normalizeStage,
   normalizeChannel,
 } from "@/lib/config";
@@ -26,6 +25,13 @@ import {
 import { removeDemoDataForUser, hasDemoData, seedDemoDataForUser } from "@/lib/demo-data";
 import { NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
 import { getUserTeamRole } from "@/lib/team-utils";
+import {
+  dealScopeWhere,
+  getTeamMemberships,
+  isDealEditable,
+  isDealTeamAdmin,
+  readableTeamIds,
+} from "@/lib/deal-access";
 import { enforceDealLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
 import { withCache, invalidateCachePattern, invalidateCache } from "@/lib/cache";
@@ -46,26 +52,6 @@ function toDealValueNumber(value: number | bigint): number {
   return typeof value === "bigint" ? Number(value) : value;
 }
 
-export async function canUserAccessDeal(
-  userId: string,
-  deal: { userId: string; teamId: string | null }
-): Promise<boolean> {
-  if (deal.userId === userId) return true;
-  if (!deal.teamId) return false;
-  const role = await getUserTeamRole(userId, deal.teamId);
-  return role !== null;
-}
-
-export async function canUserEditDeal(
-  userId: string,
-  deal: { userId: string; teamId: string | null }
-): Promise<boolean> {
-  if (deal.userId === userId) return true;
-  if (!deal.teamId) return false;
-  const role = await getUserTeamRole(userId, deal.teamId);
-  if (!role) return false;
-  return role !== TEAM_ROLES.VIEWER;
-}
 
 export async function createDeal(formData: FormData) {
   const userId = await getAuthenticatedUserId();
@@ -455,8 +441,12 @@ export async function getDealById(dealId: string) {
 
   const cacheKey = `deal:${dealId}:${userId}`;
   return withCache(cacheKey, 30, async () => {
-    const deal = await prisma.deal.findUnique({
-      where: { id: dealId },
+    const memberships = await getTeamMemberships(userId);
+    const deal = await prisma.deal.findFirst({
+      where: {
+        id: dealId,
+        ...dealScopeWhere(userId, readableTeamIds(memberships)),
+      },
       include: {
         team: true,
         assignedTo: {
@@ -466,9 +456,6 @@ export async function getDealById(dealId: string) {
     });
 
     if (!deal) throw new NotFoundError("Deal");
-
-    const canAccess = await canUserAccessDeal(userId, deal);
-    if (!canAccess) throw new ForbiddenError("You do not have access to this deal");
 
     const timeline = await prisma.dealTimeline.findMany({
       where: { dealId: deal.id },
@@ -530,11 +517,18 @@ export async function deleteDeal(dealId: string) {
   return await withErrorContext(
     { userId, actionType: "delete_deal", dealId },
     async () => {
-      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      const memberships = await getTeamMemberships(userId);
+      const deal = await prisma.deal.findFirst({
+        where: {
+          id: dealId,
+          ...dealScopeWhere(userId, readableTeamIds(memberships)),
+        },
+      });
       if (!deal) throw new NotFoundError("Deal");
 
-      const canEdit = await canUserEditDeal(userId, deal);
-      if (!canEdit) throw new ForbiddenError("You cannot delete this deal");
+      if (!isDealEditable(userId, deal, memberships)) {
+        throw new ForbiddenError("You cannot delete this deal");
+      }
 
       if (deal.isDemo) throw new ValidationError("Cannot delete demo deals; they are removed when you add your first real deal.");
 
@@ -596,11 +590,18 @@ export async function updateDealStage(dealId: string, newStage: string) {
         throw new ValidationError("Invalid stage value", { stage: "Invalid" });
       }
 
-      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      const memberships = await getTeamMemberships(userId);
+      const deal = await prisma.deal.findFirst({
+        where: {
+          id: dealId,
+          ...dealScopeWhere(userId, readableTeamIds(memberships)),
+        },
+      });
       if (!deal) throw new NotFoundError("Deal");
 
-      const canEdit = await canUserEditDeal(userId, deal);
-      if (!canEdit) throw new ForbiddenError("You cannot edit this deal");
+      if (!isDealEditable(userId, deal, memberships)) {
+        throw new ForbiddenError("You cannot edit this deal");
+      }
 
       const oldStage = deal.stage;
 
@@ -721,13 +722,17 @@ export async function assignDeal(
   return await withErrorContext(
     { userId, actionType: "assign_deal", dealId },
     async () => {
-      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      const memberships = await getTeamMemberships(userId);
+      const deal = await prisma.deal.findFirst({
+        where: {
+          id: dealId,
+          ...dealScopeWhere(userId, readableTeamIds(memberships)),
+        },
+      });
       if (!deal) throw new NotFoundError("Deal");
       if (!deal.teamId) throw new ForbiddenError("Deal must belong to a team");
 
-      const myRole = await getUserTeamRole(userId, deal.teamId);
-      if (!myRole) throw new ForbiddenError("You are not a member of this team");
-      if (myRole !== "owner" && myRole !== "admin") {
+      if (!isDealTeamAdmin(deal, memberships)) {
         throw new ForbiddenError("Only owners and admins can assign deals");
       }
 
@@ -774,12 +779,18 @@ export async function moveDealToTeam(dealId: string, teamId: string) {
   return await withErrorContext(
     { userId, actionType: "move_deal_to_team", dealId, teamId },
     async () => {
-      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      const memberships = await getTeamMemberships(userId);
+      const deal = await prisma.deal.findFirst({
+        where: {
+          id: dealId,
+          ...dealScopeWhere(userId, readableTeamIds(memberships)),
+        },
+      });
       if (!deal) throw new NotFoundError("Deal");
       if (deal.userId !== userId) throw new ForbiddenError("You do not own this deal");
       if (deal.teamId) throw new ForbiddenError("Deal is already a team deal");
 
-      const role = await getUserTeamRole(userId, teamId);
+      const role = memberships.find((m) => m.teamId === teamId)?.role ?? null;
       if (!role) throw new ForbiddenError("You are not a member of this team");
 
       logInfo("Moving deal to team", {
@@ -815,13 +826,17 @@ export async function moveDealToPersonal(dealId: string) {
   return await withErrorContext(
     { userId, actionType: "move_deal_to_personal", dealId },
     async () => {
-      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      const memberships = await getTeamMemberships(userId);
+      const deal = await prisma.deal.findFirst({
+        where: {
+          id: dealId,
+          ...dealScopeWhere(userId, readableTeamIds(memberships)),
+        },
+      });
       if (!deal) throw new NotFoundError("Deal");
       if (!deal.teamId) throw new ForbiddenError("Deal is not a team deal");
 
-      const myRole = await getUserTeamRole(userId, deal.teamId);
-      if (!myRole) throw new ForbiddenError("You are not a member of this team");
-      if (myRole !== "owner" && myRole !== "admin") {
+      if (!isDealTeamAdmin(deal, memberships)) {
         throw new ForbiddenError("Only owners and admins can move deals to personal");
       }
 

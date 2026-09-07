@@ -35,7 +35,7 @@ vi.mock("@/lib/logger", () => ({
   logDebug: vi.fn(),
 }));
 
-import { syncSalesforceContactsForUser } from "@/app/actions/salesforce";
+import { syncSalesforceContactsForUser } from "@/lib/sync/salesforce-sync";
 import { fetchSalesforceContacts } from "@/lib/salesforce";
 import type { SalesforceContact } from "@/lib/salesforce";
 import { logWarn } from "@/lib/logger";

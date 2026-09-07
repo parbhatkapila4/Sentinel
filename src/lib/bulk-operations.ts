@@ -1,7 +1,9 @@
-"use server";
-
 import { prisma } from "@/lib/prisma";
-import { canUserEditDeal } from "@/app/actions/deals";
+import {
+  dealScopeWhere,
+  editableTeamIds,
+  getTeamMemberships,
+} from "@/lib/deal-access";
 import { invalidateCachePattern, invalidateCache } from "@/lib/cache";
 import { revalidatePath } from "next/cache";
 import { appendDealTimeline } from "@/lib/timeline";
@@ -45,9 +47,14 @@ async function validateDealAccess(
   }
 
   const uniqueIds = [...new Set(dealIds)];
+
+  const memberships = await getTeamMemberships(userId);
   const deals = await prisma.deal.findMany({
-    where: { id: { in: uniqueIds } },
-    select: { id: true, userId: true, teamId: true, name: true, isDemo: true },
+    where: {
+      id: { in: uniqueIds },
+      ...dealScopeWhere(userId, editableTeamIds(memberships)),
+    },
+    select: { id: true, userId: true, teamId: true, isDemo: true },
   });
 
   const dealMap = new Map(deals.map((d) => [d.id, d]));
@@ -57,16 +64,11 @@ async function validateDealAccess(
   for (const id of uniqueIds) {
     const deal = dealMap.get(id);
     if (!deal) {
-      errors.push(`Deal ${id} not found`);
+      errors.push(`Deal ${id} not found or not editable`);
       continue;
     }
     if (deal.isDemo) {
-      errors.push(`Cannot modify demo deal "${deal.name}"`);
-      continue;
-    }
-    const canEdit = await canUserEditDeal(userId, deal);
-    if (!canEdit) {
-      errors.push(`No permission to edit deal "${deal.name}"`);
+      errors.push(`Cannot modify demo deal ${id}`);
       continue;
     }
     editableDeals.push({ id: deal.id, userId: deal.userId, teamId: deal.teamId });
