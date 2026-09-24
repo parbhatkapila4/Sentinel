@@ -34,7 +34,7 @@ export function Providers() {
       iconClass: "gmail",
       logo: "/MAIL-B.png",
       alt: "Gmail logo",
-      desc: "Thread-level ingest with read-only OAuth scopes and sentiment extraction.",
+      desc: "Per-message ingest with read-only OAuth scopes.",
       connected: true,
     },
     {

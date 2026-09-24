@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUserId } from "@/lib/auth";
 import { encryptIntegrationSecret } from "@/lib/integration-secrets";
 import { logError, logInfo } from "@/lib/logger";
 import {
@@ -16,7 +17,9 @@ const OAUTH_COOKIE_PATH = "/api/oauth/calendar";
 type CallbackErrorCode =
   | "consent_denied"
   | "missing_params"
+  | "invalid_state"
   | "state_mismatch"
+  | "user_mismatch"
   | "token_exchange"
   | "no_refresh_token"
   | "userinfo_failed"
@@ -81,8 +84,20 @@ export async function GET(request: NextRequest) {
   const cookieState = parseStateCookie(
     request.cookies.get(OAUTH_COOKIE_NAME)?.value
   );
-  if (!cookieState || cookieState.state !== state) {
+  if (!cookieState) {
+    return redirectWithError(request, "invalid_state");
+  }
+  if (cookieState.state !== state) {
     return redirectWithError(request, "state_mismatch");
+  }
+  let currentUserId: string;
+  try {
+    currentUserId = await getAuthenticatedUserId();
+  } catch {
+    return redirectWithError(request, "user_mismatch");
+  }
+  if (currentUserId !== cookieState.userId) {
+    return redirectWithError(request, "user_mismatch");
   }
 
   const userId = cookieState.userId;

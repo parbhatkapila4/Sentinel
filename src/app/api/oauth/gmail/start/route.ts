@@ -34,6 +34,17 @@ export async function GET() {
   }
 
   const state = generateOAuthState();
+
+  let cookieValue: string;
+  try {
+    cookieValue = serializeStateCookie({ state, userId });
+  } catch {
+    return NextResponse.json(
+      { error: "Google OAuth state signing is not configured" },
+      { status: 500 }
+    );
+  }
+
   const authUrl = buildGoogleAuthUrl({
     clientId,
     redirectUri,
@@ -42,7 +53,7 @@ export async function GET() {
   });
 
   const response = NextResponse.redirect(authUrl);
-  response.cookies.set(OAUTH_COOKIE_NAME, serializeStateCookie({ state, userId }), {
+  response.cookies.set(OAUTH_COOKIE_NAME, cookieValue, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

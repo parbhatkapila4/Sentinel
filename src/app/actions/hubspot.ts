@@ -1,8 +1,10 @@
 "use server";
 
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { ValidationError } from "@/lib/errors";
 import {
   validateHubSpotCredentials,
   fetchHubSpotDeals,
@@ -274,21 +276,28 @@ export async function getHubSpotStatus(): Promise<HubSpotStatus> {
   };
 }
 
+const hubSpotSettingsSchema = z.object({
+  syncEnabled: z.boolean().optional(),
+});
+
 export async function updateHubSpotSettings(settings: {
   syncEnabled?: boolean;
 }): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
+  const parsed = hubSpotSettingsSchema.safeParse(settings);
+  if (!parsed.success) throw new ValidationError("Invalid HubSpot settings");
+
   await prisma.hubSpotIntegration.update({
     where: { userId },
-    data: settings,
+    data: parsed.data,
   });
 
   await logIntegrationAction(
     "hubspot",
     "settings_update",
     "success",
-    `Updated settings: ${JSON.stringify(settings)}`
+    `Updated settings: ${JSON.stringify(parsed.data)}`
   );
 
   revalidatePath("/settings");

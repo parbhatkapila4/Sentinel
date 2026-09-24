@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { signCookieValue, verifyCookieValue } from "@/lib/signed-cookies";
 
 export type GoogleScope = string;
 
@@ -40,21 +41,13 @@ export function generateOAuthState(): string {
 }
 
 export type OAuthStateCookie = { state: string; userId: string };
-
 export function serializeStateCookie(payload: OAuthStateCookie): string {
-  return JSON.stringify(payload);
+  return signCookieValue(payload);
 }
-
 export function parseStateCookie(
   raw: string | undefined
 ): OAuthStateCookie | null {
-  if (!raw) return null;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  const parsed = verifyCookieValue<OAuthStateCookie>(raw);
   if (
     !parsed ||
     typeof parsed !== "object" ||

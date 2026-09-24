@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Developer docs · Sentinel",
   description:
-    "Authentication, deal API, webhook events, and signed payloads - everything you need to build on top of Sentinel.",
+    "Outbound webhook events, signed payloads, and the API reference for Sentinel's documented endpoints.",
 };
 
 function BackLink() {
@@ -53,7 +53,7 @@ const surfaces = [
     href: "#webhooks",
     label: "Webhooks",
     description:
-      "HMAC-signed event deliveries with a 30-day inspection log.",
+      "HMAC-signed event deliveries, with recent delivery attempts listed in Settings.",
     meta: "HMAC-SHA256",
   },
 ] as const;
@@ -76,61 +76,6 @@ type GuideSection = {
 const guides: GuideSection[] = [
   {
     kicker: "01",
-    title: "Authentication",
-    lede:
-      "Every request needs a Bearer token in the Authorization header. Tokens are workspace-scoped - they read and write only the workspace they were issued for.",
-    meta: [
-      { label: "Header", value: "Authorization: Bearer <token>" },
-      { label: "Scope", value: "Workspace" },
-      { label: "Rotation", value: "Manual via settings" },
-    ],
-    blocks: [
-      {
-        kind: "code",
-        block: {
-          language: "bash",
-          body: `curl -X GET "https://api.sentinel.dev/api/deals" \\
-  -H "Authorization: Bearer your_api_token" \\
-  -H "Content-Type: application/json"`,
-        },
-      },
-    ],
-  },
-  {
-    kicker: "02",
-    title: "List deals",
-    lede:
-      "GET /api/deals returns paginated deals scoped to the token's workspace. Filter by stage, owner, or risk band via query params. Risk score and reasons are computed on read.",
-    meta: [
-      { label: "Method", value: "GET" },
-      { label: "Path", value: "/api/deals" },
-      { label: "Pagination", value: "limit + cursor" },
-    ],
-    blocks: [
-      {
-        kind: "code",
-        block: {
-          language: "json",
-          body: `{
-  "success": true,
-  "data": [
-    {
-      "id": "clx123abc",
-      "name": "Acme Corp",
-      "stage": "negotiation",
-      "value": 50000,
-      "riskLevel": "Low",
-      "riskScore": 0.25
-    }
-  ],
-  "nextCursor": null
-}`,
-        },
-      },
-    ],
-  },
-  {
-    kicker: "03",
     title: "Webhook events",
     lede:
       "Configure outbound webhooks to receive real-time notifications when deals change. Each delivery is signed with HMAC-SHA256 over the JSON body using your webhook secret.",
@@ -160,7 +105,7 @@ const guides: GuideSection[] = [
     ],
   },
   {
-    kicker: "04",
+    kicker: "02",
     title: "Webhook payload",
     lede:
       "Every webhook delivery has a stable envelope: id, event, timestamp, and a typed data block. Always verify the X-Webhook-Signature header before trusting the body.",
@@ -277,13 +222,11 @@ export default function DeveloperDocsPage() {
             Build on Sentinel.
           </h1>
           <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
-            A typed REST surface, signed webhooks, and an interactive OpenAPI
-            explorer. The API reads and writes the same workspace your team
-            uses - risk scores included on every read.
+            Signed outbound webhooks and an interactive OpenAPI explorer. The
+            documented endpoints, AI chat and notifications, use your signed-in
+            session; there are no API tokens.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
-            <span>Bearer token auth</span>
-            <span className="text-white/20">·</span>
             <span>HMAC-SHA256 webhook signing</span>
             <span className="text-white/20">·</span>
             <span>OpenAPI 3.0 spec</span>
@@ -384,11 +327,11 @@ export default function DeveloperDocsPage() {
                 Next
               </div>
               <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-white mb-3 max-w-xl leading-tight">
-                Try a request against your workspace.
+                Try a request.
               </h2>
               <p className="text-white/60 leading-relaxed max-w-xl">
-                The API reference embeds your token-aware Swagger UI. Hit any
-                endpoint live, copy the curl, and ship.
+                The API reference runs Swagger UI against the documented
+                endpoints. Sign in first; requests use your session.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 md:justify-end">

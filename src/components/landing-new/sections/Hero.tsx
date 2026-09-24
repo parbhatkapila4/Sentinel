@@ -57,7 +57,7 @@ export function Hero() {
             <div className="substat"><div className="substat-num"><span className="green-text">0-1</span></div><div className="substat-lbl">Risk score</div></div>
             <div className="substat"><div className="substat-num"><span className="green-text">Daily</span></div><div className="substat-lbl">CRM sync</div></div>
             <div className="substat"><div className="substat-num"><span className="green-text">HMAC</span></div><div className="substat-lbl">Webhook signing</div></div>
-            <div className="substat"><div className="substat-num"><span className="green-text">AES-256</span></div><div className="substat-lbl">GCM · secrets at rest</div></div>
+            <div className="substat"><div className="substat-num"><span className="green-text">AES-256</span></div><div className="substat-lbl">GCM · tokens at rest</div></div>
           </motion.div>
         </motion.div>
         <motion.div
@@ -79,8 +79,6 @@ export function Hero() {
               </div>
               <div className="hp-status">
                 <span className="hp-stat-item"><span className="hp-pulse" />4 CONNECTED SOURCES</span>
-                <span className="hp-stat-sep">·</span>
-                <span className="hp-stat-item">SCORED <b>ON READ</b></span>
                 <span className="hp-stat-spacer" />
                 <span className="hp-stat-item live"><span className="hp-pulse-green" />EXAMPLE</span>
               </div>
@@ -116,16 +114,12 @@ export function Hero() {
                       <span className="hp-signal-right">14d</span>
                     </div>
                     <div className="hp-signal-row">
-                      <span className="hp-signal-left"><span className="hp-signal-dot red" />Competitor keyword in thread</span>
+                      <span className="hp-signal-left"><span className="hp-signal-dot red" />Competitor keyword in timeline</span>
                       <span className="hp-signal-right">2×</span>
                     </div>
                     <div className="hp-signal-row">
                       <span className="hp-signal-left"><span className="hp-signal-dot amber" />Stage age vs average</span>
                       <span className="hp-signal-right">2.4×</span>
-                    </div>
-                    <div className="hp-signal-row">
-                      <span className="hp-signal-left"><span className="hp-signal-dot amber" />Email sentiment</span>
-                      <span className="hp-signal-right">NEGATIVE</span>
                     </div>
                   </div>
                 </div>
@@ -134,7 +128,7 @@ export function Hero() {
                     <span className="hp-diag-tag"><span className="hp-spark" />SENTINEL · BRIEF</span>
                     <span className="hp-diag-meta">4 SOURCES</span>
                   </div>
-                  <div className="hp-diag-body">Acme has been <em>silent for 14 days</em> since the security review. No inbound reply from the customer side, and a competitor keyword matched twice in the thread. Route to <u>Marcus</u> before Friday. <em>Win probability 68%</em>.<span className="hp-caret" /></div>
+                  <div className="hp-diag-body">Acme has been <em>silent for 14 days</em> since the security review. No inbound reply from the customer side, and a competitor keyword matched twice in its timeline events. Route to <u>Marcus</u> before Friday. <em>Win probability 68%</em>.<span className="hp-caret" /></div>
                 </div>
                 <div className="hp-actions">
                   <button className="hp-action hi" type="button"><span className="hp-action-lbl">SUGGESTED · HIGH IMPACT</span><span className="hp-action-text">Draft re-engagement email</span></button>

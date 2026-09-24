@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
+import { isHttpsWebhookUrl, WEBHOOK_URL_HTTPS_MESSAGE } from "./webhook-url";
 export type WebhookEventType =
   | "deal.created"
   | "deal.stage_changed"
@@ -70,6 +71,19 @@ export async function deliverWebhook(
     return { success: false, error: "Webhook not found or inactive" };
   }
 
+  if (!isHttpsWebhookUrl(webhook.url)) {
+    await prisma.webhookDelivery.create({
+      data: {
+        webhookId,
+        event: payload.event,
+        payload: JSON.parse(JSON.stringify(payload)) as Prisma.InputJsonValue,
+        success: false,
+        response: `Not sent: ${WEBHOOK_URL_HTTPS_MESSAGE}`,
+      },
+    });
+    return { success: false, error: WEBHOOK_URL_HTTPS_MESSAGE };
+  }
+
   const payloadString = JSON.stringify(payload);
   const signature = generateSignature(payloadString, webhook.secret);
 
@@ -83,6 +97,7 @@ export async function deliverWebhook(
         "X-Webhook-Delivery-Id": payload.id,
       },
       body: payloadString,
+      redirect: "manual",
     });
 
     const responseText = await response.text().catch(() => "");

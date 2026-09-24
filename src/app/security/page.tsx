@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     "How Sentinel handles your data: least-privilege credentials, encryption at rest, signed webhooks, and the things we deliberately don't do.",
 };
 
-const lastReviewed = "April 19, 2026";
+const lastReviewed = "August 8, 2026";
 
 function BackLink() {
   return (
@@ -49,7 +49,7 @@ const principles: Principle[] = [
   {
     title: "Least-privilege integrations",
     body:
-      "Integrations connect through OAuth: you authorize Sentinel from a provider redirect and it receives scoped tokens - there are no keys to paste. HubSpot, Salesforce, Gmail, and Google Calendar are read-only; Slack runs as a scoped app that reads the channels its bot is added to and posts alerts. Each token is used only for the specific paths the product exercises - if a feature doesn't need a permission, we don't ask for it.",
+      "Integrations connect through OAuth: you authorize Sentinel from a provider redirect and it receives scoped tokens - there are no keys to paste. HubSpot, Salesforce, Gmail, and Google Calendar are read-only; Slack runs as a scoped app that reads the channels its bot is added to; the bot does not post alerts, which go only to Slack incoming webhooks added in an earlier version of Settings. Each token is used only for the specific paths the product exercises - if a feature doesn't need a permission, we don't ask for it.",
   },
   {
     title: "Read-only by default",
@@ -59,12 +59,12 @@ const principles: Principle[] = [
   {
     title: "Encryption at rest and in transit",
     body:
-      "All traffic uses TLS 1.2+. Integration tokens and webhook secrets are encrypted at rest in the database. The application itself is served over HTTPS with HSTS, a strict Content-Security-Policy, and a locked-down Permissions-Policy.",
+      "All traffic uses TLS 1.2+. Integration tokens are encrypted at rest in the database. The application itself is served over HTTPS with HSTS, a Content-Security-Policy, and a Permissions-Policy.",
   },
   {
     title: "Signed, auditable webhooks",
     body:
-      "Outbound webhooks are signed with HMAC-SHA256 using a per-webhook secret. Every delivery attempt is logged with its response status and visible in the dashboard for 30 days. Delivery is a single synchronous attempt today - a durable retry queue is not built yet.",
+      "Outbound webhooks are signed with HMAC-SHA256 using a per-webhook secret. Every delivery attempt is logged with its response status, or the error when no response came back. Delivery is a single synchronous attempt today - a durable retry queue is not built yet.",
   },
   {
     title: "Deletion means deletion",
@@ -92,14 +92,9 @@ const platform: Practice[] = [
       "Clerk handles identity. Email/password, Google, and SSO flows are managed by Clerk; we never see your password.",
   },
   {
-    label: "Monitoring",
-    detail:
-      "Sentry for application errors and performance. Structured logs carry a request ID from edge to database.",
-  },
-  {
     label: "Rate limiting",
     detail:
-      "Upstash-backed sliding-window limiting on API routes. It fails open: if Redis is unavailable the request is allowed rather than dropped.",
+      "Upstash-backed sliding-window limiting on selected API routes: AI chat, deal search, deal export, bulk deal actions, alerts, the notification list, and analytics tracking. Other API routes and server actions are not rate limited. It fails open: if Redis is unavailable the request is allowed rather than dropped.",
   },
   {
     label: "Secret handling",

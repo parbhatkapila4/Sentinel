@@ -39,7 +39,7 @@ const principles = [
   {
     label: "Free stays free",
     body:
-      "The Free plan is usable, not a crippled demo. 25 active deals, real risk scoring, one integration, one webhook - enough to run a small book or evaluate the product against live data.",
+      "The Free plan is usable, not a crippled demo. Up to 25 deals created by hand (CRM sync doesn't add to that count) and real risk scoring - enough to run a small book or evaluate the product against live data.",
   },
   {
     label: "One price, tax included",
@@ -61,7 +61,7 @@ const principles = [
 const faqs = [
   {
     q: "What happens when I hit a plan limit?",
-    a: "You'll see a clear banner before you hit it and a block when you're over - never a silent overage charge. You can upgrade in place, and your deals and history come with you.",
+    a: "You'll see a block when you're over - never a silent overage charge. You can upgrade in place, and your deals and history come with you.",
   },
   {
     q: "Can I try Professional before subscribing?",

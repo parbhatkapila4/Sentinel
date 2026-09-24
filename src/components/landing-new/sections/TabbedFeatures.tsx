@@ -27,9 +27,9 @@ const icons: ReactNode[] = [
   </svg>,
 ];
 const bodies = [
-  `0.00-1.00 composite risk score per opportunity, recomputed on read, with reasons tied to source events.`,
+  `0.00-1.00 composite risk score per opportunity, recomputed on read and cached briefly, with a rule-based reason on every at-risk deal.`,
   `Flag deals where no inbound reply has arrived in 14 days. Opt-in signal, off by default.`,
-  `Track where competitor keywords appear in email threads and notes before the opportunity decays.`,
+  `Track competitor keywords in deal timeline events before the opportunity decays.`,
   `Weight pipeline value by a heuristic win probability instead of rep-reported commit.`,
 ];
 const tabContent = [
@@ -38,7 +38,7 @@ const tabContent = [
     <span className="t-out ok">Risk recomputed from timeline events</span>
     <div className="t-empty-line" />
     <div className="t-line"><span className="pre">$</span> sentinel ask</div>
-    <div className="t-claude"><div className="t-claude-icon" /><div className="t-claude-info"><span className="name">Sentinel</span><span className="ver">v1.0.4</span><span className="model">Risk index · illustrative</span><span className="path">acme-corp / pipeline</span></div></div>
+    <div className="t-claude"><div className="t-claude-icon" /><div className="t-claude-info"><span className="name">Sentinel</span><span className="model">Risk index · illustrative</span><span className="path">acme-corp / pipeline</span></div></div>
     <div className="t-divider" />
     <div className="t-instruction">Show me the highest-risk deals and what&apos;s driving the scores</div>
     <div className="t-divider-thin" />
@@ -56,7 +56,7 @@ const tabContent = [
     <span className="t-out ok"><span className="num">8 deals</span> with no inbound reply in 14 days</span>
     <div className="t-empty-line" />
     <div className="t-line"><span className="pre">$</span> sentinel ask</div>
-    <div className="t-claude"><div className="t-claude-icon" /><div className="t-claude-info"><span className="name">Sentinel</span><span className="ver">v1.0.4</span><span className="model">Risk index · illustrative</span><span className="path">northwind / pipeline</span></div></div>
+    <div className="t-claude"><div className="t-claude-icon" /><div className="t-claude-info"><span className="name">Sentinel</span><span className="model">Risk index · illustrative</span><span className="path">northwind / pipeline</span></div></div>
     <div className="t-divider" />
     <div className="t-instruction">Which deals have gone quiet on the customer side?</div>
     <div className="t-divider-thin" />
@@ -72,12 +72,12 @@ const tabContent = [
     <span className="t-out ok"><span className="num">12 keyword matches</span> across pipeline</span>
     <div className="t-empty-line" />
     <div className="t-line"><span className="pre">$</span> sentinel ask</div>
-    <div className="t-claude"><div className="t-claude-icon" /><div className="t-claude-info"><span className="name">Sentinel</span><span className="ver">v1.0.4</span><span className="model">Risk index · illustrative</span><span className="path">helix / pipeline</span></div></div>
+    <div className="t-claude"><div className="t-claude-icon" /><div className="t-claude-info"><span className="name">Sentinel</span><span className="model">Risk index · illustrative</span><span className="path">helix / pipeline</span></div></div>
     <div className="t-divider" />
     <div className="t-instruction">Where is competitive pressure showing up in our deals?</div>
     <div className="t-divider-thin" />
-    <span className="t-out">Scanning email, notes and Slack text for competitor keywords...</span>
-    <span className="t-out">Matches raise the risk score and are cited as a reason</span>
+    <span className="t-out">Scanning deal timeline events for competitor keywords...</span>
+    <span className="t-out">Matches raise the risk score and add a reason label</span>
     <div className="t-empty-line" />
     <span className="t-out ok">Acme Corp · &quot;comparing solutions&quot; matched <span className="num">2×</span></span>
     <span className="t-out ok">Northwind · &quot;other vendor&quot; matched <span className="num">3×</span></span>
@@ -88,7 +88,7 @@ const tabContent = [
     <span className="t-out ok">Pipeline weighted by heuristic win probability</span>
     <div className="t-empty-line" />
     <div className="t-line"><span className="pre">$</span> sentinel ask</div>
-    <div className="t-claude"><div className="t-claude-icon" /><div className="t-claude-info"><span className="name">Sentinel</span><span className="ver">v1.0.4</span><span className="model">Forecast · illustrative</span><span className="path">forecast / qbr-prep</span></div></div>
+    <div className="t-claude"><div className="t-claude-icon" /><div className="t-claude-info"><span className="name">Sentinel</span><span className="model">Forecast · illustrative</span><span className="path">forecast / qbr-prep</span></div></div>
     <div className="t-divider" />
     <div className="t-instruction">Show the weighted pipeline next to the raw total</div>
     <div className="t-divider-thin" />
@@ -138,7 +138,7 @@ export function TabbedFeatures() {
             <h2 className="features-title">Pipeline intelligence from the<br /><em>systems</em> you already run</h2>
           </div>
           <div className="features-head-r">
-            <p>Give reps scoring and cited reasons, not another raw CRM export.</p>
+            <p>Give reps a risk score and a rule-based reason on every at-risk deal, not another raw CRM export.</p>
             <Link href="/contact">Contact us</Link>
           </div>
         </div>

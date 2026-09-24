@@ -10,7 +10,6 @@ export function Footer() {
             <div className="footer-tag">
               Read-only CRM and calendar sync, Slack and webhook alerts, and deal risk scoring, so revenue teams see stalled pipeline earlier.
             </div>
-            <div className="footer-status"><span className="dot" />ALL SYSTEMS OPERATIONAL</div>
           </div>
           <div className="footer-col">
             <h5>SOCIAL</h5>

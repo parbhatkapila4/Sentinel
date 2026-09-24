@@ -21,6 +21,7 @@ import { GET as callbackGet } from "@/app/api/oauth/gmail/callback/route";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { encryptIntegrationSecret } from "@/lib/integration-secrets";
 import { logError } from "@/lib/logger";
+import { signCookieValue } from "@/lib/signed-cookies";
 
 const mockedAuth = vi.mocked(getAuthenticatedUserId);
 const mockedEncrypt = vi.mocked(encryptIntegrationSecret);
@@ -31,12 +32,14 @@ const ORIG_CLIENT_ID = env.GOOGLE_OAUTH_CLIENT_ID;
 const ORIG_CLIENT_SECRET = env.GOOGLE_OAUTH_CLIENT_SECRET;
 const ORIG_REDIRECT_URI = env.GOOGLE_OAUTH_REDIRECT_URI;
 const ORIG_APP_URL = env.NEXT_PUBLIC_APP_URL;
+const ORIG_ENC_KEY = env.INTEGRATION_ENCRYPTION_KEY;
 
 function setEnvVars() {
   env.GOOGLE_OAUTH_CLIENT_ID = "test-client-id";
   env.GOOGLE_OAUTH_CLIENT_SECRET = "test-client-secret";
   env.GOOGLE_OAUTH_REDIRECT_URI = "http://localhost:3001/api/oauth/gmail/callback";
   env.NEXT_PUBLIC_APP_URL = "http://localhost:3001";
+  env.INTEGRATION_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
 }
 
 function clearOAuthEnv() {
@@ -57,8 +60,26 @@ function mockJsonResponse(body: unknown, init: { ok?: boolean; status?: number }
 
 function makeStateCookie(state: string, userId: string): string {
   return `gmail_oauth_state=${encodeURIComponent(
+    signCookieValue({ state, userId })
+  )}`;
+}
+function makeLegacyStateCookie(state: string, userId: string): string {
+  return `gmail_oauth_state=${encodeURIComponent(
     JSON.stringify({ state, userId })
   )}`;
+}
+function makeTamperedStateCookie(
+  state: string,
+  signedUserId: string,
+  forgedUserId: string
+): string {
+  const signed = signCookieValue({ state, userId: signedUserId });
+  const sig = signed.slice(signed.lastIndexOf(".") + 1);
+  const forgedPayload = Buffer.from(
+    JSON.stringify({ state, userId: forgedUserId }),
+    "utf8"
+  ).toString("base64url");
+  return `gmail_oauth_state=${encodeURIComponent(`${forgedPayload}.${sig}`)}`;
 }
 
 beforeEach(() => {
@@ -75,6 +96,7 @@ afterEach(() => {
   env.GOOGLE_OAUTH_CLIENT_SECRET = ORIG_CLIENT_SECRET;
   env.GOOGLE_OAUTH_REDIRECT_URI = ORIG_REDIRECT_URI;
   env.NEXT_PUBLIC_APP_URL = ORIG_APP_URL;
+  env.INTEGRATION_ENCRYPTION_KEY = ORIG_ENC_KEY;
 });
 
 describe("GET /api/oauth/gmail/start", () => {
@@ -163,6 +185,7 @@ describe("GET /api/oauth/gmail/callback", () => {
   });
 
   it("redirects with gmail_error=state_mismatch when query state doesn't match cookie state", async () => {
+    mockedAuth.mockResolvedValue("user-1");
     const req = callbackRequest(
       { code: "auth-code-123", state: "QUERY_STATE_XX" },
       makeStateCookie("DIFFERENT_COOKIE_STATE", "user-1")
@@ -175,7 +198,69 @@ describe("GET /api/oauth/gmail/callback", () => {
     expect(prismaMock.gmailIntegration.upsert).not.toHaveBeenCalled();
   });
 
+  it("rejects a tampered state cookie: signature valid, userId swapped to a victim", async () => {
+    mockedAuth.mockResolvedValue("attacker-1");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const req = callbackRequest(
+      { code: "auth-code-123", state: "STATE_XX" },
+      makeTamperedStateCookie("STATE_XX", "attacker-1", "victim-1")
+    );
+
+    const res = await callbackGet(req);
+
+    const location = new URL(res.headers.get("location")!);
+    expect(location.searchParams.get("gmail_error")).toBe("invalid_state");
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(prismaMock.gmailIntegration.upsert).not.toHaveBeenCalled();
+    expect(res.headers.get("set-cookie")).toContain("Max-Age=0");
+  });
+
+  it("rejects an unsigned cookie in the pre-signing JSON format", async () => {
+    mockedAuth.mockResolvedValue("victim-1");
+    const req = callbackRequest(
+      { code: "auth-code-123", state: "STATE_XX" },
+      makeLegacyStateCookie("STATE_XX", "victim-1")
+    );
+
+    const res = await callbackGet(req);
+
+    const location = new URL(res.headers.get("location")!);
+    expect(location.searchParams.get("gmail_error")).toBe("invalid_state");
+    expect(prismaMock.gmailIntegration.upsert).not.toHaveBeenCalled();
+  });
+
+  it("redirects with gmail_error=user_mismatch when the session is a different user", async () => {
+    mockedAuth.mockResolvedValue("someone-else");
+    const req = callbackRequest(
+      { code: "auth-code-123", state: "STATE_XX" },
+      makeStateCookie("STATE_XX", "user-1")
+    );
+
+    const res = await callbackGet(req);
+
+    const location = new URL(res.headers.get("location")!);
+    expect(location.searchParams.get("gmail_error")).toBe("user_mismatch");
+    expect(prismaMock.gmailIntegration.upsert).not.toHaveBeenCalled();
+  });
+
+  it("redirects with gmail_error=user_mismatch when there is no session", async () => {
+    mockedAuth.mockRejectedValue(new Error("No session"));
+    const req = callbackRequest(
+      { code: "auth-code-123", state: "STATE_XX" },
+      makeStateCookie("STATE_XX", "user-1")
+    );
+
+    const res = await callbackGet(req);
+
+    const location = new URL(res.headers.get("location")!);
+    expect(location.searchParams.get("gmail_error")).toBe("user_mismatch");
+    expect(prismaMock.gmailIntegration.upsert).not.toHaveBeenCalled();
+  });
+
   it("happy path: token + userinfo fetched, BOTH tokens encrypted, upsert called with encrypted values, redirects to gmail_connected=1", async () => {
+    mockedAuth.mockResolvedValue("user-1");
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -248,6 +333,7 @@ describe("GET /api/oauth/gmail/callback", () => {
   });
 
   it("redirects with gmail_error=no_refresh_token and writes NOTHING when refresh_token is missing from the token response", async () => {
+    mockedAuth.mockResolvedValue("user-1");
     const fetchMock = vi.fn().mockResolvedValueOnce(
       mockJsonResponse({
         access_token: "some-access-token",

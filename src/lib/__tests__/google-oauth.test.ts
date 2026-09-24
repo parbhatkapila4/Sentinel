@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import crypto from "node:crypto";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   buildGoogleAuthUrl,
   exchangeCodeForTokens,
@@ -70,10 +71,61 @@ describe("generateOAuthState", () => {
 });
 
 describe("serializeStateCookie / parseStateCookie roundtrip", () => {
+  const env = process.env as Record<string, string | undefined>;
+  const ORIG_KEY = env.INTEGRATION_ENCRYPTION_KEY;
+
+  beforeEach(() => {
+    env.INTEGRATION_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
+  });
+
+  afterEach(() => {
+    env.INTEGRATION_ENCRYPTION_KEY = ORIG_KEY;
+  });
+
+  function signedWith(key: Buffer, payload: unknown): string {
+    const payloadB64 = Buffer.from(JSON.stringify(payload), "utf8").toString(
+      "base64url"
+    );
+    const sig = crypto
+      .createHmac("sha256", key)
+      .update(payloadB64)
+      .digest("base64url");
+    return `${payloadB64}.${sig}`;
+  }
+
   it("roundtrips a well-formed payload", () => {
     const payload = { state: "abc123", userId: "user-1" };
     const cookie = serializeStateCookie(payload);
     expect(parseStateCookie(cookie)).toEqual(payload);
+  });
+
+  it("emits a signed value, not bare JSON", () => {
+    const cookie = serializeStateCookie({ state: "abc123", userId: "user-1" });
+    expect(cookie).not.toContain("user-1");
+    expect(cookie).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+  });
+
+  it("rejects a payload whose userId was swapped after signing (tampering)", () => {
+    const cookie = serializeStateCookie({ state: "abc123", userId: "victim" });
+    const [, sig] = cookie.split(".");
+    const forgedPayload = Buffer.from(
+      JSON.stringify({ state: "abc123", userId: "attacker" }),
+      "utf8"
+    ).toString("base64url");
+
+    expect(parseStateCookie(`${forgedPayload}.${sig}`)).toBeNull();
+  });
+
+  it("rejects a value signed with a different key", () => {
+    const foreign = signedWith(Buffer.alloc(32, 9), {
+      state: "abc123",
+      userId: "user-1",
+    });
+    expect(parseStateCookie(foreign)).toBeNull();
+  });
+
+  it("rejects the pre-signing bare-JSON cookie format", () => {
+    expect(parseStateCookie('{"state":"abc123","userId":"user-1"}')).toBeNull();
   });
 
   it("returns null for every malformed-input shape (does not throw)", () => {
@@ -83,11 +135,28 @@ describe("serializeStateCookie / parseStateCookie roundtrip", () => {
     expect(parseStateCookie("null")).toBeNull();
     expect(parseStateCookie('"a string"')).toBeNull();
     expect(parseStateCookie("{}")).toBeNull();
-    expect(parseStateCookie('{"state":"abc"}')).toBeNull();
-    expect(parseStateCookie('{"userId":"user-1"}')).toBeNull();
-    expect(parseStateCookie('{"state":123,"userId":"user-1"}')).toBeNull();
-    expect(parseStateCookie('{"state":"","userId":"user-1"}')).toBeNull();
-    expect(parseStateCookie('{"state":"abc","userId":""}')).toBeNull();
+    expect(parseStateCookie("nodot")).toBeNull();
+    expect(parseStateCookie(".onlysig")).toBeNull();
+    expect(parseStateCookie("onlypayload.")).toBeNull();
+
+    const key = Buffer.from(env.INTEGRATION_ENCRYPTION_KEY!, "base64");
+    expect(parseStateCookie(signedWith(key, { state: "abc" }))).toBeNull();
+    expect(parseStateCookie(signedWith(key, { userId: "user-1" }))).toBeNull();
+    expect(
+      parseStateCookie(signedWith(key, { state: 123, userId: "user-1" }))
+    ).toBeNull();
+    expect(
+      parseStateCookie(signedWith(key, { state: "", userId: "user-1" }))
+    ).toBeNull();
+    expect(
+      parseStateCookie(signedWith(key, { state: "abc", userId: "" }))
+    ).toBeNull();
+  });
+
+  it("returns null instead of throwing when the signing key is unset", () => {
+    const cookie = serializeStateCookie({ state: "abc123", userId: "user-1" });
+    delete env.INTEGRATION_ENCRYPTION_KEY;
+    expect(parseStateCookie(cookie)).toBeNull();
   });
 });
 

@@ -151,6 +151,8 @@ export async function getTeamById(teamId: string) {
 }
 
 export async function getInviteByToken(token: string) {
+  await getAuthenticatedUserId();
+
   const invite = await prisma.teamInvite.findUnique({
     where: { token },
     include: { team: { select: { id: true, name: true } } },

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { createWebhook, updateWebhook } from "@/app/actions/webhooks";
+import { isHttpsWebhookUrl, WEBHOOK_URL_HTTPS_MESSAGE } from "@/lib/webhook-url";
 import {
   EditorialButton,
   EditorialInput,
@@ -62,6 +63,10 @@ export function WebhookForm({ onSuccess, onCancel, edit }: WebhookFormProps) {
       new URL(url);
     } catch {
       toast.error("Enter a valid URL");
+      return;
+    }
+    if (!isHttpsWebhookUrl(url.trim())) {
+      toast.error(WEBHOOK_URL_HTTPS_MESSAGE);
       return;
     }
     setSaving(true);

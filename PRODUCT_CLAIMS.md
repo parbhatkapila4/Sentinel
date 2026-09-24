@@ -158,14 +158,14 @@
 ```json
 {
   "claim_id": "sync_daily_cron",
-  "claim_text": "CRM and calendar sync runs on a daily cron, with manual sync available.",
+  "claim_text": "CRM sync runs on a daily cron, with manual sync available.",
   "status": "implemented",
   "evidence_paths": [
     "vercel.crons.example.json",
     "src/app/api/cron/sync-integrations/route.ts",
     "README.md"
   ],
-  "last_verified_at": "2026-04-23"
+  "last_verified_at": "2026-09-24"
 }
 ```
 
@@ -295,14 +295,14 @@
 ```json
 {
   "claim_id": "ai_risk_recomputed_on_read",
-  "claim_text": "Risk scoring is recomputed on read with auditable reasons.",
+  "claim_text": "Risk scoring is recomputed on read and cached briefly, with rule-based reasons on at-risk deals.",
   "status": "implemented",
   "evidence_paths": [
     "src/lib/dealRisk.ts",
     "src/lib/__tests__/dealRisk.test.ts",
     "src/app/page.tsx"
   ],
-  "last_verified_at": "2026-04-23"
+  "last_verified_at": "2026-09-24"
 }
 ```
 
@@ -324,7 +324,7 @@
 ```json
 {
   "claim_id": "pricing_free_monthly",
-  "claim_text": "Free plan is $0/month and covers 25 active deals.",
+  "claim_text": "Free plan is $0/month and allows up to 25 deals created by hand; CRM sync doesn't add to the count.",
   "status": "implemented",
   "evidence_paths": [
     "src/lib/pricing-catalog.ts",
@@ -332,8 +332,8 @@
     "src/components/pricing-cards.tsx",
     "src/app/pricing/page.tsx"
   ],
-  "notes": "The former $0 'starter' tier was collapsed into 'free'. Both were $0 and differed only in limits, so the pricing page advertised one allowance while new accounts received another. Legacy starter rows normalise to free via normalizeLegacyPlanType.",
-  "last_verified_at": "2026-08-04"
+  "notes": "The former $0 'starter' tier was collapsed into 'free'. Both were $0 and differed only in limits, so the pricing page advertised one allowance while new accounts received another. Legacy starter rows normalise to free via normalizeLegacyPlanType. The deal limit is a lifetime count of deals created by hand (createDeal), so closed and deleted deals still count and CRM sync never increments it. The counter is seeded once from all existing non-demo deals the first time it is read.",
+  "last_verified_at": "2026-09-24"
 }
 ```
 

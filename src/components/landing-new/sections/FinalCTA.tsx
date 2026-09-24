@@ -17,7 +17,7 @@ export function FinalCTA() {
     >
       <div className="final-box">
         <h2 className="final-h">Ship revenue motion<br /><span className="green-text">with clearer risk</span></h2>
-        <p className="final-sub">Free tier covers up to 25 open deals. Upgrade when you need more seats or volume.</p>
+        <p className="final-sub">Free tier lets you create up to 25 deals by hand; CRM sync doesn&apos;t add to that count. Upgrade when you need more seats or volume.</p>
         <FinalCTAActions />
       </div>
     </motion.section>

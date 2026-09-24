@@ -8,7 +8,7 @@ import {
 export function PricingCards() {
 
   const freeFeatures = [
-    "Track up to 25 active deals",
+    "Create up to 25 deals by hand (lifetime; CRM sync doesn't add to the count)",
     "Risk scoring on every deal view",
     "Activity tracking (emails & meetings)",
     "Basic deal timeline & history",
@@ -17,11 +17,10 @@ export function PricingCards() {
     "1 team member",
     "100 API calls/month",
     "1 webhook",
-    "1 integration",
   ];
 
   const proFeatures = [
-    { text: "Track up to 100 active deals", included: true },
+    { text: "Create up to 100 deals by hand (lifetime; CRM sync doesn't add to the count)", included: true },
     { text: "Risk scoring with configurable thresholds", included: true },
     { text: "AI assistant over your pipeline context", included: true },
     { text: "Advanced activity tracking & analytics", included: true },
@@ -34,7 +33,7 @@ export function PricingCards() {
   ];
 
   const enterpriseFeatures = [
-    "Track up to 500 active deals",
+    "Create up to 500 deals by hand (lifetime; CRM sync doesn't add to the count)",
     "Unlimited team members",
     "Unlimited API calls",
     "Unlimited webhooks",

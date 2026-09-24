@@ -28,6 +28,7 @@ import {
   getMyTeams,
   getTeamById,
   getTeamMembers,
+  getInviteByToken,
   inviteTeamMember,
   removeTeamMember,
   updateMemberRole,
@@ -37,6 +38,7 @@ import {
 } from "@/app/actions/teams";
 import { generateSlug, getUserTeamRole } from "@/lib/team-utils";
 import { TEAM_ROLES } from "@/lib/config";
+import { UnauthorizedError } from "@/lib/errors";
 
 beforeEach(() => {
   resetPrismaMock();
@@ -300,6 +302,17 @@ describe("getTeamMembers", () => {
       "You are not a member of this team",
     );
     expect(prismaMock.teamMember.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("getInviteByToken", () => {
+  it("rejects a signed-out caller without reading the invite", async () => {
+    mockGetAuthenticatedUserId.mockRejectedValue(new UnauthorizedError());
+
+    await expect(getInviteByToken("invite-token")).rejects.toBeInstanceOf(
+      UnauthorizedError,
+    );
+    expect(prismaMock.teamInvite.findUnique).not.toHaveBeenCalled();
   });
 });
 

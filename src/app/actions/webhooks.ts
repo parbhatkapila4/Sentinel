@@ -1,6 +1,7 @@
 "use server";
 
 import crypto from "crypto";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import {
@@ -12,6 +13,9 @@ import { revalidatePath } from "next/cache";
 import { enforceWebhookLimit } from "@/lib/plan-enforcement";
 import { incrementUsage } from "@/lib/plans";
 import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
+import { ForbiddenError, ValidationError } from "@/lib/errors";
+import { getUserTeamRole } from "@/lib/team-utils";
+import { isHttpsWebhookUrl, WEBHOOK_URL_HTTPS_MESSAGE } from "@/lib/webhook-url";
 
 export async function createWebhook(data: {
   name: string;
@@ -20,6 +24,15 @@ export async function createWebhook(data: {
   teamId?: string;
 }) {
   const userId = await getAuthenticatedUserId();
+
+  if (!isHttpsWebhookUrl(data.url)) {
+    throw new ValidationError(WEBHOOK_URL_HTTPS_MESSAGE, { url: "Must use https" });
+  }
+
+  if (data.teamId != null) {
+    const role = await getUserTeamRole(userId, data.teamId);
+    if (!role) throw new ForbiddenError("You are not a member of this team");
+  }
 
   await enforceWebhookLimit(userId);
 
@@ -78,6 +91,13 @@ export async function getWebhookById(id: string) {
   });
 }
 
+const webhookUpdateSchema = z.object({
+  name: z.string().optional(),
+  url: z.string().optional(),
+  events: z.array(z.string()).optional(),
+  isActive: z.boolean().optional(),
+});
+
 export async function updateWebhook(
   id: string,
   data: {
@@ -89,6 +109,14 @@ export async function updateWebhook(
 ) {
   const userId = await getAuthenticatedUserId();
 
+  const parsed = webhookUpdateSchema.safeParse(data);
+  if (!parsed.success) throw new ValidationError("Invalid webhook update");
+  const updates = parsed.data;
+
+  if (updates.url !== undefined && !isHttpsWebhookUrl(updates.url)) {
+    throw new ValidationError(WEBHOOK_URL_HTTPS_MESSAGE, { url: "Must use https" });
+  }
+
   const webhook = await prisma.webhook.findFirst({
     where: { id, userId },
   });
@@ -99,7 +127,7 @@ export async function updateWebhook(
 
   const result = await prisma.webhook.updateMany({
     where: { id, userId },
-    data,
+    data: updates,
   });
 
   await logAuditEvent(
@@ -108,8 +136,8 @@ export async function updateWebhook(
     "webhook",
     id,
     {
-      name: data.name || webhook.name,
-      changes: Object.keys(data),
+      name: updates.name || webhook.name,
+      changes: Object.keys(updates),
     }
   );
 

@@ -1,12 +1,15 @@
 "use server";
 
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { ValidationError } from "@/lib/errors";
 import { validateGoogleCalendarCredentials } from "@/lib/google-calendar";
 import { logIntegrationAction } from "./integrations";
 import { runIntegrationConnect } from "@/lib/integration-flow";
 import { encryptIntegrationSecret } from "@/lib/integration-secrets";
+import { deleteIfExists } from "@/lib/prisma-helpers";
 import { syncLegacyGoogleCalendarForUser } from "@/lib/sync/google-calendar-sync";
 import { SYNC_IN_PROGRESS_MESSAGE } from "@/lib/sync/lock";
 
@@ -74,10 +77,14 @@ export async function connectGoogleCalendar(
 export async function disconnectGoogleCalendar(): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
-  await prisma.googleCalendarIntegration.delete({
-    where: { userId },
-  }).catch(() => {
-  });
+  await deleteIfExists(
+    () => prisma.googleCalendarIntegration.delete({ where: { userId } }),
+    { resource: "googleCalendarIntegration", userId }
+  );
+  await deleteIfExists(
+    () => prisma.calendarIntegration.delete({ where: { userId } }),
+    { resource: "calendarIntegration", userId }
+  );
 
   await logIntegrationAction(
     "google_calendar",
@@ -283,21 +290,30 @@ export async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
   }
 }
 
+const googleCalendarSettingsSchema = z.object({
+  syncEnabled: z.boolean().optional(),
+});
+
 export async function updateGoogleCalendarSettings(settings: {
   syncEnabled?: boolean;
 }): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
+  const parsed = googleCalendarSettingsSchema.safeParse(settings);
+  if (!parsed.success) {
+    throw new ValidationError("Invalid Google Calendar settings");
+  }
+
   await prisma.googleCalendarIntegration.update({
     where: { userId },
-    data: settings,
+    data: parsed.data,
   });
 
   await logIntegrationAction(
     "google_calendar",
     "settings_update",
     "success",
-    `Updated settings: ${JSON.stringify(settings)}`
+    `Updated settings: ${JSON.stringify(parsed.data)}`
   );
 
   revalidatePath("/settings");

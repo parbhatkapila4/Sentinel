@@ -27,7 +27,6 @@ export function Nav() {
       <div className="nav-inner">
         <Link className="brand" href="/#top">
           <BrandMark />
-          <span className="brand-tag">v1.0.4</span>
         </Link>
         <div className="nav-links">
           <Link className="nav-link" href="/features">

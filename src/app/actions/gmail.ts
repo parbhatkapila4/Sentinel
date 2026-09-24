@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
+import { ValidationError } from "@/lib/errors";
 import { logIntegrationAction } from "./integrations";
 import { deleteIfExists } from "@/lib/prisma-helpers";
 import { syncGmailForUser } from "@/lib/sync/gmail-sync";
@@ -48,12 +50,18 @@ export async function disconnectGmail(): Promise<{ success: boolean }> {
   return { success: true };
 }
 
+const gmailSettingsSchema = z.object({
+  syncEnabled: z.boolean().optional(),
+});
+
 export async function updateGmailSettings(settings: {
   syncEnabled?: boolean;
 }): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
-  await prisma.gmailIntegration.update({ where: { userId }, data: settings });
-  await logIntegrationAction("gmail", "settings_update", "success", JSON.stringify(settings));
+  const parsed = gmailSettingsSchema.safeParse(settings);
+  if (!parsed.success) throw new ValidationError("Invalid Gmail settings");
+  await prisma.gmailIntegration.update({ where: { userId }, data: parsed.data });
+  await logIntegrationAction("gmail", "settings_update", "success", JSON.stringify(parsed.data));
   revalidatePath("/settings");
   return { success: true };
 }

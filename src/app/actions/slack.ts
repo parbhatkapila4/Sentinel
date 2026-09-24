@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -7,6 +8,8 @@ import {
   decryptIntegrationSecret,
   encryptIntegrationSecret,
 } from "@/lib/integration-secrets";
+import { ForbiddenError, ValidationError } from "@/lib/errors";
+import { getUserTeamRole } from "@/lib/team-utils";
 import { logIntegrationAction } from "./integrations";
 
 export async function createSlackIntegration(data: {
@@ -16,6 +19,11 @@ export async function createSlackIntegration(data: {
   teamId?: string;
 }) {
   const userId = await getAuthenticatedUserId();
+
+  if (data.teamId != null) {
+    const role = await getUserTeamRole(userId, data.teamId);
+    if (!role) throw new ForbiddenError("You are not a member of this team");
+  }
 
   const integration = await prisma.slackIntegration.create({
     data: {
@@ -46,6 +54,13 @@ export async function getMySlackIntegrations() {
   );
 }
 
+const slackIntegrationUpdateSchema = z.object({
+  webhookUrl: z.string().optional(),
+  channelName: z.string().optional(),
+  notifyOn: z.array(z.string()).optional(),
+  isActive: z.boolean().optional(),
+});
+
 export async function updateSlackIntegration(
   id: string,
   data: {
@@ -57,12 +72,18 @@ export async function updateSlackIntegration(
 ) {
   const userId = await getAuthenticatedUserId();
 
+  const parsed = slackIntegrationUpdateSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ValidationError("Invalid Slack integration update");
+  }
+  const updates = parsed.data;
+
   await prisma.slackIntegration.updateMany({
     where: { id, userId },
     data: {
-      ...data,
-      ...(typeof data.webhookUrl === "string"
-        ? { webhookUrl: encryptIntegrationSecret(data.webhookUrl) }
+      ...updates,
+      ...(typeof updates.webhookUrl === "string"
+        ? { webhookUrl: encryptIntegrationSecret(updates.webhookUrl) }
         : {}),
     },
   });
@@ -118,6 +139,7 @@ export async function disconnectSlack(): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
   await prisma.slackEventsSubscription.deleteMany({ where: { userId } });
+  await prisma.slackIntegration.deleteMany({ where: { userId } });
 
   await logIntegrationAction(
     "slack",

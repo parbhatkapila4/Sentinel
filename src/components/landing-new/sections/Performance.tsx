@@ -13,15 +13,15 @@ export function Performance() {
         <div className="perf-grid">
           <div className="perf-card latency-card">
             <div className="perf-card-corner">FIG · 01</div>
-            <div className="perf-card-title">Risk Recomputed on Read</div>
-            <div className="perf-card-sub">Each deal view recomputes risk and returns auditable reasons.</div>
+            <div className="perf-card-title">Risk Recomputed on Read, Cached Briefly</div>
+            <div className="perf-card-sub">Risk is recomputed on read and cached briefly, with rule-based reason labels on at-risk deals.</div>
             <div className="bar-chart">
               <div className="bar-col">
                 <div className="bar-block tall">INPUTS</div>
                 <div className="bar-label">Signals + deal history</div>
               </div>
               <div className="bar-col">
-                <div className="green-pill">Computed on request</div>
+                <div className="green-pill">On read, cached briefly</div>
                 <div className="bar-block short">OUTPUT</div>
                 <div className="bar-label">Risk + reasons</div>
               </div>
@@ -76,7 +76,7 @@ export function Performance() {
           <div className="perf-card burst-card">
             <div className="perf-card-corner">FIG · 03</div>
             <div className="perf-card-title">Sync + Manual Refresh</div>
-            <div className="perf-card-sub">Daily integration sync with manual sync available.</div>
+            <div className="perf-card-sub">Daily CRM sync with manual sync available.</div>
             <div className="peak-chart">
               <svg viewBox="0 0 280 180" preserveAspectRatio="none">
                 <line x1="36" y1="40" x2="270" y2="40" stroke="#5a5a5a" strokeWidth="1" strokeDasharray="3 3" />

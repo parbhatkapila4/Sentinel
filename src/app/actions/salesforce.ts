@@ -1,8 +1,10 @@
 "use server";
 
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { ValidationError } from "@/lib/errors";
 import {
   validateSalesforceCredentials,
   fetchSalesforceOpportunities,
@@ -285,21 +287,28 @@ export async function getSalesforceStatus(): Promise<SalesforceStatus> {
   };
 }
 
+const salesforceSettingsSchema = z.object({
+  syncEnabled: z.boolean().optional(),
+});
+
 export async function updateSalesforceSettings(settings: {
   syncEnabled?: boolean;
 }): Promise<{ success: boolean }> {
   const userId = await getAuthenticatedUserId();
 
+  const parsed = salesforceSettingsSchema.safeParse(settings);
+  if (!parsed.success) throw new ValidationError("Invalid Salesforce settings");
+
   await prisma.salesforceIntegration.update({
     where: { userId },
-    data: settings,
+    data: parsed.data,
   });
 
   await logIntegrationAction(
     "salesforce",
     "settings_update",
     "success",
-    `Updated settings: ${JSON.stringify(settings)}`
+    `Updated settings: ${JSON.stringify(parsed.data)}`
   );
 
   revalidatePath("/settings");

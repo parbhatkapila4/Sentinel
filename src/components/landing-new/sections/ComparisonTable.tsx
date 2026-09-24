@@ -4,9 +4,9 @@ import { motion, useReducedMotion } from "motion/react";
 import { fadeUp, staggerContainer, staggerItem, VIEWPORT_ONCE } from "../motion";
 
 const ROWS: Array<[string, string, string, "dim" | "icon"]> = [
-  ["Risk detection", "Manual review", "Scored on every read", "dim"],
+  ["Risk detection", "Manual review", "Scored on read, cached briefly", "dim"],
   ["Data sources", "CRM only", "CRM + calendar + email + Slack", "dim"],
-  ["Score attribution", "Opaque", "Inputs cited per score", "dim"],
+  ["Score attribution", "Opaque", "Rule-based reason labels", "dim"],
   ["Forecast basis", "Rep-reported commit", "Signal-weighted", "dim"],
   ["Setup", "Procurement cycle", "OAuth redirect, no keys to paste", "dim"],
   ["One-click action drafts", "✕", "✓", "icon"],

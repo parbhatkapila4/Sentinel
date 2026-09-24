@@ -4,13 +4,13 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Integrations · Sentinel",
   description:
-    "Sentinel connects to the systems your revenue runs on. Salesforce, HubSpot, Google Calendar, Slack, and outbound webhooks.",
+    "Sentinel connects to the systems your revenue runs on. Salesforce, HubSpot, Google Calendar, Gmail, Slack, and outbound webhooks.",
 };
 
 type Integration = {
   slug: string;
   name: string;
-  category: "CRM" | "Calendar" | "Notifications" | "Developer";
+  category: "CRM" | "Calendar" | "Email" | "Notifications" | "Developer";
   summary: string;
   auth: string;
   direction: "Inbound" | "Outbound" | "Inbound · Outbound";
@@ -27,14 +27,14 @@ const integrations: Integration[] = [
     category: "CRM",
     summary:
       "Read-only sync for Accounts, Opportunities, and stage history. Sentinel pulls pipeline state into its own workspace; it does not push anything back into Salesforce.",
-    auth: "OAuth · read-only",
+    auth: "OAuth",
     direction: "Inbound",
-    scopes: ["opportunities:read", "accounts:read", "contacts:read"],
+    scopes: ["api", "refresh_token"],
     does: [
       "Pull Opportunities, Accounts, Contacts, and stage transitions",
       "Track last-activity timestamps per deal",
       "Surface risk score and Sentinel notes inside Sentinel - never written back to Salesforce",
-      "Incremental sync on a daily cadence; full resync on demand",
+      "Read only: every CRM call Sentinel makes to Salesforce is a query, although the api scope would also allow writes",
     ],
     doesNot: [
       "Write, update, or delete any records in Salesforce",
@@ -58,9 +58,7 @@ const integrations: Integration[] = [
     ],
     does: [
       "Sync Deals, Contacts, Companies, and owner assignments",
-      "Read deal pipelines and stage probabilities as configured in HubSpot",
       "Display Sentinel risk alongside HubSpot data inside Sentinel, without touching your portal",
-      "Run on a daily cadence; full resync on demand",
     ],
     doesNot: [
       "Write, update, or delete any records in HubSpot",
@@ -82,12 +80,29 @@ const integrations: Integration[] = [
     does: [
       "Read event titles, attendees, and timestamps across connected calendars",
       "Match events to deals by domain and attendee email",
-      "Detect meeting cadence gaps and no-shows",
     ],
     doesNot: [
       "Create, modify, or delete calendar events",
-      "Read event descriptions, conference links, or attached files",
       "Send invitations or respond on your behalf",
+    ],
+    status: "Available",
+  },
+  {
+    slug: "gmail",
+    name: "Gmail",
+    category: "Email",
+    summary:
+      "Connect Gmail via OAuth. Sentinel reads message headers and Gmail's short snippet one message at a time, and keeps only messages that include a contact from your CRM.",
+    auth: "OAuth · read-only",
+    direction: "Inbound",
+    scopes: ["gmail.readonly", "userinfo.email", "openid"],
+    does: [
+      "Read each message's sender, recipients, subject, date, and Gmail's short snippet",
+      "Store a message only when a participant is a contact synced from your CRM",
+    ],
+    doesNot: [
+      "Send, draft, delete, or label email",
+      "Fetch full message bodies or attachments",
     ],
     status: "Available",
   },
@@ -96,7 +111,7 @@ const integrations: Integration[] = [
     name: "Slack",
     category: "Notifications",
     summary:
-      "Connect your Slack workspace via OAuth. Sentinel reads message history from the channels and DMs its bot is added to, matching senders to CRM contacts, and posts deal-at-risk, stage-change, and CRM sync summary alerts back to your team.",
+      "Connect your Slack workspace via OAuth. Sentinel reads message history from the channels and DMs its bot is added to, matching senders to CRM contacts.",
     auth: "OAuth · Slack app",
     direction: "Inbound · Outbound",
     scopes: [
@@ -111,7 +126,7 @@ const integrations: Integration[] = [
     does: [
       "Read message history from channels and DMs the Sentinel bot is added to",
       "Match message senders to CRM contacts by email",
-      "Post alerts to channels the bot is in, filtered by event type (deal at risk, deal closed won, deal stage changed, CRM sync summary)",
+      "Post alerts only to Slack incoming webhooks added in an earlier version of Settings (new ones can't be added today), filtered by event type (deal at risk, deal closed won, deal stage changed, CRM sync summary); the bot does not post",
       "Include deal owner, value, and a deep link back to Sentinel",
     ],
     doesNot: [
@@ -139,7 +154,6 @@ const integrations: Integration[] = [
     doesNot: [
       "Send unsigned payloads or deliver over plain HTTP",
       "Retry a failed delivery - each event is a single attempt today",
-      "Store your endpoint's responses beyond the last 30 days",
     ],
     status: "Available",
   },
@@ -296,8 +310,8 @@ export default function IntegrationsPage() {
           </h1>
           <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
             Sentinel is a read-only layer over your existing CRM and calendar.
-            We sync the signals that matter, never write back to connected
-            systems, and log every request so you can audit what moved.
+            We sync the signals that matter and never write back to your CRM
+            or calendar.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-white/50">
@@ -349,9 +363,8 @@ export default function IntegrationsPage() {
                 Security posture
               </h3>
               <p className="text-white/60 leading-relaxed max-w-md">
-                Every token is encrypted at rest with per-user keys. Scopes are
-                minimized to the smallest surface that makes the feature work.
-                Full details on the{" "}
+                Integration tokens are encrypted at rest with a single
+                application key. Full details on the{" "}
                 <Link
                   href="/security"
                   className="text-white underline underline-offset-4 decoration-white/30 hover:decoration-white"
