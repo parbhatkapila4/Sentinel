@@ -17,6 +17,12 @@ func main() {
 	os.Exit(run())
 }
 
+// run returns the process exit code:
+//
+//	0  records were checked and every one has a participant who is a contact of its user
+//	1  at least one record has no such participant
+//	2  the audit did not finish: no DATABASE_URL, bad URL, failed ping, a query error or the timeout
+//	3  nothing to audit: 0 records checked, so the run proves nothing about the gate
 func run() int {
 	timeout := flag.Duration("timeout", 2*time.Minute, "give up after this long")
 	flag.Parse()
@@ -44,10 +50,7 @@ func run() int {
 		return 2
 	}
 
-	if printReport(results) > 0 {
-		return 1
-	}
-	return 0
+	return printReport(results)
 }
 
 func connect(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
@@ -73,9 +76,8 @@ func connect(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	}
 	return pool, nil
 }
-func printReport(results []result) int64 {
+func printReport(results []result) int {
 	fmt.Print("CRM gate audit (read-only)\n\n")
-	var total int64
 	for _, r := range results {
 		fmt.Printf("%-16s %8d checked %6d unmatched", r.name, r.checked, r.unmatched)
 		if r.skipped > 0 {
@@ -91,12 +93,22 @@ func printReport(results []result) int64 {
 		if more := r.unmatched - int64(len(r.ids)); more > 0 {
 			fmt.Printf("    ... and %d more\n", more)
 		}
-		total += r.unmatched
 	}
-	if total > 0 {
-		fmt.Printf("\nFAIL: %d records have no participant matching a contact of their user.\n", total)
-	} else {
-		fmt.Println("\nOK: every audited record matches a contact of its user.")
+	line, code := verdict(results)
+	fmt.Println(line)
+	return code
+}
+func verdict(results []result) (string, int) {
+	var checked, unmatched int64
+	for _, r := range results {
+		checked += r.checked
+		unmatched += r.unmatched
 	}
-	return total
+	switch {
+	case unmatched > 0:
+		return fmt.Sprintf("\nFAIL: %d records have no participant matching a contact of their user.", unmatched), 1
+	case checked == 0:
+		return "\nNOTHING TO AUDIT: 0 records checked, so this run proves nothing about the gate.", 3
+	}
+	return "\nOK: every audited record matches a contact of its user.", 0
 }
