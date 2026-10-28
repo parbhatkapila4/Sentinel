@@ -1,5 +1,5 @@
-import { DashboardLoader } from "@/components/sentinel/DashboardLoader";
+import { DashboardSkeleton } from "@/components/sentinel/daylight/DashboardSkeleton";
 
 export default function DashboardLoading() {
-  return <DashboardLoader />;
+  return <DashboardSkeleton />;
 }

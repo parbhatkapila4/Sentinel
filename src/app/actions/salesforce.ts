@@ -34,8 +34,6 @@ export interface SalesforceStatus {
   instanceUrl: string | null;
 }
 
-export type { SyncResult };
-
 async function findExistingSalesforceDeal(
   userId: string,
   dealData: {

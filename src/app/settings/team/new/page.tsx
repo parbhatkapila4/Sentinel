@@ -1,10 +1,11 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
+import { format } from "date-fns";
 
 import { getAuthenticatedUserId } from "@/lib/auth";
-import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
+import { DaylightShell } from "@/components/sentinel/daylight/DaylightShell";
+import { NewTeamView } from "@/components/sentinel/daylight/teams/NewTeamView";
 import { buildShellContextForPage } from "@/components/sentinel/shell/buildContextForPage";
-import { NewTeamClient } from "./new-team-client";
 
 export const dynamic = "force-dynamic";
 
@@ -19,15 +20,15 @@ export default async function NewTeamPage() {
   const shellContext = await buildShellContextForPage();
 
   return (
-    <SentinelShell
+    <DaylightShell
+      title="New team"
+      dateLabel={format(new Date(), "EEEE, MMMM d")}
       syncTime={shellContext.syncTime}
-      coveragePercent={shellContext.coveragePercent}
       sourceLabels={shellContext.sourceLabels}
       alertCount={shellContext.alertCount}
-      tickerItems={shellContext.tickerItems}
       onboarding={shellContext.onboarding}
     >
-      <NewTeamClient />
-    </SentinelShell>
+      <NewTeamView />
+    </DaylightShell>
   );
 }

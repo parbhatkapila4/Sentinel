@@ -28,15 +28,8 @@ import {
   type DealForPrediction,
 } from "@/lib/predictions";
 
-import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
-import { Hero } from "@/components/sentinel/hero/Hero";
-import { SectionRule } from "@/components/sentinel/sections/SectionRule";
-import { KPIBand } from "@/components/sentinel/sections/KPIBand";
-import { AIPanel } from "@/components/sentinel/sections/AIPanel";
-import { PerformanceGrid } from "@/components/sentinel/performance/PerformanceGrid";
-import { InsightsGrid } from "@/components/sentinel/insights/InsightsGrid";
-import { DeskGrid } from "@/components/sentinel/desk/DeskGrid";
-import { Colophon } from "@/components/sentinel/Colophon";
+import { DaylightShell } from "@/components/sentinel/daylight/DaylightShell";
+import { DashboardView } from "@/components/sentinel/daylight/DashboardView";
 
 import {
   buildShortList,
@@ -148,7 +141,7 @@ export default async function DashboardPage() {
   const { totalValue, totalDeals } = calculatePipelineMetrics(dealsForDeskRaw);
   const { growthPercent: revenueGrowthPercent } =
     calculateRevenueGrowth(dealsForDeskRaw);
-  const { data: chartData, avgGrowthRate } = calculateChartData(dealsForDeskRaw);
+  const { data: chartData } = calculateChartData(dealsForDeskRaw);
   const revenueSources = calculateRevenueBySource(dealsForDeskRaw);
   const stageDist = getStageDistribution(dealsForDeskRaw);
   const { avgDealAge } = calculateDealActivity(dealsForDeskRaw);
@@ -218,17 +211,6 @@ export default async function DashboardPage() {
     share: r.value / sumOrOne,
   }));
 
-  const months = pipelineForecast.monthly.slice(0, 6).map((m) => m.month);
-  const expectedSeries = pipelineForecast.monthly
-    .slice(0, 6)
-    .map((m) => m.value);
-  const bestSeries = pipelineForecast.monthly
-    .slice(0, 6)
-    .map((m) => m.bestCase ?? m.value * 1.18);
-  const worstSeries = pipelineForecast.monthly
-    .slice(0, 6)
-    .map((m) => m.worstCase ?? m.value * 0.78);
-
   const weightedConfidence = deriveForecastConfidence(
     pipelineForecast.expected,
     pipelineForecast.bestCase,
@@ -260,172 +242,49 @@ export default async function DashboardPage() {
     associatedDealName: m.dealId ? dealNameById.get(m.dealId) ?? null : null,
   }));
 
-  const syncTime = shellContext.syncTime;
-  const dateLine = format(now, "EEEE - MMMM d, yyyy").toUpperCase();
-  const weatherLine = `WEATHER ${anomalies.length > 0 ? "OVERCAST" : "CLEAR"
-    } · WIND ${counts.newPerWeek}/W`;
-
-  const sparkActual = chartData.slice(-30).map((p) =>
-    typeof p.actual === "number" ? p.actual : 0
-  );
-  const kpiBand = {
-    hero: {
-      label: "PIPELINE WEIGHTED",
-      display: formatShortMoney(totalValue),
-      italicWord: formatShortMoney(totalValue),
-      delta: {
-        value: `${revenueGrowthPercent >= 0 ? "+" : ""}${revenueGrowthPercent.toFixed(1)}% vs last month`,
-        positive: revenueGrowthPercent >= 0,
-      },
-      meta: `${counts.active} ACTIVE · ${counts.closedWon} CLOSED · ${counts.closedLost} LOST`,
-      spark: sparkActual,
-    },
-    cards: [
-      {
-        label: "AT RISK",
-        display: formatShortMoney(atRisk.totalValue),
-        delta: atRisk.flaggedCount
-          ? {
-            value: `${atRisk.flaggedCount} FLAGGED`,
-            positive: false,
-          }
-          : undefined,
-        meta:
-          atRisk.flaggedNames.length > 0
-            ? atRisk.flaggedNames.join(" · ")
-            : "NO FLAGS",
-      },
-      {
-        label: "WIN RATE",
-        display: `${winRate.toFixed(1)}%`,
-        delta:
-          avgGrowthRate >= 0
-            ? { value: `+${avgGrowthRate.toFixed(1)}% trend`, positive: true }
-            : { value: `${avgGrowthRate.toFixed(1)}% trend`, positive: false },
-        meta: `${counts.avgIdle}D AVG IDLE`,
-      },
-      {
-        label: "NEW · 7D",
-        display: String(counts.newPerWeek),
-        delta: undefined,
-        meta: `${counts.active} ACTIVE TOTAL`,
-      },
-    ],
-  };
-
-  const forecastBlock = {
-    expected: pipelineForecast.expected,
-    bestCase: pipelineForecast.bestCase,
-    worstCase: pipelineForecast.worstCase,
-    weightedConfidence,
-    notes: [
-      `${counts.active} OPEN`,
-      `${avgDealAge}D AVG AGE`,
-    ],
-  };
-
-  const firstDealMs = deals.reduce<number | null>((earliest, d) => {
-    const t = new Date(d.createdAt).getTime();
-    if (!Number.isFinite(t)) return earliest;
-    return earliest === null || t < earliest ? t : earliest;
-  }, null);
-  const issueNumber =
-    firstDealMs === null
-      ? 1
-      : Math.max(
-        1,
-        Math.floor((now.getTime() - firstDealMs) / 86_400_000) + 1
-      );
-
   return (
-    <SentinelShell
+    <DaylightShell
+      title="Dashboard"
+      dateLabel={format(now, "EEEE, MMMM d")}
       syncTime={shellContext.syncTime}
-      coveragePercent={shellContext.coveragePercent}
       sourceLabels={shellContext.sourceLabels}
       alertCount={shellContext.alertCount}
-      tickerItems={shellContext.tickerItems}
       onboarding={shellContext.onboarding}
     >
-      {dbUnavailable && (
-        <div
-          role="alert"
-          className="mt-4 mx-6 sm:mx-10 lg:mx-14"
-          style={{
-            padding: "12px 16px",
-            border: "1px solid var(--copper)",
-            borderLeft: "3px solid var(--copper)",
-            background: "rgba(217,153,90,0.06)",
-            color: "var(--cream-2)",
-            fontFamily: "var(--font-mono-jb)",
-            fontSize: 11,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}
-        >
-          DESK OFFLINE · DATABASE UNREACHABLE - RETRY SHORTLY
-        </div>
-      )}
-
-      <Hero
-        issueNumber={issueNumber}
-        dateLine={dateLine}
-        weatherLine={weatherLine}
-        metaLines={[
-          `EDITION · ${syncTime}`,
-          `WIN RATE · ${winRate.toFixed(1)}%`,
-          `SOURCES · ${shellContext.sourceLabels.join(" · ")}`,
-        ]}
-        kicker={
-          headline.variant === "slipping"
-            ? "DESK BULLETIN - RISK"
-            : headline.variant === "winning"
-              ? "DESK BULLETIN - WINS"
-              : headline.variant === "onboarding"
-                ? "DESK BULLETIN - SETUP"
-                : "DESK BULLETIN"
-        }
+      <DashboardView
+        now={now}
+        dbUnavailable={dbUnavailable}
         headline={headline}
         briefingItems={briefing.items}
-      />
-
-      <SectionRule
-        number="01"
-        label="THE BOOK"
-        meta={`${counts.active} OPEN · ${counts.closedWon} WON · ${counts.closedLost} LOST`}
-      />
-      <KPIBand data={kpiBand} />
-
-      <AIPanel content={aiPanel} />
-
-      <SectionRule
-        number="02"
-        label="PERFORMANCE"
-        meta={`AVG ${avgDealAge}D · ${revenueGrowthPercent >= 0 ? "↑" : "↓"} ${Math.abs(revenueGrowthPercent).toFixed(1)}%`}
-      />
-      <PerformanceGrid
+        pipeline={{
+          total: totalValue,
+          growthPercent: revenueGrowthPercent,
+          active: counts.active,
+          won: counts.closedWon,
+          lost: counts.closedLost,
+          totalDeals,
+        }}
         velocity={{
           current: velocityCurrent,
           prior: velocityPrior,
           labels: velocityLabels,
           marker,
         }}
-        shortList={shortList}
-        revenueBars={revenueBars}
-        forecast={forecastBlock}
-      />
-
-      <SectionRule
-        number="03"
-        label="PIPELINE & INSIGHTS"
-        meta={`${anomalies.length} ANOMALIES · ${insights.length} PATTERNS`}
-      />
-      <InsightsGrid
-        scenarios={{
-          months,
-          best: bestSeries,
-          expected: expectedSeries,
-          worst: worstSeries,
+        atRisk={{
+          totalValue: atRisk.totalValue,
+          flaggedCount: atRisk.flaggedCount,
         }}
+        winRate={winRate}
+        newThisWeek={counts.newPerWeek}
+        forecast={{
+          expected: pipelineForecast.expected,
+          bestCase: pipelineForecast.bestCase,
+          worstCase: pipelineForecast.worstCase,
+          confidence: weightedConfidence,
+          avgDealAgeDays: avgDealAge,
+        }}
+        shortList={shortList}
+        aiPanel={aiPanel}
         anomalies={anomalies.map((a) => ({
           severity: a.severity,
           dealName: a.deal.name,
@@ -437,21 +296,12 @@ export default async function DashboardPage() {
           impact: (i.impact ?? "neutral") as "positive" | "negative" | "neutral",
         }))}
         recommendations={recommendations}
-      />
-
-      <SectionRule
-        number="04"
-        label="THE DESK"
-        meta={`${topActive.length} TOP · ${countryCounts.length} REGIONS · ${meetings.length} MEETINGS`}
-      />
-      <DeskGrid
+        revenueBars={revenueBars}
+        countryCounts={countryCounts}
         topDeals={topActive}
-        countryPins={countryCounts}
         meetings={meetings}
         calendarConnected={calendarConnected}
       />
-
-      <Colophon systemStatus={dbUnavailable ? "degraded" : "operational"} />
-    </SentinelShell>
+    </DaylightShell>
   );
 }

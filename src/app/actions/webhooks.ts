@@ -2,6 +2,7 @@
 
 import crypto from "crypto";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import {
@@ -16,6 +17,18 @@ import { logAuditEvent, AUDIT_ACTIONS } from "@/lib/audit-log";
 import { ForbiddenError, ValidationError } from "@/lib/errors";
 import { getUserTeamRole } from "@/lib/team-utils";
 import { isHttpsWebhookUrl, WEBHOOK_URL_HTTPS_MESSAGE } from "@/lib/webhook-url";
+const WEBHOOK_PUBLIC_SELECT = {
+  id: true,
+  name: true,
+  url: true,
+  events: true,
+  isActive: true,
+  createdAt: true,
+  _count: { select: { deliveries: true } },
+} satisfies Prisma.WebhookSelect;
+
+const RECENT_DELIVERIES = 20;
+const RESPONSE_PREVIEW_CHARS = 200;
 
 export async function createWebhook(data: {
   name: string;
@@ -62,7 +75,14 @@ export async function createWebhook(data: {
   );
 
   revalidatePath("/settings/webhooks");
-  return webhook;
+  return {
+    id: webhook.id,
+    name: webhook.name,
+    url: webhook.url,
+    events: webhook.events,
+    isActive: webhook.isActive,
+    createdAt: webhook.createdAt,
+  };
 }
 
 export async function getMyWebhooks() {
@@ -70,9 +90,7 @@ export async function getMyWebhooks() {
 
   return prisma.webhook.findMany({
     where: { userId },
-    include: {
-      _count: { select: { deliveries: true } },
-    },
+    select: WEBHOOK_PUBLIC_SELECT,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -80,15 +98,56 @@ export async function getMyWebhooks() {
 export async function getWebhookById(id: string) {
   const userId = await getAuthenticatedUserId();
 
-  return prisma.webhook.findFirst({
+  const webhook = await prisma.webhook.findFirst({
     where: { id, userId },
-    include: {
+    select: {
+      ...WEBHOOK_PUBLIC_SELECT,
       deliveries: {
         orderBy: { createdAt: "desc" },
-        take: 20,
+        take: RECENT_DELIVERIES,
+        select: {
+          id: true,
+          event: true,
+          statusCode: true,
+          response: true,
+          success: true,
+          createdAt: true,
+        },
       },
     },
   });
+  if (!webhook) return null;
+  const deliveryIds = webhook.deliveries.map((d) => d.id);
+  const tests =
+    deliveryIds.length === 0
+      ? []
+      : await prisma.webhookDelivery.findMany({
+          where: {
+            id: { in: deliveryIds },
+            payload: { path: ["data", "test"], equals: true },
+          },
+          select: { id: true },
+        });
+  const testIds = new Set(tests.map((t) => t.id));
+
+  return {
+    ...webhook,
+    deliveries: webhook.deliveries.map((d) => ({
+      ...d,
+      response: d.response ? d.response.slice(0, RESPONSE_PREVIEW_CHARS) : null,
+      isTest: testIds.has(d.id),
+    })),
+  };
+}
+
+export async function revealWebhookSecret(id: string): Promise<string | null> {
+  const userId = await getAuthenticatedUserId();
+
+  const webhook = await prisma.webhook.findFirst({
+    where: { id, userId },
+    select: { secret: true },
+  });
+  return webhook?.secret ?? null;
 }
 
 const webhookUpdateSchema = z.object({

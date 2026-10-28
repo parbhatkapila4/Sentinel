@@ -177,6 +177,7 @@ describe("getMyTeams", () => {
 
     expect(prismaMock.teamMember.findMany).toHaveBeenCalledWith({
       where: { userId: TEST_USER_ID },
+      orderBy: { createdAt: "asc" },
       include: {
         team: { include: { _count: { select: { members: true } } } },
       },
@@ -197,6 +198,17 @@ describe("getMyTeams", () => {
     const result = await getMyTeams();
 
     expect(result).toEqual([]);
+  });
+
+  it("lists teams oldest membership first, as the teams page says", async () => {
+    prismaMock.teamMember.findMany.mockResolvedValue([] as never);
+
+    await getMyTeams();
+
+    const args = prismaMock.teamMember.findMany.mock.calls[0]?.[0] as {
+      orderBy?: unknown;
+    };
+    expect(args.orderBy).toEqual({ createdAt: "asc" });
   });
 });
 

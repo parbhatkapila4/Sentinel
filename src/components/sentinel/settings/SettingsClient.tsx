@@ -78,8 +78,19 @@ import {
   parseExpiry,
   type BrandMeta,
 } from "@/lib/card-utils";
-import { SettingsHero } from "./SettingsHero";
-import { SettingsNav, type NavSection } from "./SettingsNav";
+import { EditorialTone } from "./primitives";
+import { HeroLink, PageHero } from "../daylight/blocks";
+import { SectionNav } from "../daylight/settings/SectionNav";
+import {
+  BillingSettings,
+  DangerSettings,
+  IntegrationSettings,
+  NotificationSettingsSection,
+  ProfileSettings,
+  RiskSettingsSection,
+  SecuritySettings,
+  TeamSettings,
+} from "../daylight/settings/sections";
 import {
   EditorialButton,
   EditorialInput,
@@ -96,13 +107,6 @@ import {
 } from "./dialogs/ConfirmDialogs";
 import { InviteMemberDialog } from "./dialogs/InviteMemberDialog";
 import { EditPaymentDialog } from "./dialogs/EditPaymentDialog";
-import { NotificationsSection } from "./sections/NotificationsSection";
-import { RiskSection } from "./sections/RiskSection";
-import { DangerZoneSection } from "./sections/DangerZoneSection";
-import { ProfileAndSecuritySection } from "./sections/ProfileSection";
-import { TeamSection } from "./sections/TeamSection";
-import { IntegrationsSection } from "./sections/IntegrationsSection";
-import { BillingSection } from "./sections/BillingSection";
 import {
   ConnectGmailDialog,
   ConnectHubSpotDialog,
@@ -121,93 +125,6 @@ const DISCONNECT_LABELS: Record<string, string> = {
   gmail: "Gmail",
   slack: "Slack",
 };
-
-const NAV_SECTIONS: NavSection[] = [
-  {
-    id: "settings-profile",
-    label: "Profile",
-    number: "01.01",
-    iconPaths: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4" />
-      </>
-    ),
-  },
-  {
-    id: "settings-security",
-    label: "Security",
-    number: "01.02",
-    iconPaths: (
-      <>
-        <rect x="5" y="11" width="14" height="10" rx="1" />
-        <path d="M8 11V7a4 4 0 018 0v4" />
-      </>
-    ),
-  },
-  {
-    id: "settings-notifications",
-    label: "Notifications",
-    number: "02",
-    iconPaths: (
-      <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M14 21a2 2 0 01-4 0" />
-    ),
-  },
-  {
-    id: "settings-risk",
-    label: "Risk Analysis",
-    number: "03",
-    iconPaths: (
-      <>
-        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </>
-    ),
-  },
-  {
-    id: "settings-integrations",
-    label: "Integrations",
-    number: "04",
-    iconPaths: (
-      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-    ),
-  },
-  {
-    id: "settings-team",
-    label: "Team",
-    number: "05",
-    iconPaths: (
-      <>
-        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-        <circle cx="9" cy="7" r="4" />
-      </>
-    ),
-  },
-  {
-    id: "settings-billing",
-    label: "Billing",
-    number: "06",
-    iconPaths: (
-      <>
-        <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-        <line x1="1" y1="10" x2="23" y2="10" />
-      </>
-    ),
-  },
-  {
-    id: "settings-danger",
-    label: "Danger zone",
-    number: "§ †",
-    iconPaths: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="8" x2="12" y2="12" />
-        <line x1="12" y1="16" x2="12.01" y2="16" />
-      </>
-    ),
-  },
-];
 
 type PaymentModalState =
   | "add"
@@ -421,12 +338,10 @@ export function SettingsClient() {
     if (!sentinelJoinedAt) return "";
     try {
       const d = new Date(sentinelJoinedAt);
-      return `JOINED ${d
-        .toLocaleDateString("en-US", {
-          month: "short",
-          year: "numeric",
-        })
-        .toUpperCase()}`;
+      return `Joined ${d.toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      })}`;
     } catch {
       return "";
     }
@@ -443,7 +358,6 @@ export function SettingsClient() {
   const planPriceDisplay = userPlan?.priceDisplay ?? "$0";
   const isPaidPlan = userPlan?.isPaidPlan ?? false;
   const apiCallsDisplay = userPlan?.apiCallsDisplay ?? "100";
-  const planTag = (userPlan?.planType ?? "free").toUpperCase();
   const planName = userPlan?.planName ?? "Free";
 
   const profileDirty = useMemo(() => {
@@ -1021,119 +935,57 @@ export function SettingsClient() {
     return n;
   }, [integrationStatuses]);
 
-  const activeNotificationChannels = useMemo(() => {
-    return [
-      notifications.emailAlerts,
-      notifications.riskAlerts,
-      notifications.dealUpdates,
-    ].filter(Boolean).length;
-  }, [notifications]);
-
   return (
-    <>
-      <SettingsHero
-        issueMark="§ Set."
-        accountLine="ACCOUNT"
-        subLine="& PREFERENCES"
-        versionLine="v1.0 · 2026"
-        planName={planName + "."}
-        planTag={planTag}
-        planSub={planTag === "FREE" ? "for solo operators" : "your current plan"}
-        dealsUsed={dealsCount}
-        dealsLimit={DEAL_LIMIT}
-        upgradeHref={isPaidPlan ? undefined : "/pricing"}
-        onUpgrade={() => router.push("/pricing")}
+    <EditorialTone.Provider value="light">
+      <PageHero
+        chip={{ label: `${planName} plan`, tone: "neutral" }}
+        headline="Set up the"
+        emphasis="desk."
+        clause="profile, signals, integrations and billing."
+        deck="Each section saves on its own. Sentinel reads your CRM, email and calendar and never writes back to them."
+        actions={
+          <>
+            <HeroLink href="/settings/team" tone="secondary">
+              Team settings
+            </HeroLink>
+            <HeroLink href="/settings/webhooks" tone="secondary">
+              Webhooks
+            </HeroLink>
+          </>
+        }
       />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(140px, 160px) minmax(0, 1fr) auto",
-          padding: "0 32px",
-          borderBottom: "1px solid var(--rule)",
-          background: "var(--ink)",
-          position: "sticky",
-          top: 0,
-          zIndex: 5,
-        }}
-      >
-        <div
-          style={{
-            padding: "16px 24px 16px 0",
-            borderRight: "1px solid var(--rule)",
-            fontFamily: "var(--font-mono-jb)",
-            fontSize: 10,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            color: "var(--cream-3)",
-          }}
-        >
-          § A / <b style={{ color: "var(--cream)", fontWeight: 500 }}>ACCOUNT</b>
-        </div>
-        <div
-          style={{
-            padding: "16px 24px",
-            fontFamily: "var(--font-serif)",
-            fontStyle: "italic",
-            fontSize: 18,
-            color: "var(--cream)",
-          }}
-        >
-          All preferences, in one place
-        </div>
-        <div
-          style={{
-            padding: "16px 0",
-            fontFamily: "var(--font-mono-jb)",
-            fontSize: 10,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: "var(--cream-3)",
-          }}
-        >
-          AUTOSAVE{" "}
-          <b style={{ color: "var(--ivy)", fontWeight: 500 }}>ON</b>
-        </div>
-      </div>
-
-      <div
-        className="sentinel-settings-body"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "260px minmax(0, 1fr)",
-          minHeight: 0,
-        }}
-      >
-        <SettingsNav sections={NAV_SECTIONS} />
-
-        <section style={{ padding: 32, minWidth: 0 }}>
-          <ProfileAndSecuritySection
+      <div className="dl-st-wrap dl-grow">
+        <SectionNav />
+        <div className="dl-st-body">
+          <ProfileSettings
             profile={profile}
             onChange={setProfile}
             avatarPreview={avatarPreview}
             fileInputRef={fileInputRef}
             onImageUpload={handleImageUpload}
             initials={getInitials()}
-            joinedLabel={joinedLabel}
             dirty={profileDirty}
             saving={savingProfile}
             onSave={saveProfile}
             onDiscard={discardProfile}
+          />
+
+          <SecuritySettings
             twoFactorEnabled={user?.twoFactorEnabled ?? false}
             onOpenUserProfile={() => openUserProfile()}
           />
 
-          <NotificationsSection
+          <NotificationSettingsSection
             value={notifications}
             onChange={setNotifications}
-            activeChannels={activeNotificationChannels}
             dirty={notificationsDirty}
             saving={savingNotifications}
             onSave={saveNotifications}
             onDiscard={discardNotifications}
           />
 
-          <RiskSection
+          <RiskSettingsSection
             value={risk}
             onChange={setRisk}
             error={riskError}
@@ -1148,7 +1000,7 @@ export function SettingsClient() {
             onDiscard={discardRisk}
           />
 
-          <IntegrationsSection
+          <IntegrationSettings
             statuses={integrationStatuses}
             loading={loadingStatuses}
             connectedCount={connectedCount}
@@ -1157,15 +1009,19 @@ export function SettingsClient() {
             onManage={setManageModal}
           />
 
-          <TeamSection
-            planName={planName}
-            teamMemberLimit={TEAM_MEMBER_LIMIT}
+          <TeamSettings
+            name={[profile.name, profile.surname].filter(Boolean).join(" ")}
+            email={profile.email}
+            joinedLabel={joinedLabel}
+            role={profile.role}
+            initials={getInitials()}
+            imageUrl={avatarPreview}
             teamMembersCount={teamMembersCount}
+            teamMemberLimit={TEAM_MEMBER_LIMIT}
             onInvite={() => setShowInviteModal(true)}
           />
 
-          <BillingSection
-            planTag={planTag}
+          <BillingSettings
             planName={planName}
             planPriceDisplay={planPriceDisplay}
             isPaidPlan={isPaidPlan}
@@ -1176,6 +1032,7 @@ export function SettingsClient() {
             apiCallsDisplay={apiCallsDisplay}
             paymentMethods={paymentMethods}
             loadingPaymentMethods={loadingPaymentMethods}
+            onChangePlan={() => router.push("/pricing")}
             onAddPaymentMethod={openAddPaymentModal}
             onEditPaymentMethod={openEditPaymentModal}
             onRemovePaymentMethod={handleRemovePaymentClick}
@@ -1183,13 +1040,14 @@ export function SettingsClient() {
             onCancelSubscription={() => setShowCancelDialog(true)}
           />
 
-          <DangerZoneSection
+          <DangerSettings
+            onTransfer={() => router.push("/settings/team")}
             onRequestDelete={() => {
               setDeleteConfirmText("");
               setShowDeleteDialog(true);
             }}
           />
-        </section>
+        </div>
       </div>
 
       {showInviteModal && (
@@ -1315,7 +1173,7 @@ export function SettingsClient() {
           onConfirm={handleDeleteAccount}
         />
       )}
-    </>
+    </EditorialTone.Provider>
   );
 }
 

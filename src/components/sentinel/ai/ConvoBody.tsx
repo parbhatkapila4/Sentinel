@@ -328,19 +328,61 @@ function TypingRow({ modelLabel }: { modelLabel: string }) {
 export function ConvoLoading() {
   return (
     <div
+      role="status"
+      aria-label="Loading thread"
       style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 30,
         width: "100%",
         maxWidth: 760,
-        padding: "80px 32px",
-        textAlign: "center",
-        fontFamily: "var(--font-mono-jb)",
-        fontSize: 11,
-        letterSpacing: "0.18em",
-        textTransform: "uppercase",
-        color: "var(--cream-3)",
+        padding: "48px 32px",
       }}
     >
-      Loading thread…
+      {[
+        { ask: "44%", answer: ["100%", "96%", "91%", "52%"] },
+        { ask: "58%", answer: ["100%", "88%", "34%"] },
+      ].map((turn, i) => (
+        <div
+          key={i}
+          aria-hidden
+          style={{ display: "flex", flexDirection: "column", gap: 22 }}
+        >
+          <span
+            className="sentinel-skel"
+            style={{
+              display: "block",
+              width: turn.ask,
+              height: 42,
+              marginLeft: "auto",
+              animationDelay: `${i * 160}ms`,
+            }}
+          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <span
+              className="sentinel-skel"
+              style={{
+                display: "block",
+                width: 128,
+                height: 9,
+                animationDelay: `${i * 160 + 40}ms`,
+              }}
+            />
+            {turn.answer.map((width, j) => (
+              <span
+                key={j}
+                className="sentinel-skel"
+                style={{
+                  display: "block",
+                  width,
+                  height: 13,
+                  animationDelay: `${i * 160 + 80 + j * 40}ms`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

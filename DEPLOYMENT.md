@@ -28,7 +28,7 @@ See [README](README.md) for detailed setup and optional services (Redis, Resend,
 2. **Set environment variables** in the Vercel project (see table below). Critical ones:
    - `DATABASE_URL` - PostgreSQL connection string
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
-   - `OPENROUTER_API_KEY` (for AI insights)
+   - `ANTHROPIC_API_KEY` (for AI insights)
    - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (optional; cache/rate limit)
    - `NEXT_PUBLIC_SENTRY_DSN`, Sentry env vars (optional)
    - `CRON_SECRET` (required to **invoke** `/api/cron/*`; routes fail closed if unset)
@@ -65,7 +65,7 @@ curl -X GET "https://your-domain.com/api/cron/process-emails" \
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key                                                                                                                          | Yes                                                        | `pk_...`                                                                         |
 | `CLERK_SECRET_KEY`                  | Clerk secret key (min 32 chars)                                                                                                                | Yes                                                        | `sk_...`                                                                         |
 | `NEXT_PUBLIC_CLERK_*`               | Clerk URLs (sign-in, sign-up, after sign-in, etc.)                                                                                             | Optional                                                   | See [.env.example](.env.example)                                                 |
-| `OPENROUTER_API_KEY`                | OpenRouter API key for AI                                                                                                                      | Yes (for insights)                                         | -                                                                                |
+| `ANTHROPIC_API_KEY`                 | Anthropic API key for AI (Claude)                                                                                                              | Yes (for insights)                                         | -                                                                                |
 | `UPSTASH_REDIS_REST_URL`            | Upstash Redis REST URL                                                                                                                         | Optional                                                   | -                                                                                |
 | `UPSTASH_REDIS_REST_TOKEN`          | Upstash Redis REST token                                                                                                                       | Optional                                                   | -                                                                                |
 | `RESEND_API_KEY`                    | Resend for transactional email                                                                                                                 | Optional                                                   | -                                                                                |
@@ -89,7 +89,7 @@ Docker is for local development and self-hosted deployment. Vercel remains the p
 
 **Prerequisites:** Docker, Docker Compose
 
-1. **Environment**: Copy `.env.example` to `.env.local` and fill in required vars (Clerk, OpenRouter, etc.). `DATABASE_URL` and `DIRECT_URL` are overridden in `docker-compose.yml` to use the `db` service (both point at the same local Postgres URL).
+1. **Environment**: Copy `.env.example` to `.env.local` and fill in required vars (Clerk, Anthropic, etc.). `DATABASE_URL` and `DIRECT_URL` are overridden in `docker-compose.yml` to use the `db` service (both point at the same local Postgres URL).
 2. **Start stack**: `docker compose up --build` (or `docker-compose up --build`).
 3. **Migrations**: Run after the app and DB are up:
    - `docker compose exec app npx prisma migrate deploy`

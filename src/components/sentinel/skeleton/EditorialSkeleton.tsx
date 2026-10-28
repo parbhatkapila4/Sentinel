@@ -16,7 +16,7 @@ export function EditorialSkeletonShell({
     <div
       aria-live="polite"
       aria-label={label}
-      className="sentinel-shell sentinel-grain sentinel-vignette"
+      className="sentinel-shell"
       style={{
         minHeight: "100vh",
         background: "var(--ink)",
@@ -24,6 +24,8 @@ export function EditorialSkeletonShell({
         position: "relative",
       }}
     >
+      <div className="sentinel-grain" aria-hidden />
+      <div className="sentinel-vignette" aria-hidden />
       <div style={{ maxWidth, margin: "0 auto", padding }}>{children}</div>
     </div>
   );
@@ -179,6 +181,61 @@ export function HeroSkeleton() {
         <SkeletonBox height={120} delay={120} />
         <SkeletonRow width="60%" height={10} delay={200} />
       </div>
+    </div>
+  );
+}
+
+const LIST_TITLE_WIDTHS = [132, 104, 148, 96, 120, 88];
+const LIST_DETAIL_WIDTHS = [224, 248, 196, 232, 208, 240];
+
+export function ListRowsSkeleton({
+  label,
+  rows = 3,
+  padding = "18px 0",
+}: {
+  label: string;
+  rows?: number;
+  padding?: string;
+}) {
+  return (
+    <div role="status" aria-label={label}>
+      {Array.from({ length: rows }, (_, i) => (
+        <div
+          key={i}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "44px minmax(0, 1fr) auto",
+            gap: 16,
+            alignItems: "center",
+            padding,
+            borderBottom: i === rows - 1 ? "none" : "1px solid var(--rule)",
+          }}
+        >
+          <SkeletonBox width={44} height={44} delay={i * 60} />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              minWidth: 0,
+            }}
+          >
+            <SkeletonRow
+              width={LIST_TITLE_WIDTHS[i % LIST_TITLE_WIDTHS.length]}
+              height={14}
+              delay={i * 60 + 30}
+              style={{ maxWidth: "100%" }}
+            />
+            <SkeletonRow
+              width={LIST_DETAIL_WIDTHS[i % LIST_DETAIL_WIDTHS.length]}
+              height={9}
+              delay={i * 60 + 60}
+              style={{ maxWidth: "100%" }}
+            />
+          </div>
+          <SkeletonRow width={84} height={30} delay={i * 60 + 90} />
+        </div>
+      ))}
     </div>
   );
 }

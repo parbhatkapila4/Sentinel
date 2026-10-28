@@ -89,6 +89,7 @@ export async function getMyTeams() {
 
   const memberships = await prisma.teamMember.findMany({
     where: { userId },
+    orderBy: { createdAt: "asc" },
     include: {
       team: {
         include: {

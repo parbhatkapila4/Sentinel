@@ -4,13 +4,45 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics-client";
 
-const EXPORT_FORMATS = [
+export const EXPORT_FORMATS = [
   { value: "pdf", label: "PDF", ext: "pdf" },
   { value: "csv", label: "CSV", ext: "csv" },
   { value: "json", label: "JSON", ext: "json" },
 ] as const;
 
-type ExportFormat = (typeof EXPORT_FORMATS)[number]["value"];
+export type ExportFormat = (typeof EXPORT_FORMATS)[number]["value"];
+
+export async function downloadDealsExport(
+  format: ExportFormat,
+  options: { teamId?: string | null; includeTeamDeals?: boolean } = {}
+): Promise<void> {
+  const params = new URLSearchParams({ format });
+  if (options.teamId) params.set("teamId", options.teamId);
+  if (options.includeTeamDeals) params.set("includeTeamDeals", "true");
+
+  const response = await fetch(`/api/deals/export?${params.toString()}`);
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || "Failed to export deals");
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get("Content-Disposition");
+  const ext = EXPORT_FORMATS.find((f) => f.value === format)?.ext ?? format;
+  let filename = `deals-export-${new Date().toISOString().split("T")[0]}.${ext}`;
+  const match = disposition?.match(/filename="?([^";\n]+)"?/);
+  if (match) filename = match[1];
+
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  trackEvent(ANALYTICS_EVENTS.DEAL_EXPORTED, { format });
+}
 
 interface ExportButtonProps {
   className?: string;
@@ -60,33 +92,7 @@ export function ExportButton({
     setShowMenu(false);
     setIsExporting(true);
     try {
-      const params = new URLSearchParams({ format });
-      if (teamId) params.set("teamId", teamId);
-      if (includeTeamDeals) params.set("includeTeamDeals", "true");
-
-      const response = await fetch(`/api/deals/export?${params.toString()}`);
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to export deals");
-      }
-
-      const blob = await response.blob();
-      const disposition = response.headers.get("Content-Disposition");
-      const ext =
-        EXPORT_FORMATS.find((f) => f.value === format)?.ext ?? format;
-      let filename = `deals-export-${new Date().toISOString().split("T")[0]}.${ext}`;
-      const match = disposition?.match(/filename="?([^";\n]+)"?/);
-      if (match) filename = match[1];
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      trackEvent(ANALYTICS_EVENTS.DEAL_EXPORTED, { format });
+      await downloadDealsExport(format, { teamId, includeTeamDeals });
     } catch (error) {
       console.error("Error exporting deals:", error);
       alert(error instanceof Error ? error.message : "Failed to export deals. Please try again.");

@@ -1,11 +1,12 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
+import { format } from "date-fns";
 
 import { getAuthenticatedUserId } from "@/lib/auth";
 
-import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
+import { DaylightShell } from "@/components/sentinel/daylight/DaylightShell";
+import { NewDealView } from "@/components/sentinel/daylight/new-deal/NewDealView";
 import { buildShellContextForPage } from "@/components/sentinel/shell/buildContextForPage";
-import { NewDealClient } from "./new-deal-client";
 
 export const dynamic = "force-dynamic";
 
@@ -17,18 +18,19 @@ export default async function NewDealPage() {
     redirect("/sign-in?redirect=/deals/new");
   }
 
+  const now = new Date();
   const shellContext = await buildShellContextForPage();
 
   return (
-    <SentinelShell
+    <DaylightShell
+      title="New deal"
+      dateLabel={format(now, "EEEE, MMMM d")}
       syncTime={shellContext.syncTime}
-      coveragePercent={shellContext.coveragePercent}
       sourceLabels={shellContext.sourceLabels}
       alertCount={shellContext.alertCount}
-      tickerItems={shellContext.tickerItems}
       onboarding={shellContext.onboarding}
     >
-      <NewDealClient />
-    </SentinelShell>
+      <NewDealView />
+    </DaylightShell>
   );
 }

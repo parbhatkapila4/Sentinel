@@ -32,17 +32,17 @@ This document records the non-obvious architectural choices in Sentinel - what w
 
 ---
 
-## 2. AI router: per-model circuit isolation, not per-provider
+## 2. AI router: one Claude model, retries only on outages
 
-**What.** `src/lib/ai-router.ts` maps query intent -> primary model -> fallback list. Each model has its own named circuit (`circuit-breaker.ts`). When OpenRouter starts returning 5xx for one model, that breaker opens; routing falls through to the next candidate. `src/lib/retry.ts` short-circuits on open breakers so we don't waste retries.
+**What.** `src/lib/ai-router.ts` sends every AI request to the Anthropic API through the official SDK, on one model (`AI_MODEL` in `src/lib/config.ts`, currently `claude-opus-5-5`). Query intent still picks the system prompt. Calls run inside one named circuit (`anthropic`, `circuit-breaker.ts`), and `src/lib/retry.ts` retries only rate limits, overloads and connection failures.
 
-**Why per-model rather than per-provider.** OpenRouter is the provider. Inside it, individual models fail independently - Anthropic Claude can be flaky while OpenAI GPT-4o is fine. A per-provider breaker would punish every model when one is bad. Per-model isolation keeps healthy models serving traffic during partial outages.
+**Why only outages retry and count toward the breaker.** Refusals, rejected requests (400s), auth and billing errors are the request's or the account's problem, not an outage. Retrying them wastes calls, and counting them would let one user's bad request block AI for every user for 30 seconds. They fail at once with a clear error instead.
 
-**Why fallback rather than retry on the same model.** Persistent retries against a bad model amplify the outage. Fallback degrades gracefully: a financial-intent query might switch from Claude to GPT-4o; quality varies but the response arrives.
+**Why no cross-model fallback.** The OpenRouter setup hopped between providers' models when one failed. With one provider, policy refusals are retried by Anthropic's server-side fallback (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`), and outages surface as errors after the retries instead of silently switching models.
 
-**Trade-off accepted.** Fallbacks are best-effort by design - answer quality can shift mid-degradation. Cost can briefly increase if the fallback model is more expensive. Both are tracked via metrics (`src/lib/business-metrics.ts`).
+**Trade-off accepted.** During an Anthropic outage, AI features fail fast rather than degrade to another provider. Opus 5.5 always thinks before answering, so effort (low for FAST, medium by default, high for RESEARCH) sets latency and cost, in place of the old temperature and token caps.
 
-**Verify.** `src/lib/__tests__/ai-router-openrouter.test.ts` validates fallback ordering and "no retry on open breaker."
+**Verify.** `src/lib/__tests__/ai-router-anthropic.test.ts` covers the request shape, effort per mode, image conversion, refusals, which errors retry, and the breaker opening only on outages.
 
 ---
 

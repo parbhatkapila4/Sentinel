@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
-const UI_FILE = "src/components/webhook-form.tsx";
+const UI_FILE = "src/components/sentinel/daylight/webhooks/events.ts";
 const TYPE_FILE = "src/lib/webhooks.ts";
 
 function read(rel: string): string {

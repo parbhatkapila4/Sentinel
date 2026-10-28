@@ -461,6 +461,7 @@ export async function getDealById(dealId: string) {
       where: { dealId: deal.id },
       orderBy: { createdAt: "desc" },
     });
+    const riskSettingsMap = await buildRiskSettingsMap([deal.userId]);
 
     const riskSnapshot = computeDealRiskSnapshot(
       {
@@ -475,7 +476,8 @@ export async function getDealById(dealId: string) {
         eventType: e.eventType,
         createdAt: e.createdAt,
         metadata: e.metadata,
-      }))
+      })),
+      riskSettingsMap.get(deal.userId)
     );
 
     const events = await prisma.dealEvent.findMany({
@@ -497,6 +499,7 @@ export async function getDealById(dealId: string) {
       name: deal.name,
       stage: deal.stage,
       value: toDealValueNumber(deal.value),
+      location: deal.location ?? null,
       source: dealWithSource.source ?? null,
       channel: dealWithSource.channel ?? null,
       externalId: dealWithSource.externalId ?? null,

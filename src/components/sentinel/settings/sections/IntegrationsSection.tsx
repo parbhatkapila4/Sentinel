@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { ListRowsSkeleton } from "../../skeleton/EditorialSkeleton";
 import type {
   AllIntegrationStatuses,
   IntegrationLogEntry,
@@ -49,18 +50,7 @@ export function IntegrationsSection({
       />
 
       {loading ? (
-        <div
-          style={{
-            fontFamily: "var(--font-mono-jb)",
-            fontSize: 11,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: "var(--cream-3)",
-            padding: "24px 0",
-          }}
-        >
-          LOADING INTEGRATIONS…
-        </div>
+        <ListRowsSkeleton label="Loading integrations" rows={6} />
       ) : (
         <div>
           <IntegrationRow

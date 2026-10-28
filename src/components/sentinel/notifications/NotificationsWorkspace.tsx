@@ -258,6 +258,12 @@ export function NotificationsWorkspace({
         </ul>
       )}
 
+      {!switching && loadingMore && (
+        <div style={{ marginTop: 24 }}>
+          <ListLoading />
+        </div>
+      )}
+
       {!switching && hasMore && filtered.length > 0 && (
         <div
           style={{
@@ -285,7 +291,7 @@ export function NotificationsWorkspace({
               opacity: loadingMore ? 0.6 : 1,
             }}
           >
-            {loadingMore ? "Loading…" : "Load more"}
+            Load more
           </button>
         </div>
       )}
@@ -1082,7 +1088,8 @@ function EmptyState({ hasAny, filter }: { hasAny: boolean; filter: Filter }) {
 function ListLoading() {
   return (
     <div
-      aria-live="polite"
+      role="status"
+      aria-label="Loading notifications"
       style={{
         borderTop: "1px solid var(--rule-strong)",
         borderBottom: "1px solid var(--rule-strong)",
@@ -1102,45 +1109,44 @@ function ListLoading() {
         >
           <div
             aria-hidden
+            className="sentinel-skel"
             style={{
               width: 40,
               height: 40,
-              background: "var(--ink-02)",
-              border: "1px solid var(--rule)",
             }}
           />
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div
               aria-hidden
+              className="sentinel-skel"
               style={{
                 height: 10,
                 width: "40%",
-                background: "var(--ink-02)",
               }}
             />
             <div
               aria-hidden
+              className="sentinel-skel"
               style={{
                 height: 18,
                 width: "70%",
-                background: "var(--ink-03)",
               }}
             />
             <div
               aria-hidden
+              className="sentinel-skel"
               style={{
                 height: 12,
                 width: "55%",
-                background: "var(--ink-02)",
               }}
             />
           </div>
           <div
             aria-hidden
+            className="sentinel-skel"
             style={{
               height: 18,
               width: 80,
-              background: "var(--ink-02)",
               justifySelf: "end",
             }}
           />

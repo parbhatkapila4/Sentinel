@@ -174,7 +174,7 @@ export function DealSummaryCard({ dealId }: DealSummaryCardProps) {
   const buttonLabel = isRefreshing
     ? "Refreshing…"
     : isLoading
-      ? "Loading…"
+      ? "Refresh"
       : isError
         ? "Retry"
         : "Refresh";
@@ -249,17 +249,25 @@ export function DealSummaryCard({ dealId }: DealSummaryCardProps) {
       </div>
 
       {isLoading ? (
-        <p
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontStyle: "italic",
-            fontSize: 15,
-            color: "var(--cream-3)",
-            margin: 0,
-          }}
+        <div
+          role="status"
+          aria-label="Drafting a summary"
+          style={{ display: "flex", flexDirection: "column", gap: 11 }}
         >
-          Drafting a summary…
-        </p>
+          {["100%", "94%", "97%", "58%"].map((width, i) => (
+            <span
+              key={width}
+              aria-hidden
+              className="sentinel-skel"
+              style={{
+                display: "block",
+                width,
+                height: 12,
+                animationDelay: `${i * 60}ms`,
+              }}
+            />
+          ))}
+        </div>
       ) : isError ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <div

@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { ListRowsSkeleton } from "../../skeleton/EditorialSkeleton";
 import { useRouter } from "next/navigation";
 import type { PaymentMethodItem } from "@/lib/payment-methods";
 import { EditorialButton, SectionHeader, SerifEm } from "../primitives";
@@ -367,18 +368,11 @@ export function BillingSection({
         </div>
 
         {loadingPaymentMethods ? (
-          <div
-            style={{
-              fontFamily: "var(--font-mono-jb)",
-              fontSize: 11,
-              color: "var(--cream-3)",
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              padding: "12px 0",
-            }}
-          >
-            LOADING…
-          </div>
+          <ListRowsSkeleton
+            label="Loading payment methods"
+            rows={2}
+            padding="16px 0"
+          />
         ) : paymentMethods.length === 0 ? (
           <div
             style={{

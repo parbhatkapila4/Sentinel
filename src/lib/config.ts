@@ -205,47 +205,7 @@ export const URGENCY_DAYS: Record<Urgency, number> = {
 
 export const HIGH_VALUE_THRESHOLD = 5000;
 
-export type AiModelConfig = {
-  model: string;
-  temperature: number;
-  maxTokens: number;
-  provider: "openrouter" | "anthropic" | "google";
-};
-
-export const AI_CONFIG = {
-  embedding_search: {
-    model: "text-embedding-3-large",
-    temperature: 0.1,
-    maxTokens: 1000,
-    provider: "openrouter" as const,
-  },
-  financial_reasoning: {
-    model: "anthropic/claude-sonnet-4.5",
-    temperature: 0.3,
-    maxTokens: 2000,
-    provider: "openrouter" as const,
-  },
-  code_sql_generation: {
-    model: "openai/gpt-4o",
-    temperature: 0.2,
-    maxTokens: 2000,
-    provider: "openrouter" as const,
-  },
-  planning_multimodal: {
-    model: "google/gemini-2.5-pro",
-    temperature: 0.4,
-    maxTokens: 2000,
-    provider: "openrouter" as const,
-  },
-  general: {
-    model: "openai/gpt-4-turbo",
-    temperature: 0.7,
-    maxTokens: 1000,
-    provider: "openrouter" as const,
-  },
-} as const satisfies Record<string, AiModelConfig>;
-
-export const AI_EMBEDDING_SEARCH_CHAT_MODEL = "openai/gpt-4-turbo";
+export const AI_MODEL = "claude-opus-5-5";
 
 export const RISK_REASONS = {
   NO_ACTIVITY: "No activity threshold exceeded",

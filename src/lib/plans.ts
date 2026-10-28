@@ -283,6 +283,16 @@ export async function checkUsageLimit(
       current,
     };
   }
+  if (metricType === "webhooks") {
+    const current = await prisma.webhook.count({
+      where: { userId },
+    });
+    return {
+      allowed: current < limit,
+      limit,
+      current,
+    };
+  }
 
   const { periodStart } = getCurrentPeriod();
   const tracking = await prisma.usageTracking.findUnique({
@@ -327,7 +337,7 @@ export async function incrementUsage(
   metricType: MetricType,
   amount: number = 1
 ): Promise<void> {
-  if (metricType === "teamMembers") {
+  if (metricType === "teamMembers" || metricType === "webhooks") {
     return;
   }
 

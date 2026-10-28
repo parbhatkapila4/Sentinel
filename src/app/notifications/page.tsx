@@ -1,6 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
-import { isToday } from "date-fns";
+import { format, isToday } from "date-fns";
 
 import { getAuthenticatedUserId } from "@/lib/auth";
 import {
@@ -15,15 +15,13 @@ import {
   getStageDistribution,
 } from "@/lib/analytics";
 
-import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
+import { DaylightShell } from "@/components/sentinel/daylight/DaylightShell";
+import { NotificationsView } from "@/components/sentinel/daylight/notifications/NotificationsView";
+import type { NotificationRow } from "@/components/sentinel/daylight/notifications/model";
 import {
   buildSentinelShellContext,
   mapRawDealsToSentinel,
 } from "@/components/sentinel/shell-context";
-import {
-  NotificationsWorkspace,
-  type NotificationRow,
-} from "@/components/sentinel/notifications/NotificationsWorkspace";
 
 export const dynamic = "force-dynamic";
 
@@ -121,32 +119,24 @@ export default async function NotificationsPage() {
   const todayFinal = todayCount > 0 ? todayCount : derivedToday;
 
   return (
-    <SentinelShell
+    <DaylightShell
+      title="Notifications"
+      dateLabel={format(now, "EEEE, MMMM d")}
       syncTime={shellContext.syncTime}
-      coveragePercent={shellContext.coveragePercent}
       sourceLabels={shellContext.sourceLabels}
       alertCount={shellContext.alertCount}
-      tickerItems={shellContext.tickerItems}
       onboarding={shellContext.onboarding}
     >
-      <div
-        style={{
-          minHeight: "calc(100vh - 140px)",
-          background: "var(--ink)",
-          color: "var(--cream)",
-        }}
-      >
-        <NotificationsWorkspace
-          initialItems={initialItems}
-          initialUnread={unreadCount}
-          initialHasMore={initialItems.length === PAGE_SIZE}
-          totalCount={totalCount}
-          todayCount={todayFinal}
-          pageSize={PAGE_SIZE}
-          nowISO={now.toISOString()}
-        />
-      </div>
-    </SentinelShell>
+      <NotificationsView
+        initialItems={initialItems}
+        initialUnread={unreadCount}
+        initialHasMore={initialItems.length === PAGE_SIZE}
+        totalCount={totalCount}
+        todayCount={todayFinal}
+        pageSize={PAGE_SIZE}
+        nowISO={now.toISOString()}
+      />
+    </DaylightShell>
   );
 }
 

@@ -108,7 +108,7 @@ The thesis is one function. Making it hold up in production is the work.
 
 ## Tech stack
 
-Next.js 16 · React 19 · TypeScript · Prisma · PostgreSQL / Supabase (pooled `6543` / direct `5432`) · Clerk · Upstash Redis · OpenRouter · Sentry.
+Next.js 16 · React 19 · TypeScript · Prisma · PostgreSQL / Supabase (pooled `6543` / direct `5432`) · Clerk · Upstash Redis · Anthropic Claude API · Sentry.
 
 ---
 
@@ -135,7 +135,7 @@ npx prisma migrate dev
 npm run dev                      # http://localhost:3000
 ```
 
-Required: `DATABASE_URL` + `DIRECT_URL`, Clerk keys, `OPENROUTER_API_KEY`, `INTEGRATION_ENCRYPTION_KEY` (32-byte base64), and `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` for the Gmail and Calendar flows. OAuth-exchange and callback behavior is covered by suites under `src/app/api/oauth/**/__tests__`, `src/app/api/integrations/**/oauth/__tests__`, and `src/lib/__tests__/google-oauth.test.ts`. `npm run verify` runs typecheck, lint, and the full Vitest suite.
+Required: `DATABASE_URL` + `DIRECT_URL`, Clerk keys, `ANTHROPIC_API_KEY`, `INTEGRATION_ENCRYPTION_KEY` (32-byte base64), and `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` for the Gmail and Calendar flows. OAuth-exchange and callback behavior is covered by suites under `src/app/api/oauth/**/__tests__`, `src/app/api/integrations/**/oauth/__tests__`, and `src/lib/__tests__/google-oauth.test.ts`. `npm run verify` runs typecheck, lint, and the full Vitest suite.
 
 ---
 

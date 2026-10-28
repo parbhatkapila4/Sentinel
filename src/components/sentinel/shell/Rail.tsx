@@ -23,16 +23,6 @@ export function Rail({ alertCount }: RailProps) {
   const router = useRouter();
   const { signOut } = useClerk();
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [navPending, setNavPending] = useState(false);
-
-  const startNavPending = () => {
-    setNavPending(true);
-    window.setTimeout(() => setNavPending(false), 10000);
-  };
-
-  useEffect(() => {
-    setNavPending(false);
-  }, [pathname]);
 
   useRealtime({
     onEvent(ev) {
@@ -113,10 +103,7 @@ export function Rail({ alertCount }: RailProps) {
       label: "AI",
       href: "/insights",
       iconPaths: (
-        <>
-          <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z" />
-          <path d="M19 14l.8 2 2 .8-2 .8L19 19.6l-.8-2-2-.8 2-.8z" />
-        </>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       ),
     },
     {
@@ -147,7 +134,6 @@ export function Rail({ alertCount }: RailProps) {
       <Link
         href="/"
         aria-label="Home"
-        onClick={startNavPending}
         className="h-9 w-9 grid place-items-center border mr-2"
         style={{
           color: "var(--signal)",
@@ -164,7 +150,6 @@ export function Rail({ alertCount }: RailProps) {
         href="/deals/new"
         aria-label="New deal"
         title="New deal"
-        onClick={startNavPending}
         className="h-9 w-9 grid place-items-center border mr-1"
         style={{
           color:
@@ -193,7 +178,6 @@ export function Rail({ alertCount }: RailProps) {
           <Link
             key={item.label}
             href={item.href}
-            onClick={startNavPending}
             aria-label={item.label}
             className="h-9 w-9 grid place-items-center relative"
             style={{
@@ -267,7 +251,6 @@ export function Rail({ alertCount }: RailProps) {
       <Link
         href="/"
         aria-label="Sentinel home"
-        onClick={startNavPending}
         className="grid place-items-center relative"
         style={{
           width: 34,
@@ -301,7 +284,6 @@ export function Rail({ alertCount }: RailProps) {
         href="/deals/new"
         aria-label="New deal"
         title="New deal"
-        onClick={startNavPending}
         className="grid place-items-center relative group"
         style={{
           width: 34,
@@ -350,7 +332,6 @@ export function Rail({ alertCount }: RailProps) {
             <Link
               key={item.label}
               href={item.href}
-              onClick={startNavPending}
               title={item.label}
               aria-label={item.label}
               className="relative grid place-items-center"
@@ -414,7 +395,6 @@ export function Rail({ alertCount }: RailProps) {
         href="/settings"
         title="Settings"
         aria-label="Settings"
-        onClick={startNavPending}
         className="grid place-items-center mb-3 relative"
         style={{
           width: 34,
@@ -472,47 +452,6 @@ export function Rail({ alertCount }: RailProps) {
 
   return (
     <>
-      {navPending && (
-        <div
-          aria-live="polite"
-          aria-label="Loading"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1200,
-            pointerEvents: "none",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 2,
-              background: "rgba(245, 237, 214, 0.08)",
-              overflow: "hidden",
-            }}
-          >
-            <span
-              style={{
-                display: "block",
-                width: "28%",
-                height: "100%",
-                background: "var(--signal)",
-                animation: "sentinel-nav-pending-slide 1.1s ease-in-out infinite",
-              }}
-            />
-          </div>
-          <style>{`
-            @keyframes sentinel-nav-pending-slide {
-              0% { transform: translateX(-140%); }
-              50% { transform: translateX(240%); }
-              100% { transform: translateX(-140%); }
-            }
-          `}</style>
-        </div>
-      )}
       {HorizontalBar}
       {VerticalRail}
     </>

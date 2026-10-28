@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SkeletonRow } from "@/components/sentinel/skeleton/EditorialSkeleton";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -80,30 +81,17 @@ export function AcceptInviteClient() {
         }}
       >
         {loading ? (
-          <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <div
-              style={{
-                fontFamily: "var(--font-mono-jb)",
-                fontSize: 10,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: "var(--cream-3)",
-                marginBottom: 14,
-              }}
-            >
-              § - READING THE LETTER
-            </div>
-            <p
-              style={{
-                fontFamily: "var(--font-serif)",
-                fontStyle: "italic",
-                fontSize: 20,
-                color: "var(--cream-2)",
-                margin: 0,
-              }}
-            >
-              One moment…
-            </p>
+          <div
+            role="status"
+            aria-label="Loading invitation"
+            style={{ display: "flex", flexDirection: "column", gap: 14 }}
+          >
+            <SkeletonRow width={168} height={10} />
+            <SkeletonRow width="86%" height={34} delay={60} />
+            <SkeletonRow width="58%" height={34} delay={100} />
+            <SkeletonRow width="100%" height={12} delay={160} style={{ marginTop: 6 }} />
+            <SkeletonRow width="72%" height={12} delay={200} />
+            <SkeletonRow width="100%" height={46} delay={260} style={{ marginTop: 14 }} />
           </div>
         ) : error || !invite ? (
           <>

@@ -10,7 +10,7 @@ High-level system overview. For *why* each choice was made - alternatives consid
 │  (React 19) │     │  App Router │     │  Prisma -> PostgreSQL            │
 │             │     │  API Routes │     │  Clerk (auth)                    │
 │             │     │  Actions    │     │  Redis (cache, rate limit)       │
-└─────────────┘     └─────────────┘     │  OpenRouter (AI)                 │
+└─────────────┘     └─────────────┘     │  Anthropic Claude (AI)           │
                                         │  Sentry (monitoring)             │
                                         └──────────────────────────────────┘
 ```
@@ -29,7 +29,7 @@ High-level system overview. For *why* each choice was made - alternatives consid
 | Database       | PostgreSQL, Prisma                 |
 | Auth           | Clerk                              |
 | Cache / queues | Upstash Redis                      |
-| AI             | OpenRouter (GPT-4, Claude, Gemini) |
+| AI             | Anthropic Claude API               |
 | Monitoring     | Sentry                             |
 | Styling        | Tailwind CSS, MUI (charts)         |
 
@@ -92,7 +92,7 @@ High-level system overview. For *why* each choice was made - alternatives consid
   - `src/__tests__/middleware-head-probe.test.ts`
   - `src/lib/__tests__/cron-auth.test.ts`
   - `src/lib/__tests__/integration-secrets.test.ts`
-  - `src/lib/__tests__/ai-router-openrouter.test.ts`
+  - `src/lib/__tests__/ai-router-anthropic.test.ts`
   - `src/lib/__tests__/realtime.test.ts`
 - **Review expectation**: behavior claims in docs should map to a test, route handler, or utility in `src/lib` / `src/app/api`.
 

@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { formatShortMoney as formatTotal } from "@/lib/format-money";
 
 export interface LeaderboardRow {
@@ -71,24 +69,9 @@ function riskTone(level: LeaderboardRow["riskLabel"]): {
 }
 
 export function Leaderboard({ rows, total }: LeaderboardProps) {
-  const pathname = usePathname();
-  const [loadingId, setLoadingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLoadingId(null);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!loadingId) return;
-    const t = window.setTimeout(() => setLoadingId(null), 12000);
-    return () => window.clearTimeout(t);
-  }, [loadingId]);
-
   if (rows.length === 0) {
     return <LeaderboardEmpty />;
   }
-
-  const isBusy = loadingId !== null;
 
   return (
     <ol style={{ margin: 0, padding: 0, listStyle: "none", position: "relative" }}>
@@ -96,8 +79,6 @@ export function Leaderboard({ rows, total }: LeaderboardProps) {
         const accent = rankAccent(row.rank);
         const tone = riskTone(row.riskLabel);
         const top3 = row.rank <= 3;
-        const isLoading = loadingId === row.id;
-        const isOtherLoading = isBusy && !isLoading;
         return (
           <li
             key={row.id}
@@ -107,9 +88,6 @@ export function Leaderboard({ rows, total }: LeaderboardProps) {
               borderTop: i === 0 ? "1px solid var(--rule-strong)" : "1px solid var(--rule)",
               borderBottom: i === rows.length - 1 ? "1px solid var(--rule-strong)" : "none",
               position: "relative",
-              opacity: isOtherLoading ? 0.35 : 1,
-              pointerEvents: isOtherLoading ? "none" : "auto",
-              transition: "opacity 180ms ease",
               overflow: "hidden",
             }}
           >
@@ -127,36 +105,15 @@ export function Leaderboard({ rows, total }: LeaderboardProps) {
               />
             )}
 
-            {isLoading && (
-              <span
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  bottom: 0,
-                  height: 2,
-                  width: "100%",
-                  background:
-                    "linear-gradient(90deg, transparent 0%, var(--signal) 50%, transparent 100%)",
-                  animation: "sentinel-lb-sweep 1.1s linear infinite",
-                  pointerEvents: "none",
-                }}
-              />
-            )}
-
             <Link
               href={`/deals/${row.id}`}
-              onClick={() => {
-                setLoadingId(row.id);
-              }}
-              aria-busy={isLoading || undefined}
               className="grid items-center"
               style={{
                 gridTemplateColumns: "auto minmax(0,1fr) auto auto",
                 gap: 24,
                 padding: "22px 24px",
                 textDecoration: "none",
-                cursor: isBusy ? "progress" : "pointer",
+                cursor: "pointer",
               }}
             >
               <div
@@ -190,7 +147,7 @@ export function Leaderboard({ rows, total }: LeaderboardProps) {
                     textTransform: "uppercase",
                   }}
                 >
-                  {isLoading ? "Opening" : accent.label}
+                  {accent.label}
                 </span>
               </div>
 
@@ -258,19 +215,6 @@ export function Leaderboard({ rows, total }: LeaderboardProps) {
                       </span>
                     </>
                   )}
-                  {isLoading && (
-                    <>
-                      <span>·</span>
-                      <span
-                        style={{
-                          color: "var(--signal)",
-                          letterSpacing: "0.18em",
-                        }}
-                      >
-                        Loading deal…
-                      </span>
-                    </>
-                  )}
                 </div>
               </div>
 
@@ -330,58 +274,18 @@ export function Leaderboard({ rows, total }: LeaderboardProps) {
                 </div>
               </div>
 
-              {isLoading ? (
-                <span
-                  aria-hidden
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 22,
-                    height: 22,
-                    paddingLeft: 8,
-                  }}
-                >
-                  <svg
-                    viewBox="0 0 22 22"
-                    width={18}
-                    height={18}
-                    style={{
-                      animation: "sentinel-lb-spin 900ms linear infinite",
-                    }}
-                    aria-hidden
-                  >
-                    <circle
-                      cx={11}
-                      cy={11}
-                      r={8}
-                      fill="none"
-                      stroke="var(--rule-strong)"
-                      strokeWidth={1.5}
-                    />
-                    <path
-                      d="M11 3 A8 8 0 0 1 19 11"
-                      fill="none"
-                      stroke="var(--signal)"
-                      strokeWidth={1.8}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </span>
-              ) : (
-                <span
-                  aria-hidden
-                  style={{
-                    fontFamily: "var(--font-serif)",
-                    fontStyle: "italic",
-                    fontSize: 22,
-                    color: top3 ? accent.border : "var(--cream-4)",
-                    paddingLeft: 8,
-                  }}
-                >
-                  →
-                </span>
-              )}
+              <span
+                aria-hidden
+                style={{
+                  fontFamily: "var(--font-serif)",
+                  fontStyle: "italic",
+                  fontSize: 22,
+                  color: top3 ? accent.border : "var(--cream-4)",
+                  paddingLeft: 8,
+                }}
+              >
+                →
+              </span>
             </Link>
           </li>
         );
@@ -399,8 +303,6 @@ export function Leaderboard({ rows, total }: LeaderboardProps) {
           letterSpacing: "0.16em",
           color: "var(--cream-3)",
           textTransform: "uppercase",
-          opacity: isBusy ? 0.35 : 1,
-          transition: "opacity 180ms ease",
         }}
       >
         <span>{rows.length} entries</span>
@@ -409,16 +311,6 @@ export function Leaderboard({ rows, total }: LeaderboardProps) {
           Aggregate {formatTotal(total)}
         </span>
       </li>
-
-      <style>{`
-        @keyframes sentinel-lb-sweep {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes sentinel-lb-spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </ol>
   );
 }

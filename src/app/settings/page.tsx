@@ -1,17 +1,20 @@
 import { Suspense } from "react";
 import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
+import { format } from "date-fns";
 
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { getAllDeals } from "@/app/actions/deals";
 import { getAllIntegrationStatuses } from "@/app/actions/integrations";
 
-import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
+import { DaylightShell } from "@/components/sentinel/daylight/DaylightShell";
 import {
   buildSentinelShellContext,
   mapRawDealsToSentinel,
 } from "@/components/sentinel/shell-context";
 import { SettingsClient } from "@/components/sentinel/settings/SettingsClient";
+import { SettingsBodySkeleton } from "@/components/sentinel/daylight/settings/SettingsSkeleton";
+import { SectionNav } from "@/components/sentinel/daylight/settings/SectionNav";
 
 export const dynamic = "force-dynamic";
 
@@ -44,27 +47,29 @@ export default async function SettingsPage() {
     dealsRaw.length > 0 && dealsRaw.every((d) => d.isDemo);
   const deals = mapRawDealsToSentinel(dealsRaw);
 
+  const now = new Date();
   const shellContext = buildSentinelShellContext({
     deals,
     integrationStatuses,
     coveragePercent: 0,
     hasAnyDeals,
     isDemoMode,
-    now: new Date(),
+    now,
   });
 
   return (
-    <SentinelShell
+    <DaylightShell
+      title="Settings"
+      dateLabel={format(now, "EEEE, MMMM d")}
       syncTime={shellContext.syncTime}
-      coveragePercent={shellContext.coveragePercent}
       sourceLabels={shellContext.sourceLabels}
       alertCount={shellContext.alertCount}
-      tickerItems={shellContext.tickerItems}
       onboarding={shellContext.onboarding}
+      pageNav={<SectionNav placement="sidebar" />}
     >
-      <Suspense fallback={null}>
+      <Suspense fallback={<SettingsBodySkeleton />}>
         <SettingsClient />
       </Suspense>
-    </SentinelShell>
+    </DaylightShell>
   );
 }

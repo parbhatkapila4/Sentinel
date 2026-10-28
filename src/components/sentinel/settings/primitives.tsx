@@ -1,7 +1,28 @@
 "use client";
 
-import { forwardRef, useEffect, type CSSProperties, type ReactNode } from "react";
+import {
+  createContext,
+  forwardRef,
+  useContext,
+  useEffect,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
+
+export const EditorialTone = createContext<"dark" | "light">("dark");
+
+const lightInputStyle: CSSProperties = {
+  height: 40,
+  padding: "0 12px",
+  border: "1px solid var(--dl-border)",
+  borderRadius: 9,
+  background: "var(--dl-panel)",
+  boxShadow: "var(--dl-shadow)",
+  color: "var(--dl-ink)",
+  fontFamily: "var(--dl-font-sans)",
+  fontSize: 14,
+};
 
 interface ToggleProps {
   checked: boolean;
@@ -345,6 +366,23 @@ export const EditorialInput = forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }
 >(function EditorialInput({ invalid, style, readOnly, ...rest }, ref) {
+  const tone = useContext(EditorialTone);
+  if (tone === "light") {
+    return (
+      <input
+        ref={ref}
+        readOnly={readOnly}
+        aria-invalid={invalid || undefined}
+        {...rest}
+        className="dl-st-field"
+        style={{
+          ...lightInputStyle,
+          ...(invalid ? { borderColor: "var(--dl-signal)" } : null),
+          ...style,
+        }}
+      />
+    );
+  }
   return (
     <input
       ref={ref}
@@ -370,12 +408,15 @@ export const EditorialSelect = forwardRef<
   HTMLSelectElement,
   React.SelectHTMLAttributes<HTMLSelectElement>
 >(function EditorialSelect({ style, children, ...rest }, ref) {
+  const tone = useContext(EditorialTone);
   return (
     <select
       ref={ref}
       {...rest}
+      className={tone === "light" ? "dl-st-field" : undefined}
       style={{
         ...baseInputStyle,
+        ...(tone === "light" ? lightInputStyle : null),
         cursor: "pointer",
         appearance: "none",
         backgroundImage:
@@ -403,6 +444,50 @@ export const EditorialButton = forwardRef<HTMLButtonElement, ButtonProps>(
     { variant = "ghost", compact, children, style, disabled, ...rest },
     ref
   ) {
+    const tone = useContext(EditorialTone);
+    if (tone === "light") {
+      const light: CSSProperties = {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        height: compact ? 30 : 36,
+        minHeight: 0,
+        padding: compact ? "0 11px" : "0 14px",
+        borderRadius: compact ? 8 : 9,
+        border: "1px solid var(--dl-border-strong)",
+        background: "var(--dl-panel)",
+        boxShadow: "var(--dl-shadow)",
+        color: "var(--dl-ink)",
+        fontFamily: "var(--dl-font-sans)",
+        fontSize: compact ? 13 : 13.5,
+        fontWeight: 500,
+        whiteSpace: "nowrap",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+      };
+      if (variant === "primary") {
+        light.border = 0;
+        light.background = "var(--dl-ink)";
+        light.color = "#FFFFFF";
+        light.boxShadow =
+          "inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 1px 2px rgba(16, 24, 40, 0.25)";
+      } else if (variant === "danger") {
+        light.border = "1px solid rgba(200, 71, 46, 0.45)";
+        light.color = "var(--dl-signal-d)";
+        light.boxShadow = "none";
+      }
+      return (
+        <button
+          ref={ref}
+          className={variant === "primary" ? "dl-btn-primary" : "dl-btn-secondary"}
+          disabled={disabled}
+          {...rest}
+          style={{ ...light, ...style }}
+        >
+          {children}
+        </button>
+      );
+    }
     const base: CSSProperties = {
       fontFamily: "var(--font-mono-jb)",
       fontSize: 10.5,
@@ -611,8 +696,9 @@ export function EditorialModal({
   onClose,
   title,
   subtitle,
-  tone,
+  tone: variant,
 }: EditorialModalProps) {
+  const tone = useContext(EditorialTone);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -628,13 +714,19 @@ export function EditorialModal({
 
   if (typeof window === "undefined") return null;
 
+  const light = tone === "light";
+  const host = light
+    ? document.querySelector(".sentinel-daylight") ?? document.body
+    : document.body;
+
   return createPortal(
     <div
       onClick={onClose}
+      className={light ? "dl-modal-light dl-scrim" : undefined}
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(20, 18, 16, 0.72)",
+        background: light ? "rgba(20, 23, 26, 0.32)" : "rgba(20, 18, 16, 0.72)",
         backdropFilter: "blur(3px)",
         display: "flex",
         alignItems: "center",
@@ -647,28 +739,39 @@ export function EditorialModal({
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
+        className={light ? "dl-dialog" : undefined}
         style={{
           background: "var(--ink-02)",
-          border: `1px solid ${tone === "wine" ? "var(--wine)" : "var(--rule-strong)"}`,
+          border: `1px solid ${variant === "wine" ? "var(--wine)" : "var(--rule-strong)"}`,
           padding: 28,
           maxWidth: 520,
           width: "100%",
           position: "relative",
           maxHeight: "90vh",
           overflowY: "auto",
+          ...(light
+            ? {
+                padding: 24,
+                border: "1px solid var(--dl-border)",
+                borderRadius: 14,
+                boxShadow: "var(--dl-shadow-pop)",
+              }
+            : null),
         }}
       >
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: -1,
-            left: 24,
-            width: 42,
-            height: 2,
-            background: tone === "wine" ? "var(--wine)" : "var(--signal)",
-          }}
-        />
+        {!light && (
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: -1,
+              left: 24,
+              width: 42,
+              height: 2,
+              background: variant === "wine" ? "var(--wine)" : "var(--signal)",
+            }}
+          />
+        )}
         <h3
           style={{
             fontFamily: "var(--font-serif)",
@@ -698,7 +801,7 @@ export function EditorialModal({
         {children}
       </div>
     </div>,
-    document.body
+    host
   );
 }
 

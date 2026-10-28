@@ -34,8 +34,6 @@ export interface HubSpotStatus {
   portalId: string | null;
 }
 
-export type { SyncResult };
-
 async function findExistingHubSpotDeal(
   userId: string,
   dealData: {

@@ -4,14 +4,11 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import "swagger-ui-react/swagger-ui.css";
 import { openApiSpec } from "@/lib/openapi";
+import { SwaggerSkeleton } from "@/components/skeleton/SiteSkeleton";
 
 const SwaggerUI = dynamic(() => import("swagger-ui-react"), {
   ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center min-h-[400px] text-white/60">
-      <p>Loading API docs…</p>
-    </div>
-  ),
+  loading: () => <SwaggerSkeleton />,
 });
 
 function BackLink() {

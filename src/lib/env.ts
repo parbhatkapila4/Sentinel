@@ -15,7 +15,7 @@ const envSchema = z.object({
     { message: "CLERK_SECRET_KEY must be at least 32 characters" }
   ),
 
-  OPENROUTER_API_KEY: z.string().min(1),
+  ANTHROPIC_API_KEY: z.string().min(1),
 
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),

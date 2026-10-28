@@ -64,6 +64,11 @@ export function isExplicitlyPublicRoute(req: NextRequest): boolean {
   return isPublicRoute(req);
 }
 
+const devClerkOptions =
+  process.env.NODE_ENV === "development"
+    ? { clockSkewInMs: 5 * 60_000 }
+    : undefined;
+
 const withClerk = clerkMiddleware(async (auth, req) => {
   const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
 
@@ -103,7 +108,7 @@ const withClerk = clerkMiddleware(async (auth, req) => {
   }
 
   return nextWithRequestId(req, requestId);
-});
+}, devClerkOptions);
 export function asNonNavigationRequest(req: NextRequest): NextRequest {
   const headers = new Headers(req.headers);
   headers.set("sec-fetch-dest", "empty");

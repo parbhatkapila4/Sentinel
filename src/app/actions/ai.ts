@@ -2,7 +2,7 @@
 
 import { getDealById } from "@/app/actions/deals";
 import { appendDealTimeline } from "@/lib/timeline";
-import { callOpenRouterForGeneration } from "@/lib/ai-router";
+import { callClaudeForGeneration } from "@/lib/ai-router";
 import {
   getFollowUpEmailPrompt,
   FOLLOW_UP_EMAIL_SYSTEM_PROMPT,
@@ -105,10 +105,10 @@ export async function generateFollowUpEmail(
   const deal = await getDealById(dealId);
   const ctx = buildEmailContext(deal);
   const prompt = getFollowUpEmailPrompt(ctx, tone);
-  const raw = await callOpenRouterForGeneration(
+  const raw = await callClaudeForGeneration(
     FOLLOW_UP_EMAIL_SYSTEM_PROMPT,
     prompt,
-    { temperature: 0.5, maxTokens: 1500 }
+    { effort: "low" }
   );
 
   const parsed = extractJson<{ subject: string; body: string; suggestedSendTime: string }>(raw);
@@ -184,10 +184,10 @@ export async function generateDealSummary(dealId: string): Promise<string> {
     eventsSummary: eventsSummary(events),
   });
 
-  const raw = await callOpenRouterForGeneration(
+  const raw = await callClaudeForGeneration(
     "You are a sales analyst. Output a clear, formatted plain-text summary. No JSON.",
     prompt,
-    { temperature: 0.3, maxTokens: 1200 }
+    { effort: "low" }
   );
   return raw.trim();
 }
@@ -211,11 +211,7 @@ export async function generateWinStrategy(dealId: string): Promise<WinStrategy> 
     timelineSummary: timelineSummary(timeline),
   });
 
-  const raw = await callOpenRouterForGeneration(
-    WIN_STRATEGY_SYSTEM_PROMPT,
-    prompt,
-    { temperature: 0.4, maxTokens: 1500 }
-  );
+  const raw = await callClaudeForGeneration(WIN_STRATEGY_SYSTEM_PROMPT, prompt);
 
   const parsed = extractJson<{
     talkingPoints?: string[];

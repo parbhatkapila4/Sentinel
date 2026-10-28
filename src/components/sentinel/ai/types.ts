@@ -43,6 +43,7 @@ export interface AIRecentAnswer {
   question: string;
   when: string;
   meta: string;
+  chatId?: string;
 }
 
 export interface AIPromptCard {

@@ -263,13 +263,18 @@ export async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
 
   try {
     const userId = await getAuthenticatedUserId();
-
-    const integration = await prisma.googleCalendarIntegration.findFirst({
-      where: { userId },
-    });
+    const [integration, oauth] = await Promise.all([
+      prisma.googleCalendarIntegration.findFirst({
+        where: { userId },
+      }),
+      prisma.calendarIntegration.findUnique({
+        where: { userId },
+        select: { id: true },
+      }),
+    ]);
 
     if (!integration || !integration.isActive) {
-      return fallback;
+      return oauth ? { ...fallback, connected: true, syncEnabled: true } : fallback;
     }
 
     const maskedCalendarId = integration.calendarId.includes("@")

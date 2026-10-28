@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/prisma-generate-safe.mjs",
+    "predev": "node scripts/prisma-generate-safe.mjs && node scripts/check-clock.mjs",
     "dev": "next dev",
     "build": "node scripts/prisma-generate-safe.mjs && next build --webpack",
     "start": "next start",
@@ -25,6 +25,7 @@
     "db:verify-canonical-stages": "node scripts/verify-canonical-stages.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@clerk/nextjs": "^6.39.5",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

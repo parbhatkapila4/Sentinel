@@ -7,8 +7,6 @@ import {
 } from "@/lib/sync/calendar-sync";
 import { SYNC_IN_PROGRESS_MESSAGE } from "@/lib/sync/lock";
 
-export type { CalendarSyncResult };
-
 export async function syncCalendar(): Promise<CalendarSyncResult> {
   const userId = await getAuthenticatedUserId();
   const result = await syncCalendarForUser(userId);

@@ -1,7 +1,5 @@
-import {
-  AI_CONFIG,
-  AI_EMBEDDING_SEARCH_CHAT_MODEL,
-} from "./config";
+import Anthropic from "@anthropic-ai/sdk";
+import { AI_MODEL } from "./config";
 import { AppError } from "./errors";
 import { retryWithBackoff } from "./retry";
 import { withCircuitBreaker } from "./circuit-breaker";
@@ -14,22 +12,32 @@ export type TaskType =
   | "planning_multimodal"
   | "general";
 
-export interface ModelConfig {
-  model: string;
-  temperature: number;
-  maxTokens: number;
-  provider: "openrouter" | "anthropic" | "google";
-}
+type Effort = NonNullable<Anthropic.Beta.BetaOutputConfig["effort"]>;
+type ClaudeMessage = Anthropic.Beta.BetaMessageParam;
+type UserContentBlock = Anthropic.Beta.BetaTextBlockParam | Anthropic.Beta.BetaImageBlockParam;
+type ImageMediaType = Anthropic.Beta.BetaBase64ImageSource["media_type"];
 
-const OPENROUTER_CIRCUIT_BREAKER = {
+const CIRCUIT_BREAKER_NAME = "anthropic";
+
+const CIRCUIT_BREAKER_CONFIG = {
   failureThreshold: 5,
   timeout: 30000,
 } as const;
+const MAX_TOKENS = 16_000;
+const REQUEST_TIMEOUT_MS = 90_000;
+const REFUSAL_FALLBACK_BETA = "server-side-fallback-2026-07-01";
 
-const OPENROUTER_FALLBACK_MODELS = [
-  "openai/gpt-4o-mini",
-  "anthropic/claude-3-haiku",
-] as const;
+const SUPPORTED_IMAGE_TYPES = new Set<string>([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+]);
+
+const UNAVAILABLE_MESSAGE =
+  "AI assistant is temporarily unavailable. Please try again.";
+const RETRYABLE_CODES = new Set(["AI_BUSY", "AI_UNAVAILABLE"]);
+const OUTAGE_CODES = new Set(["AI_BUSY", "AI_UNAVAILABLE", "AI_TIMEOUT"]);
 
 export function analyzeTaskType(query: string): TaskType {
   const lowerQuery = query.toLowerCase();
@@ -133,17 +141,6 @@ export function analyzeTaskType(query: string): TaskType {
   return "general";
 }
 
-export function getModelConfig(taskType: TaskType): ModelConfig {
-  const base =
-    taskType in AI_CONFIG
-      ? AI_CONFIG[taskType as keyof typeof AI_CONFIG]
-      : AI_CONFIG.general;
-  if (taskType === "deal_specific") {
-    return { ...(AI_CONFIG.financial_reasoning ?? base) };
-  }
-  return { ...base };
-}
-
 function getSystemPrompt(taskType: TaskType): string | null {
   switch (taskType) {
     case "financial_reasoning":
@@ -200,32 +197,25 @@ ACCURACY RULES - NON-NEGOTIABLE. THESE OVERRIDE EVERY OTHER INSTRUCTION:
 6. It is always better to say "I don't know" than to provide a confident-sounding answer that may be wrong. The user will trust an honest "I don't know" more than a polished bluff.
 7. If you catch yourself about to assert something you can't verify, stop and rephrase as a question or a placeholder.`;
 
-const MODE_OVERRIDES: Record<AIMode, {
-  maxTokensMultiplier: number;
-  temperatureDelta: number;
-  promptSuffix: string;
-}> = {
+const DEFAULT_EFFORT: Effort = "medium";
+
+const MODE_OVERRIDES: Record<AIMode, { effort: Effort; promptSuffix: string }> = {
   RESEARCH: {
-    maxTokensMultiplier: 1.4,
-    temperatureDelta: -0.1,
+    effort: "high",
     promptSuffix:
-      "\n\nMODE - RESEARCH. The user wants a thoughtful read, not a one-liner. When the question merits it, show your reasoning, cite specific deal data, and surface what's surprising or non-obvious. Avoid filler phrases ('great question', 'let me help'). Lead with the answer, support it with evidence FROM THE PROVIDED CONTEXT - never from memory or speculation.",
+      "\n\nMODE - RESEARCH. The user wants a thoughtful read, not a one-liner. When the question merits it, walk through the evidence: cite specific deal data, and surface what's surprising or non-obvious. Avoid filler phrases ('great question', 'let me help'). Lead with the answer, support it with evidence FROM THE PROVIDED CONTEXT - never from memory or speculation.",
   },
   DRAFT: {
-    maxTokensMultiplier: 1.2,
-    temperatureDelta: 0.1,
+    effort: "medium",
     promptSuffix:
       "\n\nMODE - DRAFT. The user wants a polished deliverable: an email, a follow-up note, a brief, a script, talking points. Lead with the deliverable itself. Skip preamble. If the user hasn't said what to draft, ask one focused question and stop. For any deal-specific detail you cannot confirm from the context, use a bracketed placeholder like [Customer name] - never invent.",
   },
   FAST: {
-    maxTokensMultiplier: 0.45,
-    temperatureDelta: -0.2,
+    effort: "low",
     promptSuffix:
       "\n\nMODE - FAST. Be terse. Aim for one or two sentences. Drop the preamble. Drop the wrap-up. If the question genuinely needs more, give the minimum extra that earns its keep. Brevity never excuses making things up - if the data isn't there, the right answer is 'I don't have that.'",
   },
 };
-
-const MAX_TEMPERATURE = 0.5;
 
 export function isAIMode(value: unknown): value is AIMode {
   return value === "RESEARCH" || value === "DRAFT" || value === "FAST";
@@ -242,35 +232,233 @@ export type ChatCompletionContentPart =
 
 export type ChatMessageContent = string | ChatCompletionContentPart[];
 
-function messageUsesVision(messages: Array<{ role: string; content: ChatMessageContent }>): boolean {
-  return messages.some((m) => {
-    if (typeof m.content === "string") return false;
-    return m.content.some((p) => p.type === "image_url");
-  });
+function textOf(content: ChatMessageContent): string {
+  if (typeof content === "string") return content;
+  return content
+    .filter((p): p is { type: "text"; text: string } => p.type === "text")
+    .map((p) => p.text)
+    .join("\n");
 }
 
-function getModelCandidates(primaryModel: string, useVision: boolean): string[] {
-  const candidates = [
-    primaryModel,
-    ...(useVision
-      ? OPENROUTER_FALLBACK_MODELS.filter((m) => m.startsWith("openai/"))
-      : OPENROUTER_FALLBACK_MODELS),
-  ];
-  return [...new Set(candidates)];
+function toImageBlock(url: string): Anthropic.Beta.BetaImageBlockParam | null {
+  const dataUrl = /^data:([^;,]+);base64,([\s\S]+)$/.exec(url);
+  if (dataUrl) {
+    const declared = dataUrl[1].toLowerCase();
+    const mediaType = declared === "image/jpg" ? "image/jpeg" : declared;
+    if (!SUPPORTED_IMAGE_TYPES.has(mediaType)) return null;
+    return {
+      type: "image",
+      source: {
+        type: "base64",
+        media_type: mediaType as ImageMediaType,
+        data: dataUrl[2],
+      },
+    };
+  }
+  if (/^https?:\/\//i.test(url)) {
+    return { type: "image", source: { type: "url", url } };
+  }
+  return null;
 }
 
-function shouldTryFallbackModel(error: unknown): boolean {
-  if (!(error instanceof AppError)) return false;
-  return (
-    error.statusCode === 429 ||
-    error.statusCode === 502 ||
-    error.statusCode === 503 ||
-    error.statusCode === 504
+function toUserContent(content: ChatMessageContent): string | UserContentBlock[] {
+  if (typeof content === "string") return content;
+  const blocks: UserContentBlock[] = [];
+  let unreadable = 0;
+  for (const part of content) {
+    if (part.type === "text") {
+      if (part.text.trim()) blocks.push({ type: "text", text: part.text });
+      continue;
+    }
+    const image = toImageBlock(part.image_url.url);
+    if (image) blocks.push(image);
+    else unreadable++;
+  }
+  if (unreadable > 0) {
+    blocks.push({
+      type: "text",
+      text: `(${unreadable} attached image${unreadable === 1 ? "" : "s"} could not be opened: only JPEG, PNG, GIF and WebP images can be read.)`,
+    });
+  }
+  return blocks;
+}
+
+function isEmpty(content: string | UserContentBlock[]): boolean {
+  return typeof content === "string" ? content.trim() === "" : content.length === 0;
+}
+
+export function toClaudeMessages(
+  messages: Array<{ role: string; content: ChatMessageContent }>
+): ClaudeMessage[] {
+  const converted: ClaudeMessage[] = [];
+  for (const m of messages) {
+    if (m.role === "user") {
+      const content = toUserContent(m.content);
+      if (!isEmpty(content)) converted.push({ role: "user", content });
+    } else if (m.role === "assistant" && converted.length > 0) {
+      const text = textOf(m.content);
+      if (text.trim()) converted.push({ role: "assistant", content: text });
+    }
+  }
+  while (converted.length > 0 && converted[converted.length - 1].role !== "user") {
+    converted.pop();
+  }
+  return converted;
+}
+
+function getApiKey(): string {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.error("ANTHROPIC_API_KEY is not set in environment variables");
+    throw new AppError(
+      "AI assistant is not configured for this environment. Please set ANTHROPIC_API_KEY in your deployment settings.",
+      { statusCode: 503, code: "AI_NOT_CONFIGURED" }
+    );
+  }
+  return apiKey;
+}
+
+function toAppError(error: unknown): AppError {
+  if (error instanceof AppError) return error;
+  if (error instanceof Anthropic.APIConnectionTimeoutError) {
+    return new AppError(
+      "The AI service took too long to respond. Please try again.",
+      { statusCode: 503, code: "AI_TIMEOUT" }
+    );
+  }
+  if (error instanceof Anthropic.APIConnectionError) {
+    console.error("Anthropic connection error:", error.message);
+    return new AppError(UNAVAILABLE_MESSAGE, { statusCode: 503, code: "AI_UNAVAILABLE" });
+  }
+  if (error instanceof Anthropic.APIError) {
+    const status = error.status ?? 0;
+    console.error("Anthropic API error:", {
+      status,
+      type: error.type,
+      message: error.message,
+      requestId: error.requestID,
+      model: AI_MODEL,
+    });
+    if (status === 402 || error.type === "billing_error") {
+      console.error(
+        "Anthropic billing error: the account is out of credit or has no payment method. Check the Anthropic Console billing page."
+      );
+      return new AppError(UNAVAILABLE_MESSAGE, { statusCode: 503, code: "AI_BILLING" });
+    }
+    if (status === 401 || status === 403) {
+      return new AppError(
+        "AI service configuration issue. Please check your provider settings.",
+        { statusCode: 503, code: "AI_NOT_CONFIGURED" }
+      );
+    }
+    if (status === 404) {
+      return new AppError(
+        `AI model "${AI_MODEL}" is not available to this Anthropic account.`,
+        { statusCode: 502, code: "UPSTREAM_MODEL_NOT_FOUND" }
+      );
+    }
+    if (status === 429) {
+      return new AppError("AI service is busy. Please try again in a moment.", {
+        statusCode: 503,
+        code: "AI_BUSY",
+      });
+    }
+    if (status >= 500) {
+      return new AppError(
+        "AI service is temporarily unavailable. Please try again in a moment.",
+        { statusCode: 503, code: "AI_UNAVAILABLE" }
+      );
+    }
+    return new AppError(UNAVAILABLE_MESSAGE, { statusCode: 502, code: "AI_REQUEST_REJECTED" });
+  }
+  console.error("Unexpected AI error:", error);
+  return new AppError(UNAVAILABLE_MESSAGE, { statusCode: 503, code: "AI_UNAVAILABLE" });
+}
+
+function hasCode(error: unknown, codes: Set<string>): boolean {
+  return error instanceof AppError && codes.has(error.code);
+}
+
+function getRetryConfig() {
+  return process.env.NODE_ENV === "production"
+    ? { maxRetries: 4, initialDelay: 2000, multiplier: 2 }
+    : { maxRetries: 2 };
+}
+
+interface ClaudeRequest {
+  system: string;
+  messages: ClaudeMessage[];
+  effort: Effort;
+}
+
+type ClaudeOutcome =
+  | { message: Anthropic.Beta.BetaMessage }
+  | { error: AppError };
+
+async function askClaude(request: ClaudeRequest): Promise<string> {
+  const apiKey = getApiKey();
+  const outcome = await withCircuitBreaker<ClaudeOutcome>(
+    CIRCUIT_BREAKER_NAME,
+    () =>
+      retryWithBackoff<ClaudeOutcome>(
+        async () => {
+          const client = new Anthropic({
+            apiKey,
+            maxRetries: 0,
+            timeout: REQUEST_TIMEOUT_MS,
+          });
+          try {
+            const message = await client.beta.messages.create({
+              model: AI_MODEL,
+              max_tokens: MAX_TOKENS,
+              system: request.system,
+              messages: request.messages,
+              output_config: { effort: request.effort },
+              betas: [REFUSAL_FALLBACK_BETA],
+              fallbacks: "default",
+            });
+            return { message };
+          } catch (error) {
+            const appError = toAppError(error);
+            if (hasCode(appError, OUTAGE_CODES)) throw appError;
+            return { error: appError };
+          }
+        },
+        {
+          ...getRetryConfig(),
+          shouldRetry: (error) => hasCode(error, RETRYABLE_CODES),
+        }
+      ),
+    CIRCUIT_BREAKER_CONFIG
   );
+
+  if ("error" in outcome) throw outcome.error;
+  return readReply(outcome.message);
 }
 
-function toCircuitBreakerName(model: string): string {
-  return `openrouter:${model.replace(/[^a-zA-Z0-9_.-]/g, "_")}`;
+function readReply(message: Anthropic.Beta.BetaMessage): string {
+  if (message.stop_reason === "refusal") {
+    throw new AppError(
+      "Sentinel AI can't help with that request. Try rephrasing it.",
+      { statusCode: 422, code: "AI_REFUSED" }
+    );
+  }
+  let start = 0;
+  message.content.forEach((block, index) => {
+    if (block.type === "fallback") start = index + 1;
+  });
+  const text = message.content
+    .slice(start)
+    .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === "text")
+    .map((block) => block.text)
+    .join("")
+    .trim();
+
+  if (!text) {
+    console.error("Claude returned no text", { stopReason: message.stop_reason });
+    throw new AppError(UNAVAILABLE_MESSAGE, { statusCode: 502, code: "AI_EMPTY_RESPONSE" });
+  }
+  return text;
 }
 
 export async function routeToAI(
@@ -279,10 +467,8 @@ export async function routeToAI(
   options?: RouteToAIOptions
 ): Promise<string> {
   const taskType = analyzeTaskType(query);
-  const modelConfig = getModelConfig(taskType);
   let systemPrompt = getSystemPrompt(taskType);
   const dealContext = options?.dealContext;
-  const useVision = messageUsesVision(messages);
 
   if (dealContext) {
     const contextBlock = `\n\n---\nDEAL & PIPELINE CONTEXT (use this for accurate, data-driven answers):\n${dealContext}`;
@@ -291,278 +477,39 @@ export async function routeToAI(
       : `You are a helpful assistant for Sentinel, a revenue intelligence platform. Use the following context when relevant to the user's question.${contextBlock}`;
   }
 
-  let model = modelConfig.model;
-  let maxTokens = modelConfig.maxTokens;
-  let temperature = modelConfig.temperature;
-  if (useVision) {
-    model = "openai/gpt-4o";
-    maxTokens = Math.max(modelConfig.maxTokens, 2000);
-    temperature = Math.min(modelConfig.temperature, 0.5);
-  } else if (taskType === "embedding_search") {
-    model = AI_EMBEDDING_SEARCH_CHAT_MODEL;
-  }
-
+  let effort = DEFAULT_EFFORT;
   const mode = options?.mode;
   if (mode) {
     const override = MODE_OVERRIDES[mode];
     const defaultSystem =
       "You are a helpful assistant for Sentinel, a revenue intelligence platform.";
     systemPrompt = (systemPrompt ?? defaultSystem) + override.promptSuffix;
-    maxTokens = Math.max(120, Math.round(maxTokens * override.maxTokensMultiplier));
-    temperature = Math.max(0, Math.min(1, temperature + override.temperatureDelta));
+    effort = override.effort;
   }
 
   const baselineSystem =
     "You are a helpful assistant for Sentinel, a revenue intelligence platform that surfaces a user's own deal pipeline.";
   systemPrompt = (systemPrompt ?? baselineSystem) + ACCURACY_RULES;
-  temperature = Math.min(temperature, MAX_TEMPERATURE);
 
-  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
-
-  if (!openRouterApiKey) {
-    console.error("OPENROUTER_API_KEY is not set in environment variables");
-    throw new AppError(
-      "AI assistant is not configured for this environment. Please set OPENROUTER_API_KEY in your deployment settings.",
-      { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-    );
+  const claudeMessages = toClaudeMessages(messages);
+  if (claudeMessages.length === 0) {
+    throw new AppError("There is no question to answer.", {
+      statusCode: 400,
+      code: "VALIDATION_ERROR",
+    });
   }
 
-  const formattedMessages = systemPrompt
-    ? [
-      { role: "system" as const, content: systemPrompt },
-      ...messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
-    ]
-    : messages.map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
-
-  const OPENROUTER_TIMEOUT_MS = useVision ? 90_000 : 50_000;
-  const retryConfig =
-    process.env.NODE_ENV === "production"
-      ? {
-        maxRetries: 4,
-        initialDelay: 2000,
-        multiplier: 2,
-        isIdempotent: true,
-      }
-      : { maxRetries: 2, isIdempotent: true };
-
-  const modelCandidates = getModelCandidates(model, useVision);
-  let lastError: unknown;
-
-  for (let i = 0; i < modelCandidates.length; i++) {
-    const candidateModel = modelCandidates[i];
-    const hasAnotherFallback = i < modelCandidates.length - 1;
-
-    try {
-      return await withCircuitBreaker(
-        toCircuitBreakerName(candidateModel),
-        () =>
-          retryWithBackoff(
-            async () => {
-              const controller = new AbortController();
-              const timeoutId = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
-              try {
-                const response = await fetch(
-                  "https://openrouter.ai/api/v1/chat/completions",
-                  {
-                    method: "POST",
-                    signal: controller.signal,
-                    headers: {
-                      Authorization: `Bearer ${openRouterApiKey}`,
-                      "Content-Type": "application/json",
-                      "HTTP-Referer":
-                        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-                      "X-Title": "Sentinel",
-                    },
-                    body: JSON.stringify({
-                      model: candidateModel,
-                      messages: formattedMessages,
-                      temperature,
-                      max_tokens: maxTokens,
-                    }),
-                  }
-                );
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                  const errorData = await response.text();
-                  console.error("OpenRouter API error:", {
-                    status: response.status,
-                    statusText: response.statusText,
-                    error: errorData,
-                    model: candidateModel,
-                  });
-                  const status = response.status;
-                  const message =
-                    status === 401
-                      ? "AI service configuration issue. Please check your provider settings."
-                      : status === 429
-                        ? "AI service is busy. Please try again in a moment."
-                        : status >= 500
-                          ? "AI service is temporarily unavailable. Please try again in a moment."
-                          : "AI assistant is temporarily unavailable. Please try again.";
-                  throw new AppError(message, {
-                    statusCode: 503,
-                    code: "SERVICE_UNAVAILABLE",
-                  });
-                }
-
-                const data = await response.json();
-
-                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-                  console.error("Invalid OpenRouter response:", data);
-                  throw new AppError(
-                    "AI assistant is temporarily unavailable. Please try again.",
-                    { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-                  );
-                }
-
-                const rawContent = data.choices[0].message.content;
-                if (typeof rawContent === "string") return rawContent;
-                if (Array.isArray(rawContent)) {
-                  const textParts = rawContent.filter(
-                    (p: { type?: string; text?: string }) => p.type === "text" && p.text
-                  );
-                  return textParts.map((p: { text: string }) => p.text).join("\n") || "";
-                }
-                return "";
-              } finally {
-                clearTimeout(timeoutId);
-              }
-            },
-            retryConfig
-          ),
-        OPENROUTER_CIRCUIT_BREAKER
-      );
-    } catch (error) {
-      lastError = error;
-      if (hasAnotherFallback && shouldTryFallbackModel(error)) {
-        console.warn("Falling back to alternate OpenRouter model", {
-          fromModel: candidateModel,
-          toModel: modelCandidates[i + 1],
-          reason: error instanceof Error ? error.message : String(error),
-        });
-        continue;
-      }
-      break;
-    }
-  }
-
-  try {
-    throw lastError;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    if (error instanceof Error) {
-      const isTimeout = error.name === "AbortError" || error.message.includes("aborted");
-      console.error("routeToAI fetch error:", error.message, isTimeout ? "(timeout)" : "");
-      throw new AppError(
-        isTimeout
-          ? "The AI service took too long to respond. Please try again."
-          : "AI assistant is temporarily unavailable. Please try again.",
-        { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-      );
-    }
-    throw new AppError(
-      "AI assistant is temporarily unavailable. Please try again.",
-      { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-    );
-  }
+  return askClaude({ system: systemPrompt, messages: claudeMessages, effort });
 }
 
-export async function callOpenRouterForGeneration(
+export async function callClaudeForGeneration(
   systemPrompt: string,
   userMessage: string,
-  options?: { model?: string; temperature?: number; maxTokens?: number }
+  options?: { effort?: Effort }
 ): Promise<string> {
-  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
-  if (!openRouterApiKey) {
-    throw new AppError(
-      "AI assistant is not configured for this environment. Please set OPENROUTER_API_KEY in your deployment settings.",
-      { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-    );
-  }
-  const model = options?.model ?? AI_CONFIG.financial_reasoning.model;
-  const temperature = options?.temperature ?? 0.3;
-  const maxTokens = options?.maxTokens ?? 2000;
-  const retryConfig =
-    process.env.NODE_ENV === "production"
-      ? {
-        maxRetries: 4,
-        initialDelay: 2000,
-        multiplier: 2,
-        isIdempotent: true,
-      }
-      : { maxRetries: 2, isIdempotent: true };
-
-  return withCircuitBreaker(
-    "openrouter",
-    () =>
-      retryWithBackoff(
-        async () => {
-          const response = await fetch(
-            "https://openrouter.ai/api/v1/chat/completions",
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${openRouterApiKey}`,
-                "Content-Type": "application/json",
-                "HTTP-Referer":
-                  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-                "X-Title": "Sentinel",
-              },
-              body: JSON.stringify({
-                model,
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: userMessage },
-                ],
-                temperature,
-                max_tokens: maxTokens,
-              }),
-            }
-          );
-
-          if (!response.ok) {
-            const err = await response.text();
-            console.error("OpenRouter generation error:", response.status, err, "model=", model);
-            const status = response.status;
-            const message =
-              status === 401
-                ? "AI service is not authenticated. Check OPENROUTER_API_KEY in your environment."
-                : status === 404
-                  ? `AI model "${model}" is not available on OpenRouter. Update AI_CONFIG to a current model slug.`
-                  : status === 429
-                    ? "AI service is busy. Please try again in a moment."
-                    : status >= 500
-                      ? "AI service is temporarily unavailable. Please try again in a moment."
-                      : "AI assistant is temporarily unavailable. Please try again.";
-            throw new AppError(message, {
-              statusCode: status === 404 ? 502 : 503,
-              code: status === 404 ? "UPSTREAM_MODEL_NOT_FOUND" : "SERVICE_UNAVAILABLE",
-            });
-          }
-
-          const data = (await response.json()) as {
-            choices?: Array<{ message?: { content?: string } }>;
-          };
-          const content = data.choices?.[0]?.message?.content;
-          if (typeof content !== "string") {
-            throw new AppError(
-              "AI assistant is temporarily unavailable. Please try again.",
-              { statusCode: 503, code: "SERVICE_UNAVAILABLE" }
-            );
-          }
-          return content;
-        },
-        retryConfig
-      ),
-    OPENROUTER_CIRCUIT_BREAKER
-  );
+  return askClaude({
+    system: systemPrompt,
+    messages: [{ role: "user", content: userMessage }],
+    effort: options?.effort ?? DEFAULT_EFFORT,
+  });
 }

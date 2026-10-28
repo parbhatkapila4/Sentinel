@@ -6,7 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { CommandPalette } from "@/components/command-palette";
 import { WebVitalsTracker } from "@/components/web-vitals-tracker";
 import { SkipLink } from "@/components/skip-link";
-import { TopProgressBar } from "@/components/top-progress-bar";
+import { RouteSkeleton } from "@/components/route-skeleton";
 import { ServerActionErrorBoundary } from "@/components/sentinel/ServerActionErrorBoundary";
 
 export const metadata: Metadata = {
@@ -50,7 +50,7 @@ export default function RootLayout({
           <WebVitalsTracker />
           <ServerActionErrorBoundary />
           <Providers>
-            <TopProgressBar />
+            <RouteSkeleton />
             <CommandPalette />
             {children}
           </Providers>

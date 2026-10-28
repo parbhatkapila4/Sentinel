@@ -28,6 +28,67 @@ function setCached(userId: string): void {
   }
 }
 
+const USER_FIELDS = {
+  id: true,
+  name: true,
+  surname: true,
+  email: true,
+  createdAt: true,
+} as const;
+
+type ClerkProfile = NonNullable<Awaited<ReturnType<typeof currentUser>>>;
+
+function isEmailTaken(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const { code, meta } = error as {
+    code?: string;
+    meta?: { target?: unknown };
+  };
+  if (code !== "P2002") return false;
+  const target = meta?.target;
+  return Array.isArray(target)
+    ? target.includes("email")
+    : String(target ?? "").includes("email");
+}
+
+export function distinctEmail(email: string, userId: string): string {
+  const tag = userId.slice(-8).toLowerCase();
+  const at = email.lastIndexOf("@");
+  if (at <= 0) return `user-${tag}@no-email.invalid`;
+  return `${email.slice(0, at)}+${tag}${email.slice(at)}`;
+}
+async function createUserRecord(userId: string, clerkUser: ClerkProfile) {
+  const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
+  const upsert = (storedEmail: string) =>
+    withDbRetry(
+      () =>
+        prisma.user.upsert({
+          where: { id: userId },
+          update: {},
+          create: {
+            id: userId,
+            name: clerkUser.firstName || clerkUser.username || "User",
+            surname: clerkUser.lastName || "",
+            email: storedEmail,
+          },
+          select: USER_FIELDS,
+        }),
+      2,
+      100
+    );
+
+  try {
+    return await upsert(email);
+  } catch (error) {
+    if (!isEmailTaken(error)) throw error;
+    logWarn(
+      "Email already belongs to another user record, creating this account under a distinct address",
+      { userId }
+    );
+    return upsert(distinctEmail(email, userId));
+  }
+}
+
 async function ensureUserExistsInDb(userId: string): Promise<void> {
   if (isCached(userId)) {
     return;
@@ -56,21 +117,7 @@ async function ensureUserExistsInDb(userId: string): Promise<void> {
         return;
       }
 
-      await withDbRetry(
-        () =>
-          prisma.user.upsert({
-            where: { id: userId },
-            update: {},
-            create: {
-              id: userId,
-              name: clerkUser.firstName || clerkUser.username || "User",
-              surname: clerkUser.lastName || "",
-              email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
-            },
-          }),
-        2,
-        100
-      );
+      await createUserRecord(userId, clerkUser);
     }
 
     setCached(userId);
@@ -146,41 +193,14 @@ export async function getAuthenticatedUser() {
       () =>
         prisma.user.findUnique({
           where: { id: userId },
-          select: {
-            id: true,
-            name: true,
-            surname: true,
-            email: true,
-            createdAt: true,
-          },
+          select: USER_FIELDS,
         }),
       2,
       100
     );
 
     if (!user) {
-      user = await withDbRetry(
-        () =>
-          prisma.user.upsert({
-            where: { id: userId },
-            update: {},
-            create: {
-              id: userId,
-              name: clerkUser.firstName || clerkUser.username || "User",
-              surname: clerkUser.lastName || "",
-              email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
-            },
-            select: {
-              id: true,
-              name: true,
-              surname: true,
-              email: true,
-              createdAt: true,
-            },
-          }),
-        2,
-        100
-      );
+      user = await createUserRecord(userId, clerkUser);
     }
 
     setCached(userId);

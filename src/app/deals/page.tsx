@@ -7,28 +7,22 @@ import { getAllIntegrationStatuses } from "@/app/actions/integrations";
 import { getAuthenticatedUserId } from "@/lib/auth";
 import { formatRiskLevel } from "@/lib/dealRisk";
 
-import { SentinelShell } from "@/components/sentinel/shell/SentinelShell";
-import { SectionRule } from "@/components/sentinel/sections/SectionRule";
-import { Colophon } from "@/components/sentinel/Colophon";
-
-import { DealsMasthead } from "@/components/sentinel/deals/DealsMasthead";
-import { DealsKPIs } from "@/components/sentinel/deals/DealsKPIs";
+import { DaylightShell } from "@/components/sentinel/daylight/DaylightShell";
+import { DealsView } from "@/components/sentinel/daylight/deals/DealsView";
 import {
-  StageFlowBand,
-  type StageFlowItem,
-} from "@/components/sentinel/deals/StageFlowBand";
-import {
-  DealsToolbar,
-  type DealsFilterType,
-  type DealsScopeType,
-} from "@/components/sentinel/deals/DealsToolbar";
-import { DealsTable } from "@/components/sentinel/deals/DealsTable";
+  DEALS_FILTERS,
+  stageSegments,
+  type DealRow,
+  type DealsFilter,
+  type DealsScope,
+  type StageBucket,
+  type StageCell,
+} from "@/components/sentinel/daylight/deals/model";
 
 import {
   buildSentinelShellContext,
   mapRawDealsToSentinel,
 } from "@/components/sentinel/shell-context";
-import { formatShortMoney } from "@/lib/format-money";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +30,7 @@ type RawDeal = Awaited<ReturnType<typeof getAllDeals>>[number];
 
 function applyFilter(
   deals: RawDeal[],
-  filter: DealsFilterType,
+  filter: DealsFilter,
   searchQuery?: string
 ) {
   let filtered = deals;
@@ -68,16 +62,21 @@ function applyFilter(
   }
 }
 
-const STAGE_FLOW_DEF: Array<{ key: string; label: string; matches: string[] }> = [
-  { key: "discover", label: "Discover", matches: ["discover", "discovery", "prospect"] },
-  { key: "qualify", label: "Qualify", matches: ["qualify", "qualification"] },
-  { key: "proposal", label: "Proposal", matches: ["proposal"] },
-  { key: "negotiation", label: "Negotiate", matches: ["negotiation", "negotiate"] },
-  { key: "closed_won", label: "Won", matches: ["closed_won", "closed won", "won"] },
-  { key: "closed_lost", label: "Lost", matches: ["closed_lost", "closed lost", "lost"] },
+const STAGE_FLOW_DEF: Array<{
+  key: string;
+  label: string;
+  bucket: StageBucket;
+  matches: string[];
+}> = [
+  { key: "discover", label: "Discover", bucket: "open", matches: ["discover", "discovery", "prospect"] },
+  { key: "qualify", label: "Qualify", bucket: "open", matches: ["qualify", "qualification"] },
+  { key: "proposal", label: "Proposal", bucket: "open", matches: ["proposal"] },
+  { key: "negotiation", label: "Negotiate", bucket: "open", matches: ["negotiation", "negotiate"] },
+  { key: "closed_won", label: "Won", bucket: "won", matches: ["closed_won", "closed won", "won"] },
+  { key: "closed_lost", label: "Lost", bucket: "lost", matches: ["closed_lost", "closed lost", "lost"] },
 ];
 
-function buildStageFlow(deals: RawDeal[]): StageFlowItem[] {
+function buildStageFlow(deals: RawDeal[]): StageCell[] {
   const norm = (s: string) => s.toLowerCase().replace(/\s+/g, "_");
   return STAGE_FLOW_DEF.map((def) => {
     const bucket = deals.filter((d) => {
@@ -87,10 +86,34 @@ function buildStageFlow(deals: RawDeal[]): StageFlowItem[] {
     return {
       stage: def.key,
       label: def.label,
+      bucket: def.bucket,
       count: bucket.length,
       value: bucket.reduce((sum, d) => sum + d.value, 0),
+      segments: stageSegments(bucket, def.bucket),
     };
   });
+}
+
+function toRow(d: RawDeal): DealRow {
+  return {
+    id: d.id,
+    name: d.name,
+    value: d.value,
+    stage: d.stage,
+    status: d.status,
+    riskScore: d.riskScore,
+    riskReason: d.primaryRiskReason ?? null,
+    location: d.location ?? null,
+    owner: d.assignedTo
+      ? [d.assignedTo.name, d.assignedTo.surname].filter(Boolean).join(" ") ||
+        null
+      : null,
+    action: d.recommendedAction?.label ?? null,
+    actionDueAt: d.actionDueAt ? new Date(d.actionDueAt).getTime() : null,
+    overdueDays: d.isActionOverdue ? d.actionOverdueByDays : null,
+    lastActivityAt: new Date(d.lastActivityAt).getTime(),
+    isDemo: d.isDemo,
+  };
 }
 
 export default async function DealsPage({
@@ -105,10 +128,10 @@ export default async function DealsPage({
 }) {
   noStore();
   const params = await searchParams;
-  const filter = (params?.filter || "all") as DealsFilterType;
+  const filter: DealsFilter = DEALS_FILTERS.find((f) => f === params?.filter) ?? "all";
   const searchQuery = params?.search ?? "";
   const teamId = params?.team ?? null;
-  const scope = (params?.scope || "my") as DealsScopeType;
+  const scope: DealsScope = params?.scope === "all" ? "all" : "my";
 
   let userId: string;
   try {
@@ -198,156 +221,51 @@ export default async function DealsPage({
   });
 
   const stageFlow = buildStageFlow(scopeDeals);
-  const activeStageFlow = stageFlow.filter(
-    (s) => s.stage !== "closed_won" && s.stage !== "closed_lost"
-  );
-  const totalActiveInFlow = activeStageFlow.reduce(
-    (sum, s) => sum + s.value,
-    0
-  );
+  const totalActiveInFlow = stageFlow
+    .filter((s) => s.bucket === "open")
+    .reduce((sum, s) => sum + s.value, 0);
+  const stageValue = (bucket: StageBucket) =>
+    stageFlow
+      .filter((s) => s.bucket === bucket)
+      .reduce((sum, s) => sum + s.value, 0);
 
-  const pctAtRisk =
-    scopeDeals.length > 0
-      ? (highRisk.length / scopeDeals.length) * 100
-      : 0;
-
-  const kpiItems = [
-    {
-      index: "01",
-      label: "Pipeline Weighted",
-      value: formatShortMoney(totalValue),
-      support: `${scopeDeals.length} DEALS ON BOOK`,
-      trendTone: "neutral" as const,
-    },
-    {
-      index: "02",
-      label: "Active Volume",
-      value: formatShortMoney(activeValue),
-      support: `${activeDeals.length} IN MOTION`,
-      trendTone: "up" as const,
-    },
-    {
-      index: "03",
-      label: "At Risk",
-      value: formatShortMoney(highRiskValue),
-      support:
-        highRisk.length > 0
-          ? `${highRisk.length} FLAGGED · ${pctAtRisk.toFixed(0)}%`
-          : "NO FLAGS",
-      trendTone: highRisk.length > 0 ? ("down" as const) : ("up" as const),
-    },
-    {
-      index: "04",
-      label: "New · 7d",
-      value: String(newThisWeek),
-      support: `${closedWon.length} WON THIS BOOK`,
-      trendTone: newThisWeek > 0 ? ("up" as const) : ("neutral" as const),
-    },
-  ];
-
-  const dateLine = format(now, "EEEE - MMMM d, yyyy").toUpperCase();
-  const scopeLabel = scope === "all" ? "TEAM DESK" : "MY DESK";
-  const filterLabel =
-    filter === "all" ? "ALL DEALS" : filter.replace("-", " ").toUpperCase();
-
-  const masthHeadMeta = [
-    { label: "Edition", value: format(now, "HH:mm") },
-    { label: "Scope", value: scopeLabel },
-    { label: "Filter", value: filterLabel },
-    { label: "On Book", value: String(scopeDeals.length) },
-  ];
-
-  const italicTail = scope === "all" ? "desk" : "book";
+  const counts = Object.fromEntries(
+    DEALS_FILTERS.map((f) => [f, applyFilter(scopeDeals, f, searchQuery).length])
+  ) as Record<DealsFilter, number>;
 
   return (
-    <SentinelShell
+    <DaylightShell
+      title="Deals"
+      dateLabel={format(now, "EEEE, MMMM d")}
       syncTime={shellContext.syncTime}
-      coveragePercent={shellContext.coveragePercent}
       sourceLabels={shellContext.sourceLabels}
       alertCount={shellContext.alertCount}
-      tickerItems={shellContext.tickerItems}
       onboarding={shellContext.onboarding}
     >
-      {dataError && (
-        <div
-          role="alert"
-          style={{
-            margin: "16px 56px 0",
-            padding: "12px 16px",
-            border: "1px solid var(--copper)",
-            borderLeft: "3px solid var(--copper)",
-            background: "rgba(217,153,90,0.06)",
-            color: "var(--cream-2)",
-            fontFamily: "var(--font-mono-jb)",
-            fontSize: 11,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}
-        >
-          DATA TEMPORARILY UNAVAILABLE - DESK RUNNING ON CACHE
-        </div>
-      )}
-
-      <DealsMasthead
-        kicker={`Pipeline · ${dateLine}`}
-        headline="Every deal on the"
-        italicWord={italicTail + "."}
-        deck="Read across the book with one eye on risk and the other on what's next. Sort with the filters below; the wire above will keep flagging movement as it happens."
-        meta={masthHeadMeta}
-      />
-
-      <SectionRule
-        number="01"
-        label="THE BOOK"
-        meta={`${scopeDeals.length} ON BOOK · ${activeDeals.length} ACTIVE · ${highRisk.length} AT RISK`}
-      />
-      <DealsKPIs items={kpiItems} />
-
-      <SectionRule
-        number="02"
-        label="STAGE FLOW"
-        meta={`${STAGE_FLOW_DEF.length} STAGES · ${formatShortMoney(totalActiveInFlow)} IN MOTION`}
-      />
-      <StageFlowBand
+      <DealsView
+        scope={scope}
+        filter={filter}
+        search={searchQuery}
+        teamId={teamId}
+        dataError={dataError}
+        totals={{
+          dealCount: scopeDeals.length,
+          totalValue,
+          wonValue: stageValue("won"),
+          lostValue: stageValue("lost"),
+          activeValue,
+          activeCount: activeDeals.length,
+          atRiskValue: highRiskValue,
+          atRiskCount: highRisk.length,
+          newThisWeek,
+          wonCount: closedWon.length,
+        }}
         stages={stageFlow}
-        totalActiveValue={totalActiveInFlow}
+        inMotionValue={totalActiveInFlow}
+        counts={counts}
+        deals={sortedDeals.map(toRow)}
+        nowMs={now.getTime()}
       />
-
-      <SectionRule
-        number="03"
-        label="THE LIST"
-        meta={`${sortedDeals.length} SHOWN · ${scopeDeals.length} IN SCOPE`}
-      />
-      <section
-        aria-label="Deals list"
-        style={{ padding: "28px 56px 40px" }}
-      >
-        <DealsToolbar
-          currentFilter={filter}
-          currentScope={scope}
-          currentSearch={searchQuery}
-          teamId={teamId}
-          totalShown={sortedDeals.length}
-          totalInScope={scopeDeals.length}
-        />
-
-        <DealsTable
-          deals={sortedDeals.map((d) => ({
-            id: d.id,
-            name: d.name,
-            value: d.value,
-            stage: d.stage,
-            status: d.status,
-            riskScore: d.riskScore,
-            assignedTo: d.assignedTo ?? null,
-            recommendedAction: d.recommendedAction ?? null,
-            lastActivityAt: d.lastActivityAt,
-            isDemo: d.isDemo,
-          }))}
-        />
-      </section>
-
-      <Colophon systemStatus={dataError ? "degraded" : "operational"} />
-    </SentinelShell>
+    </DaylightShell>
   );
 }

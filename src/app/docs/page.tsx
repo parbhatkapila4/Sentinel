@@ -192,7 +192,7 @@ export default function DocsPage() {
             />
             <Faq
               q="Does Sentinel train on my data?"
-              a="No. Pipeline data is never used to train shared models. AI requests go through OpenRouter with per-deal context only."
+              a="No. Pipeline data is never used to train shared models. AI requests go to Anthropic's Claude API with per-deal context only."
             />
             <Faq
               q="Is there a phone number for support?"
