@@ -11,7 +11,7 @@ import (
 
 type source struct {
 	name, rows string
-	note       string 
+	note       string
 }
 
 var sources = []source{
@@ -84,6 +84,7 @@ type result struct {
 	ids                         []string
 	createdAt                   []time.Time
 }
+
 func audit(ctx context.Context, pool *pgxpool.Pool, src source) (result, error) {
 	r := result{name: src.name, note: src.note}
 	err := pgx.BeginTxFunc(ctx, pool, pgx.TxOptions{AccessMode: pgx.ReadOnly}, func(tx pgx.Tx) error {
